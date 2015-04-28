@@ -1,0 +1,9 @@
+site, visit, transect, problem, parameter, value, units, image, comments
+'foo',1, 'B', 'testing stuff', 'foo', 7, 'fnords',=HYPERLINK("file:///L:\Apps\Scantron\Images\2008\Flowing Waters\NRSA_SD_FW08IN004_V1.tif"; "stream discharge"), 'test this'
+'foo',1, 'B', 'testing stuff', 'foo', 7, 'fnords',=HYPERLINK("file:///L:\Apps\Scantron\Images\2008\Flowing Waters\NRSA_SD_FW08IN004_V1.tif"), 'test this'
+'foo',1, 'B', 'testing stuff', 'foo', 7, 'fnords',=HYPERLINK("file:///L:\Apps\Scantron\Images\2008\Flowing Waters\NRSA_SD_FW08IN004_V1.tif"), 'test this too'
+'foo',1, 'B', 'testing stuff', 'foo', 7, 'fnords',file:///L:\Apps\Scantron\Images\2008\Flowing Waters\NRSA_SD_FW08IN004_V1.tif, 'test this'
+'foo',1, 'B', 'testing stuff', 'foo', 7, 'fnords',file:///L:\Apps\Scantron\Images\2008\Flowing Waters\NRSA_SD_FW08IN004_V1.tif, 'test this'
+'foo',1, 'B', 'testing stuff', 'foo', 7, 'fnords',file:///L:\Apps\Scantron\Images\2008\Flowing Waters\NRSA_SD_FW08IN004_V1.tif, 'test this'
+
+

@@ -1,0 +1,173 @@
+# importNRSAdata.r
+#
+# Imports calculated backbearing and distance values based on recorded lat/lon
+# data for each transect and subsighting from a csv file
+# Backsighting angle is (0-360) and distance in meters between the points.
+# Writes results to a csv file for validation.
+#
+# Assumes NRSAvalidation.r has been sourced.
+#
+# 08/20/10 cws created
+# 09/13/10 cws turned into a function definition.
+# 09/16/2010 cws Removing hardcoding of NRSA database name, using NRSAdbName
+#            instead.
+#
+
+#require(plyr)
+require(RODBC)
+
+importNRSAdata <- function()
+#
+{
+  # Grab data from database and local files
+  chan <- odbcConnect(NRSAdbName)
+
+  metadata <- fetchNRSATable(chan, 'tblPARAMETERDESCRIPTIONS2')
+  if(!is.data.frame(metadata)) return(metadata)
+
+  siteInfo <- fetchNRSATable(chan, 'tblVISITS2', filterSideChannels=FALSE)
+  if(!is.data.frame(siteInfo)) return(siteInfo)
+
+  cg <- fetchNRSATable(chan, 'tblCHANNELGEOMETRY2', filterSideChannels=TRUE)
+  if(!is.data.frame(cg)) return(siteInfo)
+  cg <- subset(cg, substr(PARAMETER,1,3) %in% c('LAT','LON'))
+  cg$PARAMETER <- ifelse(cg$PARAMETER=='LATDD2',  'LATDD'
+                 ,ifelse(cg$PARAMETER=='LATMM2',  'LATMM'
+                 ,ifelse(cg$PARAMETER=='LATSS2',  'LATSS'
+                 ,ifelse(cg$PARAMETER=='LONGDD2', 'LONGDD'
+                 ,ifelse(cg$PARAMETER=='LONGMM2', 'LONGMM'
+                 ,ifelse(cg$PARAMETER=='LONGSS2', 'LONGSS'
+                 ,ifelse(cg$PARAMETER=='LATMM2',  'LATMM', cg$PARAMETER
+                 )))))))
+
+  gisCalcs <- read.csv(paste(NRSACalcLocation,'backBearings.csv',sep=''), stringsAsFactors=FALSE)
+
+  if(file.exists(paste(NRSAMetricsLocation, '/metsChannelMorphology.csv', sep=''))) {
+      tt <- read.csv(paste(NRSAMetricsLocation,'metsChannelMorphology.csv',sep='/')
+                    ,stringsAsFactors=FALSE
+                    )
+      xwidths <- subset(tt, METRIC=='xwidth', select=c(UID,RESULT))
+      xwidths <- rename(xwidths, 'RESULT','xwidth')
+      gisCalcs <- merge(gisCalcs, xwidths, by='UID', all.x=TRUE)
+  } else {
+      gisCalcs$xwidth <- NA
+  }
+
+  if(file.exists(paste(NRSAvalidationLocation, 'valGISCalculations_run1.csv', sep=''))) {
+      # If validation has already been done once, flag it as validated so it can
+      # be removed from reexamination.
+      previousVal <- read.csv(paste(NRSAvalidationLocation
+                                   ,'valGISCalculations_run1.csv'
+                                   ,sep=''
+                                   )
+                             ,stringsAsFactors=FALSE
+                             )
+
+      previousVal <- previousVal[c('UID','SAMPLE_TYPE','TRANSECT','TRANLINE'
+                                  ,'LINE','PARAMETER')
+                                ]
+      previousVal$validated <- TRUE
+  } else {
+      previousVal <- NULL
+  }
+  
+  # Calculate total transect distances for each transect (i.e. sum main and
+  # supplemental values), and use these to determine outliers.
+  ss <- aggregate(list(tranDist=gisCalcs$DISTANCE)
+                 ,list(UID=gisCalcs$UID, TRANSECT=gisCalcs$TRANSECT)
+                 ,sum, na.rm=TRUE
+                 )
+
+  # Look for outlier distances, flag-ing possibly incorrect lat/lon values and
+  # removing NA flags.  A coordinate value is flagged as an outlier if one of
+  # of the following is true:
+  #   a) The calculated DISTANCE is more than 2 stdev away from the mean
+  #   b) The calculated DISTANCE is more than 1 stdev away from the mean AND
+  #      the DISTANCE/xwidth ratio is less than 1 or more than 16 (this ratio
+  #      should be 4, so this allows a factor of 4 deviation from the protocol,
+  #      which is twice what was was generally met in the EMAP study.
+  #   c) The calculated Distance is equal to or less than 1 stdev away from the
+  #      mean AND the DISTANCE/xwidth ratio is less than 1/2 or more than 32.
+  distanceStats <- merge(gisCalcs
+                        ,merge(aggregate(list(mean=ss$tranDist)
+                                        ,list(UID=ss$UID)
+                                        ,mean, na.rm=TRUE
+                                        )
+                              ,aggregate(list(sd=ss$tranDist)
+                                        ,list(UID=ss$UID)
+                                        ,sd, na.rm=TRUE
+                                        )
+                              ,by='UID'
+                              )
+                        ,by='UID'
+                        )
+  flagged <- subset(transform(distanceStats
+                             ,flag=(abs(DISTANCE-mean)/sd > 2)
+                                   | (!is.na(xwidth) & xwidth != 0)
+                                   & (
+#                                       (abs(DISTANCE-mean)/sd > 1 & (DISTANCE/xwidth < 1 | DISTANCE/xwidth > 16))
+#                                     | (abs(DISTANCE-mean)/sd > 0.5 & (DISTANCE/xwidth < 0.5 | DISTANCE/xwidth > 32))
+                                       (abs(DISTANCE-mean)/sd > 1 & (DISTANCE/xwidth < 2 | DISTANCE/xwidth > 8))
+                                     | ( (DISTANCE/xwidth < 1 | DISTANCE/xwidth > 16))
+                                     )
+                             )
+                   ,!is.na(flag)
+                   )
+
+  # For every transect with a distance that was flagged for review, include
+  # the transect between which the distance was calculated.  In rivers, the
+  # transect in the calculation results is the upstream transect of the pair,
+  # so get the next one down as well.  If the transect is A, include B; transect
+  # K distances are (or should be) missing.
+  # Leave LINE out of consideration to include supplemental coordinates in review.
+  context <- unique(rbind(flagged[flagged$flag, c('UID','TRANSECT')]
+#                          # Include upstream transect for context, if desired
+#                         ,transform(flagged[flagged$flag & flagged$TRANSECT != 'A', c('UID','TRANSECT')]
+#                                   ,TRANSECT=translate(TRANSECT, 'BCDEFGHIJK', 'ABCDEFGHIJ')
+#                                   )
+                          # Include downstream transect in review
+                         ,transform(flagged[flagged$flag & flagged$TRANSECT != 'K', c('UID','TRANSECT')]
+                                   ,TRANSECT=translate(TRANSECT, 'ABCDEFGHIJ', 'BCDEFGHIJK')
+                                   )
+                         )
+                  )
+
+
+  # Remove coordinates that were previously validated from revalidation, if it
+  # was done.  Note that validated==TRUE iff validated, so NA means the
+  # transect was not previously included in validation.
+  if(exists('previousVal')) {
+      context <- subset(merge(context
+                             ,unique(previousVal[c('UID','TRANSECT','validated')])
+                             ,by=c('UID','TRANSECT'), all.x=TRUE
+                             )
+                       ,is.na(validated)
+                       )
+  }
+  
+  # Select rows of tblCHANNELGEOMETRY to validate, first by using only coordinates
+  # that are 'best' for distance calculations (as was done when calculating these
+  # distances earlier), and then select those rows which will need review.
+  # Order the rows so that the main coordinate comes below (downstream) from any
+  # supplemental values (set LINE to 999).
+  # Finally, create a suitable TESTDESCRIPTION for the rows under review
+  bestCoords <- determineBestLatLon(cg)
+  bb <- merge(cg, bestCoords, by=c('UID','TRANSECT','LINE','TRANLINE'), all.y=TRUE)
+  vv <- subset(bb, paste(UID, TRANSECT) %in% paste(context$UID, context$TRANSECT))
+  vv$TESTDESCRIPTION <- sprintf("Possibly incorrect Lat/Lon %s, %s"
+                                       ,vv$latdms,vv$londms
+                                       )
+  vv$LINE <- ifelse(is.na(vv$LINE), 999, vv$LINE)
+  vv <- vv[order(vv$UID,vv$TRANSECT,vv$LINE,vv$TRANLINE),]
+
+  rr <- constructNRSAValidationResults(vv, metadata, siteInfo, ssFmt = "EXCEL")
+
+  writeNRSAValidationResults(rr
+                            ,paste(NRSAvalidationLocation
+                                  ,'valGISCalculations.csv'
+                                  ,sep=''
+                                  )
+                            )
+}
+
+# end of file
