@@ -1,59 +1,102 @@
-#  metsChannelChar.r
-#  
-# 01/27/10 rch copied, plagerized and made up this code.
-# 02/18/10 cws removed source() of NRSAValidation.r and summaryby.r
-# 03/23/10 ssr moved creation of unit test dataframes to separate functions.
-# 06/10/10 cws removed list of created metrics as incorrect.
-# 06/24/10 cws Added mets from tblChannelChar2
-# 09/16/10 cws Removing hardcoding of NRSA database name, using NRSAdbName
-#          instead.
-# 11/04/10 cws Modified to handle single-protocol data, updated unit test
-#          accordingly.
-# 11/18/10 cws added require(Hmisc) for %nin% operator
-
-require(Hmisc)
-require(RODBC)
-require(RUnit)
-
-metsChannelChar <- function()
-# Calculates Channel Characteristic metrics:
-# xshor2vg, mxshor, mnshor, pct_ovrb, pctch_b, pctch_c, pctch_n, pctch_u and
-# conbankfull, confeatures, conpattern, conpercent, constraint, convalley,
-# convalleybox.
-#
-# These metrics are saved to a csv file in the directory specified by
-# NRSAMetricsLocation.
-#
-# Returns NULL on success or a character string describing the problem if one
-# occurs.
-# ARGUMENTS:
-# none
-{
-  intermediateMessage('Channel Characteristic calculations', loc='start')
-  intermediateMessage('.1 Read in data', loc='end')
+metsChannelChar <- function(bankgeometry, channelchar) {
   
-  # read in Channel Characteristic data from database
-  newtab <- odbcConnect(NRSAdbName)
-  bg <- fetchNRSATable(newtab, 'tblBankGeometry2')
-  cc <- fetchNRSATable(newtab, 'tblChannelChar2')
+################################################################################
+# Function: metsChannelChar
+# Title: Calculate NRSA Channel Characteristic Metrics
+# Programmers: Randy Hjort
+#              Curt Seeliger
+#              Suzanne San Romani
+#              Tom Kincaid
+# Date: January 27, 2010
+# Description:
+#   This function calculates the channel characteristics portion of the physical
+#   habitat metrics for National Rivers and Streams Assessment (NRSA) data.  The
+#   function requires data frames containing the bank geometry and  channel
+#   characteristics data files.
+# Metrics:
+#   xshor2vg, mxshor, mnshor, pct_ovrb, pctch_b, pctch_c, pctch_n, pctch_u and
+#   conbankfull, confeatures, conpattern, conpercent, constraint, convalley,
+#   convalleybox
+# Function Revisions:
+#   01/27/10 rch: copied, plagerized and made up this code.
+#   02/18/10 cws: removed source() of NRSAValidation.r and summaryby.r
+#   03/23/10 ssr: moved creation of unit test dataframes to separate functions.
+#   06/10/10 cws: removed list of created metrics as incorrect.
+#   06/24/10 cws: Added mets from tblChannelChar2
+#   09/16/10 cws: Removing hardcoding of NRSA database name, using NRSAdbName
+#            instead.
+#   11/04/10 cws: Modified to handle single-protocol data, updated unit test
+#            accordingly.
+#   11/18/10 cws: added require(Hmisc) for %nin% operator
+#   07/26/12 tmk: Removed calls to the require() function.  Removed use of ODBC
+#            data connection and replaced with data input from csv files using a
+#            call to function read.csv.  Added argument tbl to the function to
+#            identify the names of the data files.  Added argument NRSAdir to
+#            the function to identify the directory from which the data file is
+#            read and to which the output metrics file is written.
+#   12/20/12 tmk: Modified data input to use data frames containing data files
+#            rather than csv files.  Modified output to be a data frame rather
+#            than a csv file.  Removed RUnit functions.
+#   01/11/13 tmk: Inserted code to convert factors in the input data frames to
+#            character variables.
+# Arguments:
+#   bankgeometry = a data frame containing the bank geometry data file.  The
+#     data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       TRANSDIR - transverse location along transect
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       FLAG - flag
+#   channelchar = a data frame containing the channel characteristics data file.
+#     The data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       FLAG - flag
+#   Note that possible values for variables in the input data frames are
+#   provided in the document named "NRSA Documentation.pdf" included in the help
+#   directory for the package.
+# Output:
+#   Either a data frame when metric calculation is successful or a character
+#   string containing an error message when metric calculation is not
+#   successful.  The data frame contains the following columns:
+#     UID - universal ID value
+#     METRIC - metric name
+#     RESULT - metric value
+# Other Functions Required:
+#   intermediateMessage - print messages generated by the metric calculation
+#      functions
+#   metsChannelChar.1 - calculate metrics
+################################################################################
 
-  intermediateMessage('.2 call function metsChannelChar.1', loc='end')
 
-  # calculate the calculations
-  mets <- metsChannelChar.1(bg, cc)
+# Print an initial message
+  cat('Channel Characteristic calculations:\n')
 
-  intermediateMessage('.3 Write results', loc='end')
+# Convert factors to character variables in the input data frames
+  intermediateMessage('.1 Convert factors to character variables.', loc='end')
+  bankgeometry <- convert_to_char(bankgeometry)
+  channelchar <- convert_to_char(channelchar)
 
-  # write the results
-  rc <- writeNRSACalcResults(mets, 'metsChannelChar.csv')
-  on.exit(metsChannelChar.cleanup(newtab))
-  intermediateMessage('  Done.', loc='end')
+# Calculate the metrics
+  intermediateMessage('.2 Call function metsChannelChar.1.', loc='end')
+  mets <- metsChannelChar.1(bankgeometry, channelchar)
+  row.names(mets) <- 1:nrow(mets)
 
-  return(rc)
+# Print an exit message
+  intermediateMessage('Done.', loc='end')
+
+# Return results
+  return(mets)
 }
 
 
-metsChannelChar.1 <- function(indat, chanCon)
+
+metsChannelChar.1 <- function(indat, chanCon) {
 # Does all the real work for metsChannelChar.
 # Returns a dataframe of calculations if successful
 # or a character string describing the problem if
@@ -65,7 +108,7 @@ metsChannelChar.1 <- function(indat, chanCon)
 # protocols	dataframe relating UID to the
 #			  sampling protocol used at the site.
 #
-{
+
   intermediateMessage('Channel Characteristic mets', loc='start')
 
   #cdData <- subset(indat,PARAMETER %in% c('CONSTRT','SHOR2RIP','SEEOVRBK'))
@@ -154,197 +197,5 @@ metsChannelChar.1 <- function(indat, chanCon)
 }
 
 
-metsChannelCharTest <- function()
-# Unit test for metsChannelChar.1
-# IGNORE THE RESULTS for Boatable sites.  The test data is from WEMAP data and
-#has only wadable sites.  The  metsChannelChar.1 function needs data for
-#both SAMPLE_TYPES, so the data was duplicated and RESULTS for Boatable obs.
-#were set to zero.
-{
-  # Create correctly formated test data, and run data through metsChannelChar.1
-  testBGData <- metsChannelChar.createBankGeom()
-  testCCData <- metsChannelchar.createChanChar()
-  metsExpected <- metsCanopyDensiometer.testResults()
 
-  # Test with mixed protocol data
-  metsChannelCharTest.1(testBGData, testCCData, metsExpected
-                       ,"Error: Channel Characteristic metrics (mixed) are broken"
-                       )
-
-  # Test with wadeable-only data
-  metsChannelCharTest.1(subset(testBGData, UID %in% c('stream1','stream2'))
-                       ,subset(testCCData, UID %in% c('stream1','stream2'))
-                       ,subset(metsExpected, UID %in% c('stream1','stream2'))
-                       ,"Error: Channel Characteristic metrics (wadeable) are broken"
-                       )
-
-  # Test with boatable-only data
-  metsChannelCharTest.1(subset(testBGData, UID %nin% c('stream1','stream2'))
-                       ,subset(testCCData, UID %nin% c('stream1','stream2'))
-                       ,subset(metsExpected, UID %nin% c('stream1','stream2'))
-                       ,"Error: Channel Characteristic metrics (boatable) are broken"
-                       )
-}
-
-metsChannelCharTest.1 <- function(bg,cc, metsExpected, errmsg)
-# Check character mets separately from numeric mets to allow zeriFudge to
-# have an effect.
-# Calculated values should be within 10E-7 of expected values, should
-# only be missing where they are supposed to be missing and nonmissing where
-# they are supposed to be nonmissing.
-# Note: the errs dataframe can be printed to show where the errors occur when
-# debugging.
-{
-  metsResult <- metsChannelChar.1(bg, cc)
-  errC <- dfCompare(subset(metsExpected
-                          ,METRIC %in% c('constraint','confeatures','conpattern','convalleybox')
-                          )
-                   ,subset(metsResult
-                          ,METRIC %in% c('constraint','confeatures','conpattern','convalleybox')
-                          )
-                   ,c('UID','METRIC'), zeroFudge=1e-7
-                   )
-  ee <- subset(metsExpected
-              ,!(METRIC %in% c('constraint','confeatures','conpattern','convalleybox'))
-              )
-  ee$RESULT <- as.numeric(ee$RESULT)
-  rr <- subset(metsResult
-              ,!(METRIC %in% c('constraint','confeatures','conpattern','convalleybox'))
-              )
-  rr$RESULT <- as.numeric(rr$RESULT)
-  errN <- dfCompare(ee, rr, c('UID','METRIC'), zeroFudge=1e-7)
-  errs <- rbind(errC, errN)
-#  return(list(ee, rr))
-  checkEquals(NULL, errs, errmsg)
-
-}
-
-
-metsChannelChar.cleanup <- function(indb)
-# Clean up when metsChannelChar() terminates
-{
-  odbcClose(indb)
-}
-
-metsChannelChar.createBankGeom <- function()
-# creates dataframe of channel characteristics data for unit test, as found in
-# tblBANKGEOMETRY2
-{
-  # Create correctly formated test data, and run data through metsChannelChar.1
-  testData <- rbind(expand.grid(PARAMETER=c('CONSTRT','SEEOVRBK','SHOR2RIP')
-                   ,TRANSECT = LETTERS[1:11]
-                   ,UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576')
-                   ,SAMPLE_TYPE = 'PHAB_CHANB'
-                   )
-     )
-
-  testData$RESULT <- c("N","YES",0,"N","YES",0,"N","YES",0,"C",NA,0,"C","YES",0,"N","YES",
-              0,"C","YES",0,"N","YES",0,"N",NA,0,"N","YES",0,"C","YES",0,"B","N",0.3,
-              "U","N",30,"B","N",2,"U","N",1,"U","N",2,"U","N",10,"B","N",15,"B","N",3,
-              "B","N",1,"C","N",5,"B","N",2,"C","YES",0,"B","N",0,"B","N",0,"B","YES",
-              0,"B","YES",0,"B","N",0,"B","N",0,"B",NA,0,"U","YES",0,"U","YES",1,NA,
-              NA,NA,"C","YES",2.7,"C","YES",1.5,NA,NA,NA,"C","YES",1.3,"C","YES",
-              1.1,"C","N",0.5,"C","N",0,"C","N",1.5,"C","YES",22,"C","N",3,"C","N",30,
-              "B","YES",15,"U","YES",5,"B","YES",2,"C","N",10,"B","N",1,"U","N",1,
-              "B","N",2,"B","N",1,"B","N",1,"B","N",2,"B","N",0.3)
-
-  testData$UID <- as.character(testData$UID)
-  testData$TRANSECT <- as.character(testData$TRANSECT)
-  testData$SAMPLE_TYPE <- as.character(testData$SAMPLE_TYPE)
-  testData$PARAMETER <- as.character(testData$PARAMETER)
-
-  return(testData)
-}
-
-
-metsChannelchar.createChanChar <- function()
-# Create and return a dataframe of simulated channel constraint data from
-# tblCHANNELCHAR2. Unlike WEMAP, this data is collected for both wadeable and
-# boatable reaches.
-{
-  testData <- expand.grid(PARAMETER=c('BANKFULL','CONSTRNT','FEATURES'
-                                     ,'PATTERN','PERCENT','VALLEY','VALLYBOX'
-                                     )
-                         ,UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528'
-                                 ,'WUTP99-0553','WWYP99-0576','stream1','stream2'
-                                 )
-                         )
-  testData$PARAMETER <- as.character(testData$PARAMETER)
-  testData$UID <- as.character(testData$UID)
-  testData$RESULT <- rep(c('5.5','CON_BROAD','HILLSLOPE','SINGLE','100','1500','Y'),7)
-  testData$SAMPLE_TYPE <- 'PHAB_CHCON'
-  testData$TRANSECT <- 'NONE'
-  testData$FLAG <- ''
-
-  return(testData)
-}
-
-
-metsCanopyDensiometer.testResults <- function()
-# creates dataframe of channel characteristics metrics calculation results for unit test
-{
-  metsExpected <- rbind(data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576'),
-                                   METRIC='xshor2vg',
-                                   RESULT=c(0,6.4818181818,0.1,6.36,3.6636363636)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576'),
-                                   METRIC='mxshor',
-                                   RESULT=c(0,30,1,30,15)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576'),
-                                   METRIC='mnshor',
-                                   RESULT=c(0,0.3,0,0,0.3)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576'),
-                                   METRIC='pct_ovrb',
-                                   RESULT=c(100,0,55.555555556,50,27.272727273)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576'),
-                                   METRIC='pctch_b',
-                                   RESULT=c( 0,54.545454545,70,0,72.727272727)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576'),
-                                   METRIC='pctch_c',
-                                   RESULT=c( 36.363636364,9.0909090909,10,100,9.0909090909)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576'),
-                               METRIC='pctch_n',
-                               RESULT=c( 63.636363636,0,0,0,0)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576'),
-                                   METRIC='pctch_u',
-                                   RESULT=c( 0,36.363636364,20,0,18.181818182)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576','stream1','stream2'),
-                                   METRIC='conbankfull',
-                                   RESULT=rep('5.5', 7)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576','stream1','stream2'),
-                                   METRIC='constraint',
-                                   RESULT=rep('CON_BROAD', 7)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576','stream1','stream2'),
-                                   METRIC='confeatures',
-                                   RESULT=rep('HILLSLOPE', 7)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576','stream1','stream2'),
-                                   METRIC='conpattern',
-                                   RESULT=rep('SINGLE', 7)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576','stream1','stream2'),
-                                   METRIC='conpercent',
-                                   RESULT=rep('100', 7)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576','stream1','stream2'),
-                                   METRIC='convalley',
-                                   RESULT=rep('1500', 7)
-                                  )
-                       ,data.frame(UID = c('WAZP99-0591','WMTP99-0587','WSDP99-0528','WUTP99-0553','WWYP99-0576','stream1','stream2'),
-                                   METRIC='convalleybox',
-                                   RESULT=rep('Y', 7)
-                                  )
-                       )
-
-  return(metsExpected)
-}
-
+# end of file

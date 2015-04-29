@@ -1,0 +1,269 @@
+Tue Jun 10 11:04:36 2014 
+
+Session Information:
+
+R version 3.1.0 (2014-04-10)
+Platform: i386-w64-mingw32/i386 (32-bit)
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] splines   grid      stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+[1] RUnit_0.4.26    aquamet_2.2-1   reshape2_1.4    Hmisc_3.14-4   
+[5] Formula_1.1-1   survival_2.37-7 lattice_0.20-29 foreach_1.4.2  
+
+loaded via a namespace (and not attached):
+[1] cluster_1.15.2      codetools_0.2-8     gtools_3.4.1       
+[4] iterators_1.0.7     latticeExtra_0.6-26 plyr_1.8.1         
+[7] RColorBrewer_1.0-5  Rcpp_0.11.2         stringr_0.6.2      
+
+
+Executing test function metsBankMorphologyTest  ...   Bank Morphology calculations both protocols  BankMorphology mets.1.2.3.4.5.6.7.8.9.10.11.12  Done.
+ wadeable protocol  BankMorphology mets.1.2.3  Done.
+ boatable protocol  BankMorphology mets.4.5.6.7.8.9.10.11.12  Done.
+ done successfully.
+
+
+
+Executing test function metsBedStabilityTest  ... .2.0 Test with both protocols
+  Beginning bed stability calculations.1.2.3.4.5.6  Done.
+.2.1 Test with wadeable protocol
+  Beginning bed stability calculations.1.2.3.4.5.6  Done.
+.2.2 Test with boatable protocol
+  Beginning bed stability calculations.1.2.3.4.5.6  Done.
+ done successfully.
+
+
+
+Executing test function metsCanopyDensiometerTest  ... .2.0 Canopy Densiometer test of data
+.2.1 Create dataset from WEMAP
+.2.2 Create and add Boat data
+.2.2 Create expected dataset
+.2.3 Test with both protocols
+.1.0Canopy Densiometer mets
+.1.1 check data and split into wadeable (mid and bank) and boatable (bank)
+.1.2 sent datasets to summaryby function
+.1.3 put dataset together and finish calculations
+.1.4 Done with function metsCanopyDensiometer.1 
+.2.4 Test with wadeable protocol
+.1.0Canopy Densiometer mets
+.1.1 check data and split into wadeable (mid and bank) and boatable (bank)
+.1.2 sent datasets to summaryby function
+.1.3 put dataset together and finish calculations
+.1.4 Done with function metsCanopyDensiometer.1 
+.2.5 Test with boatable protocol
+.1.0Canopy Densiometer mets
+.1.1 check data and split into wadeable (mid and bank) and boatable (bank)
+.1.2 sent datasets to summaryby function
+.1.3 put dataset together and finish calculations
+.1.4 Done with function metsCanopyDensiometer.1 
+ done successfully.
+
+
+
+Executing test function metsChannelCharTest  ...   Channel Characteristic mets.1.2.3.4.  Done.
+  Channel Characteristic mets.4.  Done.
+  Channel Characteristic mets.1.2.3.4.  Done.
+ done successfully.
+
+
+
+Executing test function metsChannelHabitatTest  ... Channel Habitat test of data
+  Channel Habitat mets.1.2.3.4.5.6.  Done.
+  Channel Habitat mets.1.2.3.4.5.6.  Done.
+  Channel Habitat mets.1.2.3.4.5.6.  Done.
+ done successfully.
+
+
+
+Executing test function metsChannelMorphologyTest  ...   Channel Morphology calculations both protocols  metsChannelMorphology started.1. Get the input data in.
+.2 .3  Complete summaryby summaries..4.5.6.7.8.9 Complete ratios. Complete depth summaries.
+  Done.
+ Done.
+ wadeable protocol  metsChannelMorphology started.1. Get the input data in.
+.2 .3  Complete summaryby summaries..4.5.6.9 Complete ratios. Complete depth summaries.
+  Done.
+ Done.
+ boatable protocol  metsChannelMorphology started.1. Get the input data in.
+.2 .3  Complete summaryby summaries..7.8.9 Complete ratios. Complete depth summaries.
+  Done.
+ Done.
+ done successfully.
+
+
+
+Executing test function metsFishCoverTest  ...   Fish Cover mets  create tables used in calculations.1complete Mean Presence mets (fp).2Complete mean value mets (xp).3  complete type metrics.4  complete sd calculations.5  complete id and iq calculations.6 Done.
+  Fish Cover mets  create tables used in calculations.1complete Mean Presence mets (fp).2Complete mean value mets (xp).3  complete type metrics.4  complete sd calculations.5  complete id and iq calculations.6 Done.
+  Fish Cover mets  create tables used in calculations.1complete Mean Presence mets (fp).2Complete mean value mets (xp).3  complete type metrics.4  complete sd calculations.5  complete id and iq calculations.6 Done.
+ done successfully.
+
+
+
+Executing test function metsGeneralTest  ...   General mets .1.2.Done
+  General mets .1.2.Done
+  General mets .1.2.Done
+ done successfully.
+
+
+
+Executing test function metsHumanInfluenceTest  ...  done successfully.
+
+
+
+Executing test function metsInvasiveSpeciesTest  ...  done successfully.
+
+
+
+Executing test function metsLargeWoodyTest  ...   Large Woody debris calculations  fetch_test_data.1  LgWoody metsEnd of ncns
+end of reachlen
+end of lgWoodTranNo
+end of lgwoodsums
+end of mm
+  Done.
+ Done.
+  Test Streams and Rivers: Done.
+  LgWoody metsEnd of ncns
+end of reachlen
+end of lgWoodTranNo
+end of lgwoodsums
+end of mm
+  Done.
+  Test Streams: Done.
+  LgWoody metsEnd of ncns
+end of reachlen
+end of lgWoodTranNo
+end of lgwoodsums
+end of mm
+  Done.
+  Test Rivers: Done.
+ done successfully.
+
+
+
+Executing test function metsLegacyTreeTest  ...  done successfully.
+
+
+
+Executing test function metsLittoralDepthTest  ...   Littoral Depth mets.1.2. Done.
+  Littoral Depth mets done successfully.
+
+
+
+Executing test function metsResidualPoolsTest  ... Testing with both protocols  starting metsResidualPools.dimensions.cleaning up. Finished.
+  starting metsResidualPools.poolCharacteristics.1.2.3. Finished.
+   starting metsResidualPools.siteSummaries .1.2.3.4.  Done.
+Testing with wadeable protocol data  starting metsResidualPools.dimensions.cleaning up. Finished.
+  starting metsResidualPools.poolCharacteristics.1.2.3. Finished.
+   starting metsResidualPools.siteSummaries .1.2.3.4.  Done.
+Testing with boatable protocol data  starting metsResidualPools.dimensions.cleaning up. Finished.
+  starting metsResidualPools.poolCharacteristics.1.2.3. Finished.
+   starting metsResidualPools.siteSummaries .1.2.3.4.  Done.
+  starting metsResidualPools.dimensions.cleaning up. Finished.
+  starting metsResidualPools.poolCharacteristics.1.2.3. Finished.
+   starting metsResidualPools.siteSummaries .1.2.3.4.  Done.
+ done successfully.
+
+
+
+Executing test function metsRiparianVegetationTest  ...   Starting riparian vegetation metrics.1.2.3.4.5.  Done.
+ done successfully.
+
+
+
+Executing test function countTest  ...  done successfully.
+
+
+
+Executing test function dfCompareTest  ...  done successfully.
+
+
+
+Executing test function firstTest  ...  done successfully.
+
+
+
+Executing test function idrTest  ...  done successfully.
+
+
+
+Executing test function interpolatePercentileTest  ...  done successfully.
+
+
+
+Executing test function iqrTest  ...  done successfully.
+
+
+
+Executing test function is.subsetTest  ...  done successfully.
+
+
+
+Executing test function lagTest  ...  done successfully.
+
+
+
+Executing test function lastTest  ...  done successfully.
+
+
+
+Executing test function leadTest  ...  done successfully.
+
+
+
+Executing test function modalClassTest  ...  done successfully.
+
+
+
+Executing test function modalCountTest  ...  done successfully.
+
+
+
+Executing test function modalvalueTest  ...  done successfully.
+
+
+
+Executing test function normalizedCoverTest  ...  done successfully.
+
+
+
+Executing test function nWadeableStationsPerTransectTest  ...  done successfully.
+
+
+
+Executing test function renameTest  ...  done successfully.
+
+
+
+Executing test function uidCreateSeparateTest  ...  done successfully.
+
+
+
+Executing test function metsSlopeBearingTest  ...   Slope and bearing calculations.1.2.3.4.5.6.7.8.9.  Done.
+  Slope and bearing calculations.1.2.3.4.5.6.7.8.9.  Done.
+  Slope and bearing calculations.1.2.3.4.5.6.7.8.9.  Done.
+  Slope and bearing calculations.1.2.3.4.5.6.7.8.9.  Done.
+  Slope and bearing calculations.1.2.3.4.5.6.7.8.9.  Done.
+  Slope and bearing calculations.1.2.3.4.5.6.7.8.9.  Done.
+ done successfully.
+
+
+
+Executing test function metsSubstrateCharacterizationTest  ...   Substrate Characterization.1.2.3.4.5.6.6.7.8.9.10.11.12.13.14.15.16 Done.
+  Substrate Characterization.1.2.3.4.5.6.6.7.8.9.10 Done.
+  Substrate Characterization.1.11.12.13.14.15.16 Done.
+ done successfully.
+
+
+
+Executing test function metsSubstrateEmbedTest  ...   Substrate Embeddedness mets.1.2.  Done.
+  Substrate Embeddedness mets.1.2.  Done.
+ done successfully.
+

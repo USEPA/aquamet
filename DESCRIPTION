@@ -1,0 +1,21 @@
+Package: aquamet
+Version: 2.3
+Date: 2015-03-10
+Title: Aquatic Metrics Calculation
+Authors@R: c(person("Curt", "Seeliger",  role="aut",
+                    email = "Seeliger.Curt@epa.gov"),
+             person("Karen", "Blocksom",  role="aut",
+                    email = "Blocksom.Karen@epa.gov"),
+             person("Tom", "Kincaid", role=c("aut", "cre"),
+                    email = "Kincaid.Tom@epa.gov"),
+             person("Marlys", "Cappert",  role="ctb"),
+             person("Suzanne", "San Romani",  role="ctb"),
+             person("Randy", "Hjort",  role="ctb"),
+             person("Tony", "Olsen",  role="ctb"))
+Depends: reshape2
+Imports: foreach, gtools, Hmisc, plyr
+Description: This group of functions performs calculation of aquatic metrics
+             that were developed for the National Aquatic Resource Surveys
+             (NARS) implemented by the U.S. Environmental Protection Agency.
+License: GPL (>= 2)
+URL: http://www.epa.gov/nheerl/arm/

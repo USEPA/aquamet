@@ -1,119 +1,263 @@
-# metsBedStability.r
-#
-# 12/24/09 cws created
-#  3/11/10 cws Reading metrics calcs with readNRSACalculationResults() instead
-#          of readNRSAValidationResults().  Call to writeNRSACalcResults()
-#          corrected.
-#  3/12/10 cws Changed PROTOCOL to protocol.  Adding s_rp100 calculation here
-#          since it is used here, and modifying unit test accordingly.
-#
-#  03/18/10 ssr Changed 'protocol' from siteProtocol to 'PROTOCOL'
-#  03/22/10 ssr moved creation of unit test dataframes to separate functions.
-#   3/25/10 cws Changed diff() calls to dfCompare().
-#
-#  04/02/10 mrc Modified unit test and metrics code to handle data with just
-#           one protocol.  
-#  04/13/10 cws Increasing precision of s_rp100 values in unit test by
-#           separating checks of s_* and non-s_* metrics, setting precision
-#           to 10E-4 and 10E-7 respectively.  The difference in attainable
-#           accuracy is due to the exponential calculation of s_rp100.
-# 11/12/10 cws Modified to handle single protocol studies by allowing lsub2dmm
-#          metric to not be required for calculations.  Updated unit test
-#          accordingly.
-# 11/18/10 cws added require(Hmisc) for %nin% operator
-#  3/14/11 cws Added calculation of s_Dcbf_g08 and s_ldcbf_g08.  Unit test
-#          updated accordingly.
-# 12/20/11 cws Restandardized names of individual metrics files, removing 
-#          WITHGPSSLOPES and the like.
-#  3/08/12 cws Handling cases when mets results are character type; also
-#          changing 'NA' results to NA, which is what they should be.
-#  3/12/12 cws Temporarily add hydraulic radii of the roughness components to 
-#          the output.
-#  3/13/12 cws Temporarily modifying BOATABLE v1w_msq to estimate areal density of
-#          entire bankfull channel rather than the 10 m littoral band which was 
-#          sampled. Based on discussion with Phil, this assumes there is no 
-#          wood in the channel and there is no research indicating this to be 
-#          true, but the current use is incorrect as it assumes the same density
-#          of lwd in the channel as the littoral.
-#  3/15/12 cws Reverting to 'classic' lwd handling and not exporting intermediate
-#          values (that code is commented out).  Passes unit test.  Exporting
-#          different intermediate values now.
-#  3/27/12 cws Added intermediate calculations Cp3_mill Cp3Ctrpwd_rat, Ct_rpwd, Rb3
-#          ReyP3, Prpw3, Shld_Px3.  Using 1e-4 as minimum value of slope detectable
-#          by any method.  Updated unit test accordingly.
-#
-# TO DO: Expand check of wadeable reaches.
-#        Handle case when protocol can not be determined.
-#
-require(RODBC)
-require(RUnit)
-require(Hmisc)
+metsBedStability <- function(bankgeometry, thalweg, visits, channelgeometry,
+  channelcrosssection, littoral, wood, fishcover, gisCalcs=NULL) {
 
-metsBedStability <- function()
-# Calculates NRSA bed stability metrics:
-#   Wadeable protocol:
+################################################################################
+# Function: metsBedStability
+# Title: Calculate NRSA Bed Stability Metrics
+# Programmers: Curt Seeliger
+#              Suzanne San Romani
+#              Marlys Cappert
+#              Tom Kincaid
+# Date: December 24, 2009
+# Description:
+#   This function calculates the bed stability portion of the physical habitat
+#   metrics for National Rivers and Streams Assessment (NRSA) data.  The
+#   function requires data frames containing the bankgeometry, thalweg, visits,
+#   channelgeometry, channelcrosssection, littoral, wood, and fishcover data
+#   files.
+# Wadeable Metrics:
 #   ldmb_bw4 ldmb_bw5 lrbs_bw4 lrbs_bw5 lrbs_bw6 lrbs_g08 lrbs_tst ltest
 #   s_ldmb_bw5 s_lrbs_bw5 s_lrbs_bw6
-#
-#   Boatable protocol:
+# Boatable Metrics:
 #   ldmb_bw4 ldmb_bw5 lrbs_bw4 lrbs_bw5 lrbs_bw6 lrbs_g08 lrbs_tst ltest
-#
-# These metrics are saved to a csv file in the directory specified by
-# NRSAMetricsLocation.
-#
-# Returns NULL on success or a character string describing the problem if one
-# occurs.
-#
-# ARGUMENTS:
-# none
-{
-  # Bed stability metrics are calculated entirely with previously calculated
-  # metrics.  Retrieve these metrics from their individual temporary csv
-  # files and combine in a single dataframe.  Make sure 'NA' values are changed
-  # to NA, which is assumed by the calculation function.
-  cm <- readNRSACalculationResults('metsChannelMorphology.csv')  # xdepth, sddepth, xbkf_h, xbkf_w, xwidth
-  if(is.character(cm)) return(cm)
+# Function Revisions:
+#   12/24/09 cws: created
+#    3/11/10 cws: Reading metrics calcs with readNRSACalculationResults()
+#            instead of readNRSAValidationResults().  Call to
+#            writeNRSACalcResults()corrected.
+#    3/12/10 cws: Changed PROTOCOL to protocol.  Adding s_rp100 calculation here
+#            since it is used here, and modifying unit test accordingly.
+#    03/18/10 ssr: Changed 'protocol' from siteProtocol to 'PROTOCOL'
+#    03/22/10 ssr: moved creation of unit test dataframes to separate functions.
+#     3/25/10 cws: Changed diff() calls to dfCompare().
+#    04/02/10 mrc: Modified unit test and metrics code to handle data with just
+#           one protocol.  
+#    04/13/10 cws: Increasing precision of s_rp100 values in unit test by
+#             separating checks of s_* and non-s_* metrics, setting precision
+#             to 10E-4 and 10E-7 respectively.  The difference in attainable
+#             accuracy is due to the exponential calculation of s_rp100.
+#   11/12/10 cws: Modified to handle single protocol studies by allowing
+#            lsub2dmm metric to not be required for calculations.  Updated unit
+#            test accordingly.
+#   11/18/10 cws: added require(Hmisc) for %nin% operator
+#    3/14/11 cws: Added calculation of s_Dcbf_g08 and s_ldcbf_g08.  Unit test
+#            updated accordingly.
+#   12/20/11 cws: Restandardized names of individual metrics files, removing 
+#            WITHGPSSLOPES and the like.
+#    3/08/12 cws: Handling cases when mets results are character type; also
+#            changing 'NA' results to NA, which is what they should be.
+#    3/12/12 cws: Temporarily add hydraulic radii of the roughness components to 
+#            the output.
+#    3/13/12 cws: Temporarily modifying BOATABLE v1w_msq to estimate areal
+#            density of entire bankfull channel rather than the 10 m littoral
+#            band which was sampled. Based on discussion with Phil, this assumes
+#            there is no wood in the channel and there is no research indicating
+#            this to be true, but the current use is incorrect as it assumes the
+#            same density of lwd in the channel as the littoral.
+#    3/15/12 cws: Reverting to 'classic' lwd handling and not exporting
+#            intermediate values (that code is commented out).  Passes unit
+#            test.  Exporting different intermediate values now.
+#    3/27/12 cws: Added intermediate calculations Cp3_mill Cp3Ctrpwd_rat,
+#            Ct_rpwd, Rb3 ReyP3, Prpw3, Shld_Px3.  Using 1e-4 as minimum value
+#            of slope detectable by any method.  Updated unit test accordingly.
+#   07/26/12 tmk: Removed calls to the require() function.  Added argument tbl
+#            to the function to identify name of the data file.  Added argument
+#            NRSAdir to the function to identify the directory from which
+#            metrics files are read and to which the output metrics file is
+#            written.
+#   12/28/12 tmk: Modified data input to use data frames containing data files
+#            rather than csv files.  Calculated channel morphology, slope and
+#            bearing, substrate characterization, residual pools, large woody
+#            debris, and fish cover metrics directly rather than reading metric
+#            calculation results from a file.  Modified output to be a data
+#            frame rather than a csv file.  Removed RUnit functions.
+#   01/11/13 tmk: Inserted code to convert factors in the input data frames to
+#            character variables.
+# Arguments:
+#   bankgeometry = a data frame containing the bank geometry data file.  The
+#     data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       TRANSDIR - transverse location along transect
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       UNITS - units of the RESULT measurement
+#       FLAG - flag
+#   thalweg = a data frame containing the thalweg data file.  The data frame
+#     must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       STATION - station number along thalweg between transects
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       UNITS - units of the RESULT measurement
+#       FLAG - flag
+#   visits = a data frame containing the stream verification form data file.
+#     The data frame contains a protocol value for each UID value.  It also
+#     should include columns that relate UID to values meaningfull to the user,
+#     e.g., site ID, date collected, and visit number.  The data frame must
+#     include columns that are named as follows:
+#       UID - universal ID value
+#       VALXSITE - protocol used during a site visit (BOATABLE, PARBYBOAT,
+#         ALTERED, INTWADE, PARBYWADE, WADEABLE)
+#   channelgeometry = a data frame containing the channel geometry data file.
+#     The data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       TRANLINE - location (mid-channel or bank)along transect
+#       BANK - bank (left or right) along transect
+#       LINE - way point (1,2, etc.) between transects
+#       METHOD - method used to measure slope
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       UNITS - units of the RESULT measurement
+#       FLAG - flag
+#   channelcrosssection = a data frame containing the channel crosssection data
+#     file.  The data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       TRANSDIR - transverse location along transect
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#   littoral = a data frame containing the littoral data file.  The
+#     data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       FLAG - flag
+#   wood = a data frame containing the large woody debris data file.  The data
+#     frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       FLAG - flag
+#   fishcover = a data frame containing the fish cover data file.  The
+#     data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       FLAG - flag
+#   gisCalcs = a data frame containing metric values that were determined using
+#     GPS based calculations.  The default value for this argument is NULL.  The
+#     data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       METRIC - metric name
+#       RESULT - metric value
+#   Note that possible values for variables in the input data frames are
+#   provided in the document named "NRSA Documentation.pdf" included in the help
+#   directory for the package.
+# Output:
+#   Either a data frame when metric calculation is successful or a character
+#   string containing an error message when metric calculation is not
+#   successful.  The data frame contains the following columns:
+#     UID - universal ID value
+#     METRIC - metric name
+#     RESULT - metric value
+# Other Functions Required:
+#   intermediateMessage - print messages generated by the metric calculation
+#      functions
+#   metsChannelMorphology - calculate channel morphology metrics
+#   metsSlopeBearing - calculate slope and bearing metrics
+#   metsSubstrateCharacterization - calculate substrate characterization metrics
+#   metsResidualPools - calculate residual pools metrics
+#   metsLargeWoody - calculate large woody debris metrics
+#   metsFishCover - calculate fish cover metrics
+#   siteProtocol determine sampling protocol values
+#   metsBedStability.1 - calculate metrics
+################################################################################
 
-  sb <- readNRSACalculationResults('metsSlopeBearing.csv')       # xslope
-  if(is.character(sb)) return(sb)
+# Print an initial message
+  cat('Bed Stability calculations:\n')
 
-  sc <- readNRSACalculationResults('metsSubstrateCharacterization.csv') # lsub_dmm, lsub2dmm
-  if(is.character(sc)) return(sc)
+# Convert factors to character variables in the input data frames
+  intermediateMessage('.1 Convert factors to character variables.', loc='end')
+  bankgeometry <- convert_to_char(bankgeometry)
+  thalweg <- convert_to_char(thalweg)
+  visits <- convert_to_char(visits)
+  channelgeometry <- convert_to_char(channelgeometry)
+  channelcrosssection <- convert_to_char(channelcrosssection)
+  littoral <- convert_to_char(littoral)
+  wood <- convert_to_char(wood)
+  fishcover <- convert_to_char(fishcover)
+  if(!is.null(gisCalcs))
+    gisCalcs <- convert_to_char(gisCalcs)
 
-  rp <- readNRSACalculationResults('metsResidualPools.csv')      # rp100, s_rp100
-  if(is.character(rp)) return(rp)
+# Call the metsChannelMorphology function
+  intermediateMessage('.2 Call the metsChannelMorphology function.', loc='end')
+  cm <- metsChannelMorphology(bankgeometry, thalweg, visits)
 
-  lwd <- readNRSACalculationResults('metsLargeWoody.csv')   # v1w_msq
-  if(is.character(lwd)) return(lwd)
+# Call the metsSlopeBearing function
+  intermediateMessage('.3 Call the metsSlopeBearing function.', loc='end')
+  sb <- metsSlopeBearing(thalweg, channelgeometry, visits, gisCalcs)
 
-  fc <- readNRSACalculationResults('metsFishCover.csv')          # xfc_lwd
-  if(is.character(fc)) return(fc)
+# Call the metsSubstrateCharacterization function
+  intermediateMessage('.4 Call the metsSubstrateCharacterization function.',
+    loc='end')
+  sc <- metsSubstrateCharacterization(channelcrosssection, thalweg, littoral)
 
-  mets <- rbind(subset(cm, METRIC %in% c('xdepth', 'sddepth', 'xbkf_h', 'xbkf_w', 'xwidth'))
-               ,subset(sb, METRIC %in% c('xslope'))
-               ,subset(sc, METRIC %in% c('lsub_dmm', 'lsub2dmm'))
-               ,subset(rp, METRIC %in% c('rp100', 's_rp100'))
-               ,subset(lwd, METRIC %in% c('v1w_msq'))
-               ,subset(fc, METRIC %in% c('xfc_lwd'))
-               )
+# Call the metsResidualPools function
+  intermediateMessage('.5 Call the metsResidualPools function.',
+    loc='end')
+  rp <- metsResidualPools(thalweg, channelgeometry, visits, gisCalcs)
+
+# Call the metsLargeWoody function
+  intermediateMessage('.6 Call the metsLargeWoody function.',
+    loc='end')
+  lwd <- metsLargeWoody(thalweg, channelgeometry, bankgeometry, wood, visits)
+
+# Call the metsFishCover function
+  intermediateMessage('.7 Call the metsFishCover function.',
+    loc='end')
+  fc <- metsFishCover(fishcover, visits)
+
+# Combine metrics data frames
+  intermediateMessage('.8 Combine metrics data frames.', loc='end')
+  mets <- rbind(subset(cm, METRIC %in% c('xdepth', 'sddepth', 'xbkf_h',
+                                         'xbkf_w', 'xwidth')),
+                subset(sb, METRIC %in% c('xslope')),
+                subset(sc, METRIC %in% c('lsub_dmm', 'lsub2dmm')),
+                subset(rp, METRIC %in% c('rp100', 's_rp100')),
+                subset(lwd, METRIC %in% c('v1w_msq')),
+                subset(fc, METRIC %in% c('xfc_lwd'))
+                )
   mets$RESULT <- with(mets, ifelse(RESULT == 'NA', NA, RESULT))       
 
-  protocols <- siteProtocol(unique(mets$UID))
+# Determine protocol used for each site
+  intermediateMessage('.9 Set protocols.', loc='end')
+  protocols <- siteProtocol(unique(mets$UID), visits)
 
+# Calculate the metrics
+  intermediateMessage('.10 Call function metsBedStability.1.', loc='end')
   bs <- metsBedStability.1(mets, protocols)
-  if(is.character(bs)) return(bs)
   bs$RESULT <- as.numeric(bs$RESULT)
-  rc <- writeNRSACalcResults(bs, 'metsBedStability.csv')
+
+# Print an exit message
+  intermediateMessage('Done.', loc='end')
+
+# Return results
+  return(bs)
 }
 
-metsBedStability.1 <- function(mets, protocols)
+
+
+metsBedStability.1 <- function(mets, protocols) {
 # Does the work for for metsBedStability
 #
 # ARGUMENTS:
 # mets      dataframe of relevant metrics: xdepth, sddepth, xbkf_h, xbkf_w,
 #             xwidth, xslope, lsub_dmm, rp100, v1w_msq, xfc_lwd
 # protocols dataframe specifying the protocol each UID was sampled with.
-{
+
   intermediateMessage('Beginning bed stability calculations', loc='start')
 
   # Convert long to wide so metrics are all on same row.  Drop prefix for
@@ -310,475 +454,5 @@ metsBedStability.1 <- function(mets, protocols)
 }
 
 
-metsBedStabilityTest <- function()
-# Unit tests metsBedStability()
-# Expected values for UID 5+ taken from WEMAP calculations unchanged except
-# for the following:
-#   At UID 11, s_ldmb_bw5 changed from NA to -0.080588008, s_lrbs_bw5 changed
-#     from NA to 1.2704980082 and s_rp100 changed from NA to 441.9807675
-#     as EMAP does not calculate estimated bed stability for rivers.
-
-
-{
-  protocols <- metsBedStability.protocols ()
-  metsExpected <- metsBedStability.expectedMets ()
-
-  intermediateMessage('.2.0 Test with both protocols', loc='end')
-  testData <- metsBedStability.testData ()
-  metsBedStabilityTest.process (testData, metsExpected, protocols)
-  
-  intermediateMessage ('.2.1 Test with wadeable protocol', loc='end')
-  test.w <- subset(testData, UID %in% subset (protocols, PROTOCOL=='WADEABLE')$UID)
-  expected.w <- subset (metsExpected, UID %in% subset (protocols, PROTOCOL=='WADEABLE')$UID)
-  metsBedStabilityTest.process (test.w, expected.w, protocols)
-  
-  intermediateMessage ('.2.2 Test with boatable protocol', loc='end')
-  test.b <- subset(testData
-                  ,UID %in% subset (protocols, PROTOCOL=='BOATABLE')$UID &
-                   METRIC != 'lsub2dmm'
-                  )
-  expected.b <- subset(metsExpected
-                      ,UID %in% subset (protocols, PROTOCOL=='BOATABLE')$UID &
-                       METRIC %nin% c('lrbs_bw6','s_lrbs_bw6')
-                      )
-  metsBedStabilityTest.process (test.b, expected.b, protocols)
-} 
-
-
-metsBedStabilityTest.process <- function (testData, metsExpected, protocols)   
-#
-{
-  rr <- metsBedStability.1(testData, protocols)
-
-  # Calculated values should be within 10E-7 of expected values, should
-  # only be missing where they are supposed to be missing and nonmissing where
-  # they are supposed to be nonmissing.  The calculation of s_rp100 is only
-  # accurate to 10E-4 due to the exponential calculations. The calculation of
-  # s_Dcbf_g08 is accurate to 1e-2.  The checks of calculation results are split
-  # along this line.
-  errs <- within(merge(subset(metsExpected
-                          ,METRIC %in% c('rb3', 'ct_rpwd', 'cp3_mill', 'cp3ctrpwd_rat', 'rrpw3', 'reyp3', 'shld_px3')
-                          )
-                      ,subset(rr
-                             ,METRIC %in% c('rb3', 'ct_rpwd', 'cp3_mill', 'cp3ctrpwd_rat', 'rrpw3', 'reyp3', 'shld_px3')
-                             )
-                      ,c('UID','METRIC')
-                      )
-                ,{relerr <- (RESULT.y-RESULT.x)/RESULT.x}
-                )
-  checkEquals(0, nrow(subset(errs, abs(relerr) > 2e-7))
-             ,"Error: Bed stability metrics are broken"
-             )
-
-  errs <- dfCompare(subset(metsExpected
-                          ,METRIC %in% c('ltest', 'lrbs_tst', 'ldmb_bw5', 'ldmb_bw4', 'lrbs_bw4', 'lrbs_bw5', 'lrbs_bw6', 'Dcbf_g08', 'ldcbf_g08', 'lrbs_g08')
-                          )
-                   ,subset(rr
-                          ,METRIC %in% c('ltest', 'lrbs_tst', 'ldmb_bw5', 'ldmb_bw4', 'lrbs_bw4', 'lrbs_bw5', 'lrbs_bw6', 'Dcbf_g08', 'ldcbf_g08', 'lrbs_g08')
-                          )
-                   ,c('UID','METRIC'), zeroFudge=10^-7
-                   )
-  checkEquals(NULL, errs
-             ,"Error: Bed stability metrics are broken"
-             )
-
-  errs <- dfCompare(subset(metsExpected
-                          ,substr(METRIC,1,2) == 's_' & METRIC != 's_Dcbf_g08'
-                          )
-                   ,subset(rr
-                          ,substr(METRIC,1,2) == 's_' & METRIC != 's_Dcbf_g08'
-                          )
-                   ,c('UID','METRIC'), zeroFudge=10^-4
-                   )
-  checkEquals(NULL, errs
-             ,"Error: Bed stability s_* metric is broken"
-             )
-
-  errs <- dfCompare(subset(metsExpected, METRIC=='s_Dcbf_g08')
-                   ,subset(rr, METRIC=='s_Dcbf_g08')
-                   ,c('UID','METRIC'), zeroFudge=10^-2
-                   )
-  checkEquals(NULL, errs
-             ,"Error: Bed stability s_* metric is broken"
-             )
-
-}
-
-
-metsBedStability.protocols <- function ()
-# create dataframe of protocolas for bed stability unit tests
- {
-  protocols <- data.frame(UID=as.character(1:22)
-                        ,PROTOCOL=c(rep('WADEABLE',10)
-                                   ,rep('BOATABLE', 10)
-                                   ,rep('NONE', 2)
-                                   )
-                        ,stringsAsFactors=FALSE
-                        )
-   return (protocols)                     
-   }
-   
-metsBedStability.testData <- function()
-# creates dataframe of bed stability data for unit test
-{
-  testData <- rbind(# Very simple numbers to simply test functionality
-                # Simple reach, no missing values
-                data.frame(UID='1'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(1,         1,          1,          1
-                                   ,1,         1,          2,          1
-                                   ,2,         1,          1,     3.95494014
-                                   )
-                          )
-               # Simple reach missing LWD and nonzero fishcover
-               ,data.frame(UID='2'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(1,         1,          1,          1
-                                   ,1,         1,          2,          1
-                                   ,2,        NA,          1,     3.95494014
-                                   )
-                          )
-               # Simple reach missing LWD and zero fishcover
-               ,data.frame(UID='3'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(1,         1,          1,          1
-                                   ,1,         1,          2,          1
-                                   ,2,        NA,          0,     3.95494014
-                                   )
-                          )
-               # Simple reach nonmissing LWD and missing fishcover
-               ,data.frame(UID='4'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(1,         1,          1,          1
-                                   ,1,         1,          2,          1
-                                   ,2,       0.3,         NA,     3.95494014
-                                   )
-                          )
-
-                # Real numbers from WEMAP to test accuracy of calculations
-                # 2004 WUTP99-0735  2 -- normal wadeable reach
-               ,data.frame(UID='5'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(51.16,	0.75545,	21.818,	 10.0105
-                                   ,1.22,  0.5408,    0.5408, 19.0993
-                                   ,22.08840009, 0.00004,   0,      27.7557
-                                   )
-                          )
-                          
-               # 2004 WWAP04-R048  1-- big substrate
-               ,data.frame(UID='6'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(71.19, 0.61818, 6.673, 5.255
-                                   ,9.75, 3.204, 3.19253, 28.3768
-                                   ,25.80377156, 0.01461, 0.01364, 44.2636
-                                   )
-                          )
-
-               # 2003 WWAP99-0542  1 -- Lots of LWD
-               ,data.frame(UID='7'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(24.007, 0.3, 2.927, 2.445
-                                   ,8.05, 0.75694, 0.7244, 6.4191
-                                   ,4.41366392, 0.37977, 0.11818, 10.4878
-                                   )
-                          )
-
-               #  2004 WDEQ-0003       1 - has zero xslope
-               ,data.frame(UID='8'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(31.033,	0.4,	3.4818,	2.385
-                                   ,0, 0.37664, 0.37664, 27.2566
-                                   , 46.12060600, 0.00015, 0, 22.6112
-                                   )
-                          )
-
-               # 2004 WSDP04-R050  1 -- missing v1w_msq (really zero) and xfc_lwd==0
-               ,data.frame(UID='9'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(66.51, 0, 8.745, 9.1474
-                                   ,1.57, 0.31911, 0.29885, 22.2393
-                                   ,21.92365464,  NA,		0, 28.7622
-                                   )
-                          )
-               # 2004 WCOP04-R004  1-- missing v1w_msq (really zero) with non-zero xfc_lwd
-               ,data.frame(UID='10'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(42.67, 0.33636, 3.718, 3.085
-                                   , 0.775, -1.31451, -1.31451, 10.3489
-                                   ,5.80084933, NA, 0.00455, 8.8661
-                                   )
-                          )
-               # End of values from wadeable reaches
-
-               # 2004   WCAP99-1103        1 -- normal boatable reach
-               ,data.frame(UID='11'
-                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-                                   )
-                          ,RESULT=c(3.29555, 1.47273, 255.273, 163.364
-                                   ,0.036, 1.18991, NA, 112.73
-                                   ,NA, 0.005818, 0.00455, 1.69386
-                                   )
-                          )
-               #
-#               ,data.frame(UID=rep('12',12)
-#                          ,METRIC=c('xdepth',  'xbkf_h',   'xbkf_w',   'xwidth'
-#                                   ,'xslope',  'lsub_dmm', 'lsub2dmm', 'rp100'
-#                                   ,'s_rp100', 'v1w_msq', 'xfc_lwd', 'sddepth'
-#                                   )
-#                          ,RESULT=c(1,         1,          1,          1
-#                                   ,1,         1,          2,          1
-#                                   ,2,       0.3,         NA,     3.95494014
-#                                   )
-#                          )
-
-               )
-  testData$UID <- as.character(testData$UID)
-  testData$METRIC <- as.character(testData$METRIC)
-  testData <- subset(testData, METRIC != 's_rp100')
-return(testData)
-}
-
-
-metsBedStability.expectedMets <- function()
-# creates dataframe of bank morphology metrics calculation results for unit test
-# NOTE: UID 8 is a river with zero slope.  The expected results were changed from the
-# WEMAP values to conform to the change in minimum slope from 0.01% to 0.0001%.
-{
-  metsExpected <- rbind(data.frame(UID='1'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(-0.164309429, 1.164309429, 0.835690571
-                                       ,0.831325766, -0.164309429, 1.164309429
-                                       ,0.164309429, 0.168674234, 1.164309429
-                                       ,1.168674234, 113.9277151, 2.056629387
-                                       ,-1.056629387, 2, 88.58264244
-                                       ,1.947348631, -0.947348631
-                                       ,0.6565, 0.00815071, 0.003597874, 0.441418512, 0.499863675, 2487.62711, 0.026505908
-                                       )
-                              )
-                   ,data.frame(UID='2'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(-0.164309429,	1.164309429, NA
-                                       ,NA, NA, NA
-                                       ,NA, NA, NA
-                                       ,NA, NA, NA
-                                       ,NA, 2, NA
-                                       ,NA, NA
-                                       ,0.6565, NA, 0.003597874, NA, NA, 2487.62711, 0.026505908
-                                       )
-                              )
-                   ,data.frame(UID='3'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(-0.164309429, 1.164309429, 1.835690571
-                                       ,1.831325766, 1.835690571, -0.835690571
-                                       ,-0.835690571, -0.831325766, 0.164309429
-                                       ,0.168674234, NA, NA
-                                       ,NA, 2, NA
-                                       ,NA, NA
-                                       ,0.6565, NA, 0.003597874, NA, NA, 2487.62711, 0.026505908
-                                       )
-                              )
-                   ,data.frame(UID='4'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(-0.164309429, 1.164309429, 1.437750563
-                                       ,1.426755179, 0.437750563, 0.562249437
-                                       ,-0.437750563, -0.426755179, 0.562249437
-                                       ,0.573244821, 146.4599268, 2.165718813
-                                       ,-1.165718813, 2, 113.3484813
-                                       ,2.054415706, -1.054415706
-                                       ,0.6565, 0.003836429, 0.003597874, 0.93781855, 0.642600417, 2487.62711, 0.026505908
-                                       )
-                              )
-                   ,data.frame(UID='5'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(1.630980938, -1.090180938, 1.95385339
-                                       ,1.941619453, 1.953783007, -1.412983007
-                                       ,-1.41305339, -1.400819453, -1.41305339
-                                       ,-1.400819453, 105.9303106, 2.025020246
-                                       ,-1.484220246, 22.08840009, 97.4687271
-                                       ,1.988865294, -1.448065294
-                                       ,0.8235825, 0.032088995, 0.002531907, 0.078902658, 0.353240905, 1069.058291, 0.024577125
-                                       )
-                              )
-                   ,data.frame(UID='6'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(2.67711418, 0.52688582, 2.832055426
-                                       ,2.842904539, 2.815915646, 0.388084354
-                                       ,0.371944574, 0.361095461, 0.360474574
-                                       ,0.349625461, 1588.155449, 3.200893009
-                                       ,0.003106991, 25.80377156, 1675.254566
-                                       ,3.22408081, -0.02008081
-                                       ,0.864552, 0.055668934, 0.045205373, 0.812039493, 0.806585054, 1425823.55, 0.029914536
-                                       )
-                              )
-                   ,data.frame(UID='7'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(2.121824344, -1.364884344, 1.418982992
-                                       ,1.436906832, 0.418982992, 0.337957008
-                                       ,-0.662042992, -0.679966832, -0.694582992
-                                       ,-0.712506832, 148.8617733, 2.172783188
-                                       ,-1.415843188, 4.41366392, 172.0294129
-                                       ,2.235602707, -1.478662707
-                                       ,0.3510455, 0.287163515, 0.003670352, 0.012781401, 0.082077269, 2949.08684, 0.026813659
-                                       )
-                              )
-                   ,data.frame(UID='8'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(-2.67248566708815e+00, 3.04912566708815e+00, -2.52336710885127e+00
-                                       ,NA, -2.52380211577484e+00, 2.90044211577484e+00
-                                       ,2.90000710885127e+00, NA, 2.90000710885127e+00
-                                       ,NA, 1.92130883311715e-03, -2.71640282059464e+00
-                                       ,3.09304282059464e+00, 1.19507314484124e+02, 8.24192404294506e-04
-                                       ,-3.08397139222369e+00, 3.46061139222369e+00
-                                       ,0.4617145, 0.403859626, 0.002664427, 0.006597408, 0.086596024, 4.9658623, 0.027228347
-                                       )
-                              )
-                   ,data.frame(UID='9'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(1.854477172, -1.535367172, 1.677706613
-                                       ,1.680788736, 1.677706613, -1.358596613
-                                       ,-1.358596613, -1.361678736, -1.378856613
-                                       ,-1.381938736, NA, NA
-                                       ,NA, 21.92365464, NA
-                                       ,NA, NA
-                                       ,0.432315, NA, 0.002619276, NA, NA, 527.3851469, 0.022418957
-                                       )
-                              )
-                   ,data.frame(UID='10'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(1.355114917, -2.669624917, NA
-                                       ,NA, NA, NA
-                                       ,NA, NA, NA
-                                       ,NA, NA, NA
-                                       ,NA, 5.80084933, NA
-                                       ,NA, NA
-                                       ,0.495989, NA, 0.002, NA, NA, 9.226665785, 0.02346655
-                                       )
-                              )
-                   ,data.frame(UID='11'
-                              ,METRIC=c('ltest','lrbs_tst','ldmb_bw5'
-                                       ,'s_ldmb_bw5', 'ldmb_bw4','lrbs_bw4'
-                                       ,'lrbs_bw5','s_lrbs_bw5','lrbs_bw6'
-                                       ,'s_lrbs_bw6','Dcbf_g08','ldcbf_g08'
-                                       ,'lrbs_g08','s_rp100','s_Dcbf_g08'
-                                       ,'s_ldcbf_g08','s_lrbs_g08'
-                                       ,'rb3','ct_rpwd','cp3_mill','cp3ctrpwd_rat','rrpw3','reyp3','shld_px3'
-                                       )
-                              ,RESULT=c(0.909920977, 0.279989023, 0.951821206
-                                       ,-0.080588008, 0.949639991, 0.240270009
-                                       ,0.238088794, 1.2704980082, NA
-                                       ,NA, 17.97017283, 1.254552254
-                                       ,-0.064642254, 441.9807675, 8.224442973
-                                       ,0.915106494, 0.274803506
-                                       ,3.099382, 0.008345542, 0.002643027, 0.316699289, 2.112633373, 1588.059315, 0.02556789
-                                       )
-                              )
-                   )
-  metsExpected$UID <- as.character(metsExpected$UID)
-  metsExpected$METRIC <- as.character(metsExpected$METRIC)
-
-return(metsExpected)
-}
 
 # end of file

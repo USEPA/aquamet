@@ -1,79 +1,125 @@
-# metsGeneral.r
-#  
-# 01/04/10 rch copied, plagerized and made up this code.
-# 02/18/10 cws removed source() of NRSAValidation.r,NA_filler.r and summaryby.r
-# 03/22/10 cws Added all=TRUE argument to merge() of expected and actual values
-#          in unit test.
-# 04/02/10 cws Modified unit test and metrics code to handle data with just
-#          one protocol.  Added comment about change in sidecnt value in unit
-#          test.
-# 06/03/10 cws Modified reachlen calculation to work with single incremnt value
-#          at A 0 instead of one for each transect.
-# 09/16/10 cws Removing hardcoding of NRSA database name, using NRSAdbName
-#          instead.
-# 02/17/11 cws Removed calculation of SAMPLED metric, as it was an unneccessary
-#          holdover from WEMAP. Changes made to both metrics code and unit test.
-#          This is made somewhat easier by the fact that this metric escaped
-#          inclusion in the unit test.
-# 04/08/11 cws Using GPS based DISTANCE parameter (calculated with GIS currently)
-#          to base REACHLEN on when ACTRANSP is not available.  Unit test updated
-#          accordingly -- many changes to function creating test data, and no
-#          longer writing REACHLEN if ACTRANSP or DISTANCE are NA.
-# 03/08/12 cws Changed name of output csv from metsGeneralUsingDistance.csv 
-#          to metsGeneral.csv.
+metsGeneral <- function(thalweg, channelgeometry) {
+  
+################################################################################
+# Function: metsGeneral
+# Title: Calculate NRSA General Metrics
+# Programmers: Randy Hjort
+#              Curt Seeliger
+#              Tom Kincaid
+# Date: January 4, 2010
+# Description:
+#   This function calculates the general portion of the physical habitat metrics
+#   for National Rivers and Streams Assessment (NRSA) data.  The function
+#   requires data frames containing the thalweg and channel geometry data files.
+# Function Revisions:
+#   01/04/10 rch: Copied, plagerized and made up this code.
+#   02/18/10 cws: Removed source() of NRSAValidation.r,NA_filler.r and
+#            summaryby.r
+#   03/22/10 cws: Added all=TRUE argument to merge() of expected and actual
+#            values in unit test.
+#   04/02/10 cws: Modified unit test and metrics code to handle data with just
+#            one protocol.  Added comment about change in sidecnt value in unit
+#            test.
+#   06/03/10 cws: Modified reachlen calculation to work with single increment
+#            value at A 0 instead of one for each transect.
+#   09/16/10 cws: Removed hardcoding of NRSA database name, using NRSAdbName
+#            instead.
+#   02/17/11 cws: Removed calculation of SAMPLED metric, as it was an
+#            unneccessary holdover from WEMAP. Changes made to both metrics code
+#            and unit test.  This is made somewhat easier by the fact that this
+#            metric escaped inclusion in the unit test.
+#   04/08/11 cws: Using GPS based DISTANCE parameter (calculated with GIS
+#            currently) to base REACHLEN on when ACTRANSP is not available.
+#            Unit test updated accordingly -- many changes to function creating
+#            test data, and no longer writing REACHLEN if ACTRANSP or DISTANCE
+#            are NA.
+#   03/08/12 cws: Changed name of output csv from metsGeneralUsingDistance.csv 
+#            to metsGeneral.csv.
+#   08/03/12 tmk: Removed calls to the require() function.  Removed use of ODBC
+#            data connection and replaced with data input from csv files using a
+#            call to function read.csv.  Added argument tbl to the function to
+#            identify the names of the data files.  Added argument NRSAdir to
+#            the function to identify the directory from which the data file is
+#            read and to which the output metrics file is written.
+#   12/21/12 tmk: Modified data input to use data frames containing data files
+#            rather than csv files.  Modified output to be a data frame rather
+#            than a csv file.  Removed RUnit functions.
+#   01/11/13 tmk: Inserted code to convert factors in the input data frames to
+#            character variables.
+# Arguments:
+#   thalweg = a data frame containing the thalweg data file.  The data frame
+#     must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       STATION - station number along thalweg between transects
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       UNITS - units of the RESULT measurement
+#       FLAG - flag
+#   channelgeometry = a data frame containing the channel geometry data file.
+#     The data frame must include columns that are named as follows:
+#       UID - universal ID value
+#       SAMPLE_TYPE - sample type
+#       TRANSECT - transect label
+#       TRANLINE - location (mid-channel or bank)along transect
+#       BANK - bank (left or right) along transect
+#       LINE - way point (1,2, etc.) between transects
+#       METHOD - method used to measure slope
+#       PARAMETER - identifier for each measurement, assessment, score, etc.
+#       RESULT - measurement associated with PARAMETER column
+#       UNITS - units of the RESULT measurement
+#       FLAG - flag
+#   Note that possible values for variables in the input data frames are
+#   provided in the document named "NRSA Documentation.pdf" included in the help
+#   directory for the package.
+# Output:
+#   Either a data frame when metric calculation is successful or a character
+#   string containing an error message when metric calculation is not
+#   successful.  The data frame contains the following columns:
+#     UID - universal ID value
+#     METRIC - metric name
+#     RESULT - metric value
+# Other Functions Required:
+#   intermediateMessage - print messages generated by the metric calculation
+#      functions
+#   metsGeneral.1 - calculate metrics
+################################################################################
 
-require(RODBC)
-require(RUnit)
 
-metsGeneral <- function()
-#Calculates General metrics:
-# Wadeable Protocol:
-#
-#
-#Boatable Protocol:
-#
-#
-#These metrics are saved to a csv file in the directory specified by
-# NRSAMetricsLocation.
-#
-# Returns NULL on success or a character string describing the problem if one
-# occurs.
-# ARGUMENTS:
-# none
-{
-  intermediateMessage('General calculations', loc='start')
-     
-  intermediateMessage('.1 Read in data', loc='end')
-  # read in data from database
-  indb <- odbcConnect(NRSAdbName)
-  on.exit(metsGeneral.cleanup(indb))
+# Print an initial message
+  cat('General calculations:\n')
 
-  rawdat <- fetchNRSATable(indb, 'tblThalweg2')
-  rawdat <-rawdat[c('UID','TRANSECT','STATION','SAMPLE_TYPE','PARAMETER','RESULT')]
+# Convert factors to character variables in the input data frames
+  intermediateMessage('.1 Convert factors to character variables.', loc='end')
+  thalweg <- convert_to_char(thalweg)
+  channelgeometry <- convert_to_char(channelgeometry)
 
-  bdat <- fetchNRSATable(indb, 'tblChannelGeometry2')
-  bdat$STATION =0
-  bdat <-bdat[c('UID','TRANSECT','STATION','SAMPLE_TYPE','PARAMETER','RESULT')]
-  bdat <- subset(bdat,PARAMETER %in% c('ACTRANSP','DISTANCE'))
+# Combine the data frames
+  intermediateMessage('.2 Combine the data frames.', loc='end')
+  thal <- thalweg[c('UID', 'TRANSECT', 'STATION', 'SAMPLE_TYPE', 'PARAMETER',
+    'RESULT')]
+  channelgeometry$STATION <- 0
+  actransp <- channelgeometry[c('UID', 'TRANSECT', 'STATION',
+    'SAMPLE_TYPE', 'PARAMETER', 'RESULT')]
+  actransp <- subset(actransp, PARAMETER %in% c('ACTRANSP', 'DISTANCE'))
+  rawdat<- rbind(thal, actransp)
 
-  rawdat<- rbind (rawdat,bdat)
-
-  intermediateMessage('.2 call function metsGeneral.1', loc='end')
-
-  # calculate the calculations
+# Calculate the metrics
+  intermediateMessage('.3 Call function metsGeneral.1.', loc='end')
   mets <- metsGeneral.1(rawdat)
-     
-  intermediateMessage('.3 Write results', loc='end')
-  # write the results
-  rc <- writeNRSACalcResults(mets, 'metsGeneral.csv')
+  row.names(mets) <- 1:nrow(mets)
 
-  intermediateMessage('  Done.', loc='end')
+# Print an exit message
+  intermediateMessage('Done.', loc='end')
 
-  return(rc)
+# Return results
+  return(mets)
 }
 
 
-metsGeneral.1 <- function(indat)
+
+metsGeneral.1 <- function(indat) {
 # Does all the real work for metsGeneral.
 # Returns a dataframe of calculations if successful
 # or a character string describing the problem if
@@ -84,7 +130,7 @@ metsGeneral.1 <- function(indat)
 # protocols	dataframe relating UID to the
 #			  sampling protocol used at the site.
 #
-{
+
   intermediateMessage('General mets ', loc='start')
    
   cdData <- subset(indat
@@ -175,316 +221,4 @@ metsGeneral.1 <- function(indat)
 
 
 
-metsGeneralTest <- function()
-# Unit test for metsGeneral.1
-# IGNORE THE RESULTS for Boatable sites.  The test data is from WEMAP data and
-#has only wadable sites.  The  metsGeneral.1 function needs data for
-#both SAMPLE_TYPES, so the data was duplicated and RESULTS for Boatable obs.
-#were set to zero.
-{
-  testData <- metsGeneral.testData()
-
-  metsExpected <- metsGeneral.expectedMets()
-
-  metsGeneralTest.process(testData, metsExpected)
-
-  wd <- subset(testData, UID %in% c('WCAP99-0587','WCAP99-0592','WCAP99-0905'))
-  wm <- subset(metsExpected, UID %in% c('WCAP99-0587','WCAP99-0592','WCAP99-0905'))
-  metsGeneralTest.process(wd, wm)
-
-  bd <- subset(testData, !(UID %in% c('WCAP99-0587','WCAP99-0592','WCAP99-0905')))
-  bm <- subset(metsExpected, !(UID %in% c('WCAP99-0587','WCAP99-0592','WCAP99-0905')))
-  metsGeneralTest.process(bd, bm)
-
-}
-
-
-metsGeneralTest.process <- function(testData, metsExpected)
-# performs the bulk of the unit test on the given data and expected results
-# testData<- bd; metsExpected<-bm
-{
-  testDataResult<- metsGeneral.1(testData)
-
-  #compare results from baseData (testDataResult) with expectedResults  (metsExpected)
-
-  metsExpected <- rename(metsExpected, 'RESULT','EXPECTED')
-  testDataResult$RESULT<-as.numeric(testDataResult$RESULT)
-
-  # Calculated values should be within 10E-7 of expected values, should
-  # only be missing where they are supposed to be missing and nonmissing where
-  # they are supposed to be nonmissing.
-  # Note: the errs dataframe can be printed to show where the errors occur when
-  # debugging.
-  tt <- merge(testDataResult, metsExpected, by=c('UID','METRIC'), all=TRUE)
-  tt$diff <- tt$RESULT - tt$EXPECTED
-
-  errs <- subset(tt, abs(diff) > 10^-7 | is.na(RESULT) != is.na(EXPECTED))
-  checkEquals(0, nrow(errs)
-             ,"Error: General  metrics are broken"
-             )
-
-}
-
-
-metsGeneral.cleanup <- function(indb)
-# Clean up when metsGeneral() terminates
-{
-  odbcClose(indb)
-}
-
-
-metsGeneral.testData <- function()
-# Creates test data for metsGeneral unit test
-# Wadeable UIDs: WCAP99-0587, WCAP99-0592, WCAP99-0905
-# Boatable UIDs: WCAP99-0585, WCAP99-0591
-{
-  # Create correctly formated test data, and run data through metsGeneral.1
-  testData <- rbind(data.frame(UID ='WCAP99-0585',
-                               PARAMETER='ACTRANSP',
-                               SAMPLE_TYPE='PHAB_THAL',
-                               TRANSECT=c(LETTERS[1:10]),
-                               STATION='0',
-                               RESULT=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),stringsAsFactors=FALSE
-                              ),
-                    data.frame(UID ='WCAP99-0585 w/DISTANCE',
-                               PARAMETER='DISTANCE',
-                               SAMPLE_TYPE='PHAB_THAL',
-                               TRANSECT=c(LETTERS[1:10]),
-                               STATION='0',
-                               RESULT=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA),stringsAsFactors=FALSE
-                              ),
-                    data.frame(UID ='WCAP99-0587',
-                               PARAMETER='INCREMNT',
-                               SAMPLE_TYPE='PHAB_THALW',
-                               TRANSECT=c("A","A","A","A","A","A","A","A","A","A","B","B","B","B","B","B","B",
-     "B","B","B","C","C","C","C","C","C","C","C","C","C","D","D","D","D","D","D","D","D","D","D","E",
-     "E","E","E","E","E","E","E","E","E","E","E","F","F","F","F","F","F","F","F","F","F","G","G","G","G",
-     "G","G","G","G","G","G","H","H","H","H","H","H","H","H","H","H","H","I","I","I","I","I","I","I","I","I",
-     "I","J","J","J","J","J","J","J","J","J","J"),
-                               STATION=c("0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","10","11","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5",
-     "6","7","8","9","0","1","2","3","4","5","6","7","8","9","10","0","1","2","3","4","5","6","7","8","9",
-     "0","1","2","3","4","5","6","7","8","9"),
-                               RESULT=c("1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,
-     NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,
-     NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,
-     NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,
-     NA,NA,NA,NA,NA,NA,NA),stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0591',
-                               PARAMETER='ACTRANSP',
-                               SAMPLE_TYPE='PHAB_THAL',
-                               TRANSECT=c(LETTERS[1:10]),
-                               STATION=rep('0',10),
-                               RESULT="600",
-                               stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0591 w/DISTANCE',
-                               PARAMETER='DISTANCE',
-                               SAMPLE_TYPE='PHAB_THAL',
-                               TRANSECT=c(LETTERS[1:10]),
-                               STATION=rep('0',10),
-                               RESULT=rep("800",10),
-                               stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0591 w/ACTRANSP+DISTANCE',
-                               PARAMETER=rep(c('ACTRANSP','DISTANCE'), each=10),
-                               SAMPLE_TYPE='PHAB_THAL',
-                               TRANSECT=c(LETTERS[1:10],LETTERS[1:10]),
-                               STATION=rep("0",10),
-                               RESULT=rep(c('600','800'), each=10),
-                               stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0591 w/ACTRANSP+DISTANCE and some NA',
-                               PARAMETER=rep(c('ACTRANSP','DISTANCE'), each=10),
-                               SAMPLE_TYPE='PHAB_THAL',
-                               TRANSECT=c(LETTERS[1:10],LETTERS[1:10]),
-                               STATION=rep("0",10),
-                               RESULT=c(NA,"600","600","600","600","600","600","600","600",NA
-                                       ,"800",NA,"800","800","800","800","800","800","800",NA
-                                       ),
-                               stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0592',
-                               PARAMETER='INCREMNT',
-                               SAMPLE_TYPE='PHAB_THALW',
-                               TRANSECT=c("A","A","A","A","A","A","A","A","A","A","B","B","B","B","B","B","B",
-     "B","B","B","C","C","C","C","C","C","C","C","C","C","D","D","D","D","D","D","D","D","D","D","E",
-     "E","E","E","E","E","E","E","E","E","F","F","F","F","F","F","F","F","F","F","G","G","G","G","G","G",
-     "G","G","G","G","H","H","H","H","H","H","H","H","H","H","I","I","I","I","I","I","I","I","I","I","J","J",
-     "J","J","J","J","J","J","J","J","XF","XF","XF","XG","XG","XG","XG","XG","XG","XG","XG","XG",
-     "XG"),
-                               STATION=c("0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","7","8","9","0","1","2","3","4","5","6","7","8","9"),
-                               RESULT=c("1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,
-     "1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,
-     NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,
-     NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,"1.5",
-     NA,NA,NA,NA,NA,NA,NA,NA,NA),stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0905',
-                               PARAMETER='INCREMNT',
-                               SAMPLE_TYPE='PHAB_THALW',
-                               TRANSECT=c("A","A","A","A","A","A","A","A","A","A","B","B","B","B","B","B","B",
-     "B","B","B","C","C","C","C","C","C","C","C","C","C","D","D","D","D","D","D","D","D","D","D","E",
-     "E","E","E","E","E","E","E","E","E","F","F","F","F","F","F","F","F","F","F","G","G","G","G","G","G",
-     "G","G","G","G","H","H","H","H","H","H","H","H","H","H","I","I","I","I","I","I","I","I","I","I","J","J",
-     "J","J","J","J","J","J","J","J","XI","XJ"),
-                               STATION=c("0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","0","0"),
-                               RESULT=c("1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6",
-     "1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6",
-     "1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6",
-     "1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6",
-     "1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6",
-     "1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6","1.6",
-     "1.6","1.6","1.6","1.6","1.6"),stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0585',
-                               PARAMETER='OFF_CHAN',
-                               SAMPLE_TYPE='PHAB_THAL',
-                               TRANSECT=LETTERS[1:10],
-                               STATION='0',
-                               RESULT=c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA)
-                               ),
-                    data.frame(UID ='WCAP99-0587',
-                               PARAMETER='SIDCHN',
-                               SAMPLE_TYPE='PHAB_THALW',
-                               TRANSECT=c("A","A","A","A","A","A","A","A","A","A","B","B","B","B","B","B","B",
-     "B","B","B","C","C","C","C","C","C","C","C","C","C","D","D","D","D","D","D","D","D","D","D","E",
-     "E","E","E","E","E","E","E","E","E","E","E","F","F","F","F","F","F","F","F","F","F","G","G","G","G",
-     "G","G","G","G","G","G","H","H","H","H","H","H","H","H","H","H","H","I","I","I","I","I","I","I","I",
-     "I","I","J","J","J","J","J","J","J","J","J","J"),
-                               STATION=c("0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","10","11","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5",
-     "6","7","8","9","0","1","2","3","4","5","6","7","8","9","10","0","1","2","3","4","5","6","7","8","9",
-     "0","1","2","3","4","5","6","7","8","9"),
-                               RESULT=c("N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N"),stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0591',
-                               PARAMETER='OFF_CHAN',
-                               SAMPLE_TYPE='PHAB_THAL',
-                               TRANSECT=c("A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A","A",
-                   "A","A","A","B","B","B","B","B","B","B","B","B","B","B","B","B","B","B","B","B","B","B",
-        "B","C","C","C","C","C","C","C","C","C","C","C","C","C","C","C","C","C","C","C","C","D","D","D",
-     "D","D","D","D","D","D","D","D","D","D","D","D","D","D","D","D","D","E","E","E","E","E","E","E",
-     "E","E","E","E","E","E","E","E","E","E","E","E","E","F","F","F","F","F","F","F","F","F","F","F","F",
-     "F","F","F","F","F","F","F","F","G","G","G","G","G","G","G","G","G","G","G","G","G","G","G","G",
-     "G","G","G","G","H","H","H","H","H","H","H","H","H","H","H","H","H","H","H","H","H","H","H",
-     "H","I","I","I","I","I","I","I","I","I","I","I","I","I","I","I","I","I","I","I","I","J","J","J","J","J","J","J","J",
-     "J","J","J","J","J","J","J","J","J","J","J","J"),
-                               STATION=c("1","2","3","4","5","6","7","8","9","10","11","12","13","14","15",
-     "16","17","18","19","20","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16",
-     "17","18","19","20","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17",
-     "18","19","20","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18",
-     "19","20","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19",
-     "20","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20",
-     "1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","1",
-     "2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","1","2",
-     "3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","1","2","3",
-     "4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20"),
-                               RESULT=c("N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","Y","N","N","N","N","N","Y","Y",
-     "N","N","N","Y","Y","N","N","N","N","N","N","N","N","N","N","N","Y","Y","Y","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","Y","Y","N","N","N","Y","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","Y"," ","N","N","N",
-     "N","N","N","N","N","N","N","N","Y","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","Y","Y","Y",
-     "Y","Y","Y","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","Y","Y"),stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0592',
-                               PARAMETER='SIDCHN',
-                               SAMPLE_TYPE='PHAB_THALW',
-                               TRANSECT=c("A","A","A","A","A","A","A","A","A","A","B","B","B","B","B","B","B",
-     "B","B","B","C","C","C","C","C","C","C","C","C","C","D","D","D","D","D","D","D","D","D","D","E",
-     "E","E","E","E","E","E","E","E","E","F","F","F","F","F","F","F","F","F","F","G","G","G","G","G","G",
-     "G","G","G","G","H","H","H","H","H","H","H","H","H","H","I","I","I","I","I","I","I","I","I","I","J","J",
-     "J","J","J","J","J","J","J","J","XF","XF","XF","XG","XG","XG","XG","XG","XG","XG","XG","XG",
-     "XG"),
-                               STATION=c("0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","7","8","9","0","1","2","3","4","5","6","7","8","9"),
-                               RESULT=c("Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y",
-     "Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y",
-     "Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y",
-     "Y","Y","Y","Y"," ","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y",
-     "Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y",
-     "Y","Y","Y","Y"),stringsAsFactors=FALSE
-                               ),
-                    data.frame(UID ='WCAP99-0905',
-                               PARAMETER='SIDCHN',
-                               SAMPLE_TYPE='PHAB_THALW',
-                               TRANSECT=c("A","A","A","A","A","A","A","A","A","A","B","B","B","B","B","B","B",
-     "B","B","B","C","C","C","C","C","C","C","C","C","C","D","D","D","D","D","D","D","D","D","D","E",
-     "E","E","E","E","E","E","E","E","E","F","F","F","F","F","F","F","F","F","F","G","G","G","G","G","G",
-     "G","G","G","G","H","H","H","H","H","H","H","H","H","H","I","I","I","I","I","I","I","I","I","I","J","J",
-     "J","J","J","J","J","J","J","J","XI","XJ"),
-                               STATION=c("0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7",
-     "8","9","0","1","2","3","4","5","6","7","8","9","0","1","2","3","4","5","6","7","8","9","0","1","2",
-     "3","4","5","6","7","8","9","0","0"),
-                               RESULT=c("N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N","N",
-     "N","N","N","N","N","N","N","N","N","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y",
-     "Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","Y","N","Y"),stringsAsFactors=FALSE
-                              )
-  )
-
-
-
-      testData$UID <- as.character(testData$UID)
-      testData$TRANSECT <- as.character(testData$TRANSECT)
-      testData$STATION <- as.numeric(testData$STATION)
-      testData$SAMPLE_TYPE <- as.character(testData$SAMPLE_TYPE)
-      testData$PARAMETER <- as.character(testData$PARAMETER)
-      testData$RESULT <- as.character(testData$RESULT)
-
-  return(testData)
-}
-
-metsGeneral.expectedMets <- function()
-# Create dataframe of expected metrics calculations
-# The sidecnt value for WCAP99-0905 was changed from 3 to 2 due to the
-# difference in how the value was calculated -- EMAP defines it as the
-# number of side channel transects in the sub_bank file, while NRSA defines
-# it as the number of side channel transects recorded in the tblTHALWEG2 table.
-{
-  metsExpected <- rbind(data.frame(UID = c('WCAP99-0585','WCAP99-0587','WCAP99-0591','WCAP99-0592','WCAP99-0905'),
-                                   METRIC='pct_side',
-                                   RESULT=c( NA,0,10.552763819,100,28 )
-                                   ,stringsAsFactors=FALSE
-                                  )
-                       ,data.frame(UID = c(#'WCAP99-0585','WCAP99-0585 w/DISTANCE',
-                                           'WCAP99-0587','WCAP99-0591','WCAP99-0591 w/DISTANCE','WCAP99-0591 w/ACTRANSP+DISTANCE','WCAP99-0591 w/ACTRANSP+DISTANCE and some NA','WCAP99-0592','WCAP99-0905'
-                                          ),
-                                   METRIC='reachlen',
-                                   RESULT=c(#NA,NA,
-                                            153,6000,8000,6000,5600,148.5,158.4
-                                           )
-                                   ,stringsAsFactors=FALSE
-                                  )
-                       ,data.frame(UID = c('WCAP99-0585','WCAP99-0587','WCAP99-0591','WCAP99-0592','WCAP99-0905'),
-                                   METRIC='sidecnt',
-                                   RESULT=c(NA,0,NA,2,2 )
-                                   ,stringsAsFactors=FALSE
-                                  )
-                       )
-  return(metsExpected)
-}
+# end of file

@@ -1,5 +1,0 @@
-DELETE FROM dbo.tblSAMPLES2
-WHERE     (IND NOT IN
-                          (SELECT     MIN(IND) AS ind
-                            FROM          dbo.tblSAMPLES2 AS tblSAMPLES2_1
-                            GROUP BY BATCHNO, PAGE, LINE, SUBREACH, SAMPLE_TYPE, SAMPLE_CAT, PARAMETER, RESULT, ACTIVE))

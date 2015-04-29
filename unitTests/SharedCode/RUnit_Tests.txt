@@ -1,0 +1,126 @@
+Mon Jun 16 10:36:53 2014 
+
+Session Information:
+
+R version 3.1.0 (2014-04-10)
+Platform: i386-w64-mingw32/i386 (32-bit)
+
+locale:
+[1] LC_COLLATE=English_United States.1252 
+[2] LC_CTYPE=English_United States.1252   
+[3] LC_MONETARY=English_United States.1252
+[4] LC_NUMERIC=C                          
+[5] LC_TIME=English_United States.1252    
+
+attached base packages:
+[1] splines   grid      stats     graphics  grDevices utils     datasets 
+[8] methods   base     
+
+other attached packages:
+[1] RUnit_0.4.26    aquamet_2.2-2   reshape2_1.4    Hmisc_3.14-4   
+[5] Formula_1.1-1   survival_2.37-7 lattice_0.20-29 foreach_1.4.2  
+
+loaded via a namespace (and not attached):
+[1] cluster_1.15.2      codetools_0.2-8     gtools_3.4.1       
+[4] iterators_1.0.7     latticeExtra_0.6-26 plyr_1.8.1         
+[7] RColorBrewer_1.0-5  Rcpp_0.11.2         stringr_0.6.2      
+
+
+Executing test function calcSynCoversTest  ...  done successfully.
+
+
+
+Executing test function calcSynInfluenceTest  ...  done successfully.
+
+
+
+Executing test function countTest  ...  done successfully.
+
+
+
+Executing test function dfCompareTest  ...  done successfully.
+
+
+
+Executing test function expand.data.frameTest  ...  done successfully.
+
+
+
+Executing test function fillinDrawdownDataTest  ...  done successfully.
+
+
+
+Executing test function firstTest  ...  done successfully.
+
+
+
+Executing test function idrTest  ...  done successfully.
+
+
+
+Executing test function interpolatePercentileTest  ...  done successfully.
+
+
+
+Executing test function iqrTest  ...  done successfully.
+
+
+
+Executing test function is.subsetTest  ...  done successfully.
+
+
+
+Executing test function lagTest  ...  done successfully.
+
+
+
+Executing test function lastTest  ...  done successfully.
+
+
+
+Executing test function leadTest  ...  done successfully.
+
+
+
+Executing test function modalClassesTest  ...  done successfully.
+
+
+
+Executing test function modalClassTest  ...  done successfully.
+
+
+
+Executing test function modalCountTest  ...  done successfully.
+
+
+
+Executing test function modalValuesTest  ...  done successfully.
+
+
+
+Executing test function modalvalueTest  ...  done successfully.
+
+
+
+Executing test function normalizedCoverTest  ...  done successfully.
+
+
+
+Executing test function nWadeableStationsPerTransectTest  ...  done successfully.
+
+
+
+Executing test function protectedMeanTest  ...  done successfully.
+
+
+
+Executing test function protectedSumTest  ...  done successfully.
+
+
+
+Executing test function renameTest  ...  done successfully.
+
+
+
+Executing test function uidCreateSeparateTest  ...  done successfully.
+
