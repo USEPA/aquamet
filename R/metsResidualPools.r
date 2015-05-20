@@ -68,6 +68,11 @@ metsResidualPools <- function(thalweg, channelgeometry, visits, gisCalcs=NULL) {
 #            ddply statement because aggregate was not working correctly.
 #   06/03/14 cws: Handling case where second argument (actransp) has no rows.  No
 #          change to unit test.
+#    5/18/15 cws: Explicit use of aquamet::rename causes development problems 
+#            when a) that package is not installed, and b) when the current code
+#            base differs from the available package.  Rephrased to use dplyr::rename
+#            instead.
+#
 # Note: A value for reachlen is calculated based on the sum of INCREMNT values
 #       in stationInfo, which is a dataframe created and returned by
 #       metsResidualPools.dimensions().  That function uses the output of
@@ -293,7 +298,7 @@ metsResidualPools.dataOrganization <- function(thal, actransp, slopes) {
       rawData <- subset(wadeable, PARAMETER=='DEPTH'
                        ,select=c(UID,TRANSECT,STATION,RESULT)
                        )
-      rawData <- aquamet::rename(rawData, 'RESULT', 'DEPTH')
+      rawData <- dplyr::rename(rawData, DEPTH = RESULT)
       rawData$DEPTH <- as.numeric(rawData$DEPTH) / 100
   
       # Wadeable LOC is the index of each station (sampled or presumed skipped)
@@ -320,7 +325,7 @@ metsResidualPools.dataOrganization <- function(thal, actransp, slopes) {
       wadeable <- wadeable[order(wadeable$UID, wadeable$TRANSECT, wadeable$STATION),]
       incremnt <- first(subset(wadeable, PARAMETER=='INCREMNT'), 'UID', 'firstRow')
       incremnt <- subset(incremnt, firstRow==TRUE, select=c(UID,RESULT))
-      incremnt <- aquamet::rename(incremnt, 'RESULT','INCREMNT')
+      incremnt <- dplyr::rename(incremnt, INCREMNT = RESULT)
       rawStreams <- merge(rawData, incremnt, by='UID')
       rawStreams$INCREMNT <- as.numeric(rawStreams$INCREMNT)
       rm(rawData, nSta, wadeable, incremnt)

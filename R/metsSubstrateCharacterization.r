@@ -81,6 +81,12 @@ metsSubstrateCharacterization <- function(channelcrosssection, thalweg,
 #            character variables.
 #   05/21/14 kab: Simplified aggregation functions to accomodate smaller datasets
 #            that might not have some substrates and breaks old code.
+#    5/18/15 cws: Explicit use of aquamet::rename causes development problems 
+#            when a) that package is not installed, and b) when the current code
+#            base differs from the available package.  Rephrased to use name
+#            the column correctly in aggregate(), or use dplyr::rename instead,
+#            as appropriate
+#
 # Arguments:
 #   channelcrosssection = a data frame containing the channel crosssection data
 #     file.  The data frame must include columns that are named as follows:
@@ -237,59 +243,51 @@ metsSubstrateCharacterization.1 <- function(df1, df2, df3) {
                       ,by.x='RESULT', by.y='class'
                       ,all.x=TRUE)
 
-      ldBug1mm <- aggregate(ldBugmm$lDiam
+      ldBug2mm <- aggregate(list(RESULT = ldBugmm$lDiam)
                            ,list('UID'=ldBugmm$UID)
                            ,quantile, 0.16, na.rm=TRUE, names=FALSE, type=2
                            )
-      ldBug2mm <- aquamet::rename(ldBug1mm, 'x', 'RESULT')
       ldBug2mm$METRIC <- 'lsub2d16'
 
-      ldBug3mm <- aggregate(ldBugmm$lDiam
+      ldBug4mm <- aggregate(list(RESULT = ldBugmm$lDiam)
                            ,list('UID'=ldBugmm$UID)
                            ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
                            )
-      ldBug4mm <- aquamet::rename(ldBug3mm, 'x', 'RESULT')
       ldBug4mm$METRIC <- 'lsub2d25'
 
-      ldBug5mm <- aggregate(ldBugmm$lDiam
+      ldBug6mm <- aggregate(list(RESULT = ldBugmm$lDiam)
                            ,list('UID'=ldBugmm$UID)
-                          ,quantile, 0.50, na.rm=TRUE, names=FALSE, type=2
-                          )
-      ldBug6mm <- aquamet::rename(ldBug5mm, 'x', 'RESULT')
+                           ,quantile, 0.50, na.rm=TRUE, names=FALSE, type=2
+                           )
       ldBug6mm$METRIC <- 'lsub2d50'
 
-      ldBug7mm <- aggregate(ldBugmm$lDiam
+      ldBug8mm <- aggregate(list(RESULT = ldBugmm$lDiam)
                            ,list('UID'=ldBugmm$UID)
                            ,quantile, 0.75, na.rm=TRUE, names=FALSE, type=2
                            )
-      ldBug8mm <- aquamet::rename(ldBug7mm, 'x', 'RESULT')
       ldBug8mm$METRIC <- 'lsub2d75'
 
-      ldBug9mm <- aggregate(ldBugmm$lDiam
+      ldBug10mm <- aggregate(list(RESULT = ldBugmm$lDiam)
                            ,list('UID'=ldBugmm$UID)
                            ,quantile, 0.84, na.rm=TRUE, names=FALSE, type=2
                            )
-      ldBug10mm <- aquamet::rename(ldBug9mm, 'x', 'RESULT')
       ldBug10mm$METRIC <- 'lsub2d84'
 
       # additional summaries
-      ldBug11mm <- aggregate(ldBugmm$lDiam
+      ldBug12mm <- aggregate(list(RESULT = ldBugmm$lDiam)
                             ,list('UID'=ldBugmm$UID)
                             ,mean, na.rm=TRUE
                             )
-      ldBug12mm <- aquamet::rename(ldBug11mm, 'x', 'RESULT')
       ldBug12mm$METRIC <- 'lsub2dmm'
-      ldBug13mm <- aggregate(ldBugmm$lDiam
+      ldBug14mm <- aggregate(list(RESULT = ldBugmm$lDiam)
                             ,list('UID'=ldBugmm$UID)
                             ,sd, na.rm=TRUE
                             )
-      ldBug14mm <- aquamet::rename(ldBug13mm, 'x', 'RESULT')
       ldBug14mm$METRIC <- 'lsubd2sd'
-      ldBug15mm <- aggregate(ldBugmm$lDiam
+      ldBug16mm <- aggregate(list(RESULT = ldBugmm$lDiam)
                             ,list('UID'=ldBugmm$UID)
                             ,iqr
                             )
-      ldBug16mm <- aquamet::rename(ldBug15mm, 'x', 'RESULT')
       ldBug16mm$METRIC <- 'lsub2iqr'
 
       # Completed size classes summaries for streams (ldiam)
@@ -305,45 +303,40 @@ metsSubstrateCharacterization.1 <- function(df1, df2, df3) {
                              ) # diameterstt
                       ,by.x='RESULT', by.y='class'
                       ,all.x=TRUE)
-      ldBug11tt <- aggregate(ldBugtt$lDiam
+      ldBug12tt <- aggregate(list(lsub2dmm_nor = ldBugtt$lDiam)
                             ,list('UID'=ldBugtt$UID)
                             ,mean, na.rm=TRUE
                             )
-#    ldBug12tt <- aquamet::rename(ldBug11tt, 'x', 'RESULT')
 #    ldBug12tt$METRIC <- 'lsub2dmm_nor'
       intermediateMessage('.3')
     
       # special extra calculation for DGM
-      ldBug11tt$dgm <- 10^ldBug11tt$x
-      ldBug11tt <- aquamet::rename(ldBug11tt, 'x', 'lsub2dmm_nor')
+      ldBug12tt$dgm <- 10^ldBug12tt$lsub2dmm_nor
 
-      ldBug12tt <- reshape(ldBug11tt, idvar=c('UID'), direction='long'
-                          ,varying=names(ldBug11tt)[names(ldBug11tt) != 'UID']
-                          ,times=names(ldBug11tt)[names(ldBug11tt) != 'UID']
+      ldBug12tt <- reshape(ldBug12tt, idvar=c('UID'), direction='long'
+                          ,varying=names(ldBug12tt)[names(ldBug12tt) != 'UID']
+                          ,times=names(ldBug12tt)[names(ldBug12tt) != 'UID']
                           ,v.names='RESULT', timevar='METRIC'
                           )
       row.names(ldBug12tt)<-NULL
 
 
-      ldBug13tt <- aggregate(ldBugtt$lDiam
+      ldBug14tt <- aggregate(list(RESULT = ldBugtt$lDiam)
                             ,list('UID'=ldBugtt$UID)
                             ,sd, na.rm=TRUE
                             )
-      ldBug14tt <- aquamet::rename(ldBug13tt, 'x', 'RESULT')
       ldBug14tt$METRIC <- 'lsubd2sd_nor'
 
-      dBug11tt <- aggregate(ldBugtt$diam
+      dBug12tt <- aggregate(list(RESULT = ldBugtt$diam)
                            ,list('UID'=ldBugtt$UID)
                            ,mean, na.rm=TRUE
                            )
-      dBug12tt <- aquamet::rename(dBug11tt, 'x', 'RESULT')
       dBug12tt$METRIC <- 'sub2dmm_nor'
 
-      dBug13tt <- aggregate(ldBugtt$diam
+      dBug14tt <- aggregate(list(RESULT = ldBugtt$diam)
                            ,list('UID'=ldBugtt$UID)
                            ,sd, na.rm=TRUE
                            )
-      dBug14tt <- aquamet::rename(dBug13tt, 'x', 'RESULT')
       dBug14tt$METRIC <- 'subd2sd_nor'
 
       intermediateMessage('.4')
@@ -356,13 +349,11 @@ metsSubstrateCharacterization.1 <- function(df1, df2, df3) {
       #interpolated metrics
       # USE wadeableMeasurableTwoBoulderClasses
       interpdata <- subset (df1, RESULT %in% wadeableMeasurableTwoBoulderClasses)#c('XB','SB','CB','GC','GF','SA','FN'))
-      measurable <- aquamet::rename(subset(subsInfo
-                                 ,class %in% wadeableMeasurableTwoBoulderClasses
-                                 ,select=c(class,lmin,lmax)
-                                 )
-                          ,c('class','lmin','lmax')
-                          ,c('CLASS','min','max')
-                          ) # sizestt
+      measurable <- subset(subsInfo
+                          ,class %in% wadeableMeasurableTwoBoulderClasses
+                          ,select=c(class,lmin,lmax)
+                          ) %>%
+                    dplyr::rename(CLASS=class, min=lmin, max=lmax)
       c16 <- interpolatePercentile(interpdata, 'RESULT', 16, 'lsub2d16inor'
                                   ,measurable
                                   )
@@ -404,64 +395,56 @@ metsSubstrateCharacterization.1 <- function(df1, df2, df3) {
                       ,by.x='RESULT', by.y='class'
                       ,all.x=TRUE)
 
-      ldBug1lb <- aggregate(ldBuglb$lDiam
+      ldBug2lb <- aggregate(list(RESULT = ldBuglb$lDiam)
                            ,list('UID'=ldBuglb$UID)
                            ,quantile, 0.16, na.rm=TRUE, names=FALSE, type=2
                            )
-      ldBug2lb <- aquamet::rename(ldBug1lb, 'x', 'RESULT')
       ldBug2lb$METRIC <- 'lsub_d16'
 
 
-      ldBug3lb <- aggregate(ldBuglb$lDiam
+      ldBug4lb <- aggregate(list(RESULT = ldBuglb$lDiam)
                            ,list('UID'=ldBuglb$UID)
                            ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
                            )
-      ldBug4lb <- aquamet::rename(ldBug3lb, 'x', 'RESULT')
       ldBug4lb$METRIC <- 'lsub_d25'
 
-      ldBug5lb <- aggregate(ldBuglb$lDiam
+      ldBug6lb <- aggregate(list(RESULT = ldBuglb$lDiam)
                            ,list('UID'=ldBuglb$UID)
                            ,quantile, 0.50, na.rm=TRUE, names=FALSE, type=2
                            )
-      ldBug6lb <- aquamet::rename(ldBug5lb, 'x', 'RESULT')
       ldBug6lb$METRIC <- 'lsub_d50'
 
-      ldBug7lb <- aggregate(ldBuglb$lDiam
+      ldBug8lb <- aggregate(list(RESULT = ldBuglb$lDiam)
                            ,list('UID'=ldBuglb$UID)
                            ,quantile, 0.75, na.rm=TRUE, names=FALSE, type=2
                            )
-      ldBug8lb <- aquamet::rename(ldBug7lb, 'x', 'RESULT')
       ldBug8lb$METRIC <- 'lsub_d75'
 
-      ldBug9lb <- aggregate(ldBuglb$lDiam
-                           ,list('UID'=ldBuglb$UID)
-                           ,quantile, 0.84, na.rm=TRUE, names=FALSE, type=2
-                           )
-      ldBug10lb <- aquamet::rename(ldBug9lb, 'x', 'RESULT')
+      ldBug10lb <- aggregate(list(RESULT = ldBuglb$lDiam)
+                            ,list('UID'=ldBuglb$UID)
+                            ,quantile, 0.84, na.rm=TRUE, names=FALSE, type=2
+                            )
       ldBug10lb$METRIC <- 'lsub_d84'
 
       intermediateMessage('.6')
 
       # additional summaries
-      ldBug11lb <- aggregate(ldBuglb$lDiam
+      ldBug12lb <- aggregate(list(RESULT = ldBuglb$lDiam)
                             ,list('UID'=ldBuglb$UID)
                             ,mean, na.rm=TRUE
                             )
-      ldBug12lb <- aquamet::rename(ldBug11lb, 'x', 'RESULT')
       ldBug12lb$METRIC <- 'lsub_dmm'
 
-      ldBug13lb <- aggregate(ldBuglb$lDiam
+      ldBug14lb <- aggregate(list(RESULT = ldBuglb$lDiam)
                             ,list('UID'=ldBuglb$UID)
                             ,sd, na.rm=TRUE
                             )
-      ldBug14lb <- aquamet::rename(ldBug13lb, 'x', 'RESULT')
       ldBug14lb$METRIC <- 'lsubd_sd'
 
-      ldBug15lb <- aggregate(ldBuglb$lDiam
+      ldBug16lb <- aggregate(list(RESULT = ldBuglb$lDiam)
                             ,list('UID'=ldBuglb$UID)
                             ,iqr
                             )
-      ldBug16lb <- aquamet::rename(ldBug15lb, 'x', 'RESULT')
       ldBug16lb$METRIC <- 'lsub_iqr'
 
       # Complete size classes summaries for streams (lumped boulder class)
@@ -479,32 +462,28 @@ metsSubstrateCharacterization.1 <- function(df1, df2, df3) {
                                ) # diametersttbl
                         ,by.x='RESULT', by.y='class'
                         ,all.x=TRUE)
-      ldBug11ttbl <- aggregate(ldBugttbl$lDiam
+      ldBug12ttbl <- aggregate(list(RESULT = ldBugttbl$lDiam)
                               ,list('UID'=ldBugttbl$UID)
                               ,mean, na.rm=TRUE
                               )
-      ldBug12ttbl <- aquamet::rename(ldBug11ttbl, 'x', 'RESULT')
       ldBug12ttbl$METRIC <- 'lsub_dmm_nor'
 
-      ldBug13ttbl <- aggregate(ldBugttbl$lDiam
+      ldBug14ttbl <- aggregate(list(RESULT = ldBugttbl$lDiam)
                               ,list('UID'=ldBugttbl$UID)
                               ,sd, na.rm=TRUE
                               )
-      ldBug14ttbl <- aquamet::rename(ldBug13ttbl, 'x', 'RESULT')
       ldBug14ttbl$METRIC <- 'lsubd_sd_nor'
 
-      dBug11ttbl <- aggregate(ldBugttbl$diam
+      dBug12ttbl <- aggregate(list(RESULT = ldBugttbl$diam)
                              ,list('UID'=ldBugttbl$UID)
                              ,mean, na.rm=TRUE
                              )
-      dBug12ttbl <- aquamet::rename(dBug11ttbl, 'x', 'RESULT')
       dBug12ttbl$METRIC <- 'sub_dmm_nor'
 
-      dBug13ttbl <- aggregate(ldBugttbl$diam
+      dBug14ttbl <- aggregate(list(RESULT = ldBugttbl$diam)
                              ,list('UID'=ldBugttbl$UID)
                              ,sd, na.rm=TRUE
                              )
-      dBug14ttbl <- aquamet::rename(dBug13ttbl, 'x', 'RESULT')
       dBug14ttbl$METRIC <- 'subd_sd_nor'
 
       # Complete size classes summaries for streams (lumped boulder class- NOR).6
@@ -670,11 +649,11 @@ metsSubstrateCharacterization.1 <- function(df1, df2, df3) {
 #                         )
 #       allSZXB <- rename(allSZXB, 'x', 'nXB')
 
-      one <-   aquamet::rename(allNOR, 'RESULT', 'n_nor')
+      one <-   dplyr::rename(allNOR, n_nor = RESULT)
       one$METRIC <- NULL
-      two <-   aquamet::rename(allSZ, 'RESULT', 'n')
+      two <-   dplyr::rename(allSZ, n = RESULT)
       two$METRIC <- NULL
-      three<-   aquamet::rename(allSZ2, 'RESULT', 'n2')
+      three<-   dplyr::rename(allSZ2, n2 = RESULT)
       three$METRIC <- NULL
 
       intermediateMessage('.8')
@@ -907,7 +886,7 @@ metsSubstrateCharacterization.1 <- function(df1, df2, df3) {
       ss3m$n <- NULL
       ss3m$nAll <- NULL
 
-      ss3m <- aquamet::rename(ss3m, 'pct', 'RESULT')
+      ss3m <- dplyr::rename(ss3m, RESULT = pct)
 
       intermediateMessage('.13')
 
@@ -976,7 +955,7 @@ metsSubstrateCharacterization.1 <- function(df1, df2, df3) {
       ss4m$n <- NULL
       ss4m$n4 <- NULL
 
-      ss4m <- aquamet::rename(ss4m, 'pct', 'RESULT')
+      ss4m <- dplyr::rename(ss4m, RESULT = pct)
 
       # Completed pct from the littoral data
       intermediateMessage('.16')
