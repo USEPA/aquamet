@@ -1,5 +1,8 @@
 .Rproj.user
 .Rhistory
 .RData
+.Rbuildignore.gz
+.Rhistory.gz
+.gitignore.gz
 aquamet.Rproj
 testResults_aquamet.html
