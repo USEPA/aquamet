@@ -75,6 +75,8 @@
 #  2/06/14 cws sourcing massGet
 # 05/28/14 tmk Added a global variables declaration to avoid warning messages
 #          while running Rcmd check.
+# 10/21/15 cws Changed UID to SITE in interpolatePercentile
+#
 ################################################################################
 
 if(getRversion() >= "2.15.1")
@@ -1037,12 +1039,13 @@ interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds
 
 # 03/02/10 cws Created
 # 03/25/10 cws Changed diff() calls to dfCompare().
+# 10/21/15 cws Changed UID to SITE in interpolatePercentile
 
 # Estimate size at a specified percentile within a sample based on recorded
-# class memberships and the size boundaries of those classes at each UID.
+# class memberships and the size boundaries of those classes at each SITE.
 # Originally developed for use with NRSA substrate particle diameters.
 #
-# Returns dataframe with columns UID and name specified by pctlVar argument
+# Returns dataframe with columns SITE and name specified by pctlVar argument
 #
 # ARGUMENTS
 # df            dataframe with class data.
@@ -1057,7 +1060,7 @@ interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds
 #                   max - maximum class size
 #
 # ASSUMPTIONS:
-# The dataframe df will have column UID specifying the site, and the column
+# The dataframe df will have column SITE specifying the site, and the column
 #   with class information as specified by the classVar argument.
 # The dataframe df will contain only those classes for which class size
 #   information is made available in the classSizes argument.
@@ -1066,14 +1069,14 @@ interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds
   # percent occurence of each class at a site.
   df <- subset(df, !is.na(classVar))
   classCounts <- aggregate(list('classCount'=df[[classVar]])
-                          ,list('UID'=df$UID, 'CLASS'=df[[classVar]])
+                          ,list('SITE'=df$SITE, 'CLASS'=df[[classVar]])
                           ,count
                           )
   sampleSizes <- aggregate(list('totalCount'=df[[classVar]])
-                          ,list('UID'=df$UID)
+                          ,list('SITE'=df$SITE)
                           ,count
                           )
-  classPcts <- merge(classCounts, sampleSizes, by='UID')
+  classPcts <- merge(classCounts, sampleSizes, by='SITE')
   classPcts$pct <- 100 * classPcts$classCount / classPcts$totalCount
 
   # Calculate cumulative percentages for each size class.  These will be the upper
@@ -1081,14 +1084,14 @@ interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds
   # bound of the percentage for the next larger class.  The classes must be
   # ordered from small to large prior to this calculation, so this is a good time
   # to fold in the bounds for each class so that we can then order by ascending
-  # size.  (Note that while ave() does not require inclusion of UID in the order to
+  # size.  (Note that while ave() does not require inclusion of SITE in the order to
   # to correctly calculate cumulative summations, it is required by lag() in the
   # next step).
   classPcts <- merge(classPcts, classBounds, by='CLASS', all.x=TRUE)
-  classPcts <- classPcts[order(classPcts$UID, classPcts$min),]
+  classPcts <- classPcts[order(classPcts$SITE, classPcts$min),]
 
-  classPcts$upperPct <- ave(classPcts$pct, classPcts$UID, FUN=cumsum)
-  classPcts <- first(classPcts, 'UID', 'start')
+  classPcts$upperPct <- ave(classPcts$pct, classPcts$SITE, FUN=cumsum)
+  classPcts <- first(classPcts, 'SITE', 'start')
   classPcts <- lag(classPcts, 'upperPct', 'lowerPct')
   classPcts[classPcts$start,]$lowerPct <- 0
 
@@ -1096,7 +1099,7 @@ interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds
   # of the population sample.
   tt <- subset(classPcts, lowerPct < percentile & percentile <= upperPct)
   tt[pctlVar] <- with(tt, min+ (max-min) * (percentile-lowerPct)/(upperPct-lowerPct))
-  tt <- tt[c('UID',pctlVar)]
+  tt <- tt[c('SITE',pctlVar)]
 
   return(tt)
 }

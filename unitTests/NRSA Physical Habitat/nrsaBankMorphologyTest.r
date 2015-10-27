@@ -2,6 +2,7 @@
 # 
 # 10/19/15 cws Modified from metsBankMorphologyTest to use new generalized 
 #          calling interface
+# 10/21/15 cws Calling nrsaBankMorphology instead of nrsaBankMorphology.1.
 #
 
 nrsaBankMorphologyTest <- function ()
@@ -55,7 +56,7 @@ nrsaBankMorphologyTest.process <- function(df1, protocols, expected)
 # The bulk of the unit testing is done here
 {
   #calculate the metrics
-  rr <- nrsaBankMorphology.1(bAngle=subset(df1, PARAMETER=='ANGLE' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+  rr <- nrsaBankMorphology(bAngle=subset(df1, PARAMETER=='ANGLE' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
                             ,wAngle=subset(df1, PARAMETER=='ANGLE' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
                             ,wUndercut=subset(df1, PARAMETER=='UNDERCUT' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
                             )

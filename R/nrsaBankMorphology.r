@@ -395,10 +395,7 @@ nrsaBankMorphology.1 <- function(bAngle, wAngle, wUndercut) {
         
         # work on the BANGMODE code for rivers.  First ensure that illegal
         # values are not present, as they'll mess up the results.
-        bAngle <- subset(bAngle
-                       ,PARAMETER=='ANGLE' &
-                           VALUE %in% c('0-5','5-30','30-75','75-100')
-        )
+        bAngle <- subset(bAngle, VALUE %in% c('0-5','5-30','30-75','75-100'))
         
         tt <- aggregate(bAngle$VALUE=='0-5'
                         ,list('SITE'=bAngle$SITE)
