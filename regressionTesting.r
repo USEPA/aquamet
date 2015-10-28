@@ -37,8 +37,8 @@ tableTriplets <- do.call(rbind
 
 
 
-currentMets <- dbGet('NRSA0809', 'tblPHABMET')
-visits <- dbGet('NRSA0809', 'tblVISITS2')
+currentMets <- dbGet('NRSA0809', 'tblPHABMET') %>% dplyr::rename(SITE=UID,METRIC=RESULT)
+visits <- dbGet('NRSA0809', 'tblVISITS2') %>% dplyr::rename(SITE=UID)
 
 # bank morphology ##################################################################
 # subset(tableTriplets, PARAMETER %in% c('ANGLE','UNDERCUT'))
