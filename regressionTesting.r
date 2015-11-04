@@ -37,8 +37,8 @@ tableTriplets <- do.call(rbind
 
 
 
-currentMets <- dbGet('NRSA0809', 'tblPHABMET') %>% dplyr::rename(SITE=UID,METRIC=RESULT)
-visits <- dbGet('NRSA0809', 'tblVISITS2') %>% dplyr::rename(SITE=UID)
+currentMets <- dbGet('NRSA0809', 'tblPHABMET') # %>% dplyr::rename(SITE=BATCHNO,VALUE=RESULT)
+visits <- dbGet('NRSA0809', 'tblVISITS2') %>% dplyr::rename(SITE=BATCHNO)
 
 # bank morphology ##################################################################
 # subset(tableTriplets, PARAMETER %in% c('ANGLE','UNDERCUT'))
@@ -118,3 +118,108 @@ dd <- dfCompare(currentMets %>%
                )
 
 # Zero differences!
+
+#################################################################
+#
+# Slope & Bearing
+base_cg <- dbGet('NRSA0809', 'tblCHANNELGEOMETRY2')
+cg <- base_cg %>%
+      subset(grepl('SLOPE|DISTANCE|BEAR|PROP',PARAMETER)) %>% 
+      dplyr::rename(SITE=BATCHNO, VALUE=RESULT) %>%
+      mutate(PARAMETER=trimws(PARAMETER)
+            ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+            ,TRANSECT = trimws(TRANSECT)
+            ,VALUE=trimws(VALUE)
+            ,UNITS=toupper(trimws(UNITS))
+            ,METHOD=toupper(trimws(METHOD))
+            )
+base_thal <- dbGet('NRSA0809', 'tblTHALWEG2')
+thal <- base_thal %>%
+        #subset(trimws(PARAMETER) %in% c('INCREMNT')) %>% 
+        dplyr::rename(SITE=BATCHNO, VALUE=RESULT) %>%
+        mutate(PARAMETER=trimws(PARAMETER)
+              ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+              ,TRANSECT = trimws(TRANSECT)
+              ,VALUE=trimws(VALUE)
+              ,STATION=as.integer(STATION)
+              )
+gisCalcs <- read.csv('l:/Priv/CORFiles/IM/Rwork/nrsa/results/gpsBasedCalculations_asOf201203008.csv'
+                    ,stringsAsFactors=FALSE, na='', header=TRUE
+                    ) %>%
+            dplyr::rename(SITE=UID, VALUE=RESULT) # %>%
+#             mutate(PARAMETER=trimws(PARAMETER)
+#                   ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+#                   ,TRANSECT = trimws(TRANSECT)
+#                   ,VALUE=trimws(VALUE)
+#                   )
+
+protocols <- siteProtocol(c(unique(base_cg$BATCHNO), unique(base_thal$BATCHNO), unique(gisCalcs$SITE)), mutate(visits, UID=SITE)[c('UID','VALXSITE')])
+oldrecalc <- metsSlopeBearing.1(base_thal %>% dplyr::rename(UID=BATCHNO) %>% mutate(PARAMETER=trimws(PARAMETER)
+                                                                                  ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+                                                                                  ,TRANSECT = trimws(TRANSECT)
+                                                                                  ,RESULT=trimws(RESULT)
+                                                                                  ,STATION=as.integer(STATION)
+                                                                                  )
+                               ,base_cg   %>% dplyr::rename(UID=BATCHNO) %>% mutate(PARAMETER=trimws(PARAMETER)
+                                                                                   ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+                                                                                   ,TRANSECT = trimws(TRANSECT)
+                                                                                   ,RESULT=trimws(RESULT)
+                                                                                   ,UNITS=toupper(trimws(UNITS))
+                                                                                   ,METHOD=toupper(trimws(METHOD))
+                                                                                   )
+                               ,gisCalcs  %>% dplyr::rename(UID=SITE,RESULT=VALUE)
+                               ,protocols)
+oldrecalc2 <- metsSlopeBearing.1(thal %>% dplyr::rename(UID=SITE, RESULT=VALUE) 
+                                ,cg   %>% dplyr::rename(UID=SITE, RESULT=VALUE) 
+                                ,gisCalcs  %>% dplyr::rename(UID=SITE,RESULT=VALUE)
+                                ,protocols)
+currentSB <- currentMets %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% 
+                mutate(METRIC=trimws(METRIC), VALUE=as.numeric(trimws(VALUE))) %>% 
+                subset(METRIC %in% toupper(unique(oldrecalc$METRIC)))
+ddOld <- dfCompare(currentSB
+               ,oldrecalc %>% 
+                mutate(SITE=UID
+                      ,METRIC=toupper(METRIC)
+                      ,VALUE=as.numeric(RESULT)
+                      ,UID=NULL
+                      ,RESULT=NULL
+                      )
+               ,c('SITE','METRIC')
+               ,zeroFudge=1e-6
+               )
+# > ddOld
+#      [,1]                                                                                                  
+# [1,] "Difference at SITE=12195, METRIC=TRANSPC; VALUE: First=<75.5291943090909> Second=<84.148043>"        
+# [2,] "Difference at SITE=12195, METRIC=XBEARING; VALUE: First=<289.252393606211> Second=<298.003867517293>"
+# [3,] "Difference at SITE=12200, METRIC=TRANSPC; VALUE: First=<313671.231655836> Second=<40>"               
+# [4,] "Difference at SITE=12200, METRIC=XBEARING; VALUE: First=<99.9549350001598> Second=<273.732299601608>"
+
+sb0 <- sb
+sb <- nrsaSlopeBearing(bBearing = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>% select(SITE, TRANSECT, LINE, VALUE)
+                      ,bDistance = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')   %>% select(SITE, TRANSECT, LINE, VALUE)
+                      ,bSlope = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')  %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS) # excludes SLOPE_ND rows, and hence causes PCTCLINOMETER =0 rows to be missing
+                      ,wBearing = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER))
+                      ,wIncrement = subset(thal, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
+                      ,wProportion = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER))
+                      ,wSlope = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER))
+                      ,wStations = thal[c('SITE','TRANSECT','STATION')]
+                      ,gisCalcs = gisCalcs
+                      )
+identical(sb,sb0)
+dd0 <- dd
+dd <- dfCompare(currentMets %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% 
+                mutate(METRIC=trimws(METRIC), VALUE=as.numeric(trimws(VALUE))) %>% 
+                subset(METRIC %in% toupper(unique(sb$METRIC)))
+               ,sb %>% 
+                mutate(METRIC=toupper(METRIC)
+                      ,VALUE=as.numeric(VALUE)
+                      )
+               ,c('SITE','METRIC')
+               ,zeroFudge=1e-6
+               )
+
+
+
+# end of file

@@ -76,6 +76,7 @@
 # 05/28/14 tmk Added a global variables declaration to avoid warning messages
 #          while running Rcmd check.
 # 10/21/15 cws Changed UID to SITE in interpolatePercentile
+# 10/21/15 cws Changed UID to SITE in nWadeableStationsPerTransect
 #
 ################################################################################
 
@@ -1065,6 +1066,8 @@ interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds
 # The dataframe df will contain only those classes for which class size
 #   information is made available in the classSizes argument.
 
+# df <- dplyr::rename(df, SITE=UID)      # uncomment this line for use with old mets* functions
+
   # Count class occurrences and total sample sizes at each site, and calculate
   # percent occurence of each class at a site.
   df <- subset(df, !is.na(classVar))
@@ -1101,6 +1104,7 @@ interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds
   tt[pctlVar] <- with(tt, min+ (max-min) * (percentile-lowerPct)/(upperPct-lowerPct))
   tt <- tt[c('SITE',pctlVar)]
 
+# tt <- dplyr::rename(tt, UID=SITE)      # uncomment this line for use with old mets* functions
   return(tt)
 }
 
@@ -1594,24 +1598,25 @@ nWadeableStationsPerTransect <- function(thal) {
 # ASSUMPTIONS:
 # At most 1 station was sampled at any K transect.
 #
+#thal <- dplyr::rename(thal, SITE=UID)      # uncomment this line for use with old mets* functions
 
   thal <- subset(thal, TRANSECT %in% LETTERS[1:11])
   
   staLast <- aggregate(list('staLast'=thal$STATION)
-                      ,list('UID'=thal$UID, 'TRANSECT'=thal$TRANSECT)
+                      ,list('SITE'=thal$SITE, 'TRANSECT'=thal$TRANSECT)
                       ,max, na.rm=TRUE
                       )
   staMode <-aggregate(list('staLastMode'=staLast$staLast)
-                     ,list('UID'=staLast$UID)
+                     ,list('SITE'=staLast$SITE)
                      ,modalvalue
                      )
   staModeCount <-aggregate(list('staModeCount'=staLast$staLast)
-                          ,list('UID'=staLast$UID)
+                          ,list('SITE'=staLast$SITE)
                           ,modalCount
                           )
 
-  tt <- merge(staLast, staMode, by='UID')
-  tt <- merge(tt, staModeCount, by='UID')
+  tt <- merge(staLast, staMode, by='SITE')
+  tt <- merge(tt, staModeCount, by='SITE')
 
   # calculate nSta at each transect, taking advantage of the fact that stations
   # are numeric, and thus that the last station to be expected for a transect
@@ -1633,8 +1638,9 @@ nWadeableStationsPerTransect <- function(thal) {
                        )
   tt$nSta <- tt$lastSta+1
   
-  tt<-subset(tt, select=c(UID,TRANSECT,nSta))                           
+  tt<-subset(tt, select=c(SITE,TRANSECT,nSta))                           
 
+# tt <- dplyr::rename(tt, UID=SITE)      # uncomment this line for use with old mets* functions
   return(tt)
 }
 
