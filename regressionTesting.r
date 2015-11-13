@@ -194,6 +194,65 @@ ddOld <- dfCompare(currentSB
 # [2,] "Difference at SITE=12195, METRIC=XBEARING; VALUE: First=<289.252393606211> Second=<298.003867517293>"
 # [3,] "Difference at SITE=12200, METRIC=TRANSPC; VALUE: First=<313671.231655836> Second=<40>"               
 # [4,] "Difference at SITE=12200, METRIC=XBEARING; VALUE: First=<99.9549350001598> Second=<273.732299601608>"
+expandValueRows <- function(df, targetRowCombos, keys=c('SITE','SAMPLE_TYPE','TRANSECT','REP')) {
+    # Used to make sure that a slope value exists in all rows that PROPORTION does 
+    # within a site's transect.
+#    rc <- merge(df, targetRowCombos[keys], by=keys, all=TRUE)
+    grps <- split(df, with(df, paste(SITE,SAMPLE_TYPE,TRANSECT))) %>%
+                 lapply(function(rowGroup) {
+                            expandedGroup <- merge(rowGroup[setdiff(names(rowGroup), 'REP')]
+                                                  ,targetRowCombos %>%
+                                                   subset(paste(SITE, SAMPLE_TYPE, TRANSECT) %in% with(rowGroup, paste(SITE, SAMPLE_TYPE, TRANSECT))
+                                                         )[c('SITE','SAMPLE_TYPE','TRANSECT','REP')] %>% 
+                                                   unique()
+                                                  ,c('SITE','SAMPLE_TYPE','TRANSECT')
+                                                  )
+                            return(expandedGroup)
+                        }
+                       )
+    rc <- do.call(rbind, grps)
+}
+
+expandValueRowsTest <- function() {
+    # Unit test for expandValueRows
+    fullData <- expand.grid(SITE=1:3, SAMPLE_TYPE=1:2, TRANSECT=LETTERS[1:5], REP=1:3, stringsAsFactors=FALSE) %>%
+                as.data.frame() %>%
+                mutate(VALUE = paste(SITE, SAMPLE_TYPE, TRANSECT, REP)) 
+    
+    # Test case where no changes should be made to data that has full range of all keys
+    actual <- expandValueRows(fullData, fullData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
+    dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
+    checkTrue(is.null(dd), "Incorrectly changed full data that did not need expansion")
+    
+    # Test case where no changes should be made to data that has partial range of keys
+    partialData <- fullData %>%
+                   subset(SITE==1 & SAMPLE_TYPE==1 |                                           # site 1 1 has all reps in all transects
+                          SITE==1 & SAMPLE_TYPE==2 & REP==1 |                                  # site 1 2 has 1 rep in all transects
+                          SITE==2 & SAMPLE_TYPE==1 & (REP==1 | TRANSECT %in% LETTERS[3:5]) |   # site 2 1 has rep 1 in C,D,E
+                          SITE==2 & SAMPLE_TYPE==2 & (REP==3 | TRANSECT %in% LETTERS[4:9]) |   # site 2 2 has rep 3 in C,D,E
+                          SITE==3 & SAMPLE_TYPE==1 & (REP==1 | REP==2 & TRANSECT %in% LETTERS[2:3] | REP==3 & TRANSECT %in% LETTERS[4:5]) |
+                          SITE==3 & SAMPLE_TYPE==1 & (REP==3 | REP==2 & TRANSECT %in% LETTERS[2:3] | REP==1 & TRANSECT %in% LETTERS[4:5]) 
+                         )
+    actual <- expandValueRows(partialData, partialData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
+    dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
+    checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
+    
+    # Test case where changes should be made to data that has partial range of keys
+    # where data is expected to be full
+    actual <- expandValueRows(partialData, fullData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
+    dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
+    checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
+    
+    # Test case where changes should be made to data that has partial range of keys
+    # where data is NOT expected to be full.  This mirrors the case when crews
+    # have recorded one slope for a transect but several subsightings.
+    actual <- expandValueRows(subset(partialData, SITE %in% 1:2 | REP==1)
+                             ,partialData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')]
+                             )
+    dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
+    checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
+    
+}
 
 sb0 <- sb
 sb <- nrsaSlopeBearing(bBearing = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>% select(SITE, TRANSECT, LINE, VALUE)

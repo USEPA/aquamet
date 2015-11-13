@@ -3,6 +3,7 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
                             ,wSlope = NULL, wStations = NULL, gisCalcs=NULL
                             ) {
     
+# TODO: Remove use of PARAMETER column which serves to allow this code to determine LINE values.
 # TODO: rewrite to not require wStations argument.  Maybe use bTransectSpacing and wTransectSpacing in place of wStations and bDistance
 # TODO: Separate gisCalcs into gisSiteSinuosity and gisSiteSlope
 # TODO: Handle slopes in DEGREES (1314 has 10 Dg rows), and maybe '' (39 rows)
@@ -195,7 +196,7 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
 # rm(dists,sbWadeable,sbBoatable,sb,nsta,tt,sumDists,tsb,transpc,tranEast, tranNorth, tranSlope, tran,totEast, totNorth, fishDist, nEast, nNorth, reach, xslope, vslope, nslp, reach, xbearing, sinu, mets)
 
   intermediateMessage('Slope and bearing calculations', loc='start')
-
+#print(names(bBearing));print(names(bDistance));print(names(wBearing));print(names(wProportion));print(names(wSlope));print(names(wIncrement));print(names(wStations));print(names(gisCalcs));
   # standardize argument columns
   if(!is.null(bBearing))    bBearing    <- bBearing %>%     select(SITE, TRANSECT, LINE, VALUE) 
   if(!is.null(bDistance))   bDistance   <- bDistance %>%    select(SITE, TRANSECT, LINE, VALUE) 
@@ -204,8 +205,10 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   if(!is.null(wProportion)) wProportion <- wProportion %>%  select(SITE, TRANSECT, PARAMETER, VALUE)
   if(!is.null(wSlope))      wSlope      <- wSlope %>%       select(SITE, TRANSECT, PARAMETER, VALUE, METHOD, UNITS)
   if(!is.null(wIncrement))  wIncrement  <- wIncrement %>%   select(SITE, VALUE)
-  if(!is.null(wStations))   wStations   <- wStations %>%    select(SITE, TRANSECT, STATION)
+  if(!is.null(wStations))   wStations   <- wStations %>%    select(SITE, TRANSECT, STATION) %>% mutate(STATION = as.integer(as.character(STATION)))
   if(!is.null(gisCalcs))    gisCalcs    <- gisCalcs %>%     select(SITE, METRIC, VALUE)
+
+  intermediateMessage('.0')
   
   # Get expected parameters from each dataframe for main channel only.  Calculate
   # transect spacing in wadeables (like ACTRANSP in boatable reaches) as the
@@ -219,7 +222,25 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
 #                   & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE
 #                  ,select=c(SITE,PARAMETER,VALUE)
 #                  )
-  dists <- mutate(wIncrement, PARAMETER = 'INCREMNT')
+#  dists <- mutate(wIncrement, PARAMETER = 'INCREMNT')
+  dists <- wIncrement
+  # Calculate transect spacing TRANSPC in wadeable reaches.  Include TRANSPC
+  # as a parameter in the wadeable data. Fill in LINE and standardize PARAMETER
+  # values.
+print('dists 10186:'); print(subset(dists, SITE==10186))
+  dists$VALUE <- as.numeric(as.character(dists$VALUE))
+# print('dists 10186:'); print(subset(dists, SITE==10186))
+# print('wStations 10186:'); print(subset(wStations, SITE==10186))
+  newDists <- NULL
+  if (nrow(dists)>0){
+      # Calculate transect spacing for wadeable sites
+      nsta <- nWadeableStationsPerTransect(wStations)
+      newDists <- merge(dists, nsta, by='SITE', all.x=TRUE)
+
+      newDists$TRANSPC <- as.character(newDists$nSta * as.numeric(newDists$VALUE))
+print('newDists 10186:'); print(subset(newDists, SITE==10186))
+      newDists <- newDists[c('SITE','TRANSECT','TRANSPC')]
+  }
 
 #   sbWadeable <- subset(chanGeom
 #                       ,PARAMETER %in% c('BEARING','BEARING2','BEARING3'
@@ -237,6 +258,7 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
                 subset(TRANSECT %in% LETTERS[1:11]
                       ,select=c(SITE,TRANSECT,PARAMETER,VALUE,UNITS, METHOD)
                       )
+print('sbWadeable 1, 10186:'); print(subset(sbWadeable, SITE==10186))
 
 #   sbBoatable <- subset(chanGeom
 #                       ,PARAMETER %in% c('BEAR','SLOPE','DISTANCE')
@@ -268,19 +290,7 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   # RESULT      The numeric value of the measured parameter.
   # UNITS       The measurement units, CM or PERCENT for slopes, NONE for others.
   
-  # Calculate transect spacing TRANSPC in wadeable reaches.  Include TRANSPC
-  # as a parameter in the wadeable data. Fill in LINE and standardize PARAMETER
-  # values.
-  dists$VALUE <- as.numeric(as.character(dists$VALUE))
-  newDists <- NULL
-  if (nrow(dists)>0){
-      # Calculate transect spacing for wadeable sites
-      nsta <- nWadeableStationsPerTransect(wStations)
-      newDists <- merge(dists, nsta, by='SITE', all.x=TRUE)
 
-      newDists$TRANSPC <- as.character(newDists$nSta * as.numeric(newDists$VALUE))
-      newDists <- newDists[c('SITE','TRANSECT','TRANSPC')]
-  }
   
   # Create LINE value based on PARAMETER, then standardize PARAMETER values
   sbWadeable$LINE <- ifelse(sbWadeable$PARAMETER %in% c('PROP','SLOPE','BEARING'), 0
@@ -294,6 +304,7 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
                          ,NA
                          )))
   intermediateMessage('.2')
+# print('sbWadeable 2, 10186:'); print(subset(sbWadeable, SITE==10186))
   
 
   # Calculate transect spacing TRANSPC from incremental DISTANCE values.
@@ -338,6 +349,8 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
               )
 
   transpc <- rbind(newDists, sumDists)
+print('tsb 10186:'); print(subset(tsb, SITE==10186))
+print('transpc 10186:'); print(subset(transpc, SITE==10186))
 
   intermediateMessage('.3')
 
@@ -358,6 +371,7 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   sb$BEARING <- as.numeric(sb$BEARING)
   sb$PROPORTION <- as.numeric(sb$PROPORTION)
   sb$TRANSPC <- as.numeric(sb$TRANSPC)
+# print('sb 10058:'); print(subset(sb, SITE==10058))
 
    # Handle changes to elevation data recording in the wadeable protocol.
    # Separate out wadeables, adjust elevations as needed, and recombine with
