@@ -1,7 +1,23 @@
-metsHumanInfluence <- function(visrip) {
+nrsaHumanInfluence <- function(buildings = NULL
+                              ,landfillTrash = NULL
+                              ,logging = NULL
+                              ,mining = NULL
+                              ,parkLawn = NULL
+                              ,pastureRangeHay = NULL
+                              ,pavementClearedlot = NULL
+                              ,pipesInOut = NULL
+                              ,roadsRailroads = NULL
+                              ,rowcrops = NULL
+                              ,wallRevetment = NULL
+                              ,influenceWeights = data.frame(VALUE=c('0','P','C','B')
+                                                            #,presence=c(1,1,1,1)
+                                                            ,weights=c(0, 0.666667, 1, 1.5)
+                                                            ,stringsAsFactors=FALSE
+                                                            )
+                              ) {
 
 ################################################################################
-# Function: metsHumanInfluence
+# Function: nrsaHumanInfluence
 # Title: Calculate NRSA Human Influence Metrics
 # Programmers: Suzanne San Romani
 #              Curt Seeliger
@@ -65,6 +81,11 @@ metsHumanInfluence <- function(visrip) {
 #            rather than a csv file.  Removed RUnit functions.
 #   01/11/13 tmk: Inserted code to convert factors in the input data frame to
 #            character variables.
+#   11/13/15 cws Rewrote calling interface.
+#
+#  TODO: rewrite interior. Add use of influenceWeights and test it.  Make PARAMETER
+#        values less cryptic.
+#
 # Arguments:
 #   visrip = a data frame containing the visible riparian damage data file.  The
 #     data frame must include columns that are named as follows:
@@ -91,107 +112,152 @@ metsHumanInfluence <- function(visrip) {
 #   metsHumanInfluence.1 - calculate metrics
 ################################################################################
 
-# Print an initial message
-  cat('Human Influence calculations:\n')
+    # Print an initial message
+    intermediateMessage('Human Influence calculations', loc='start')
 
-# Convert factors to character variables in the visrip data frame
-  intermediateMessage('.1 Convert factors to character variables.', loc='end')
-  visrip <- convert_to_char(visrip)
+    # Standardize data arguments with no data as NULL
+    absentAsNULL <- function(df, ifdf, ...) {
+        if(is.null(df)) return(NULL)
+        else if(!is.data.frame(df)) return(NULL)
+        else if(nrow(df) == 0) return (NULL)
+        else if(is.null(ifdf)) return(df)
+        else if(is.na(ifdf)) return(df)
+        else return(ifdf(df, ...))
+    }
+    ifdf <- function(df, pName) {
+        rc <- df %>% mutate(PARAMETER=pName) %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+    }
 
-# Subset the visrip data frame to retain desired values in the column named
-# PARAMETER and retain the set of desired columns
-  intermediateMessage('.2 Subset the data frame.', loc='end')
-  df <- subset(visrip, PARAMETER %in% c('BUILD', 'LANDFL', 'LOG', 'MINE',
-               'PARK', 'PAST', 'PAVE', 'PIPES', 'ROAD', 'ROW', 'WALL'),
-               select=c('UID', 'TRANSECT', 'TRANSDIR', 'PARAMETER', 'RESULT'))
-
-# Calculate the metrics
-  intermediateMessage('.3 Call function metsHumanInfluence.1.', loc='end')
-  mets <- metsHumanInfluence.1(df)
-  row.names(mets) <- 1:nrow(mets)
-
-# Print an exit message
-  intermediateMessage('Done.', loc='end')
-
-# Return results
-  return(mets)
-}
-
-
-
-metsHumanInfluence.1 <- function(df) {
-
+    df <- rbind(absentAsNULL(buildings, ifdf,  'BUILD')
+               ,absentAsNULL(landfillTrash, ifdf, 'LANDFL')
+               ,absentAsNULL(logging, ifdf, 'LOG')
+               ,absentAsNULL(mining, ifdf,  'MINE')
+               ,absentAsNULL(parkLawn, ifdf, 'PARK')
+               ,absentAsNULL(pastureRangeHay, ifdf, 'PAST')
+               ,absentAsNULL(pavementClearedlot, ifdf, 'PAVE')
+               ,absentAsNULL(pipesInOut, ifdf, 'PIPES')
+               ,absentAsNULL(roadsRailroads, ifdf, 'ROAD')
+               ,absentAsNULL(rowcrops, ifdf, 'ROW')
+               ,absentAsNULL(wallRevetment, ifdf, 'WALL')
+               )
+#     buildings <- if(!is.null(buildings)) 
+#         buildings <- buildings %>% mutate(PARAMETER='BUILD') %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     landfillTrash <- if(!is.null(landfillTrash)) 
+#         landfillTrash <- landfillTrash %>% mutate(PARAMETER='LANDFL') %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     logging <- if(!is.null(logging)) 
+#         logging <- logging %>%                          mutate(PARAMETER='LOG')    %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     mining <- if(!is.null(mining)) 
+#         mining <- mining %>%                            mutate(PARAMETER='MINE')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     parkLawn <- if(!is.null(parkLawn)) 
+#         parkLawn <- parkLawn %>%                        mutate(PARAMETER='PARK')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     pastureRangeHay <- if(!is.null(pastureRangeHay)) 
+#         pastureRangeHay <- pastureRangeHay %>%          mutate(PARAMETER='PAST')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     pavementClearedlot <- if(!is.null(pavementClearedlot)) 
+#         pavementClearedlot <- pavementClearedlot %>%    mutate(PARAMETER='PAVE')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     pipesInOut <- if(!is.null(pipesInOut)) 
+#         pipesInOut <- pipesInOut %>%                    mutate(PARAMETER='PIPES')  %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     roadsRailroads <- if(!is.null(roadsRailroads)) 
+#         roadsRailroads <- roadsRailroads %>%            mutate(PARAMETER='ROAD')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     rowcrops <- if(!is.null(rowcrops)) 
+#         rowcrops <- rowcrops %>%                        mutate(PARAMETER='ROW')    %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#     wallRevetment <- if(!is.null(wallRevetment)) 
+#         wallRevetment <- wallRevetment %>%              mutate(PARAMETER='WALL')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+# 
+#     df <- rbind(buildings        
+#                ,landfillTrash    
+#                ,logging          
+#                ,mining           
+#                ,parkLawn         
+#                ,pastureRangeHay  
+#                ,pavementClearedlot
+#                ,pipesInOut        
+#                ,roadsRailroads    
+#                ,rowcrops          
+#                ,wallRevetment     
+#                )
+#     df <- rbind(buildings          %>% mutate(PARAMETER='BUILD')  %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,landfillTrash      %>% mutate(PARAMETER='LANDFL') %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,logging            %>% mutate(PARAMETER='LOG')    %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,mining             %>% mutate(PARAMETER='MINE')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,parkLawn           %>% mutate(PARAMETER='PARK')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,pastureRangeHay    %>% mutate(PARAMETER='PAST')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,pavementClearedlot %>% mutate(PARAMETER='PAVE')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,pipesInOut         %>% mutate(PARAMETER='PIPES')  %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,roadsRailroads     %>% mutate(PARAMETER='ROAD')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,rowcrops           %>% mutate(PARAMETER='ROW')    %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                ,wallRevetment      %>% mutate(PARAMETER='WALL')   %>% select(SITE,TRANSECT,PARAMETER,VALUE)
+#                )
 
 df2 <- df
-df2$var_0 <- ifelse(df$RESULT=='0', 1, 0)
-df2$var_P <- ifelse(df$RESULT=='P', 1, 0)
-df2$var_C <- ifelse(df$RESULT=='C', 1, 0)
-df2$var_B <- ifelse(df$RESULT=='B', 1, 0)
+df2$var_0 <- ifelse(df$VALUE=='0', 1, 0)
+df2$var_P <- ifelse(df$VALUE=='P', 1, 0)
+df2$var_C <- ifelse(df$VALUE=='C', 1, 0)
+df2$var_B <- ifelse(df$VALUE=='B', 1, 0)
 df2$var_CB <- df2$var_C+ df2$var_B
            
 #    Calculating meanAtTransect
-meanb_hall <- aggregate(list(xb_hall=df2$var_B), list(UID=df2$UID
+meanb_hall <- aggregate(list(xb_hall=df2$var_B), list(SITE=df2$SITE
                         , PARAMETER=df2$PARAMETER), mean, na.rm=T)
-meanc_hall <- aggregate(list(xc_hall=df2$var_C), list(UID=df2$UID
+meanc_hall <- aggregate(list(xc_hall=df2$var_C), list(SITE=df2$SITE
                         , PARAMETER=df2$PARAMETER), mean, na.rm=T) 
-meancb_hall <- aggregate(list(xcb_hall=df2$var_CB), list(UID=df2$UID
+meancb_hall <- aggregate(list(xcb_hall=df2$var_CB), list(SITE=df2$SITE
                         , PARAMETER=df2$PARAMETER), mean, na.rm=T)
-meanf_hall <- aggregate(list(xf_hall=df2$var_P), list(UID=df2$UID
+meanf_hall <- aggregate(list(xf_hall=df2$var_P), list(SITE=df2$SITE
                         , PARAMETER=df2$PARAMETER), mean, na.rm=T) 
 
 #   sum(meanAtTransect)
 xb_hall <- aggregate(list(xb_hall=meanb_hall$xb_hall)
-                   , list(UID=meanb_hall$UID), sum, na.rm=T)
+                   , list(SITE=meanb_hall$SITE), sum, na.rm=T)
 xc_hall <- aggregate(list(xc_hall=meanc_hall$xc_hall)
-                   , list(UID=meanc_hall$UID), sum, na.rm=T) 
+                   , list(SITE=meanc_hall$SITE), sum, na.rm=T) 
 xcb_hall <- aggregate(list(xcb_hall=meancb_hall$xcb_hall)
-                   , list(UID=meancb_hall$UID), sum, na.rm=T)
+                   , list(SITE=meancb_hall$SITE), sum, na.rm=T)
 xf_hall <- aggregate(list(xf_hall=meanf_hall$xf_hall)
-                   , list(UID=meanf_hall$UID), sum, na.rm=T) 
+                   , list(SITE=meanf_hall$SITE), sum, na.rm=T) 
 
 #    Creating ag (agriculture parameters) and noag (non-agriculture parameters)
 ag <- subset(df2, (PARAMETER %in% c('ROW', 'PAST')))
 noag <- subset(df2, !(PARAMETER %in% c('ROW', 'PAST')))
 
 #    Calculating meanAtTransect for agriculture parameters
-meanb_hag <- aggregate(list(xb_hag=ag$var_B), list(UID=ag$UID
+meanb_hag <- aggregate(list(xb_hag=ag$var_B), list(SITE=ag$SITE
                       , PARAMETER=ag$PARAMETER), mean, na.rm=T)
-meanc_hag <- aggregate(list(xc_hag=ag$var_C), list(UID=ag$UID
+meanc_hag <- aggregate(list(xc_hag=ag$var_C), list(SITE=ag$SITE
                       , PARAMETER=ag$PARAMETER), mean, na.rm=T) 
-meancb_hag <- aggregate(list(xcb_hag=ag$var_CB), list(UID=ag$UID
+meancb_hag <- aggregate(list(xcb_hag=ag$var_CB), list(SITE=ag$SITE
                       , PARAMETER=ag$PARAMETER), mean, na.rm=T)
-meanf_hag <- aggregate(list(xf_hag=ag$var_P), list(UID=ag$UID
+meanf_hag <- aggregate(list(xf_hag=ag$var_P), list(SITE=ag$SITE
                       , PARAMETER=ag$PARAMETER), mean, na.rm=T) 
 
 #   sum(meanAtTransect) for agriculture parameters
-xb_hag <- aggregate(list(xb_hag=meanb_hag$xb_hag), list(UID=meanb_hag$UID)
+xb_hag <- aggregate(list(xb_hag=meanb_hag$xb_hag), list(SITE=meanb_hag$SITE)
                    , sum, na.rm=T)
-xc_hag <- aggregate(list(xc_hag=meanc_hag$xc_hag), list(UID=meanc_hag$UID)
+xc_hag <- aggregate(list(xc_hag=meanc_hag$xc_hag), list(SITE=meanc_hag$SITE)
                    , sum, na.rm=T) 
-xcb_hag <- aggregate(list(xcb_hag=meancb_hag$xcb_hag), list(UID=meancb_hag$UID)
+xcb_hag <- aggregate(list(xcb_hag=meancb_hag$xcb_hag), list(SITE=meancb_hag$SITE)
                    , sum, na.rm=T)
-xf_hag <- aggregate(list(xf_hag=meanf_hag$xf_hag), list(UID=meanf_hag$UID)
+xf_hag <- aggregate(list(xf_hag=meanf_hag$xf_hag), list(SITE=meanf_hag$SITE)
                    , sum, na.rm=T) 
 
 #    Calculating meanAtTransect for non-agriculture parameters
-meanb_hnoag <- aggregate(list(xb_hnoag=noag$var_B), list(UID=noag$UID
+meanb_hnoag <- aggregate(list(xb_hnoag=noag$var_B), list(SITE=noag$SITE
                         , PARAMETER=noag$PARAMETER), mean, na.rm=T)
-meanc_hnoag <- aggregate(list(xc_hnoag=noag$var_C), list(UID=noag$UID
+meanc_hnoag <- aggregate(list(xc_hnoag=noag$var_C), list(SITE=noag$SITE
                         , PARAMETER=noag$PARAMETER), mean, na.rm=T) 
-meancb_hnoag <- aggregate(list(xcb_hnag=noag$var_CB), list(UID=noag$UID
+meancb_hnoag <- aggregate(list(xcb_hnag=noag$var_CB), list(SITE=noag$SITE
                         , PARAMETER=noag$PARAMETER), mean, na.rm=T)
-meanf_hnoag <- aggregate(list(xf_hnoag=noag$var_P), list(UID=noag$UID
+meanf_hnoag <- aggregate(list(xf_hnoag=noag$var_P), list(SITE=noag$SITE
                         , PARAMETER=noag$PARAMETER), mean, na.rm=T) 
 
 #   sum(meanAtTransect) for non-agriculture parameters
 xb_hnoag <- aggregate(list(xb_hnoag=meanb_hnoag$xb_hnoag)
-                    , list(UID=meanb_hnoag$UID), sum, na.rm=T)
+                    , list(SITE=meanb_hnoag$SITE), sum, na.rm=T)
 xc_hnoag <- aggregate(list(xc_hnoag=meanc_hnoag$xc_hnoag)
-                    , list(UID=meanc_hnoag$UID), sum, na.rm=T) 
+                    , list(SITE=meanc_hnoag$SITE), sum, na.rm=T) 
 xcb_hnoag <- aggregate(list(xcb_hnag=meancb_hnoag$xcb_hnag)
-                     , list(UID=meancb_hnoag$UID), sum, na.rm=T)
+                     , list(SITE=meancb_hnoag$SITE), sum, na.rm=T)
 xf_hnoag <- aggregate(list(xf_hnoag=meanf_hnoag$xf_hnoag)
-                    , list(UID=meanf_hnoag$UID), sum, na.rm=T) 
+                    , list(SITE=meanf_hnoag$SITE), sum, na.rm=T) 
 
 df3 <- merge(xb_hall, xc_hall, all=T)
 df3 <- merge(df3, xcb_hall, all=T)
@@ -212,56 +278,56 @@ df3$x_hag <-  df3$xb_hag + df3$xc_hag + df3$xf_hag
 df3$x_hnoag <- df3$xb_hnoag + df3$xc_hnoag + df3$xf_hnoag
 
 #   Creating dataframes for export to csv file
-x_hall <- subset(df3, select=c(UID,METRIC,x_hall))
+x_hall <- subset(df3, select=c(SITE,METRIC,x_hall))
  x_hall$METRIC <- 'x_hall'
- x_hall <- rename(x_hall, 'x_hall', 'RESULT')
-x_hag <- subset(df3, select=c(UID,METRIC,x_hag))
+ x_hall <- rename(x_hall, 'x_hall', 'VALUE')
+x_hag <- subset(df3, select=c(SITE,METRIC,x_hag))
  x_hag$METRIC <- 'x_hag'
- x_hag <- rename(x_hag, 'x_hag', 'RESULT')
-x_hnoag <- subset(df3, select=c(UID,METRIC,x_hnoag))
+ x_hag <- rename(x_hag, 'x_hag', 'VALUE')
+x_hnoag <- subset(df3, select=c(SITE,METRIC,x_hnoag))
  x_hnoag$METRIC <- 'x_hnoag'
- x_hnoag <- rename(x_hnoag, 'x_hnoag', 'RESULT')
+ x_hnoag <- rename(x_hnoag, 'x_hnoag', 'VALUE')
  
- xb_hall <- rename(xb_hall, 'xb_hall', 'RESULT')
+ xb_hall <- rename(xb_hall, 'xb_hall', 'VALUE')
   xb_hall$METRIC <- 'xb_hall' 
- xc_hall <- rename(xc_hall, 'xc_hall', 'RESULT')
+ xc_hall <- rename(xc_hall, 'xc_hall', 'VALUE')
   xc_hall$METRIC <- 'xc_hall' 
- xcb_hall <- rename(xcb_hall, 'xcb_hall', 'RESULT')
+ xcb_hall <- rename(xcb_hall, 'xcb_hall', 'VALUE')
   xcb_hall$METRIC <- 'xcb_hall' 
- xf_hall <- rename(xf_hall, 'xf_hall', 'RESULT')
+ xf_hall <- rename(xf_hall, 'xf_hall', 'VALUE')
   xf_hall$METRIC <- 'xf_hall' 
- xb_hag <- rename(xb_hag, 'xb_hag', 'RESULT')
+ xb_hag <- rename(xb_hag, 'xb_hag', 'VALUE')
   xb_hag$METRIC <- 'xb_hag' 
- xc_hag <- rename(xc_hag, 'xc_hag', 'RESULT')
+ xc_hag <- rename(xc_hag, 'xc_hag', 'VALUE')
   xc_hag$METRIC <- 'xc_hag' 
- xcb_hag <- rename(xcb_hag, 'xcb_hag', 'RESULT')
+ xcb_hag <- rename(xcb_hag, 'xcb_hag', 'VALUE')
   xcb_hag$METRIC <- 'xcb_hag' 
- xf_hag <- rename(xf_hag, 'xf_hag', 'RESULT')
+ xf_hag <- rename(xf_hag, 'xf_hag', 'VALUE')
   xf_hag$METRIC <- 'xf_hag' 
- xb_hnoag <- rename(xb_hnoag, 'xb_hnoag', 'RESULT')
+ xb_hnoag <- rename(xb_hnoag, 'xb_hnoag', 'VALUE')
   xb_hnoag$METRIC <- 'xb_hnoag' 
- xc_hnoag <- rename(xc_hnoag, 'xc_hnoag', 'RESULT')
+ xc_hnoag <- rename(xc_hnoag, 'xc_hnoag', 'VALUE')
   xc_hnoag$METRIC <- 'xc_hnoag' 
- xcb_hnoag <- rename(xcb_hnoag, 'xcb_hnag', 'RESULT')
+ xcb_hnoag <- rename(xcb_hnoag, 'xcb_hnag', 'VALUE')
   xcb_hnoag$METRIC <- 'xcb_hnag' 
- xf_hnoag <- rename(xf_hnoag, 'xf_hnoag', 'RESULT')
+ xf_hnoag <- rename(xf_hnoag, 'xf_hnoag', 'VALUE')
   xf_hnoag$METRIC <- 'xf_hnoag' 
 
  #   Standard deviations of sumAtTransect
-sumb_hall <- aggregate(list(sum_b=df2$var_B), list(UID=df2$UID, TRANSECT=df2$TRANSECT), sum, na.rm=T)
-sumc_hall <- aggregate(list(sum_c=df2$var_C), list(UID=df2$UID, TRANSECT=df2$TRANSECT), sum, na.rm=T)
-sumcb_hall <- aggregate(list(sum_cb=df2$var_CB), list(UID=df2$UID, TRANSECT=df2$TRANSECT), sum, na.rm=T)
+sumb_hall <- aggregate(list(sum_b=df2$var_B), list(SITE=df2$SITE, TRANSECT=df2$TRANSECT), sum, na.rm=T)
+sumc_hall <- aggregate(list(sum_c=df2$var_C), list(SITE=df2$SITE, TRANSECT=df2$TRANSECT), sum, na.rm=T)
+sumcb_hall <- aggregate(list(sum_cb=df2$var_CB), list(SITE=df2$SITE, TRANSECT=df2$TRANSECT), sum, na.rm=T)
 df2$wcb = (1.5 * df2$var_B) + df2$var_C
-sumwcb_hall <- aggregate(list(sum_wcb=df2$wcb), list(UID=df2$UID, TRANSECT=df2$TRANSECT), sum, na.rm=T)
+sumwcb_hall <- aggregate(list(sum_wcb=df2$wcb), list(SITE=df2$SITE, TRANSECT=df2$TRANSECT), sum, na.rm=T)
 
 
-sdb_hall <- aggregate(list(RESULT=sumb_hall$sum_b), list(UID=sumb_hall$UID), sd)
+sdb_hall <- aggregate(list(VALUE=sumb_hall$sum_b), list(SITE=sumb_hall$SITE), sd)
  sdb_hall$METRIC <- 'sdb_hall'
-sdc_hall <- aggregate(list(RESULT=sumc_hall$sum_c), list(UID=sumc_hall$UID), sd)
+sdc_hall <- aggregate(list(VALUE=sumc_hall$sum_c), list(SITE=sumc_hall$SITE), sd)
  sdc_hall$METRIC <- 'sdc_hall'
-sdcb_hall <- aggregate(list(RESULT=sumcb_hall$sum_cb), list(UID=sumcb_hall$UID), sd)
+sdcb_hall <- aggregate(list(VALUE=sumcb_hall$sum_cb), list(SITE=sumcb_hall$SITE), sd)
  sdcb_hall$METRIC <- 'sdcb_hall'
-sdwcb_hall <- aggregate(list(RESULT=sumwcb_hall$sum_wcb), list(UID=sumwcb_hall$UID), sd)
+sdwcb_hall <- aggregate(list(VALUE=sumwcb_hall$sum_wcb), list(SITE=sumwcb_hall$SITE), sd)
  sdwcb_hall$METRIC <- 'sdwcb_hall'
 
 #   Weighted sums 
@@ -269,9 +335,9 @@ df3$w1_hall <- (1.5 * df3$xb_hall) + df3$xc_hall + (0.6667 * df3$xf_hall)
 df3$w1_hnoag <- (1.5 * df3$xb_hnoag) + df3$xc_hnoag + (0.6667 * df3$xf_hnoag)
 df3$w1_hag <- (1.5 * df3$xb_hag) + df3$xc_hag + (0.6667 * df3$xf_hag)
 
-w1_hall <- subset(df3, select=c('UID', 'METRIC', 'w1_hall'))
-w1_hnoag <- subset(df3, select=c('UID', 'METRIC', 'w1_hnoag'))
-w1_hag <- subset(df3, select=c('UID', 'METRIC', 'w1_hag'))
+w1_hall <- subset(df3, select=c('SITE', 'METRIC', 'w1_hall'))
+w1_hnoag <- subset(df3, select=c('SITE', 'METRIC', 'w1_hnoag'))
+w1_hag <- subset(df3, select=c('SITE', 'METRIC', 'w1_hag'))
                                   
 # Create table for weighing influence proximity values
 weights0PCB <- data.frame(proximity=c('0', 'P', 'C', 'B')
@@ -281,15 +347,15 @@ weights0PCB <- data.frame(proximity=c('0', 'P', 'C', 'B')
 
 # Convert proximity classes to numeric values and characterize influence types
 df5 <- merge(df, weights0PCB
-                ,by.x='RESULT'
+                ,by.x='VALUE'
                 ,by.y='proximity'
                 ,all.x=TRUE
                 ,sort=FALSE
                 )
 
 #    Creating W1H_ variables
-w1h_sums <- aggregate(list(RESULT=df5$calc),
-               list(UID=df5$UID, METRIC=df5$PARAMETER),mean, na.rm=T)
+w1h_sums <- aggregate(list(VALUE=df5$calc),
+               list(SITE=df5$SITE, METRIC=df5$PARAMETER),mean, na.rm=T)
 w1h_sums$METRIC <- ifelse(w1h_sums$METRIC=='BUILD', 'w1h_bldg', w1h_sums$METRIC)
 w1h_sums$METRIC <- ifelse(w1h_sums$METRIC=='LANDFL', 'w1h_ldfl', w1h_sums$METRIC)
 w1h_sums$METRIC <- ifelse(w1h_sums$METRIC=='LOG', 'w1h_log', w1h_sums$METRIC)
@@ -304,14 +370,14 @@ w1h_sums$METRIC <- ifelse(w1h_sums$METRIC=='WALL', 'w1h_wall', w1h_sums$METRIC)
 
 
 w1_ag <- subset(w1h_sums,(METRIC %in% c('w1h_crop', 'w1h_pstr')))
-w1_hag <- aggregate(list(RESULT=w1_ag$RESULT), list(UID=w1_ag$UID), sum, na.rm=T)
+w1_hag <- aggregate(list(VALUE=w1_ag$VALUE), list(SITE=w1_ag$SITE), sum, na.rm=T)
 w1_hag$METRIC <- 'w1_hag'
 
 w1_noag <- subset(w1h_sums, !(METRIC %in% c('w1h_crop', 'w1h_pstr')))
-w1_hnoag <- aggregate(list(RESULT=w1_noag$RESULT), list(UID=w1_noag$UID), sum, na.rm=T)
+w1_hnoag <- aggregate(list(VALUE=w1_noag$VALUE), list(SITE=w1_noag$SITE), sum, na.rm=T)
 w1_hnoag$METRIC <- 'w1_hnoag'
 
-w1_hall <- aggregate(list(RESULT=w1h_sums$RESULT),list(UID=w1h_sums$UID),sum, na.rm=T)
+w1_hall <- aggregate(list(VALUE=w1h_sums$VALUE),list(SITE=w1h_sums$SITE),sum, na.rm=T)
 w1_hall$METRIC <- 'w1_hall'
 
 
@@ -320,9 +386,9 @@ w1_hall$METRIC <- 'w1_hall'
 aa <- rbind(xb_hag,xc_hag,xcb_hag,xf_hag,xb_hnoag,xcb_hnoag,xc_hnoag,xf_hnoag
            ,xb_hall,xcb_hall,xc_hall,xf_hall,sdb_hall,sdcb_hall,sdc_hall
            ,sdwcb_hall,w1_hag,w1_hnoag,w1_hall)
-bb <- aa[,c('UID', 'METRIC', 'RESULT')] 
+bb <- aa[,c('SITE', 'METRIC', 'VALUE')] 
 hiMets <- rbind(bb,w1h_sums,x_hag,x_hnoag,x_hall)
- 
+return(hiMets) 
 }
 
 

@@ -1,27 +1,68 @@
-## metsHumanInfluence.r
+## nrsaHumanInfluence.r
 # RUnit tests
+#
+# 11/13/15 cws Modified for new calling interface, ignoring influencWeights 
+#          argument for now.
+#
 
 
-metsHumanInfluenceTest <- function()
+nrsaHumanInfluenceTest <- function()
 {
   ## Create test data, expected results and actual results
-  testData <- metsHumanInfluence.createData()
-  testResults <- metsHumanInfluence.createResults()
-  rr <- metsHumanInfluence.1(testData)
+    # Note: test data is created in 0809 format and then split into separate 
+    # arguments for updated aquamet function
+    testData <- nrsaHumanInfluence.createData() %>% dplyr::rename(SITE=UID,VALUE=RESULT)
+    testResults <- nrsaHumanInfluence.createResults() %>% dplyr::rename(SITE=UID,VALUE=RESULT)
+    
+    # Test with data for all arguments
+    rr <- nrsaHumanInfluence(buildings =          subset(testData, PARAMETER=='BUILD', select=-PARAMETER)
+                            ,landfillTrash =      subset(testData, PARAMETER=='LANDFL', select=-PARAMETER)
+                            ,logging =            subset(testData, PARAMETER=='LOG', select=-PARAMETER)
+                            ,mining =             subset(testData, PARAMETER=='MINE', select=-PARAMETER)
+                            ,parkLawn =           subset(testData, PARAMETER=='PARK', select=-PARAMETER)
+                            ,pastureRangeHay =    subset(testData, PARAMETER=='PAST', select=-PARAMETER)
+                            ,pavementClearedlot = subset(testData, PARAMETER=='PAVE', select=-PARAMETER)
+                            ,pipesInOut =         subset(testData, PARAMETER=='PIPES', select=-PARAMETER)
+                            ,roadsRailroads =     subset(testData, PARAMETER=='ROAD', select=-PARAMETER)
+                            ,rowcrops =           subset(testData, PARAMETER=='ROW', select=-PARAMETER)
+                            ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER)
+                            ,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
+                            )
 
-  ## Get both results data frames in the same order
-  testMets <- rr[order(rr$UID, rr$METRIC),]
-  sasMets <- testResults[order(testResults$UID, testResults$METRIC),]
+    ## Get both results data frames in the same order and compare
+    testMets <- rr[order(rr$SITE, rr$METRIC),]
+    sasMets <- testResults[order(testResults$SITE, testResults$METRIC),]
+    errs <- dfCompare(sasMets, testMets, c('SITE','METRIC'), zeroFudge=1e-9)
+    checkEquals(NULL, errs, "Error: metsHumanInfluence is broken.")
 
-  ##  Compare values in data frames
-  errs <- dfCompare(sasMets, testMets, c('UID','METRIC'), zeroFudge=1e-9)
-  checkEquals(NULL, errs, "Error: metsHumanInfluence is broken.")
-
+    # Test with data missing for an ag and nonag influence
+    # it looks like *hag values are all zero when pasture isn't provided, but
+    # *hall values are handled ok. Also w1h_bldg and w1h_pstr are absent.  Should
+    # we treat absent data as a deal breaker and set results to NA or remove them
+    # all together, or should absent data be treated the same as missing?
+    rr <- nrsaHumanInfluence(buildings =          NULL #subset(testData, PARAMETER=='BUILD', select=-PARAMETER)
+                            ,landfillTrash =      subset(testData, PARAMETER=='LANDFL', select=-PARAMETER)
+                            ,logging =            subset(testData, PARAMETER=='LOG', select=-PARAMETER)
+                            ,mining =             subset(testData, PARAMETER=='MINE', select=-PARAMETER)
+                            ,parkLawn =           subset(testData, PARAMETER=='PARK', select=-PARAMETER)
+                            ,pastureRangeHay =    NULL #subset(testData, PARAMETER=='PAST', select=-PARAMETER)
+                            ,pavementClearedlot = subset(testData, PARAMETER=='PAVE', select=-PARAMETER)
+                            ,pipesInOut =         subset(testData, PARAMETER=='PIPES', select=-PARAMETER)
+                            ,roadsRailroads =     subset(testData, PARAMETER=='ROAD', select=-PARAMETER)
+                            ,rowcrops =           subset(testData, PARAMETER=='ROW', select=-PARAMETER)
+                            ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER)
+                            ,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
+                            )
+    testMets <- rr[order(rr$SITE, rr$METRIC),]
+    sasMets <- testResults[order(testResults$SITE, testResults$METRIC),]
+    errs <- dfCompare(sasMets, testMets, c('SITE','METRIC'), zeroFudge=1e-9)
+    checkEquals(NULL, errs, "Error: metsHumanInfluence is broken with NULL arguments. Need to ask Phil how we should handle these cases")
+    
 }
 
 
 
-metsHumanInfluence.createData <- function()
+nrsaHumanInfluence.createData <- function()
 # Create dataframe of human influence data for unit test
 {
   fred <- textConnection(
@@ -1268,7 +1309,7 @@ metsHumanInfluence.createData <- function()
 
 
 
-metsHumanInfluence.createResults <- function()
+nrsaHumanInfluence.createResults <- function()
 # creates dataframe of expected calculation results for unit test
 {
   bob <- textConnection(
