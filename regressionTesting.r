@@ -304,6 +304,48 @@ oldhd <- currentMets %>% subset(PARAMETER %in% toupper(hd$METRIC)) %>% dplyr::re
 dd<-dfCompare(hd1 %>% dplyr::rename(SITE=UID,VALUE=RESULT), hd, c('SITE','METRIC')) # no diffs with recalculations.
 dd<-dfCompare(oldhd, hd %>% mutate(METRIC=toupper(METRIC)), c('UID','METRIC'))
 
+#######################################################
+#
+# Canopy densiometer
+#
+chancovbase <- dbGet('NRSA0809','tblCHANCOV2')
+chancov <- chancovbase %>% dplyr::rename(SITE=BATCHNO, VALUE=RESULT) %>% 
+           mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE), VALUE=as.numeric(trimws(VALUE))
+                 )
+chancovMain <- chancov %>% subset(TRANSECT %in% LETTERS) %>% 
+               mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE))
+
+cd <- nrsaCanopyDensiometer(bDensiom=subset(chancov, SAMPLE_TYPE=='PHAB_CHANB'), wDensiom=subset(chancov, SAMPLE_TYPE=='PHAB_CHANW'))
+chancovForOldCode <- chancovbase %>% 
+                     dplyr::rename(UID=BATCHNO) %>% 
+                     mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE), PARAMETER=trimws(PARAMETER), RESULT=as.numeric(trimws(RESULT)))
+oldrecalc <- metsCanopyDensiometer.1(chancovForOldCode)
+
+cd0809 <- subset(currentMets, PARAMETER %in% c('XCDENBK', 'VCDENBK','NBNK', 'XCDENMID','VCDENMID','NMID')) %>% dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
+dd <- dfCompare(cd0809, cd %>% mutate(METRIC=toupper(METRIC)), c('SITE','METRIC'))
+ddold <- dfCompare(subset(currentMets, PARAMETER %in% c('XCDENBK', 'VCDENBK','NBNK', 'XCDENMID','VCDENMID','NMID')) %>% dplyr::rename(UID=BATCHNO, METRIC=PARAMETER)
+                  ,oldrecalc %>% mutate(METRIC=toupper(METRIC))
+                  ,c('UID','METRIC')
+                  )
+recalcDiffs <- dfCompare(oldrecalc %>% dplyr::rename(SITE=UID, VALUE=RESULT), cd, c('SITE','METRIC'))
+# recalcs using unchanged mets code are identical to recalcs using new code.
+# total of 33 differences at 11 sites when including side channels, all boatables and now with larger N values: 11727, 12353, 13626, 14217, 14622, 14968, 14969, 14970, 14971, 15297, 15408
+# total of 271 differences at many sites when excluding side channels
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # end of file

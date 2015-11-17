@@ -77,6 +77,7 @@
 #          while running Rcmd check.
 # 10/21/15 cws Changed UID to SITE in interpolatePercentile
 # 10/21/15 cws Changed UID to SITE in nWadeableStationsPerTransect
+# 11/16/15 cws Changed UID to SITE and RESULT to VALUE in summaryby
 #
 ################################################################################
 
@@ -1744,25 +1745,27 @@ rename <- function(df, old, new) {
 
 summaryby <- function(xxx,yyy,zzz) {
 
-   # This function uses aggregate to determine a statistic (mean, count, sd,
-   # range, max, min) of RESULT for each UID in a data table.  Inputs are  the table
-   # name (xxx), the desired statistic (yyy), and the new name for the statistic (zzz).
-   # The output is a new dataset with variables UID, Metric and Result.
- 
- www <- if (yyy == 'count' ) {
-               aggregate( list('RESULT'=xxx$RESULT),list(UID=xxx$UID),get(yyy))
-              
-             } else if(yyy=='max' | yyy=='min' | yyy=='sum')  {
-                aggregate( list('RESULT'=xxx$RESULT),list(UID=xxx$UID),function(x){ifelse(all(is.na(x)), NA, get(yyy)(x, na.rm=TRUE))})
+    # This function uses aggregate to determine a statistic (mean, count, sd,
+    # range, max, min) of RESULT for each UID in a data table.  Inputs are  the table
+    # name (xxx), the desired statistic (yyy), and the new name for the statistic (zzz).
+    # The output is a new dataset with variables UID, Metric and Result.
+# xxx <- xxx %>% dplyr::rename(SITE=UID, VALUE=RESULT)
+    www <- if(yyy == 'count' ) {
+               aggregate( list('VALUE'=xxx$VALUE), list(SITE=xxx$SITE), get(yyy))
+                  
+           } else if(yyy=='max' | yyy=='min' | yyy=='sum')  {
+               aggregate( list('VALUE'=xxx$VALUE), list(SITE=xxx$SITE), function(x){ifelse(all(is.na(x)), NA, get(yyy)(x, na.rm=TRUE))})
 
-             } else {
-               aggregate( list('RESULT'=xxx$RESULT),list(UID=xxx$UID),yyy, na.rm=TRUE)
-            }
+           } else {
+               aggregate( list('VALUE'=xxx$VALUE), list(SITE=xxx$SITE), yyy, na.rm=TRUE)
+           }
 
- www$METRIC<- zzz
- www <- www[c('UID','METRIC','RESULT')]
+    www$METRIC<- zzz
+    www <- www[c('SITE','METRIC','VALUE')]
+
+# www <- www %>% dplyr::rename(UID=SITE, RESULT=VALUE)
  
- return(www)
+    return(www)
 }
 
 
