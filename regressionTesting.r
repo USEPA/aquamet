@@ -310,7 +310,7 @@ dd<-dfCompare(oldhd, hd %>% mutate(METRIC=toupper(METRIC)), c('UID','METRIC'))
 #
 chancovbase <- dbGet('NRSA0809','tblCHANCOV2')
 chancov <- chancovbase %>% dplyr::rename(SITE=BATCHNO, VALUE=RESULT) %>% 
-           mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE), VALUE=as.numeric(trimws(VALUE))
+           mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE), VALUE=as.numeric(trimws(VALUE)), DIRECTION=trimws(TRANSDIR)
                  )
 chancovMain <- chancov %>% subset(TRANSECT %in% LETTERS) %>% 
                mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE))
@@ -333,9 +333,21 @@ recalcDiffs <- dfCompare(oldrecalc %>% dplyr::rename(SITE=UID, VALUE=RESULT), cd
 # total of 271 differences at many sites when excluding side channels
 
 
+##################################################
+#
+# Bed Stability
 
+bankgeometryBase <- dbGet('NRSA0809','tblBANKGEOMETRY2')
+thalwegBase <- dbGet('NRSA0809','tblTHALWEG2')
+visitsBase <- dbGet('NRSA0809','tblVISITS2')
+channelgeometryBase <- dbGet('NRSA0809','tblCHANNELGEOMETRY2')
+channelcrosssectionBase <- dbGet('NRSA0809','tblCHANNELGEOMETRY2')
+littoralBase <- dbGet('NRSA0809','tblLITTORAL2')
+woodBase <- dbGet('NRSA0809','tblWOOD2')
+fishcoverBase <- dbGet('NRSA0809','tblFISHCOVER2')
+giscalcs0809 <- read.csv('l:/Priv/CORFiles/IM/Rwork/nrsa/results/gpsBasedCalculations_asOf201203008.csv', stringsAsFactors=FALSE)
 
-
+oldRecalcFull <- nrsaBedStability(bankgeometryBase, thalwegBase, visitsBase, channelgeometryBase, channelcrosssectionBase, littoralBase, woodBase, fishcoverBase, gisCalcs=giscalcs0809)
 
 
 

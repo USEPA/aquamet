@@ -5,56 +5,79 @@
 nrsaCanopyDensiometerTest <- function()
 # Unit test for nrsaCanopyDensiometer
 {
-    intermediateMessage('.2.0 Canopy Densiometer test of data', loc='end')
-    intermediateMessage('.2.1 Create dataset from WEMAP', loc='end')
+    # Create test data from WEMAP data and expected results from WEMAP mets
     testData <- nrsaCanopyDensiometer.testData() %>% dplyr::rename(SITE=UID, VALUE=RESULT, DIRECTION=TRANSDIR)
     test.w <- subset(testData, SAMPLE_TYPE == 'PHAB_CHANW')
     test.b <- subset(testData, SAMPLE_TYPE == 'PHAB_CHANB')
 
-    intermediateMessage ('.2.2 Create expected dataset', loc='end')
     metsExpected <- nrsaCanopyDensiometer.expectedMets () %>% dplyr::rename(SITE=UID, VALUE=RESULT)
    
-#in this dataset, the protoccol is determined by SAMPLE_TYPE.  Here where
-#SAMPLE_TYPE == PHAB_CHANW, the protocol is WADEABLE
-#SAMPLE_TYPE == PHAB_CHANB the protocol is BOATABLE   
-#to test for one/both protocols, subset the data by SAMPLE_TYPE as a proxy for protocol
+    # Test with both protocols
+    testDataResult <- nrsaCanopyDensiometer(test.b, test.w)
+    errs <- nrsaCanopyDensiometerTest.process (testDataResult, metsExpected)
+    checkEquals(0, nrow(errs)
+               ,"Error: Canopy Densiometer metrics are broken with both protocols"
+               )
 
-    intermediateMessage ('.2.3 Test with both protocols', loc='end')
-  
-    nrsaCanopyDensiometerTest.process (test.b, test.w, metsExpected)
+    # test with both protocols using nonstandard DIRECTION values
+    testwModified <- mutate(test.w
+                           ,DIRECTION = ifelse(DIRECTION == 'LF', 'foo'
+                                       ,ifelse(DIRECTION == 'RT', 'bar'
+                                       ,ifelse(DIRECTION == 'CD', '1'
+                                       ,ifelse(DIRECTION == 'CL', '2'
+                                       ,ifelse(DIRECTION == 'CU', '3'
+                                       ,ifelse(DIRECTION == 'CR', '4', 'bad!'
+                                        ))))))
+                           )
+    testDataResult<- nrsaCanopyDensiometer(test.b, testwModified, wChannelBank=c('foo','bar'), wChannelMid=c('3','2','1','4'))
+    errs <- nrsaCanopyDensiometerTest.process (testDataResult, metsExpected)
+    checkEquals(0, nrow(errs)
+               ,"Error: Canopy Densiometer metrics are broken using nonstandard DIRECTION values"
+               )
 
-    intermediateMessage ('.2.4 Test with wadeable protocol', loc='end')
+    # test with both protocols using DIRECTION values that do not match the data
+    # These are treated the same as missing values
+    testDataResult<- nrsaCanopyDensiometer(test.b, test.w, wChannelBank=c('foo','bar'), wChannelMid=c('3','2','1','4'))
+    errs <- nrsaCanopyDensiometerTest.process(testDataResult, mutate(metsExpected, VALUE=ifelse(SITE %in% test.w$SITE, NA, VALUE)))
+    checkEquals(0, nrow(errs)
+               ,"Error: Canopy Densiometer metrics are broken when DIRECTION values do not match the data"
+               )
+
+    # Test with wadeable protocol only
     expected.w <- subset (metsExpected, SITE %in%  c('WAZP99-0545','WAZP99-0551','WCAP99-0534',
                                            'WCAP99-0535','WCAP99-0536','WCAP99-0539',
                                            'WMTP99-0549'))
-    nrsaCanopyDensiometerTest.process (NULL, test.w, expected.w)
+    testDataResult <- nrsaCanopyDensiometer(NULL, test.w)
+    errs <- nrsaCanopyDensiometerTest.process(testDataResult, subset(metsExpected, SITE %in% test.w$SITE))
+    checkEquals(0, nrow(errs)
+               ,"Error: Canopy Densiometer  metrics are broken when processing only wadeable data"
+               )
   
-    intermediateMessage ('.2.5 Test with boatable protocol', loc='end')
+    # Test with boatable protocol only
     expected.b <- subset (metsExpected, SITE %in%  c('WMTP99-0525','WMTP99-0587'))
-    nrsaCanopyDensiometerTest.process (test.b, NULL, expected.b)
+    testDataResult <- nrsaCanopyDensiometer(test.b, NULL)
+    errs <- nrsaCanopyDensiometerTest.process (testDataResult, subset(metsExpected, SITE %in% test.b$SITE))
+    checkEquals(0, nrow(errs)
+               ,"Error: Canopy Densiometer metrics are broken when processing only boatable data"
+               )
 } 
 
 
-nrsaCanopyDensiometerTest.process <- function (bTestData, wTestData, metsExpected)
-{
-    testDataResult<- nrsaCanopyDensiometer(bTestData, wTestData)
-  
-    #compare results from baseData (testDataResult) with expectedResults  (metsExpected)
-    metsExpected <- dplyr::rename(metsExpected, EXPECTED=VALUE)
-    rr <- testDataResult
+#nrsaCanopyDensiometerTest.process <- function (bTestData, wTestData, metsExpected)
+nrsaCanopyDensiometerTest.process <- function (actual, expected)
+{  
+    metsExpected <- dplyr::rename(expected, EXPECTED=VALUE)
 
     # Calculated values should be within 10E-7 of expected values, should
     # only be missing where they are supposed to be missing and nonmissing where
     # they are supposed to be nonmissing.
     # Note: the errs dataframe can be printed to show where the errors occur when
     # debugging.
-    tt <- merge(rr, metsExpected, by=c('SITE','METRIC'),all=T)
+    tt <- merge(actual, metsExpected, by=c('SITE','METRIC'), all=T)
     tt$diff <- tt$VALUE - tt$EXPECTED
 
     errs <- subset(tt, abs(diff) > 10^-5 | is.na(VALUE) != is.na(EXPECTED))
-    checkEquals(0, nrow(errs)
-               ,"Error: Canopy Densiometer  metrics are broken"
-               )
+    return(errs)
 }
 
 
@@ -123,7 +146,7 @@ nrsaCanopyDensiometer.testData <- function()
                                )
                    )
 
-  intermediateMessage('.2.2 Create and add Boat data', loc='end')
+  # Add in boatable data
 
   testBoat$RESULT <- c(2,10, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 2, 1, 10, 13
                       ,0, 8, 8,11, 0, 8, 0, 0, 0, 0, 1, 0,14,2, 0, 0, 0, 0, 0

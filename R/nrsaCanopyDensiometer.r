@@ -69,10 +69,10 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
 ################################################################################
 
 # Print an initial message
-  cat('Canopy Densiometer calculations:\n')
+  intermediateMessage('Canopy Densiometer calculations:', loc='start')
 
 # Convert factors to character variables in the channelcover data frame
-  intermediateMessage('.1 Convert factors to character variables.', loc='end')
+#  intermediateMessage('.1 Convert factors to character variables.', loc='end')
 #  channelcover <- convert_to_char(channelcover)
 
 # # Calculate the metrics
@@ -100,7 +100,7 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
 # # protocols	dataframe relating UID to the
 # #			  sampling protocol used at the site.
 # #
-    intermediateMessage('.1.0Canopy Densiometer mets', loc='end')
+#    intermediateMessage('.1.0Canopy Densiometer mets', loc='end')
 
     absentAsNULL <- function(df, ifdf, ...) {
         if(is.null(df)) return(NULL)
@@ -131,7 +131,7 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
     bts <- NULL
     btc <- NULL
 
-    intermediateMessage('.1.2 sent datasets to summaryby function', loc='end')  
+    intermediateMessage('.1')  
     if(!is.null(wDensiom)) {
         mdData <- subset(wDensiom, DIRECTION %in% wChannelMid)
         bkData <- subset(wDensiom, DIRECTION %in% wChannelBank)
@@ -153,7 +153,7 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
         btc <- summaryby(bDensiom,'count',"nbnk")
     }
 
-    intermediateMessage('.1.3 put dataset together and finish calculations', loc='end')
+    intermediateMessage('.2')  
     mets <- rbind(mdx,mds,mdc,bkx,bks,bkc,btx,bts,btc)
     mets$VALUE<-ifelse(mets$VALUE=='NaN', NA, mets$VALUE)
   
@@ -163,7 +163,7 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
                         ,mets$VALUE
                         )
     
-    intermediateMessage('.1.4 Done with function metsCanopyDensiometer.1 ', loc='end')
+    intermediateMessage('.Done', loc='end')
    
     return(mets)
 }
