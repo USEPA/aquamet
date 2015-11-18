@@ -335,6 +335,38 @@ recalcDiffs <- dfCompare(oldrecalc %>% dplyr::rename(SITE=UID, VALUE=RESULT), cd
 
 ##################################################
 #
+# Channel Characteristics
+
+bankgeometryBase <- dbGet('NRSA0809','tblBANKGEOMETRY2')
+channelcharBase <- dbGet('NRSA0809','tblCHANNELCHAR2')
+
+bankgeometry <- bankgeometryBase %>% 
+                dplyr::rename(SITE=BATCHNO, VALUE=RESULT) %>% 
+                mutate(PARAMETER=trimws(PARAMETER), SAMPLE_TYPE=trimws(SAMPLE_TYPE), TRANSECT=trimws(TRANSECT), VALUE=trimws(VALUE)) %>% 
+                subset(TRANSECT %in% LETTERS)
+channelchar <- channelcharBase %>% 
+                dplyr::rename(SITE=BATCHNO, VALUE=RESULT) %>% 
+                mutate(PARAMETER=trimws(PARAMETER), SAMPLE_TYPE=trimws(SAMPLE_TYPE), TRANSECT=trimws(TRANSECT), VALUE=trimws(VALUE))
+ccRecalc <- nrsaChannelChar(bankgeometry, channelchar)
+
+dd0 <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(ccRecalc$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
+               ,ccRecalc %>% mutate(METRIC=toupper(METRIC))
+               ,c('SITE','METRIC')
+               )
+# There are 9 differences, all becayse 'NA' is not equal to NA.
+
+
+
+
+
+
+
+
+
+##################################################
+#
 # Bed Stability
 
 bankgeometryBase <- dbGet('NRSA0809','tblBANKGEOMETRY2')
@@ -348,16 +380,6 @@ fishcoverBase <- dbGet('NRSA0809','tblFISHCOVER2')
 giscalcs0809 <- read.csv('l:/Priv/CORFiles/IM/Rwork/nrsa/results/gpsBasedCalculations_asOf201203008.csv', stringsAsFactors=FALSE)
 
 oldRecalcFull <- nrsaBedStability(bankgeometryBase, thalwegBase, visitsBase, channelgeometryBase, channelcrosssectionBase, littoralBase, woodBase, fishcoverBase, gisCalcs=giscalcs0809)
-
-
-
-
-
-
-
-
-
-
 
 
 # end of file
