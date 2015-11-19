@@ -355,15 +355,52 @@ dd0 <- dfCompare(currentMets %>%
                ,ccRecalc %>% mutate(METRIC=toupper(METRIC))
                ,c('SITE','METRIC')
                )
-# There are 9 differences, all becayse 'NA' is not equal to NA.
+# There are 9 differences, all because 'NA' is not equal to NA.
+
+cc <- nrsaChannelChar(bankfullWidth =         subset(channelchar, PARAMETER == 'BANKFULL')
+                     ,channelPattern =        subset(channelchar, PARAMETER == 'PATTERN')
+                     ,constraintFeatures =    subset(channelchar, PARAMETER == 'FEATURES')
+                     ,constraintMultiple =    subset(bankgeometry, PARAMETER == 'CONSTRT')
+                     ,constraintSingle =      subset(channelchar, PARAMETER == 'CONSTRNT')
+                     ,constraintPercent =     subset(channelchar, PARAMETER == 'PERCENT')
+                     ,seeOverBank =           subset(bankgeometry, PARAMETER == 'SEEOVRBK')
+                     ,shoreToVegDistance =    subset(bankgeometry, PARAMETER == 'SHOR2RIP')
+                     ,valleyConstraintUnseen =subset(channelchar, PARAMETER == 'VALLYBOX')
+                     ,valleyWidth =           subset(channelchar, PARAMETER == 'VALLEY')
+                     )
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(ccRecalc$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
+               ,cc %>% mutate(METRIC=toupper(METRIC))
+               ,c('SITE','METRIC')
+               )
+# There are the same 9 differences, all because 'NA' is not equal to NA.
 
 
-
-
-
-
-
-
+##################################################
+#
+# Channel Habitat
+thalwegBase <-  dbGet('NRSA0809', 'tblTHALWEG2')
+thalweg <- thalwegBase %>% mutate(PARAMETER=trimws(PARAMETER), SAMPLE_TYPE=trimws(SAMPLE_TYPE), TRANSECT=trimws(TRANSECT), STATION=trimws(STATION), RESULT=trimws(RESULT)) %>% 
+           dplyr::rename(SITE=BATCHNO,VALUE=RESULT) 
+chRecalc <- metsChannelHabitat(thalweg)
+dd0 <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(chRecalc$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
+               ,chRecalc %>% mutate(METRIC=toupper(METRIC))
+               ,c('SITE','METRIC')
+               )
+# Zero differences!
+ch <- nrsaChannelHabitat(bChannelUnit=thalweg %>% subset(PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THAL')
+                        ,wChannelUnit=thalweg %>% subset(PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THALW')
+                        )
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(chRecalc$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
+               ,chRecalc %>% mutate(METRIC=toupper(METRIC))
+               ,c('SITE','METRIC')
+               )
+# Zero differences still!
 
 ##################################################
 #
