@@ -402,6 +402,73 @@ dd <- dfCompare(currentMets %>%
                )
 # Zero differences still!
 
+
+##################################################
+#
+# Channel Morphology
+# NOTE: This was hard to get right -- need to capitalize UNITS, trimws() everything+, subset TRANSECT but keep 'NOT MARKED', or results will be quietly wrong.
+bankgeometryBase <- dbGet('NRSA0809', 'tblBANKGEOMETRY2')
+thalwegBase <- dbGet('NRSA0809', 'tblThalweg2')
+visitsBase <- dbGet('NRSA0809', 'tblVisits2')
+bankgeometry <- bankgeometryBase %>% 
+                dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+                mutate(TRANSECT=trimws(TRANSECT)
+                      ,TRANSDIR=trimws(TRANSDIR)
+                      ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+                      ,PARAMETER=trimws(PARAMETER)
+                      ,VALUE=trimws(VALUE)
+                      ,UNITS=trimws(UNITS)
+                      ) %>% 
+                subset(TRANSECT %in% LETTERS | SITE %in% wadedSites)
+thalweg <- thalwegBase %>% 
+            dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+            mutate(TRANSECT=trimws(TRANSECT)
+                  ,STATION=trimws(STATION)
+                  ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+                  ,PARAMETER=trimws(PARAMETER)
+                  ,VALUE=trimws(VALUE)
+                  ,UNITS=toupper(trimws(UNITS))
+                  ) %>% 
+            subset(TRANSECT %in% c(LETTERS,'NOT MARKED') | SITE %in% wadedSites)
+visits <- visitsBase %>% dplyr::rename(SITE=BATCHNO) %>% mutate(VALXSITE=trimws(VALXSITE))
+
+wadedSites <- subset(siteProtocol(visits$SITE, visits), PROTOCOL=='WADEABLE' | SITE %in% c(1417,15508))$SITE # Two sites are OTHER_NSP and PARBYBOAT but were waded
+#wadedSites <- subset(siteProtocol(visits$SITE, visits), PROTOCOL=='WADEABLE')$SITE 
+cmRecalc <- nrsaChannelMorphology(bankgeometry, thalweg, visits)
+dd0 <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(cmRecalc$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,cmRecalc %>% mutate(METRIC=toupper(METRIC)) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE))
+               ,c('SITE','METRIC')
+               )
+# zero differences! after some finagling..
+
+cm <- nrsaChannelMorphology(bBankHeight =     bankgeometry %>% subset(SITE %nin% wadedSites & PARAMETER %in% c('BANKHT','BANKHGT'))
+                           ,bBankWidth =      bankgeometry %>% subset(SITE %nin% wadedSites & PARAMETER=='BANKWID')
+                           ,bDepth =          thalweg %>% subset(SITE %nin% wadedSites & PARAMETER %in% c('DEP_POLE','DEP_SONR'))
+                           ,bIncisedHeight =  bankgeometry %>% subset(SITE %nin% wadedSites & PARAMETER %in% c('INCISED','INCISHGT'))
+                           ,bWettedWidth =    bankgeometry %>% subset(SITE %nin% wadedSites & PARAMETER=='WETWID')
+                           ,wBankHeight =     bankgeometry %>% subset(SITE %in% wadedSites & PARAMETER=='BANKHGT')
+                           ,wBankWidth =      bankgeometry %>% subset(SITE %in% wadedSites & PARAMETER=='BANKWID')
+                           ,wDepth =          thalweg %>% subset(SITE %in% wadedSites & PARAMETER=='DEPTH')
+                           ,wIncisedHeight =  bankgeometry %>% subset(SITE %in% wadedSites & PARAMETER=='INCISHGT')
+                           ,wWettedWidth =    thalweg %>% subset(SITE %in% wadedSites & PARAMETER=='WETWIDTH')
+                           )
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(cm$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,cm %>% mutate(METRIC=toupper(METRIC)) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE))
+               ,c('SITE','METRIC')
+               )
+# 33 differences all in 1417 (OTHER_NSP) and 15508 (PARBYBOAT), both recorded as wadeable.
+# In currentMets, this means that 15508 is missing 20 metrics -- all but DEPTH related 
+# values which are present but expressed in meters; should have been converted back to cm
+# as they are now. It also resulted in 1417 an incorrect reduction in values used
+# for metrics calculation, as well as unit mishandling noted for 15508.
+
+
+
+
 ##################################################
 #
 # Bed Stability

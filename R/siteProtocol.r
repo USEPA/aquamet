@@ -12,6 +12,7 @@ siteProtocol <- function(sites, visits) {
 #          call to subset.
 # 08/15/12 tmk: Modified data input to use a data frame containing the stream
 #          verification form data file rather than a csv file.
+# 11/19/15 cws Uses SITE instead of UID now.
 #
 # Relates NRSA UID values to the protocol used to sample them, based on the
 # information recorded on the Stream Verification form.
@@ -47,7 +48,7 @@ siteProtocol.1 <- function(sites, siteInfo) {
 #   siteInfo  A data frame with site information found in tblVISITS2
 
 # Use information to assess which protocol was used.
-  tt <- subset(siteInfo, UID %in% unique(sites))
+  tt <- subset(siteInfo, SITE %in% unique(sites))
 
 # Make easy determinations of BOATABLE, WADEABLE, NONE (unsampled) or
 # nothing at all if something slips through the cracks.
@@ -63,7 +64,7 @@ siteProtocol.1 <- function(sites, siteInfo) {
                                    ,'PARBYWADE','WADEABLE')
                 )
   if(any(selection)) tt[selection,]$PROTOCOL <- 'NONE'
-  tt <- subset(tt, select=c('UID', 'PROTOCOL'))
+  tt <- subset(tt, select=c('SITE', 'PROTOCOL'))
   
 # Return results
   return(tt)
