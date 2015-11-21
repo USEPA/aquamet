@@ -389,7 +389,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                             ,max
                             )
       wwidnoxb1 <- rename(wwidnoxb1, 'x', 'VALUE')
-     
+
       # used later, below for some aggregate metrics, but calculated here for
       # organizational purposes
       #                                         (sum of the sidechannel pair)
