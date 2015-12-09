@@ -467,6 +467,119 @@ dd <- dfCompare(currentMets %>%
 # for metrics calculation, as well as unit mishandling noted for 15508.
 
 
+##################################################
+# Fish Cover
+base_fishCover <- dbGet('NRSA0809','tblFISHCOVER2')
+fishCover <- base_fishCover %>% 
+             dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+             mutate(TRANSECT=trimws(TRANSECT)
+                   ,PARAMETER=trimws(PARAMETER)
+                   ,VALUE=trimws(VALUE)
+                   ) %>% 
+            subset(TRANSECT %in% LETTERS | SAMPLE_TYPE == 'PHAB_CHANW') # get rid of boatable side channels, as we did before for some reason
+
+fc <- nrsaFishCover(algae = fishCover %>% subset(PARAMETER=='ALGAE')
+                   ,boulder = fishCover %>% subset(PARAMETER=='BOULDR')
+                   ,brush = fishCover %>% subset(PARAMETER=='BRUSH')
+                   ,liveTree = fishCover %>% subset(PARAMETER=='LVTREE')
+                   ,macrophytes = fishCover %>% subset(PARAMETER=='MACPHY')
+                   ,overhang = fishCover %>% subset(PARAMETER=='OVRHNG')
+                   ,structures = fishCover %>% subset(PARAMETER=='STRUCT')
+                   ,undercut = fishCover %>% subset(PARAMETER %in% c('UNDCUT','UNDERCUT'))
+                   ,woodyDebris = fishCover %>% subset(PARAMETER=='WOODY')
+                   )
+
+
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(fc$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,fc %>% mutate(METRIC=toupper(METRIC)) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE))
+               ,c('SITE','METRIC')
+               )
+# No diffreences once data for boatable side channels are removed.
+
+
+##################################################
+# Invasive Species
+base_invasiveLegacy <- dbGet('NRSA0809','tblINVASIVELEGACY2')
+invasiveLegacy <- base_invasiveLegacy %>% 
+                  dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+                  mutate(TRANSECT=trimws(TRANSECT)
+                        ,PARAMETER=trimws(PARAMETER)
+                        ,VALUE=trimws(VALUE)
+                        ) %>% 
+                  subset(PARAMETER %in%  c('E_WTRMILF','HYDRILLA','W_HYACINTH','YLW_FLHEAR','P_LSTRIFE','G_REED','FLWR_RUSH','SALT_CED','MF_ROSE','SPURGE','NO_INVASIVES'))
+
+oneSpecies <- function(spName) {
+    if(spName %nin% invasiveLegacy$PARAMETER) return(NULL)
+    spData <- invasiveLegacy %>%
+              dcast(SITE+TRANSECT~PARAMETER, value.var='VALUE') %>%
+              within(VALUE <- ifelse(is.na(get(spName)), '', get(spName))) %>%
+              select(SITE, TRANSECT, VALUE)
+    return(spData)
+}
+is <- nrsaInvasiveSpecies(arudon = oneSpecies('G_REED')
+                         ,butumb = oneSpecies('FLWR_RUSH')
+                         ,eiccra = oneSpecies('W_HYACINTH')
+                         ,eupesu = oneSpecies('SPURGE')
+                         ,hydver = oneSpecies('HYDRILLA')
+                         ,lytsal = oneSpecies('P_LSTRIFE')
+                         ,myrspi = oneSpecies('E_WTRMILF')
+                         ,none   = oneSpecies('NO_INVASIVES')
+                         ,nympel = oneSpecies('YLW_FLHEAR')
+                         ,rosmul = oneSpecies('MF_ROSE')
+                         ,tamspp = oneSpecies('SALT_CED')
+                         )
+isold <- nrsaInvasiveSpecies(arudon = oneSpecies('G_REED')
+                         ,butumb = oneSpecies('FLWR_RUSH')
+                         ,eiccra = oneSpecies('W_HYACINTH')
+                         ,eupesu = oneSpecies('SPURGE')
+                         ,hydver = oneSpecies('HYDRILLA')
+                         ,lytsal = oneSpecies('P_LSTRIFE')
+                         ,myrspi = oneSpecies('E_WTRMILF')
+                         ,none   = oneSpecies('NO_INVASIVES')
+                         ,nympel = oneSpecies('YLW_FLTHEAR')    # 0809 calculations were done with this PARAMETER mis-spelling!!
+                         ,rosmul = oneSpecies('MF_ROSE')
+                         ,tamspp = oneSpecies('SALT_CED')
+                         )
+
+# make comparisons after removing new rows with f_* = 0, which weren't included in the old mets
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(is$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,is %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>% 
+                subset(METRIC=='IP_SCORE' | as.numeric(VALUE) != 0)
+               ,c('SITE','METRIC')
+               )
+dd2 <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(is$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,isold %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>% 
+                subset(METRIC=='IP_SCORE' | as.numeric(VALUE) != 0)
+               ,c('SITE','METRIC')
+               )
+
+# 5 differences, all in 15652 and due to difference in how yellow floating heart data was included or not.  Damn.
+
+source('c:/Users/cseelige/local/aquamet/R/metsInvasiveSpecies.r')
+isRecalc <- metsInvasiveSpecies(base_invasiveLegacy %>% dplyr::rename(UID=BATCHNO) %>% mutate(TRANSECT=trimws(TRANSECT),PARAMETER=trimws(PARAMETER),RESULT=trimws(RESULT)) )
+ddRecalc <- dfCompare(is %>% subset(METRIC=='IP_SCORE' | as.numeric(VALUE) != 0)
+                     ,isRecalc %>% dplyr::rename(SITE=UID, VALUE=RESULT)
+                     ,c('SITE','METRIC')
+                     )
+
+##################################################
+
+
+##################################################
+
+
+##################################################
+
 
 
 ##################################################
