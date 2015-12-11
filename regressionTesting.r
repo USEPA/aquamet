@@ -573,9 +573,123 @@ ddRecalc <- dfCompare(is %>% subset(METRIC=='IP_SCORE' | as.numeric(VALUE) != 0)
                      )
 
 ##################################################
+# Large woody debris
+base_largewoody <- dbGet('NRSA0809','tblWOOD2')
+largewoody <- base_largewoody %>% 
+              dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+              mutate(TRANSECT=trimws(TRANSECT)
+                    ,PARAMETER=trimws(PARAMETER)
+                    ,VALUE=trimws(VALUE)
+                    ) %>%
+              subset(TRANSECT %in% LETTERS | SAMPLE_TYPE == 'PHAB_THALW') # get rid of boatable side channels, as we did before for some reason
+
+lw <- nrsaLargeWoody(bDryExtralargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DXDLL')
+                    ,bDryLargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DLDLL')
+                    ,bDryMediumDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DMDLL')
+                    ,bDrySmallDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DSDLL')
+                    ,bDryExtralargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DXDML')
+                    ,bDryLargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DLDML')
+                    ,bDryMediumDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DMDML')
+                    ,bDrySmallDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DSDML')
+                    ,bDryExtralargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DXDSL')
+                    ,bDryLargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DLDSL')
+                    ,bDryMediumDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DMDSL')
+                    ,bDrySmallDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DSDSL')
+                    ,bWetExtralargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WXDLL')
+                    ,bWetLargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WLDLL')
+                    ,bWetMediumDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WMDLL')
+                    ,bWetSmallDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WSDLL')
+                    ,bWetExtralargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WXDML')
+                    ,bWetLargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WLDML')
+                    ,bWetMediumDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WMDML')
+                    ,bWetSmallDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WSDML')
+                    ,bWetExtralargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WXDSL')
+                    ,bWetLargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WLDSL')
+                    ,bWetMediumDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WMDSL')
+                    ,bWetSmallDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WSDSL')
+                    ,wDryExtralargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DXDLL')
+                    ,wDryLargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DLDLL')
+                    ,wDryMediumDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DMDLL')
+                    ,wDrySmallDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DSDLL')
+                    ,wDryExtralargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DXDML')
+                    ,wDryLargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DLDML')
+                    ,wDryMediumDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DMDML')
+                    ,wDrySmallDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DSDML')
+                    ,wDryExtralargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DXDSL')
+                    ,wDryLargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DLDSL')
+                    ,wDryMediumDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DMDSL')
+                    ,wDrySmallDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DSDSL')
+                    ,wWetExtralargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WXDLL')
+                    ,wWetLargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WLDLL')
+                    ,wWetMediumDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WMDLL')
+                    ,wWetSmallDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WSDLL')
+                    ,wWetExtralargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WXDML')
+                    ,wWetLargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WLDML')
+                    ,wWetMediumDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WMDML')
+                    ,wWetSmallDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WSDML')
+                    ,wWetExtralargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WXDSL')
+                    ,wWetLargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WLDSL')
+                    ,wWetMediumDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WMDSL')
+                    ,wWetSmallDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WSDSL')
+                    ,reachlength = subset(currentMets, PARAMETER=='REACHLEN') %>% dplyr::rename(SITE=BATCHNO,VALUE=RESULT)
+                    ,meanBankfullWidth = subset(currentMets, PARAMETER=='XBKF_W') %>% dplyr::rename(SITE=BATCHNO,VALUE=RESULT)
+                    )
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(lw$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,lw %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) 
+               ,c('SITE','METRIC')
+               )
+ss <- merge(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(lw$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% 
+                mutate(oldVALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
+                select(SITE, METRIC, oldVALUE) %>% mutate(inOld = TRUE)
+               ,lw %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(newVALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE))  %>%
+                select(SITE, METRIC, newVALUE) %>% mutate(inNew = TRUE)
+               ,c('SITE','METRIC'), all=TRUE
+               )
+# 276 new rows, all for sites 13785 & 15508, plus 45 differences in site 1417. 
+# Reasons:
+# 1417 was calculated as boatable, but here is calculated as wadeable.
+# 15508 is OTHER_NSP (neither boatable nor wadeable)
+# 13785 is not in tblVISITS2
 
 
 ##################################################
+# Legacy Tree metrics
+base_invasiveLegacy <- dbGet('NRSA0809','tblINVASIVELEGACY2')
+invasiveLegacy <- base_invasiveLegacy %>% 
+                  dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+                  mutate(TRANSECT=trimws(TRANSECT)
+                        ,PARAMETER=trimws(PARAMETER)
+                        ,VALUE=trimws(VALUE)
+                        ) %>% subset(PARAMETER %in% c('DBH','DISTANCE','HEIGHT','SPECIES','TREE_TYP','NOT_VIS'))
+
+lt <- nrsaLegacyTree(dbhClass = subset(invasiveLegacy, PARAMETER=='DBH')
+                    ,distance = subset(invasiveLegacy, PARAMETER=='DISTANCE')
+                    ,heightClass = subset(invasiveLegacy, PARAMETER=='HEIGHT')
+                    ,species = subset(invasiveLegacy, PARAMETER=='SPECIES')
+                    ,type = subset(invasiveLegacy, PARAMETER=='TREE_TYP')
+                    )
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(lt$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,lt %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) 
+               ,c('SITE','METRIC')
+               )
+
+# 468 differences
+# Reasons: 
+#  287 in LTMDDOM & LTMDSUB and thus (likely) due to ordering of species.
+#  8 in LTMDDIST that changed from NaN to NA
+#  173 in LTMXSPP, which is row-order dependent.
 
 
 ##################################################
