@@ -693,7 +693,49 @@ dd <- dfCompare(currentMets %>%
 
 
 ##################################################
+# Riparian vegetation metrics
+base_riparianveg <- dbGet('NRSA0809','tblVISRIP2')
+riparianveg <- base_riparianveg %>% 
+               dplyr::rename(SITE=BATCHNO, VALUE=RESULT, BANK=TRANSDIR) %>% 
+               mutate(TRANSECT=trimws(TRANSECT)
+                     ,PARAMETER=trimws(PARAMETER)
+                     ,BANK=trimws(BANK)
+                     ,VALUE=trimws(VALUE)
+                     ) %>%
+               subset(TRANSECT %in% LETTERS | SAMPLE_TYPE == 'PHAB_CHANW') # get rid of boatable side channels, as we did before for some reason
 
+
+rv <- nrsaRiparianVegetation(canopyCoverLargeDiameter = subset(riparianveg, PARAMETER=='CANBTRE')
+                            ,canopyCoverSmallDiameter = subset(riparianveg, PARAMETER=='CANSTRE')
+                            ,canopyVegetationType = subset(riparianveg, PARAMETER=='CANVEG')
+                            ,groundCoverBare = subset(riparianveg, PARAMETER=='BARE')
+                            ,groundCoverNonwoody = subset(riparianveg, PARAMETER=='GCNWDY')
+                            ,groundCoverWoody = subset(riparianveg, PARAMETER=='GCWDY')
+                            ,understoryCoverNonwoody = subset(riparianveg, PARAMETER=='UNDNWDY')
+                            ,understoryCoverWoody = subset(riparianveg, PARAMETER=='UNDWDY')
+                            ,understoryVegetationType = subset(riparianveg, PARAMETER=='UNDERVEG')
+                            )
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(rv$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,rv %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) 
+               ,c('SITE','METRIC')
+               )
+# No differences!
+
+
+##################################################
+# Substrate embededness
+
+
+##################################################
+#
+
+
+##################################################
+#
 
 
 ##################################################
