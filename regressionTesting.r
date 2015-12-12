@@ -728,7 +728,25 @@ dd <- dfCompare(currentMets %>%
 
 ##################################################
 # Substrate embededness
-
+base_ccs <- dbGet('NRSA0809','tblCHANNELCROSSSECTION2')
+ccs <- base_ccs %>% 
+                  dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+                  mutate(TRANSECT=trimws(TRANSECT)
+                        ,PARAMETER=trimws(PARAMETER)
+                        ,VALUE=trimws(VALUE)
+                        ) #%>% subset(PARAMETER %in% c('DBH','DISTANCE','HEIGHT','SPECIES','TREE_TYP','NOT_VIS'))
+se <- nrsaSubstrateEmbed(percentEmbedded = subset(ccs, PARAMETER=='EMBED') %>% 
+                                           mutate(ONBANK=ifelse(TRANSDIR %in% c('LC','CT','RC'), FALSE, TRUE))
+                        )
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(se$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+               ,se %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) 
+               ,c('SITE','METRIC')
+               )
+# No differences!
 
 ##################################################
 #
