@@ -262,7 +262,7 @@ sb <- nrsaSlopeBearing(bBearing = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PA
                       ,wIncrement = subset(thal, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
                       ,wProportion = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER))
                       ,wSlope = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER))
-                      ,wStations = thal[c('SITE','TRANSECT','STATION')]
+                      ,wStations = thal[c('SITE','TRANSECT','STATION')] 
                       ,gisCalcs = gisCalcs
                       )
 identical(sb,sb0)
@@ -278,6 +278,14 @@ dd <- dfCompare(currentMets %>%
                ,c('SITE','METRIC')
                ,zeroFudge=1e-6
                )
+# 46 differences:
+#   30 PCTCLINOMETER rows present in old calculations and missing in new calculations
+#   Values for sites 1417 & 15508 of XSLOPE_FIELD, VSLOPE, NSLP, TRANSPC & XBEARING in new calculations but not in old ones
+#   Value of SINU for site 15508 in new calculations but not in old ones
+#   2 differences at 12195 of TRANSPC and XBEARING
+#   2 differences at 12200 of TRANSPC and XBEARING
+#   1 difference at 15508 of XSLOPE
+
 
 ##########################################################
 #
@@ -749,8 +757,228 @@ dd <- dfCompare(currentMets %>%
 # No differences!
 
 ##################################################
-#
+# Residual pools
+base_thalweg <- dbGet('NRSA0809', 'tblTHALWEG2')
+base_channelGeometry <- dbGet('NRSA0809', 'tblCHANNELGEOMETRY2')
+thalweg <- base_thalweg %>% 
+           dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+           mutate(TRANSECT = trimws(TRANSECT)
+                 ,STATION = as.numeric(trimws(STATION))
+                 ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
+                 ,PARAMETER = trimws(PARAMETER)
+                 ,VALUE = trimws(VALUE)
+                 ,UNITS = toupper(trimws(UNITS))
+                 ) %>% 
+           subset(TRANSECT %in% c(LETTERS,'NOT MARKED'))
+channelGeometry <- base_channelGeometry %>%
+                   dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+                   mutate(TRANSECT = trimws(TRANSECT)
+                         ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
+                         ,PARAMETER = trimws(PARAMETER)
+                         ,LINE = trimws(LINE)
+                         ,VALUE = trimws(VALUE)
+                         )
+rp0 <- rp
+rp <- nrsaResidualPools(bDepth = thalweg %>% 
+                                 subset(PARAMETER %in% c('DEP_POLE','DEP_SONR')) %>%
+                                 mutate(VALUE = ifelse(UNITS == 'M', as.numeric(VALUE)
+                                               ,ifelse(UNITS == 'FT', 0.3048 * as.numeric(VALUE), NA
+                                                      ))
+                                       )
+                       ,wDepth = thalweg %>% subset(PARAMETER %in% c('DEPTH'))
+                       ,siteSlopes = sb %>% subset(METRIC == 'xslope')
+#                       ,siteSlopes = currentMets %>% dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% subset(METRIC == 'XSLOPE')
+#                        ,transectSpacing = rbind(channelGeometry %>%                          # values for boatable sites # THIS REFLECTS THE OLD, BAD METHOD FOR BOATABLE ACTRANSP 
+#                                                 subset(PARAMETER %in% c('ACTRANSP', 'DISTANCE') & (LINE %in% c(NA, 999))
+#                                                       ) %>%
+#                                                 dcast(SITE+TRANSECT~PARAMETER, value.var='VALUE') %>%  # Fill in missing ACTRANSP values with DISTANCE when possible.
+#                                                 mutate(VALUE = ifelse(is.na(ACTRANSP), DISTANCE, ACTRANSP)) %>%
+#                                                 select(SITE,TRANSECT,VALUE)
+                       ,transectSpacing = rbind(merge(channelGeometry %>%                     # values for wadeable sites
+                                                      subset(PARAMETER == 'DISTANCE') %>%     # sum DISTANCE between waypoints, if calculated
+                                                      ddply(.(SITE,TRANSECT), summarise
+                                                           ,DISTANCE=protectedSum(as.numeric(VALUE), na.rm=TRUE) 
+                                                           )
+                                                     ,channelGeometry %>%                     # ACTRANSP value is distance between transects
+                                                      subset(PARAMETER == 'ACTRANSP') %>%
+                                                      dplyr::rename(ACTRANSP = VALUE) %>%
+                                                      select(SITE, TRANSECT, ACTRANSP)
+                                                     ,by=c('SITE','TRANSECT')
+                                                     ,all=TRUE                                  # include all sites with ACTRANSP or DISTANCE, not just sites with both, dammit
+                                                     ) %>% 
+                                                mutate(VALUE = ifelse(is.na(ACTRANSP), DISTANCE, ACTRANSP)) %>%
+                                                select(SITE,TRANSECT,VALUE)   
+                                               ,thalweg %>%                                  # values for wadeable sites
+                                                subset(PARAMETER == 'INCREMNT') %>%
+                                                select(SITE,VALUE) %>%
+                                                merge(nWadeableStationsPerTransect(thalweg %>% subset(PARAMETER=='DEPTH'))
+                                                     ,by='SITE', all.x=TRUE
+                                                     ) %>%
+                                                mutate(VALUE = as.numeric(VALUE) * nSta
+                                                      ,nSta = NULL
+                                                      )
+                                               )
+                       ,writeIntermediateFiles = TRUE
+                       ,oldeMethods = FALSE
+                       )
+rpClassic <- metsResidualPools.1(base_thalweg%>%                                # Use version of function in metsResidualPoolsUpdatedButWithOldCallingInterface.r to correctly use nWadeableStationsPerTransect()
+                                 dplyr::rename(UID=BATCHNO) %>% 
+                                 mutate(TRANSECT = trimws(TRANSECT)
+                                       ,STATION = as.numeric(trimws(STATION))
+                                       ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
+                                       ,PARAMETER = trimws(PARAMETER)
+                                       ,RESULT = trimws(RESULT)
+                                       ,UNITS = toupper(trimws(UNITS))
+                                       ) %>% 
+                                 subset(TRANSECT %in% LETTERS)
+                                ,base_channelGeometry %>% 
+                                 dplyr::rename(UID=BATCHNO) %>% 
+                                 mutate(TRANSECT = trimws(TRANSECT)
+                                       ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
+                                       ,PARAMETER = trimws(PARAMETER)
+                                       ,LINE = trimws(LINE)
+                                       ,RESULT = trimws(RESULT)
+                                       ) %>%
+                                 subset(PARAMETER %in% c('ACTRANSP','DISTANCE'))
+                                ,subset(currentMets, PARAMETER %in% c('XSLOPE','VSLOPE')) %>% 
+                                 mutate(PARAMETER = tolower(PARAMETER)) %>%
+                                 dplyr::rename(UID=BATCHNO, METRIC=PARAMETER)
+                                ,siteProtocol(unique(thalweg$SITE), visits) %>%
+                                 dplyr::rename(UID=SITE)
+                                ,writeIntermediateFiles=TRUE
+                                )
+ddOldRecalc <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(rpClassic$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
+                mutate(VALUE = as.numeric(VALUE))
+               ,rpClassic %>% dplyr::rename(SITE=UID,VALUE=RESULT) %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>%
+                mutate(VALUE = as.numeric(VALUE))
+               ,c('SITE','METRIC')
+               ,zeroFudge = 1e-10
+               )
+# Shows 30 differences
+#   21 values for boatable site 12195 now have non-NA values.  This was due to 
+#      how transect spacing was obtained from channelGeometry; this site used LINE=1
+#      instead of NA or 999; hence subsetting by LINE is not needed or wanted.
+#    9 values for boatable site 12200 are different.  Most are close, but rp100
+#      is over 2x the previous value.  Since areasum is very close, this means 
+#      that the reachlen value (calculated as the sum of the incremnt values) is
+#      now less than half what it was.
 
+
+ddOldNew <- dfCompare(currentMets %>% 
+                      subset(PARAMETER %in% toupper(unique(rp$METRIC))) %>% 
+                      dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
+                      mutate(VALUE = as.numeric(VALUE))
+                     ,rp %>% 
+                      mutate(METRIC=toupper(METRIC)) %>% 
+                      mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>%
+                      mutate(VALUE = as.numeric(VALUE))
+                     ,c('SITE','METRIC')
+                     ,zeroFudge = 1e-10
+                     )
+# Results show 49 differences
+# 12195 is boatable and has 21 differences due to the ACTRANSP/DISTANCE values not being included      # EXPLAINED by correcting how DISTANCE was included in transectSpacing
+#       because they occur on LINE=1,2.  To fix this, DISTANCE in this argument
+#       needs to be the sum of DISTANCE values at each TRANSECT. New values are
+#       correct.
+# 12200 is boatable and has 9 differences, all within 1e-3 except rp100, which is over 2x the previous value.   # EXPLAINED by correcting how DISTANCE was included in transectSpacing
+#       Since areasum is very close, this means that the reachlen value (calculated as the
+#       sum of the incremnt values) is now less than half what it was.  After some
+#       comparison of the old and new mets code and looking at the data, the old
+#       mets were miscalculated; by not subsetting the transect spacing values by
+#       LINE, both DISTANCE at LINE=1 and ACTRANSP at LINE=NA were included in the
+#       ACTRANSP determination, causing it to be roughly double what it should be.
+#                SITE TRANSECT LINE ACTRANSP   DISTANCE
+#           4217 12200        A    1     <NA> 59.5904966
+#           4218 12200        A <NA>       60       <NA>
+#           4219 12200        B    1     <NA>         60
+#           4220 12200        B <NA>       60       <NA>
+#           4221 12200        C    1     <NA>         60
+#           4222 12200        C <NA>       60       <NA>
+#           ...
+#       New values are correct.
+#  1417 is parbyboat and has 6 differences, all off by a factor of 100, indicating          # EXPLAINED as processing wadeable depths as boatable ones.
+#       that this site was processed as boatable but the data was recorded as 
+#       wadeable. New mets values are correct.
+# 15508 is recorded as OTHER_NSP and was processed as wadeable, and has 13                  # PARTLY FIXED with currentMets slopes, remaining 5 are explained as a units issue.
+#       differences.  The XSLOPE for this site has changed from 0.23366, as used
+#       in the classical recalculation, to 0.0127324 in the new calculations.
+#       Using the value of XSLOPE in currentMets reduces the difference count to 5
+#       values that are 100x the 'classically recalculated' values: rpgt05x, 
+#       rpgt10x, rpmxdep, rpvdep, rpxdep.  This is because the code assumes all
+#       sites that are not WADEABLE use BOATABLE protocol, and thus earlier
+#       calculations did not multiply by 100 to convert the units back to CM.
+#       That assumption will be accurate in the new code if the wDepths and bDepths
+#       arguments are correct.
+
+
+ddRecalcNew <- dfCompare(rpClassic %>% dplyr::rename(SITE=UID, VALUE=RESULT)
+                        ,rp  
+                        ,c('SITE','METRIC')
+                        ,zeroFudge = 1e-10
+                        )
+# Results in 45 differences
+# 12195 is boatable and has 17 (was 21) differences due to the ACTRANSP/DISTANCE values not being included      # EXPLAINED by correcting how DISTANCE was included in transectSpacing
+#       because they occur on LINE=1,2.  To fix this, DISTANCE in this argument
+#       needs to be the sum of DISTANCE values at each TRANSECT. New values are
+#       correct.
+# 12200 is boatable and has 9 differences, all within 1e-3 except rp100, which is over 2x the previous value.   # EXPLAINED by correcting how DISTANCE was included in transectSpacing
+#       Since areasum is very close, this means that the reachlen value (calculated as the
+#       sum of the incremnt values) is now less than half what it was.  After some
+#       comparison of the old and new mets code and looking at the data, the old
+#       mets were miscalculated; by not subsetting the transect spacing values by
+#       LINE, both DISTANCE at LINE=1 and ACTRANSP at LINE=NA were included in the
+#       ACTRANSP determination, causing it to be roughly double what it should be.
+#                SITE TRANSECT LINE ACTRANSP   DISTANCE
+#           4217 12200        A    1     <NA> 59.5904966
+#           4218 12200        A <NA>       60       <NA>
+#           4219 12200        B    1     <NA>         60
+#           4220 12200        B <NA>       60       <NA>
+#           4221 12200        C    1     <NA>         60
+#           4222 12200        C <NA>       60       <NA>
+#           ...
+#       New values are correct.
+# 12990 is wadeable and has 18 differences, with another large difference in rp100 (14 down to 5.4).    # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+#       This seems due to the difference in how the thalweg depths are provided to 
+#       nWadeableStationsPerTransect().  Currently only PARAMETER=='DEPTH' rows
+#       are provided, but in the past the entire table was.  This means that
+#       instead of each transect having 10 stations, now A has 4, B has 8, I has 5
+#       and J has 0.
+# 13398 is wadeable and has 19 differences.  There is some difference due to A              # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+#       now having 10 instead of 15 stations
+#  1417 is parbyboat and has 6 differences, all off by a factor of 100, indicating          # EXPLAINED as processing wadeable depths as boatable ones.
+#       that this site was processed as boatable but the data was recorded as 
+#       wadeable. New mets values are correct.
+# 14269 is wadeable and has 21 differences, all now having NA values. This may              # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+#       also be due to the data absence of PARAMETER=='DEPTH' rows at A0-9, 
+#       B0-9, C0 and J1-J9.  See 14655 for another reason for this.
+# 14655 is wadeable and has 21 differences, all now having NA values. This is               # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+#       because the value of INCREMNT is lost during the re-assembly of the 
+#       thalweg dataframe: the merge of transectSpacing (which has VALUE=46 for
+#       transects A-J) and nWadeableStationsPerTransect(thalwegDepths), which has
+#       nsta=10 for transects B-J but not A, results in the calculated INCREMNT
+#       value to be NA at A.  Since .dataOrganization uses the INCREMNT value
+#       at the start of the reach for the entire reach, the value is set to NA
+#       and the calcualtions go awry.  This might be fixed by eliminating transects
+#       with no DEPTH values from the transectSpacing argument, i.e. by including
+#       only DEPTH rows in the call to nWadeableStationsPerTransect().
+# 14894 is wadeable and has 21 differences, all now having NA values.  It has no            # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+#       rows for A1-9, B1-9, C1-9 and D1-9, but has nonmissing DEPTHs E0-J9. This
+#       may be addressed as in 14655.
+# 15508 is recorded as OTHER_NSP and was processed as wadeable, and has 13                  # PARTLY FIXED if using currentMets slopes, remaining 5 are explained as a units issue.
+#       differences.  The XSLOPE for this site has changed from 0.23366, as used
+#       in the classical recalculation, to 0.0127324 in the new calculations.
+#       Using the value of XSLOPE in currentMets reduces the difference count to 5
+#       values that are 100x the 'classically recalculated' values: rpgt05x, 
+#       rpgt10x, rpmxdep, rpvdep, rpxdep.  This is because the code assumes all
+#       sites that are not WADEABLE use BOATABLE protocol, and thus earlier
+#       calculations did not multiply by 100 to convert the units back to CM.
+#       That assumption will be accurate in the new code if the wDepths and bDepths
+#       arguments are correct.
+#
 
 ##################################################
 #

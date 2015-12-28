@@ -665,84 +665,213 @@
 nrsaResidualPoolsTest <- function()
 # Unit test for nrsaResidualPools()
 {
-  # Create fake input data
-  fakeThal <- nrsaResidualPoolsTest.createThalweg()
-  fakeThal <- subset(fakeThal, TRANSECT %in% LETTERS[1:11])
-  fakeActransp <- nrsaResidualPoolsTest.createActransp()
-  fakeSlopes <- nrsaResidualPoolsTest.createSlopes()
-  fakeProtocol <- nrsaResidualPoolsTest.createProtocol()
-  
-  # Test expected reorganization with both protocols
-  intermediateMessage('\nTesting with both protocols', loc='start')
-  nrsaResidualPoolsTest.process(fakeThal, fakeActransp, fakeSlopes, fakeProtocol)
+    nrsaResidualPoolsTest.individualComponents()
+    nrsaResidualPoolsTest.integratedComponentsBothProtocols()
+    nrsaResidualPoolsTest.integratedComponentsBoatableProtocol()
+    nrsaResidualPoolsTest.integratedComponentsWadeableProtocol()
+}
 
-  
-  # Create streams-only data and test expected reorganization
-  intermediateMessage('Testing with wadeable protocol data')
-  fakeThalStreams <- subset(fakeThal
-                           ,SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE
-                           )
-  fakeActranspStreams <- subset(fakeActransp
-                               ,SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE
-                               )
-  fakeSlopesStreams <- subset(fakeSlopes
+nrsaResidualPoolsTest.individualComponents <- function()
+# tests individual steps in calculations
+{
+    # Create fake input data
+    fakeThal <- nrsaResidualPoolsTest.createThalweg()
+    fakeThal <- subset(fakeThal, TRANSECT %in% LETTERS[1:11])
+    fakeActransp <- nrsaResidualPoolsTest.createActransp()
+    fakeSlopes <- nrsaResidualPoolsTest.createSlopes()
+    fakeProtocol <- nrsaResidualPoolsTest.createProtocol()
+    
+    # Test expected reorganization with both protocols
+    intermediateMessage('\nTesting with both protocols', loc='start')
+    nrsaResidualPoolsTest.process(fakeThal, fakeActransp, fakeSlopes, fakeProtocol)
+    
+    
+    # Create streams-only data and test expected reorganization
+    intermediateMessage('Testing with wadeable protocol data')
+    fakeThalStreams <- subset(fakeThal
                              ,SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE
                              )
-  fakeProtocolStreams <- subset(fakeProtocol
+    fakeActranspStreams <- subset(fakeActransp
+                                 ,SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE
+                                 )
+    fakeSlopesStreams <- subset(fakeSlopes
                                ,SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE
                                )
-
-  nrsaResidualPoolsTest.process(fakeThalStreams, fakeActranspStreams
-                               ,fakeSlopesStreams, fakeProtocolStreams
-                               )
-
-  
-  # Create rivers-only data and test expected reorganization
-  intermediateMessage('\nTesting with boatable protocol data', loc='start')
-  fakeThalRivers <- subset(fakeThal
-                          ,SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE
-                          )
-  fakeActranspRivers <- subset(fakeActransp
-                              ,SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE
-                              )
-  fakeSlopesRivers <- subset(fakeSlopes
+    fakeProtocolStreams <- subset(fakeProtocol
+                                 ,SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE
+                                 )
+    
+    nrsaResidualPoolsTest.process(fakeThalStreams, fakeActranspStreams
+                                 ,fakeSlopesStreams, fakeProtocolStreams
+                                 )
+    
+    
+    # Create rivers-only data and test expected reorganization
+    intermediateMessage('\nTesting with boatable protocol data', loc='start')
+    fakeThalRivers <- subset(fakeThal
                             ,SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE
                             )
-  fakeProtocolRivers <- subset(fakeProtocol
+    fakeActranspRivers <- subset(fakeActransp
+                                ,SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE
+                                )
+    fakeSlopesRivers <- subset(fakeSlopes
                               ,SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE
                               )
-
-  nrsaResidualPoolsTest.process(fakeThalRivers, fakeActranspRivers
-                               ,fakeSlopesRivers, fakeProtocolRivers
-                               )
-
-  # Now that individual rp functions are tested, perform an integration test of
-  # of the calculation methods
-  intermediateMessage('\nIntegrated testing', loc='start')
-  rr <- nrsaResidualPools(fakeThal, fakeActransp, fakeSlopes, fakeProtocol
-                         ,writeIntermediateFiles=FALSE, oldeMethods=TRUE
-                         )
-
-  tt <- nrsaResidualPoolsTest.createSiteSummaries(unique(fakeThal$SITE))
-  ee <- dfLengthen(tt
-                  ,'SITE','METRIC','VALUE'
-                  ,names(tt)[names(tt) %nin% c('SITE')]
-                  )
-  comparisons <- transform(merge(ee,rr, by=c('SITE','METRIC')
-                                ,suffix= c('.expected','.actual')
+    fakeProtocolRivers <- subset(fakeProtocol
+                                ,SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE
                                 )
-                          ,err = VALUE.actual - VALUE.expected
-                          ,relerr = (VALUE.actual - VALUE.expected)/VALUE.expected
-                          )
-  checkEquals(0, nrow(subset(comparisons, abs(relerr) > 1e-4))
-             ,"Error: nrsaResidualPools failed integration test"
-             )
+    
+    nrsaResidualPoolsTest.process(fakeThalRivers, fakeActranspRivers
+                                 ,fakeSlopesRivers, fakeProtocolRivers
+                                 )
 }
 
 
+nrsaResidualPoolsTest.integratedComponentsBothProtocols <- function()
+# Test function as it is called by the user
+{
+    # Create fake input data
+    fakeThal <- nrsaResidualPoolsTest.createThalweg() 
+    fakeThal <- subset(fakeThal, TRANSECT %in% LETTERS[1:11])
+    fakeActransp <- nrsaResidualPoolsTest.createActransp()
+    fakeSlopes <- nrsaResidualPoolsTest.createSlopes()
+    fakeProtocol <- nrsaResidualPoolsTest.createProtocol()
 
-nrsaResidualPoolsTest.process <-
-  function(fakeThal, fakeActransp, fakeSlopes, fakeProtocol)
+    # Test with both protocols
+    intermediateMessage('\nIntegrated testing with both protocols', loc='start')
+    rr <- nrsaResidualPools(bDepth = fakeThal %>%                                         # All boatable depths are in M as expected, so no need to convert units.
+                                     subset(PARAMETER %in% c('DEP_SONR','DEP_POLE')) %>%
+                                     select(-PARAMETER)      
+                           ,wDepth = fakeThal %>%                                         # All wadeable depths are in CM as expected, so no need to convert units
+                                     subset(PARAMETER == 'DEPTH') %>%
+                                     select(-PARAMETER)      
+                           ,siteSlopes = fakeSlopes
+                           ,transectSpacing = rbind(fakeActransp                          # boatable sites are easy
+                                                   ,fakeThal %>%                          # wadeable sites aren't.
+                                                    subset(PARAMETER=='INCREMNT') %>%
+                                                    merge(nWadeableStationsPerTransect(fakeThal)
+                                                         ,by=c('SITE','TRANSECT'), all=TRUE
+                                                         ) %>% 
+                                                    mutate(VALUE = as.numeric(VALUE) * as.numeric(nSta)
+                                                          ,PARAMETER = 'ACTRANSP'
+                                                          ) %>%
+                                                    subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE &
+                                                           STATION==0
+                                                          ) %>%
+                                                    select(SITE, TRANSECT, PARAMETER, VALUE)
+                                                   )
+                           ,writeIntermediateFiles=FALSE, oldeMethods=TRUE
+                           )
+
+    tt <- nrsaResidualPoolsTest.createSiteSummaries(unique(fakeThal$SITE))
+    ee <- dfLengthen(tt
+                    ,'SITE','METRIC','VALUE'
+                    ,names(tt)[names(tt) %nin% c('SITE')]
+                    )
+    comparisons <- transform(merge(ee,rr, by=c('SITE','METRIC')
+                                  ,suffix= c('.expected','.actual')
+                                  )
+                            ,err = VALUE.actual - VALUE.expected
+                            ,relerr = (VALUE.actual - VALUE.expected)/VALUE.expected
+                            )
+    checkEquals(0, nrow(subset(comparisons, abs(relerr) > 1e-4))
+               ,"Error: nrsaResidualPools failed integration test"
+               )
+}
+
+
+nrsaResidualPoolsTest.integratedComponentsBoatableProtocol <- function()
+# Test function as it is called by the user
+{
+    # Create fake input data
+    fakeThal <- nrsaResidualPoolsTest.createThalweg() 
+    fakeThal <- subset(fakeThal, TRANSECT %in% LETTERS[1:11])
+    fakeActransp <- nrsaResidualPoolsTest.createActransp()
+    fakeSlopes <- nrsaResidualPoolsTest.createSlopes()
+    fakeProtocol <- nrsaResidualPoolsTest.createProtocol()
+
+    # Test with both protocols
+    intermediateMessage('\nIntegrated testing with Boatable data', loc='start')
+    rr <- nrsaResidualPools(bDepth = fakeThal %>%                                         # All boatable depths are in M as expected, so no need to convert units.
+                                     subset(PARAMETER %in% c('DEP_SONR','DEP_POLE')) %>%
+                                     select(-PARAMETER) %>% 
+                                     subset(SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE)
+                           ,wDepth = NULL      
+                           ,siteSlopes = fakeSlopes %>% 
+                                         subset(SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE)
+                           ,transectSpacing = fakeActransp
+                           ,writeIntermediateFiles=FALSE, oldeMethods=TRUE
+                           )
+
+    tt <- nrsaResidualPoolsTest.createSiteSummaries(unique(fakeThal$SITE))
+    ee <- dfLengthen(tt
+                    ,'SITE','METRIC','VALUE'
+                    ,names(tt)[names(tt) %nin% c('SITE')]
+                    )
+    comparisons <- transform(merge(ee,rr, by=c('SITE','METRIC')
+                                  ,suffix= c('.expected','.actual')
+                                  )
+                            ,err = VALUE.actual - VALUE.expected
+                            ,relerr = (VALUE.actual - VALUE.expected)/VALUE.expected
+                            )
+    checkEquals(0, nrow(subset(comparisons, abs(relerr) > 1e-4))
+               ,"Error: nrsaResidualPools failed integration test"
+               )
+}
+
+
+nrsaResidualPoolsTest.integratedComponentsWadeableProtocol <- function()
+# Test function as it is called by the user
+{
+    # Create fake input data
+    fakeThal <- nrsaResidualPoolsTest.createThalweg() 
+    fakeThal <- subset(fakeThal, TRANSECT %in% LETTERS[1:11])
+    fakeActransp <- nrsaResidualPoolsTest.createActransp()
+    fakeSlopes <- nrsaResidualPoolsTest.createSlopes()
+    fakeProtocol <- nrsaResidualPoolsTest.createProtocol()
+
+    # Test with both protocols
+    intermediateMessage('\nIntegrated testing with Wadeable data', loc='start')
+    rr <- nrsaResidualPools(bDepth = NULL      
+                           ,wDepth = fakeThal %>%                                         # All wadeable depths are in CM as expected, so no need to convert units
+                                     subset(PARAMETER == 'DEPTH') %>%
+                                     select(-PARAMETER) %>% 
+                                     subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE)
+                           ,siteSlopes = fakeSlopes %>% 
+                                         subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE)
+                           ,transectSpacing = fakeThal %>%                          # wadeable sites aren't.
+                                              subset(PARAMETER=='INCREMNT') %>%
+                                              merge(nWadeableStationsPerTransect(fakeThal)
+                                                   ,by=c('SITE','TRANSECT'), all=TRUE
+                                                   ) %>% 
+                                              mutate(VALUE = as.numeric(VALUE) * as.numeric(nSta)
+                                                    ,PARAMETER = 'ACTRANSP'
+                                                    ) %>%
+                                              subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE &
+                                                     STATION==0
+                                                    ) %>%
+                                              select(SITE, TRANSECT, PARAMETER, VALUE)
+                           ,writeIntermediateFiles=FALSE, oldeMethods=TRUE
+                           )
+
+    tt <- nrsaResidualPoolsTest.createSiteSummaries(unique(fakeThal$SITE))
+    ee <- dfLengthen(tt
+                    ,'SITE','METRIC','VALUE'
+                    ,names(tt)[names(tt) %nin% c('SITE')]
+                    )
+    comparisons <- transform(merge(ee,rr, by=c('SITE','METRIC')
+                                  ,suffix= c('.expected','.actual')
+                                  )
+                            ,err = VALUE.actual - VALUE.expected
+                            ,relerr = (VALUE.actual - VALUE.expected)/VALUE.expected
+                            )
+    checkEquals(0, nrow(subset(comparisons, abs(relerr) > 1e-4))
+               ,"Error: nrsaResidualPools failed integration test"
+               )
+}
+
+
+nrsaResidualPoolsTest.process <- function(fakeThal, fakeActransp, fakeSlopes, fakeProtocol)
 # Does actual testing using provided data.
 {
   ######################################################
@@ -3367,7 +3496,7 @@ nrsaResidualPoolsTest.createProtocol <- function()
 
 
 
-nrsaResidualPoolsTest.createPoolCharacteristics <- function(uids)
+nrsaResidualPoolsTest.createPoolCharacteristics <- function(SITEs)
 # Creates pool summary values for the nrsaResidualPools() unit test.
 # Pool summaries in mhrpin.sas7bdat are taken from these WEMAP sites:
 #   2004 ORSE04-R022 1 - normal wadeable reach
@@ -4224,8 +4353,8 @@ nrsaResidualPoolsTest.createPoolCharacteristics <- function(uids)
   pchar$poolID <- as.numeric(pchar$poolID)
 
   # return only requested SITEs
-  if(!is.null(uids)) {
-      pchar <- subset(pchar, SITE %in% uids)
+  if(!is.null(SITEs)) {
+      pchar <- subset(pchar, SITE %in% SITEs)
   }
 
   return(pchar)
@@ -4394,7 +4523,6 @@ nrsaResidualPoolsTest.createSiteSummaries <- function(uids)
   return(schar)
 
 }
-
 
 
 # end of file

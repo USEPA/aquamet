@@ -1,5 +1,4 @@
-nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transectSpacing=NULL, writeIntermediateFiles=FALSE, oldeMethods=FALSE) {
-# nrsaResidualPools <- function(thalweg, actransp, slopes, protocols, writeIntermediateFiles=FALSE, oldeMethods=FALSE) {
+metsResidualPools <- function(thalweg, channelgeometry, visits, gisCalcs=NULL) {
 
 ################################################################################
 # Function: metsResidualPools
@@ -73,14 +72,11 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
 #            when a) that package is not installed, and b) when the current code
 #            base differs from the available package.  Rephrased to use dplyr::rename
 #            instead.
-#  12/18/15 cws Modified calling interface.  Removed filling in of ACTRANSP when
-#           missing with DISTANCE values; that's done by caller.
-#
 #
 # Note: A value for reachlen is calculated based on the sum of INCREMNT values
 #       in stationInfo, which is a dataframe created and returned by
-#       nrsaResidualPools.dimensions().  That function uses the output of
-#       nrsaResidualPools.dataOrganization(), which takes the value of INCREMNT
+#       metsResidualPools.dimensions().  That function uses the output of
+#       metsResidualPools.dataOrganization(), which takes the value of INCREMNT
 #       at the first station in the reach and propagates it to all stations,
 #       hence the result is independent of whether INCREMNT occurs more than
 #       once in the thalweg table.
@@ -140,218 +136,131 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
 #   metsResidualPools.1 - calculate metrics
 ################################################################################
 
-# # Print an initial message
-#   cat('Residual Pools calculations:\n')
-# 
-# # Convert factors to character variables in the input data frames
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   thalweg <- convert_to_char(thalweg)
-#   channelgeometry <- convert_to_char(channelgeometry)
-#   visits <- convert_to_char(visits)
-#   if(!is.null(gisCalcs))
-#     gisCalcs <- convert_to_char(gisCalcs)
-# 
-# # Subset the thalweg and channel geometry data frames to retain desired values
-# # in the column named PARAMETER
-#   intermediateMessage('.2 Subset the data frames.', loc='end')
-#   thal <- subset(thalweg,PARAMETER %in% c('BARWIDTH', 'BAR_PRES', 'CHANUNCD',
-#     'DEPTH','DEP_POLE', 'DEP_SONR', 'INCREMNT','POOLFMCD', 'REACHLENGTH',
-#     'SEDIMENT','OFF_CHAN', 'WETWIDTH'))
-#   actransp <- subset(channelgeometry, PARAMETER %in% c('ACTRANSP',
-#     'DISTANCE'))
-# 
-# # Call the metsSlopeBearing function and retain only desired calculations
-#   intermediateMessage('.3 Call the metsSlopeBearing function.', loc='end')
-#   slopes <- metsSlopeBearing(thalweg, channelgeometry, visits, gisCalcs)
-#   slopes <- subset(slopes, METRIC %in% c('xslope','vslope'))
-# 
-# # Determine protocol used for each site
-#   intermediateMessage('.4 Set protocols.', loc='end')
-#   protocols <- siteProtocol(unique(thal$SITE), visits)
-# 
-# # Calculate the metrics
-#   intermediateMessage('.5 Call function metsResidualPools.1.', loc='end')
-#   mets <- metsResidualPools.1(thal, actransp, slopes, protocols)
-#   row.names(mets) <- 1:nrow(mets)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(mets)
-# }
-# 
-# 
-# 
-# metsResidualPools.1 <- function(thal, actransp, slopes, protocols,
-#   writeIntermediateFiles=FALSE, oldeMethods=FALSE) {
-# 
-# # Does the actual calculations for metsResidualPools()
-# #
-# # ARGUMENTS:
-# # thal      dataframe with thalweg parameters
-# # actransp  dataframe with actual transect space values (ACTRANSP, DISTANCE)
-# # slopes    dataframe with reach slope mean and stdev values (xslope, vslope)
-# # protocols dataframe with sampling protocol used at each site
-# # writeIntermediateFiles - logical value; intermediate results will be written
-# #           to the results folder if TRUE.
-# # oldeMethods - logical value; if TRUE, uses deprecated SAS method of starting
-# #           initial pool dimensions in metsResidualPools.dimensions(), otherwise
-# #           uses current method.  Set to TRUE only for unit testing.
+# Print an initial message
+  cat('Residual Pools calculations:\n')
 
-    intermediateMessage('Residual Pools calculations', loc='start')
+# Convert factors to character variables in the input data frames
+  intermediateMessage('.1 Convert factors to character variables.', loc='end')
+  thalweg <- convert_to_char(thalweg)
+  channelgeometry <- convert_to_char(channelgeometry)
+  visits <- convert_to_char(visits)
+  if(!is.null(gisCalcs))
+    gisCalcs <- convert_to_char(gisCalcs)
 
-    absentAsNULL <- function(df, ifdf, ...) {
-        if(is.null(df)) return(NULL)
-        else if(!is.data.frame(df)) return(NULL)
-        else if(nrow(df) == 0) return (NULL)
-        else if(is.function(ifdf)) return(ifdf(df, ...))
-        else return(df)
-    }
-    ifdfTransectStation <- function(df, ...) {
-        if(is.null(...)) return(NULL)
-        else if(all(is.na(...))) return(NULL)
+# Subset the thalweg and channel geometry data frames to retain desired values
+# in the column named PARAMETER
+  intermediateMessage('.2 Subset the data frames.', loc='end')
+  thal <- subset(thalweg,PARAMETER %in% c('BARWIDTH', 'BAR_PRES', 'CHANUNCD',
+    'DEPTH','DEP_POLE', 'DEP_SONR', 'INCREMNT','POOLFMCD', 'REACHLENGTH',
+    'SEDIMENT','OFF_CHAN', 'WETWIDTH'))
+  actransp <- subset(channelgeometry, PARAMETER %in% c('ACTRANSP',
+    'DISTANCE'))
 
-        args <- list(...)
-        pName <- args[[1]]
-        rc <- df %>% 
-              select(SITE, TRANSECT, STATION, VALUE) %>% 
-              mutate(PARAMETER=pName)
-        return(rc)
-    }
-    ifdfTransect <- function(df, ...) {
-        if(is.null(...)) return(NULL)
-        else if(all(is.na(...))) return(NULL)
+# Call the metsSlopeBearing function and retain only desired calculations
+  intermediateMessage('.3 Call the metsSlopeBearing function.', loc='end')
+  slopes <- metsSlopeBearing(thalweg, channelgeometry, visits, gisCalcs)
+  slopes <- subset(slopes, METRIC %in% c('xslope','vslope'))
 
-        args <- list(...)
-        pName <- args[[1]]
-        rc <- df %>% 
-              select(SITE, TRANSECT, VALUE) %>% 
-              mutate(PARAMETER=pName)
-        return(rc)
-    }
-    ifdfMetric <- function(df, ...) {
-        if(is.null(...)) return(NULL)
-        else if(all(is.na(...))) return(NULL)
+# Determine protocol used for each site
+  intermediateMessage('.4 Set protocols.', loc='end')
+  protocols <- siteProtocol(unique(thal$UID), visits)
 
-        args <- list(...)
-        pName <- args[[1]]
-        rc <- df %>% 
-              select(SITE, VALUE) %>% 
-              mutate(METRIC=pName)
-        return(rc)
-    }
+# Calculate the metrics
+  intermediateMessage('.5 Call function metsResidualPools.1.', loc='end')
+  mets <- metsResidualPools.1(thal, actransp, slopes, protocols)
+  row.names(mets) <- 1:nrow(mets)
 
-    bDepth <- absentAsNULL(bDepth, ifdfTransectStation, 'DEPTH') # in M
-    wDepth <- absentAsNULL(wDepth, ifdfTransectStation, 'DEPTH') # in CM
-    siteSlopes <- absentAsNULL(siteSlopes, ifdfMetric, 'xslope')
-    transectSpacing <- absentAsNULL(transectSpacing, ifdfTransect, 'ACTRANSP') # in M
+# Print an exit message
+  intermediateMessage('Done.', loc='end')
 
-    if((is.null(bDepth) & is.null(wDepth)) | is.null(siteSlopes) | is.null(transectSpacing)) return(NULL)
+# Return results
+  return(mets)
+}
 
 
-    # Recreate old argument from new ones for now, rip out guts later
-    intermediateMessage('.A')
-    protocols <- NULL
-    thalwegDepths <- NULL 
-    if(!is.null(bDepth)) {
-        protocols <- data.frame(SITE=unique(bDepth$SITE), PROTOCOL='BOATABLE', stringsAsFactors=FALSE)
-        thalwegDepths <- bDepth %>% 
-                         mutate(SAMPLE_TYPE = 'PHAB_THAL', UNITS = 'M', VALUE = as.numeric(VALUE), PARAMETER='DEP_POLE')    # could be DEP_SONR, doesn't matter
-    }
 
-    if(!is.null(wDepth)) {
-        protocols <- rbind(protocols, data.frame(SITE=unique(wDepth$SITE), PROTOCOL='WADEABLE', stringsAsFactors=FALSE))
-        thalwegDepths <- rbind(thalwegDepths
-                              ,wDepth %>% 
-                               mutate(SAMPLE_TYPE = 'PHAB_THALW', UNITS = 'CM', VALUE = as.numeric(VALUE))
-                              )
-    }
-    intermediateMessage('.B')
+metsResidualPools.1 <- function(thal, actransp, slopes, protocols,
+  writeIntermediateFiles=FALSE, oldeMethods=FALSE) {
 
-    actransp <- transectSpacing %>%
-                subset(SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
-    thalweg <- rbind(thalwegDepths
-                    ,transectSpacing %>% 
-                     merge(nWadeableStationsPerTransect(thalwegDepths)
-                          ,by=c('SITE','TRANSECT'), all.x=TRUE
-                          ) %>%
-                     mutate(STATION = 0
-                           ,UNITS = 'M'
-                           ,SAMPLE_TYPE = 'PHAB_THALW'
-                           ,PARAMETER = 'INCREMNT'
-                           ,VALUE = as.numeric(VALUE) / nSta
-                           ,nSta = NULL
-                           ) %>%
-                     subset(SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+# Does the actual calculations for metsResidualPools()
+#
+# ARGUMENTS:
+# thal      dataframe with thalweg parameters
+# actransp  dataframe with actual transect space values (ACTRANSP, DISTANCE)
+# slopes    dataframe with reach slope mean and stdev values (xslope, vslope)
+# protocols dataframe with sampling protocol used at each site
+# writeIntermediateFiles - logical value; intermediate results will be written
+#           to the results folder if TRUE.
+# oldeMethods - logical value; if TRUE, uses deprecated SAS method of starting
+#           initial pool dimensions in metsResidualPools.dimensions(), otherwise
+#           uses current method.  Set to TRUE only for unit testing.
+print('A')
+
+  # Remove side channel transects until we know how to deal with them
+  thal <- subset(thal, TRANSECT %in% LETTERS)
+print('B')
+  
+  # Condense DISTANCE and ACTRANSP into ACTRANSP for calculations.
+  # Use ACTRANSP if it exists, otherwise use DISTANCE.  Because of the
+  # uncertainty in GPS based calculations, DISTANCE is more susceptible to
+  # error than the field-based ACTRANSP value.
+print('C')
+  if(nrow(actransp) > 0) {
+      tt <- dfWiden(actransp, c('UID','TRANSECT'), 'PARAMETER','RESULT')
+      tt$RESULT <- ifelse(is.na(tt$ACTRANSP), tt$DISTANCE, tt$ACTRANSP)
+      tt$PARAMETER <- 'ACTRANSP'
+      tt$ACTRANSP <- NULL
+      tt$DISTANCE <- NULL
+      actransp<- tt
+  }
+print('Y')
+  # Organize the data for both protocols in a single and simple manner.
+  thalSeries <- metsResidualPools.dataOrganization(thal, actransp, slopes)
+  if(writeIntermediateFiles==TRUE) {
+      write.csv(thalSeries, 'intermediate_thalSeries.csv')
+  }
+print('Z')
+  
+  # Determine residual depths and number pools
+#  thalSeries <- readNRSACalculationResults('intermediate_thalSeriesSMP.csv')
+#system.time({
+  residualSeries <- metsResidualPools.dimensions(thalSeries, protocols
+                                                ,oldeMethods=oldeMethods
+                                                )
+#})
+  if(writeIntermediateFiles==TRUE) {
+      write.csv(residualSeries, 'intermediate_residualSeries.csv')
+  }
+  
+  # Characterize individual residual pools
+  poolSeries <- metsResidualPools.poolCharacteristics(residualSeries)
+  if(writeIntermediateFiles==TRUE) {
+      write.csv(poolSeries, 'intermediate_poolSeries.csv')
+  }
+  # Summarize pool structure for each UID
+  wide <- metsResidualPools.siteSummaries(poolSeries, residualSeries
+                                         ,protocols
+                                         )
+
+  # transpose to long format
+  mets <- dfLengthen(wide, 'UID', 'METRIC', 'RESULT'
+                    ,names(wide)[!(names(wide) %in% 'UID')]
                     )
-    slopes <- siteSlopes %>% mutate(VALUE=as.numeric(VALUE))
-    intermediateMessage('.C')
-    # That's the end of reconstruction, the rest is unchanged, except for the
-    # condensing of DISTANCE and ACTRANSP, which is done by the user of this function.
-
-
-    # Remove side channel transects until we know how to deal with them
-    thal <- subset(thalweg, TRANSECT %in% LETTERS)
-  
-    # Condense DISTANCE and ACTRANSP into ACTRANSP for calculations.
-    # Use ACTRANSP if it exists, otherwise use DISTANCE.  Because of the
-    # uncertainty in GPS based calculations, DISTANCE is more susceptible to
-    # error than the field-based ACTRANSP value.
-#     if(nrow(actransp) > 0) {
-#         tt <- dfWiden(actransp, c('SITE','TRANSECT'), 'PARAMETER','VALUE')
-#         tt$VALUE <- ifelse(is.na(tt$ACTRANSP), tt$DISTANCE, tt$ACTRANSP)
-#         tt$PARAMETER <- 'ACTRANSP'
-#         tt$ACTRANSP <- NULL
-#         tt$DISTANCE <- NULL
-#         actransp<- tt
-#     }
-    intermediateMessage('.D')
-  
-    # Organize the data for both protocols in a single and simple manner.
-    thalSeries <- nrsaResidualPools.dataOrganization(thal, actransp, slopes)
-    if(writeIntermediateFiles==TRUE) {
-        write.csv(thalSeries, 'intermediate_thalSeries.csv')
-    }
-  
-    # Determine residual depths and number pools
-    residualSeries <- nrsaResidualPools.dimensions(thalSeries, protocols
-                                                  ,oldeMethods=oldeMethods
-                                                  )
-    if(writeIntermediateFiles==TRUE) {
-        write.csv(residualSeries, 'intermediate_residualSeries.csv')
-    }
-  
-    # Characterize individual residual pools
-    poolSeries <- nrsaResidualPools.poolCharacteristics(residualSeries)
-    if(writeIntermediateFiles==TRUE) {
-        write.csv(poolSeries, 'intermediate_poolSeries.csv')
-    }
-
-    # Summarize pool structure for each SITE
-    wide <- nrsaResidualPools.siteSummaries(poolSeries, residualSeries
-                                           ,protocols
-                                           )
-
-    # transpose to long format
-    mets <- dfLengthen(wide, 'SITE', 'METRIC', 'VALUE'
-                      ,names(wide)[!(names(wide) %in% 'SITE')]
-                      )
-    if(writeIntermediateFiles==TRUE) {
-        write.csv(mets, 'intermediate_mets.csv')
-    }
+  if(writeIntermediateFiles==TRUE) {
+      write.csv(mets, 'intermediate_mets.csv')
+  }
   return(mets)
   
 }
 
 
 
-nrsaResidualPools.dataOrganization <- function(thal, actransp, slopes) {
+metsResidualPools.dataOrganization <- function(thal, actransp, slopes) {
  # Reformats wadeable and boatable reach data into the following format, which
 # is returned as a dataframe.  If an error occurs, the return value will be a
 # character string describing the problem.
 #
-# a) columns are SITE, TRANSECT, STATION, LOC, DEPTH, INCREMNT
+# a) columns are UID, TRANSECT, STATION, LOC, DEPTH, INCREMNT
 #    where LOC is the numeric position of the depth sample within the reach
 #              starting at 1 and increasing by 1 per expected station.  Thus
 #              in a wadeable reach at A 0, LOC will be 1 and at A 2 will be 3
@@ -364,7 +273,7 @@ nrsaResidualPools.dataOrganization <- function(thal, actransp, slopes) {
 #              boatable reaches.
 # b) rows are in order from downstream to upstream (wadeable reaches will
 #    be unaffected, boatable reaches will be reversed)
-# c) A downstream 'nick point' will be established at LOC 0 for each SITE.
+# c) A downstream 'nick point' will be established at LOC 0 for each UID.
 #    and have an arbitrary depth of xdepth - sddepth.  This is added to each
 #    reach to insure capture of the first pool.
 #
@@ -380,58 +289,57 @@ nrsaResidualPools.dataOrganization <- function(thal, actransp, slopes) {
 # Station numbers for a transect start at 0.
 # Wadeable incremnt value for reach is constant and stored at the first row
 #   of the reach.
-# The siteProtocol function for 2008, 2009 data is incorrect for SITE 12475,
+# The siteProtocol function for 2008, 2009 data is incorrect for UID 12475,
 #   12498, 13049, 13941,  so the SAMPLE_TYPE column will be relied upon for
 #   this function
-
-    intermediateMessage(' dataOrganization')
 
   # Work on wadeable reaches: extract DEPTH, create LOC, create INCREMNT.
   wadeable <- subset(thal, SAMPLE_TYPE=='PHAB_THALW')
   if(nrow(wadeable) == 0) {
-    intermediateMessage('.w0')
-    rawStreams <- NULL
+      rawStreams <- NULL
   } else {
-        intermediateMessage('.w1')
       # Wadeable DEPTH is converted to meters, from cm.
       rawData <- subset(wadeable, PARAMETER=='DEPTH'
-                       ,select=c(SITE,TRANSECT,STATION,VALUE)
+                       ,select=c(UID,TRANSECT,STATION,RESULT)
                        )
-      rawData <- dplyr::rename(rawData, DEPTH = VALUE)
+      rawData <- dplyr::rename(rawData, DEPTH = RESULT)
       rawData$DEPTH <- as.numeric(rawData$DEPTH) / 100
   
       # Wadeable LOC is the index of each station (sampled or presumed skipped)
       # within each site.  It is the cumulative sum of expected station counts
       # at the beginning of a transect plus the STATION value plus 1 (we add 1
       # since STATION numbering starts at zero).
-        intermediateMessage('.w2')
-      nSta <- nWadeableStationsPerTransect(rawData)
-      nSta <- first(nSta[order(nSta$SITE,nSta$TRANSECT),], 'SITE','first.SITE')
+print('.a')
+      nSta <- nWadeableStationsPerTransect(rawData %>% dplyr::rename(SITE=UID))%>% dplyr::rename(UID=SITE)
+print('.b')
+      nSta <- first(nSta[order(nSta$UID,nSta$TRANSECT),], 'UID','first.UID')
+print('.c')
       nSta$startLOC <- NA
       for (i in 1:nrow(nSta)) {
-          nSta[i,]$startLOC <- ifelse(nSta[i,]$first.SITE==TRUE | i==1
+          nSta[i,]$startLOC <- ifelse(nSta[i,]$first.UID==TRUE | i==1
                                     ,0
                                     ,nSta[i-1,]$startLOC + nSta[i-1,]$nSta
                                     )
       }
-        intermediateMessage('.w3')
-      rawData <- merge(rawData, nSta, by=c('SITE','TRANSECT'), all.x=TRUE)
+print('.d')
+      rawData <- merge(rawData, nSta, by=c('UID','TRANSECT'), all.x=TRUE)
 #      rawData$LOC <- (match(rawData$TRANSECT, LETTERS) - 1) * rawData$nSta + rawData$STATION + 1
+print('.e')
       rawData$LOC <- rawData$startLOC + rawData$STATION + 1
       rawData$LOC <- as.integer(rawData$LOC)
-      rawData <- subset(rawData, select=-c(nSta,first.SITE,startLOC))
-        intermediateMessage('.w4')
+      rawData <- subset(rawData, select=-c(nSta,first.UID,startLOC))
+print('.f')
 
       # Wadeable INCREMNT is the recorded value of incremnt in meters. It is taken
       # from the first row of each reach, and propagated to all rows in the reach.
-      wadeable <- wadeable[order(wadeable$SITE, wadeable$TRANSECT, wadeable$STATION),]
-      incremnt <- first(subset(wadeable, PARAMETER=='INCREMNT'), 'SITE', 'firstRow')
-      incremnt <- subset(incremnt, firstRow==TRUE, select=c(SITE,VALUE))
-      incremnt <- dplyr::rename(incremnt, INCREMNT = VALUE)
-      rawStreams <- merge(rawData, incremnt, by='SITE')
+      wadeable <- wadeable[order(wadeable$UID, wadeable$TRANSECT, wadeable$STATION),]
+      incremnt <- first(subset(wadeable, PARAMETER=='INCREMNT'), 'UID', 'firstRow')
+print('.g')
+      incremnt <- subset(incremnt, firstRow==TRUE, select=c(UID,RESULT))
+      incremnt <- dplyr::rename(incremnt, INCREMNT = RESULT)
+      rawStreams <- merge(rawData, incremnt, by='UID')
       rawStreams$INCREMNT <- as.numeric(rawStreams$INCREMNT)
       rm(rawData, nSta, wadeable, incremnt)
-        intermediateMessage('.w5')
   }
 
   # Work on boatable reaches: calculate DEPTH in m, create LOC, create INCREMNT
@@ -439,21 +347,20 @@ nrsaResidualPools.dataOrganization <- function(thal, actransp, slopes) {
   
   if(nrow(boatable) == 0) {
       rawRivers <- NULL
-        intermediateMessage('.b0')
   } else {
-        intermediateMessage('.b1')
       # Boatable DEPTH is converted to meters if it was recorded in feet.
+print('.m')
       rawData <- subset(boatable, PARAMETER %in% c('DEP_SONR','DEP_POLE')
-                       ,select=c(SITE,TRANSECT,STATION,VALUE,UNITS)
+                       ,select=c(UID,TRANSECT,STATION,RESULT,UNITS)
                        )
-      rawData$VALUE <- as.numeric(ifelse(rawData$VALUE=='.', NA, rawData$VALUE))
+      rawData$RESULT <- as.numeric(ifelse(rawData$RESULT=='.', NA, rawData$RESULT))
       rawData$DEPTH <- NA
-      rawData$DEPTH <- ifelse(rawData$UNITS=='M',  rawData$VALUE
-                      ,ifelse(rawData$UNITS=='FT', rawData$VALUE * 0.3048
+      rawData$DEPTH <- ifelse(rawData$UNITS=='M',  rawData$RESULT
+                      ,ifelse(rawData$UNITS=='FT', rawData$RESULT * 0.3048
                              ,NA
                       ))
-      rawData <- subset(rawData, select=-c(UNITS,VALUE))
-        intermediateMessage('.b2')
+      rawData <- subset(rawData, select=-c(UNITS,RESULT))
+print('.n')
 
       # Determining LOC is different in boatable sites than wadeable sites.
       # Since the emphasis in the field is on accurate transect spacing instead
@@ -464,45 +371,46 @@ nrsaResidualPools.dataOrganization <- function(thal, actransp, slopes) {
       # travel (like wadeables).  In the code below, revLOC is the number of
       # stations from the beginning, and LOC is the reverse of revLOC -- simpler
       # to express in English than in R.
-      rawData <- first(rawData[order(rawData$SITE,rawData$TRANSECT,rawData$STATION),]
-                      ,'SITE', 'firstSITE'
+      rawData <- first(rawData[order(rawData$UID,rawData$TRANSECT,rawData$STATION),]
+                      ,'UID', 'firstUID'
                       )
+print('.o')
       rawData$revLOC <- NA
       rl <- NA
-        intermediateMessage('.b3')
       for (i in 1:nrow(rawData)) {
-           rl <- ifelse(rawData$firstSITE[i], 1, rl + 1)
+           rl <- ifelse(rawData$firstUID[i], 1, rl + 1)
            rawData$revLOC[i] <- rl
       }
-        intermediateMessage('.b4')
+print('.p')
       rawData <- merge(rawData
                       ,aggregate(list(maxLOC=rawData$revLOC)
-                                ,list(SITE=rawData$SITE)
+                                ,list(UID=rawData$UID)
                                 ,max, na.rm=TRUE
                                 )
-                      ,by='SITE'
+                      ,by='UID'
                       )
+print('.q')
       rawData$LOC <- rawData$maxLOC - rawData$revLOC + 1
-      rawData$firstSITE <- NULL
+      rawData$firstUID <- NULL
       rawData$revLOC <- NULL
       rawData$maxLOC <- NULL
-          intermediateMessage('.b5')
-
+print('.r')
+      
       # Boatable INCREMNT is calculated as the actual transect spacing recorded
       # at each transect divided by the number of stations sampled in that transect.
       lastSta <- aggregate(list('lastSta'=rawData$STATION)
-                          ,list('SITE'=rawData$SITE, 'TRANSECT'=rawData$TRANSECT)
+                          ,list('UID'=rawData$UID, 'TRANSECT'=rawData$TRANSECT)
                           ,max, na.rm=TRUE
                           )
-        intermediateMessage('.b6')
-      rawRivers <- merge(rawData, lastSta, by=c('SITE','TRANSECT'), all.x=TRUE)
-      rawRivers <- merge(rawRivers, actransp[c('SITE','TRANSECT','VALUE')]
-                        ,by=c('SITE','TRANSECT'), all.x=TRUE
+print('.s')
+      rawRivers <- merge(rawData, lastSta, by=c('UID','TRANSECT'), all.x=TRUE)
+      rawRivers <- merge(rawRivers, actransp[c('UID','TRANSECT','RESULT')]
+                        ,by=c('UID','TRANSECT'), all.x=TRUE
                         )
-      rawRivers$INCREMNT <- as.numeric(rawRivers$VALUE) / (rawRivers$lastSta + 1)
-      rawRivers <- subset(rawRivers, select=-c(lastSta, VALUE))
+      rawRivers$INCREMNT <- as.numeric(rawRivers$RESULT) / (rawRivers$lastSta + 1)
+      rawRivers <- subset(rawRivers, select=-c(lastSta, RESULT))
+print('.z')
       rm(boatable, rl, lastSta, rawData)
-        intermediateMessage('.b7')
   }
 
   if(is.null(rawStreams) & is.null(rawRivers)) {
@@ -514,24 +422,22 @@ nrsaResidualPools.dataOrganization <- function(thal, actransp, slopes) {
   }
 
   # Include mean slopes, modified with Stack (1989) equation.
-    intermediateMessage('.1')
   slopes <- subset(slopes, METRIC=='xslope')
-  slopes$stackSlope <- 0.12 + 0.25 * as.numeric(slopes$VALUE)
-  thalSeries <- merge(thalSeries, slopes[c('SITE','stackSlope')], by='SITE', all.x=TRUE)
+  slopes$stackSlope <- 0.12 + 0.25 * as.numeric(slopes$RESULT)
+  thalSeries <- merge(thalSeries, slopes[c('UID','stackSlope')], by='UID', all.x=TRUE)
 
 
   # Create and include downstream nickpoints
-    intermediateMessage('.2')
-  dMean <- aggregate(list('dMean'=thalSeries$DEPTH), list('SITE'=thalSeries$SITE)
+  dMean <- aggregate(list('dMean'=thalSeries$DEPTH), list('UID'=thalSeries$UID)
                     ,mean, na.rm=TRUE
                     )
-  dStdev <- aggregate(list('dStdev'=thalSeries$DEPTH), list('SITE'=thalSeries$SITE)
+  dStdev <- aggregate(list('dStdev'=thalSeries$DEPTH), list('UID'=thalSeries$UID)
                      ,sd, na.rm=TRUE
                      )
-  thalSeries <- thalSeries[order(thalSeries$SITE, thalSeries$LOC),]
-  nicks <- subset(first(thalSeries, 'SITE', 'first'), first=='TRUE')
-  nicks <- merge(nicks, dMean, by='SITE', all.x=TRUE)
-  nicks <- merge(nicks, dStdev, by='SITE', all.x=TRUE)
+  thalSeries <- thalSeries[order(thalSeries$UID, thalSeries$LOC),]
+  nicks <- subset(first(thalSeries, 'UID', 'first'), first=='TRUE')
+  nicks <- merge(nicks, dMean, by='UID', all.x=TRUE)
+  nicks <- merge(nicks, dStdev, by='UID', all.x=TRUE)
   nicks$LOC <- as.integer(0)
   nicks$DEPTH <- nicks$dMean - nicks$dStdev
   nicks$DEPTH <- ifelse(nicks$DEPTH < 0, 0, nicks$DEPTH)
@@ -539,18 +445,16 @@ nrsaResidualPools.dataOrganization <- function(thal, actransp, slopes) {
   thalSeries <- rbind(thalSeries, nicks[names(thalSeries)])
 
   # Final organization details
-    intermediateMessage('.3')
-  thalSeries <- thalSeries[order(thalSeries$SITE, thalSeries$LOC),]
+  thalSeries <- thalSeries[order(thalSeries$UID, thalSeries$LOC),]
   rownames(thalSeries) <- NULL
   thalSeries$STATION <- as.integer(thalSeries$STATION)
 
-    intermediateMessage('.4')
   return(thalSeries)
 }
 
 
 
-nrsaResidualPools.dimensions <- function(thalSeries, thalProtocol,
+metsResidualPools.dimensions <- function(thalSeries, thalProtocol,
   minSampPct=85, oldeMethods=FALSE) {
 
 # Detect residual pools by calculating residual depths and numbering pools.
@@ -558,7 +462,7 @@ nrsaResidualPools.dimensions <- function(thalSeries, thalProtocol,
 # or return a character string describing the error if one occurs.
 #
 # The dataframe with these initial pool dimensions will have the following
-# information: in addition to SITE, TRANSECT, STATION, LOC, DEPTH, INCREMNT
+# information: in addition to UID, TRANSECT, STATION, LOC, DEPTH, INCREMNT
 # and stackSlope delivered in the input dataframe thalSeries, the following
 # calculations are returned as well:
 #   resDepth      residual pool depth at this station.  If zero, there is no
@@ -572,7 +476,7 @@ nrsaResidualPools.dimensions <- function(thalSeries, thalProtocol,
 #
 # ARGUMENTS:
 # thalSeries   dataframe with thalweg depth information in the expected format
-#              as created by nrsaResidualPools.dataOrganization().
+#              as created by metsResidualPools.dataOrganization().
 # thalProtocol dataframe with sampling protocol used at each site.  Used in
 #              conjunction with oldeMethods argument.
 # minSampPct   numeric value specifying the minimum percentage of depths that
@@ -585,11 +489,11 @@ nrsaResidualPools.dimensions <- function(thalSeries, thalProtocol,
 #              this flag should be TRUE for testing.
 #
 
-    intermediateMessage(' dimensions')
+  intermediateMessage('starting metsResidualPools.dimensions', loc='start')
 
   # Pool detection and numbering starts at beginning of a reach
-  thalSeries <- first(thalSeries[order(thalSeries$SITE, thalSeries$LOC),]
-                     ,'SITE'
+  thalSeries <- first(thalSeries[order(thalSeries$UID, thalSeries$LOC),]
+                     ,'UID'
                      ,'siteStart'
                      )
 
@@ -600,9 +504,8 @@ nrsaResidualPools.dimensions <- function(thalSeries, thalProtocol,
   thalSeries$poolID <- as.numeric(NA)
 
   # Calculate residual dimensions at each station (LOC) along the thalweg
-  # Split thalweg series by SITE, and process them in parallel.
-  rpSeriesSplit <- split(thalSeries, thalSeries$SITE)
-    intermediateMessage('.1')
+  # Split thalweg series by UID, and process them in parallel.
+  rpSeriesSplit <- split(thalSeries, thalSeries$UID)
 #  w<-startWorkers(workerCount=7)
 #  registerDoSMP(w)
 r <- foreach(uid = names(rpSeriesSplit), .combine=rbind) %do% {
@@ -619,7 +522,7 @@ r <- foreach(uid = names(rpSeriesSplit), .combine=rbind) %do% {
           
           # Determine protocol used for this site.  If this is not determinable
           # then assume it to be wadeable.
-          pp <- subset(thalProtocol, SITE==thisSeries[i,]$SITE)
+          pp <- subset(thalProtocol, UID==thisSeries[i,]$UID)
           if(nrow(pp) ==1) {
               isWadeable <- pp$PROTOCOL=='WADEABLE'
           } else {
@@ -695,7 +598,7 @@ r <- foreach(uid = names(rpSeriesSplit), .combine=rbind) %do% {
   thisSeries    # let rbind() have the results
 }
   thalSeries <- r
-  intermediateMessage('.2')
+  intermediateMessage('.cleaning up')
   
   # Go through calculations and set values to missing in those sites with
   # sparse sampling, as defined by minSampPct.  The sampled percentage for a
@@ -703,36 +606,34 @@ r <- foreach(uid = names(rpSeriesSplit), .combine=rbind) %do% {
   # are missing; the number of missing values:
   #    sampPct = 100 * (nPresent - nDepthMissing) / nExpected
   #
-  tt <- aggregate(list('nExpected'=thalSeries$LOC), list('SITE'=thalSeries$SITE)
+  tt <- aggregate(list('nExpected'=thalSeries$LOC), list('UID'=thalSeries$UID)
                  ,max, na.rm=TRUE
                  )
-  mm <- aggregate(list('nMissing'=thalSeries$DEPTH), list('SITE'=thalSeries$SITE)
+  mm <- aggregate(list('nMissing'=thalSeries$DEPTH), list('UID'=thalSeries$UID)
                  ,function(x) { sum(is.na(x)) }
                  )
-  intermediateMessage('.3')
-  pp <- ddply(thalSeries,c('SITE'),summarise,nPresent=length(LOC))
-#   pp <- aggregate(list('nPresent'=thalSeries$LOC), list('SITE'=thalSeries$SITE)
+  pp <- ddply(thalSeries,c('UID'),summarise,nPresent=length(LOC))
+#   pp <- aggregate(list('nPresent'=thalSeries$LOC), list('UID'=thalSeries$UID)
 #                  ,count
 #                  )
-  tt <- merge(tt, merge(mm, pp, by='SITE'), by='SITE')
+  tt <- merge(tt, merge(mm, pp, by='UID'), by='UID')
   tt$sampPct <- 100 * (tt$nPresent - tt$nMissing) / tt$nExpected
   tt$keep <- (tt$sampPct >= minSampPct)
-  intermediateMessage('.4')
   
-  thalSeries <- merge(thalSeries, subset(tt, select=c(SITE,keep)), by='SITE')
+  thalSeries <- merge(thalSeries, subset(tt, select=c(UID,keep)), by='UID')
   thalSeries$resDepth <- ifelse(thalSeries$keep, thalSeries$resDepth, NA)
   thalSeries$resArea <- ifelse(thalSeries$keep, thalSeries$resArea, NA)
   thalSeries$resLength <- ifelse(thalSeries$keep, thalSeries$resLength, NA)
   thalSeries$poolID <- ifelse(thalSeries$keep, thalSeries$poolID, NA)
   thalSeries$keep <- NULL
 
-  intermediateMessage('.5')
+  intermediateMessage('. Finished.', loc='end')
   return(thalSeries)
 }
 
 
 
-nrsaResidualPools.poolCharacteristics <- function(poolDims) {
+metsResidualPools.poolCharacteristics <- function(poolDims) {
 
 # Summarizes individual residual pools, based on the station by station
 # dimensions previously calculated.  Returns dataframe of individual pool
@@ -741,14 +642,14 @@ nrsaResidualPools.poolCharacteristics <- function(poolDims) {
 #
 # ARGUMENTS:
 # poolDims   dataframe with residual pool dimensions as calculated by
-#            nrsaResidualPools.dimensions().
+#            metsResidualPools.dimensions().
 #
 
-  intermediateMessage(' poolCharacteristics')
+  intermediateMessage('starting metsResidualPools.poolCharacteristics', loc='start')
   
   # residual area summaries
   poolar <- aggregate(list('poolar'=poolDims$resArea)
-                     ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                     ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                      ,sum, na.rm=TRUE
                      )
 
@@ -756,80 +657,80 @@ nrsaResidualPools.poolCharacteristics <- function(poolDims) {
 
   # residual length summaries
   poolen <- aggregate(list('poolen'=poolDims$resLength)
-                     ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                     ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                      ,sum, na.rm=TRUE
                      )
   intermediateMessage('.2')
 
   # residual depth summaries
   mindep <- aggregate(list('mindep'=poolDims$resDepth)
-                     ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                     ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                      ,min, na.rm=TRUE
                      )
 
   xdep <- aggregate(list('xdep'=poolDims$resDepth)
-                   ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                   ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                    ,mean, na.rm=TRUE
                    )
   rpvdep <- aggregate(list('rpvdep'=poolDims$resDepth)
-                     ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                     ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                      ,sd, na.rm=TRUE
                      )
   rpmxdep <- aggregate(list('rpmxdep'=poolDims$resDepth)
-                      ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                      ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                       ,max, na.rm=TRUE
                       )
   meddep <- aggregate(list('meddep'=poolDims$resDepth)
-                     ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                     ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                      ,median, na.rm=TRUE
                      )
   dep25 <- aggregate(list('dep25'=poolDims$resDepth)
-                    ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                    ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                     ,quantile, probs=0.25, na.rm=TRUE, type=2
                     )
   dep75 <- aggregate(list('dep75'=poolDims$resDepth)
-                    ,list('SITE'=poolDims$SITE, 'poolID'=poolDims$poolID)
+                    ,list('UID'=poolDims$UID, 'poolID'=poolDims$poolID)
                     ,quantile, probs=0.75, na.rm=TRUE, type=2
                     )
   intermediateMessage('.3')
 
   # Combine summaries for output
-  poolCharacteristics <- merge(poolar, poolen, by=c('SITE','poolID'), all=TRUE)
+  poolCharacteristics <- merge(poolar, poolen, by=c('UID','poolID'), all=TRUE)
   poolCharacteristics <- merge(poolCharacteristics, mindep
-                              ,by=c('SITE','poolID'), all=TRUE
+                              ,by=c('UID','poolID'), all=TRUE
                               )
   poolCharacteristics <- merge(poolCharacteristics, xdep
-                              ,by=c('SITE','poolID'), all=TRUE
+                              ,by=c('UID','poolID'), all=TRUE
                               )
   poolCharacteristics <- merge(poolCharacteristics, rpvdep
-                              ,by=c('SITE','poolID'), all=TRUE
+                              ,by=c('UID','poolID'), all=TRUE
                               )
   poolCharacteristics <- merge(poolCharacteristics, rpmxdep
-                              ,by=c('SITE','poolID'), all=TRUE
+                              ,by=c('UID','poolID'), all=TRUE
                               )
   poolCharacteristics <- merge(poolCharacteristics, meddep
-                              ,by=c('SITE','poolID'), all=TRUE
+                              ,by=c('UID','poolID'), all=TRUE
                               )
   poolCharacteristics <- merge(poolCharacteristics, dep25
-                              ,by=c('SITE','poolID'), all=TRUE
+                              ,by=c('UID','poolID'), all=TRUE
                               )
   poolCharacteristics <- merge(poolCharacteristics, dep75
-                              ,by=c('SITE','poolID'), all=TRUE
+                              ,by=c('UID','poolID'), all=TRUE
                               )
                               
   poolCharacteristics <- subset(poolCharacteristics, poolID != 0)
 
-  intermediateMessage('.4')
+  intermediateMessage('. Finished.', loc='end')
   return(poolCharacteristics)
 
 }
 
 
 
-nrsaResidualPools.siteSummaries <- function(poolInfo, stationInfo, protocols) {
+metsResidualPools.siteSummaries <- function(poolInfo, stationInfo, protocols) {
 
 # Calculates site summaries from residual pool summaries as calculated by
-# nrsaResidualPools.poolCharacteristics().  Returns dataframe of results if
+# metsResidualPools.poolCharacteristics().  Returns dataframe of results if
 # successful, or a character string describing the error if one occurs.
 #
 # ARGUMENTS:
@@ -839,22 +740,22 @@ nrsaResidualPools.siteSummaries <- function(poolInfo, stationInfo, protocols) {
 # protocols dataframe with sampling protocol used at each site
 #
 
-  intermediateMessage(' siteSummaries ', loc='start')
+  intermediateMessage(' starting metsResidualPools.siteSummaries ', loc='start')
   # pool length summaries
   rpxlen <- aggregate(list('rpxlen'=poolInfo$poolen)
-                     ,list('SITE'=poolInfo$SITE)
+                     ,list('UID'=poolInfo$UID)
                      ,mean, na.rm=TRUE
                      )
   rpvlen <- aggregate(list('rpvlen'=poolInfo$poolen)
-                     ,list('SITE'=poolInfo$SITE)
+                     ,list('UID'=poolInfo$UID)
                      ,sd, na.rm=TRUE
                      )
   rpmxlen <- aggregate(list('rpmxlen'=poolInfo$poolen)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,max, na.rm=TRUE
                       )
   totplen <- aggregate(list('totplen'=poolInfo$poolen)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,sum, na.rm=TRUE
                       )
   intermediateMessage('.1')
@@ -869,87 +770,87 @@ nrsaResidualPools.siteSummaries <- function(poolInfo, stationInfo, protocols) {
   # was thus needed for rpmxdep.
   # Convert depth summaries from m to cm here.
   rpxdep <- aggregate(list('rpxdep'=stationInfo$resDepth)
-                     ,list('SITE'=stationInfo$SITE)
+                     ,list('UID'=stationInfo$UID)
                      ,function(x) { mean(ifelse(x==0,NA,x), na.rm=TRUE) }
                      )
-  rpxdep$rpxdep <- ifelse(rpxdep$SITE %in% subset(protocols
-                                                ,PROTOCOL %in% 'WADEABLE')$SITE
+  rpxdep$rpxdep <- ifelse(rpxdep$UID %in% subset(protocols
+                                                ,PROTOCOL %in% 'WADEABLE')$UID
                          ,rpxdep$rpxdep * 100
                          ,rpxdep$rpxdep
                          )
 
   rpvdep <- aggregate(list('rpvdep'=stationInfo$resDepth)
-                     ,list('SITE'=stationInfo$SITE)
+                     ,list('UID'=stationInfo$UID)
                      ,function(x) { sd(ifelse(x==0,NA,x), na.rm=TRUE) }
                      )
-  rpvdep$rpvdep <- ifelse(rpvdep$SITE %in% subset(protocols
-                                                ,PROTOCOL %in% 'WADEABLE')$SITE
+  rpvdep$rpvdep <- ifelse(rpvdep$UID %in% subset(protocols
+                                                ,PROTOCOL %in% 'WADEABLE')$UID
                          ,rpvdep$rpvdep * 100
                          ,rpvdep$rpvdep
                          )
 
   rpmxdep <- aggregate(list('rpmxdep'=stationInfo$resDepth)
-                      ,list('SITE'=stationInfo$SITE)
+                      ,list('UID'=stationInfo$UID)
                       ,function(x) { max(ifelse(is.na(x),-Inf,x), na.rm=TRUE) }
                       )
   rpmxdep$rpmxdep <- ifelse(rpmxdep$rpmxdep==-Inf, NA, rpmxdep$rpmxdep)
-  rpmxdep$rpmxdep <- ifelse(rpmxdep$SITE %in% subset(protocols
-                                                   ,PROTOCOL %in% 'WADEABLE')$SITE
+  rpmxdep$rpmxdep <- ifelse(rpmxdep$UID %in% subset(protocols
+                                                   ,PROTOCOL %in% 'WADEABLE')$UID
                            ,rpmxdep$rpmxdep * 100
                            ,rpmxdep$rpmxdep
                            )
 
   rpgt50 <- aggregate(list('rpgt50'=poolInfo$rpmxdep)
-                     ,list('SITE'=poolInfo$SITE)
+                     ,list('UID'=poolInfo$UID)
                      ,function(x) { sum(x > 0.50) }
                      )
   rpgt75 <- aggregate(list('rpgt75'=poolInfo$rpmxdep)
-                     ,list('SITE'=poolInfo$SITE)
+                     ,list('UID'=poolInfo$UID)
                      ,function(x) { sum(x > 0.75) }
                      )
   rpgt100 <- aggregate(list('rpgt100'=poolInfo$rpmxdep)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,function(x) { sum(x > 1.0) }
                       )
 
   rpgt05 <- aggregate(list('rpgt05'=poolInfo$rpmxdep)
-                     ,list('SITE'=poolInfo$SITE)
+                     ,list('UID'=poolInfo$UID)
                      ,function(x) { sum(x > 0.05) }
                      )
   rpgt05x <- aggregate(list('rpgt05x'=poolInfo$rpmxdep)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,function(x) { mean(ifelse(x > 0.05, x, NA), na.rm=TRUE) }
                       )
-  rpgt05x$rpgt05x <- ifelse(rpgt05x$SITE %in% subset(protocols
-                                                   ,PROTOCOL %in% 'WADEABLE')$SITE
+  rpgt05x$rpgt05x <- ifelse(rpgt05x$UID %in% subset(protocols
+                                                   ,PROTOCOL %in% 'WADEABLE')$UID
                            ,rpgt05x$rpgt05x * 100
                            ,rpgt05x$rpgt05x
                            )
 
   rpgt10 <- aggregate(list('rpgt10'=poolInfo$rpmxdep)
-                     ,list('SITE'=poolInfo$SITE)
+                     ,list('UID'=poolInfo$UID)
                      ,function(x) { sum(x > 0.10) }
                      )
   rpgt10x <- aggregate(list('rpgt10x'=poolInfo$rpmxdep)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,function(x) { mean(ifelse(x > 0.10, x, NA), na.rm=TRUE) }
                       )
-  rpgt10x$rpgt10x <- ifelse(rpgt10x$SITE %in% subset(protocols
-                                                   ,PROTOCOL %in% 'WADEABLE')$SITE
+  rpgt10x$rpgt10x <- ifelse(rpgt10x$UID %in% subset(protocols
+                                                   ,PROTOCOL %in% 'WADEABLE')$UID
                            ,rpgt10x$rpgt10x * 100
                            ,rpgt10x$rpgt10x
                            )
 
   rpgt20 <- aggregate(list('rpgt20'=poolInfo$rpmxdep)
-                     ,list('SITE'=poolInfo$SITE)
+                     ,list('UID'=poolInfo$UID)
                      ,function(x) { sum(x > 0.20) }
                      )
   rpgt20x <- aggregate(list('rpgt20x'=poolInfo$rpmxdep)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,function(x) { mean(ifelse(x > 0.20, x, NA), na.rm=TRUE) }
                       )
-  rpgt20x$rpgt20x <- ifelse(rpgt20x$SITE %in% subset(protocols
-                                                   ,PROTOCOL %in% 'WADEABLE')$SITE
+  rpgt20x$rpgt20x <- ifelse(rpgt20x$UID %in% subset(protocols
+                                                   ,PROTOCOL %in% 'WADEABLE')$UID
                            ,rpgt20x$rpgt20x * 100
                            ,rpgt20x$rpgt20x
                            )
@@ -959,19 +860,19 @@ nrsaResidualPools.siteSummaries <- function(poolInfo, stationInfo, protocols) {
   
   # pool area summaries
   rpxarea <- aggregate(list('rpxarea'=poolInfo$poolar)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,mean, na.rm=TRUE
                       )
   rpvarea <- aggregate(list('rpvarea'=poolInfo$poolar)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,sd, na.rm=TRUE
                       )
   rpmxar <- aggregate(list('rpmxar'=poolInfo$poolar)
-                     ,list('SITE'=poolInfo$SITE)
+                     ,list('UID'=poolInfo$UID)
                      ,max, na.rm=TRUE
                      )
   areasum <- aggregate(list('areasum'=poolInfo$poolar)
-                      ,list('SITE'=poolInfo$SITE)
+                      ,list('UID'=poolInfo$UID)
                       ,sum, na.rm=TRUE
                       )
   intermediateMessage('.3')
@@ -981,51 +882,53 @@ nrsaResidualPools.siteSummaries <- function(poolInfo, stationInfo, protocols) {
   # the distance from the last station to the nonexistant next station.
   # Consequently the incremnt values associated with the nickpoint and last
   # station are removed.
-  tt <- stationInfo[order(stationInfo$SITE,stationInfo$LOC),]
-  tt <- last(tt, 'SITE', 'lastStation')
+  tt <- stationInfo[order(stationInfo$UID,stationInfo$LOC),]
+  tt <- last(tt, 'UID', 'lastStation')
   tt <- subset(tt, LOC>0 & ! lastStation)
   
   
   reachlen <- aggregate(list('reachlen'=tt$INCREMNT)
-                       ,list('SITE'=tt$SITE)
+                       ,list('UID'=tt$UID)
                        ,sum, na.rm=TRUE
                        )
-  rp100 <- merge(areasum, reachlen, by='SITE')
+  rp100 <- merge(areasum, reachlen, by='UID')
   rp100$rp100 <- ifelse(is.na(rp100$reachlen), NA
                        ,ifelse(rp100$reachlen==0, NA
                               ,100*rp100$areasum/rp100$reachlen
                               )
                        )
-  rp100 <- subset(rp100, select=c(SITE,rp100))
+  rp100 <- subset(rp100, select=c(UID,rp100))
   intermediateMessage('.4')
 
   # combine summaries, setting missing counts to zero
-  lengthMets <- merge(rpxlen, rpvlen, by='SITE', all=TRUE)
-  lengthMets <- merge(lengthMets, rpmxlen, by='SITE', all=TRUE)
-  lengthMets <- merge(lengthMets, totplen, by='SITE', all=TRUE)
+  lengthMets <- merge(rpxlen, rpvlen, by='UID', all=TRUE)
+  lengthMets <- merge(lengthMets, rpmxlen, by='UID', all=TRUE)
+  lengthMets <- merge(lengthMets, totplen, by='UID', all=TRUE)
   
-  depthMets <- merge(rpxdep, rpvdep, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpmxdep, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt50, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt75, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt100, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt05, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt05x, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt10, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt10x, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt20, by='SITE', all=TRUE)
-  depthMets <- merge(depthMets, rpgt20x, by='SITE', all=TRUE)
+  depthMets <- merge(rpxdep, rpvdep, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpmxdep, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt50, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt75, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt100, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt05, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt05x, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt10, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt10x, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt20, by='UID', all=TRUE)
+  depthMets <- merge(depthMets, rpgt20x, by='UID', all=TRUE)
 
-  areaMets <- merge(rpxarea, rpvarea, by='SITE', all=TRUE)
-  areaMets <- merge(areaMets, rpmxar, by='SITE', all=TRUE)
-  areaMets <- merge(areaMets, areasum, by='SITE', all=TRUE)
+  areaMets <- merge(rpxarea, rpvarea, by='UID', all=TRUE)
+  areaMets <- merge(areaMets, rpmxar, by='UID', all=TRUE)
+  areaMets <- merge(areaMets, areasum, by='UID', all=TRUE)
   
-  mets <- merge(lengthMets, depthMets, by='SITE', all=TRUE)
-  mets <- merge(mets, areaMets, by='SITE', all=TRUE)
-  mets <- merge(mets, rp100, by='SITE', all=TRUE)
+  mets <- merge(lengthMets, depthMets, by='UID', all=TRUE)
+  mets <- merge(mets, areaMets, by='UID', all=TRUE)
+  mets <- merge(mets, rp100, by='UID', all=TRUE)
 
-  intermediateMessage('.5')
+  intermediateMessage('.  Done.', loc='end')
   return(mets)
 }
+
+
 
 # end of file

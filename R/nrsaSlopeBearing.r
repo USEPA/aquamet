@@ -91,6 +91,7 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #            pctClinometer) to allow for case when slope data is present for ALL sites 
 #            in a study (e.g. Calapooia). No change to unit test.
 #   10/27/15 cws Created nrsaSlopeBearing with new general calling interface
+#   12/28/15 cws Removed debugging print statements.
 #
 # Arguments:
 #   thalweg = a data frame containing the thalweg data file.  The data frame
@@ -169,7 +170,7 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #   }
 
 # Calculate the metrics
-  intermediateMessage('.3 Call function nrsaSlopeBearing.1.', loc='end')
+#  intermediateMessage('.3 Call function nrsaSlopeBearing.1.', loc='end')
   mets <- nrsaSlopeBearing.1(bBearing, bDistance, bSlope, wBearing, wIncrement, wProportion, wSlope, wStations, gisCalcs)
   row.names(mets) <- 1:nrow(mets)
 
@@ -227,7 +228,6 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   # Calculate transect spacing TRANSPC in wadeable reaches.  Include TRANSPC
   # as a parameter in the wadeable data. Fill in LINE and standardize PARAMETER
   # values.
-print('dists 10186:'); print(subset(dists, SITE==10186))
   dists$VALUE <- as.numeric(as.character(dists$VALUE))
 # print('dists 10186:'); print(subset(dists, SITE==10186))
 # print('wStations 10186:'); print(subset(wStations, SITE==10186))
@@ -238,7 +238,6 @@ print('dists 10186:'); print(subset(dists, SITE==10186))
       newDists <- merge(dists, nsta, by='SITE', all.x=TRUE)
 
       newDists$TRANSPC <- as.character(newDists$nSta * as.numeric(newDists$VALUE))
-print('newDists 10186:'); print(subset(newDists, SITE==10186))
       newDists <- newDists[c('SITE','TRANSECT','TRANSPC')]
   }
 
@@ -258,7 +257,6 @@ print('newDists 10186:'); print(subset(newDists, SITE==10186))
                 subset(TRANSECT %in% LETTERS[1:11]
                       ,select=c(SITE,TRANSECT,PARAMETER,VALUE,UNITS, METHOD)
                       )
-print('sbWadeable 1, 10186:'); print(subset(sbWadeable, SITE==10186))
 
 #   sbBoatable <- subset(chanGeom
 #                       ,PARAMETER %in% c('BEAR','SLOPE','DISTANCE')
@@ -304,7 +302,6 @@ print('sbWadeable 1, 10186:'); print(subset(sbWadeable, SITE==10186))
                          ,NA
                          )))
   intermediateMessage('.2')
-# print('sbWadeable 2, 10186:'); print(subset(sbWadeable, SITE==10186))
   
 
   # Calculate transect spacing TRANSPC from incremental DISTANCE values.
@@ -349,8 +346,6 @@ print('sbWadeable 1, 10186:'); print(subset(sbWadeable, SITE==10186))
               )
 
   transpc <- rbind(newDists, sumDists)
-print('tsb 10186:'); print(subset(tsb, SITE==10186))
-print('transpc 10186:'); print(subset(transpc, SITE==10186))
 
   intermediateMessage('.3')
 
@@ -371,7 +366,6 @@ print('transpc 10186:'); print(subset(transpc, SITE==10186))
   sb$BEARING <- as.numeric(sb$BEARING)
   sb$PROPORTION <- as.numeric(sb$PROPORTION)
   sb$TRANSPC <- as.numeric(sb$TRANSPC)
-# print('sb 10058:'); print(subset(sb, SITE==10058))
 
    # Handle changes to elevation data recording in the wadeable protocol.
    # Separate out wadeables, adjust elevations as needed, and recombine with
