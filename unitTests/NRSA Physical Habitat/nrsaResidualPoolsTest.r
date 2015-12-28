@@ -3,6 +3,15 @@
 # # metsResidualPoolsSMP.r
 # # RUnit tests
 # 
+# TODO: Add test cases for:
+#       both actransp and distance are present
+#       both actransp and distance are absent and NA
+#       Distance has more than one value at a transect ( like for partial sightings)
+#       Distance has more than one value at a transect, as well as some missing values
+#       Depths have gaps in values
+#       Depths start after A
+#       Slopes are absent and NA
+#       
 # 
 # metsResidualPools.dataOrganization <- function(thal, actransp, slopes)
 # # Reformats wadeable and boatable reach data into the following format, which
