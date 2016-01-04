@@ -1,5 +1,12 @@
-nrsaBedStability <- function(bankgeometry, thalweg, visits, channelgeometry,
-  channelcrosssection, littoral, wood, fishcover, gisCalcs=NULL) {
+nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
+                            ,wXdepth = NULL, wSddepth = NULL
+                            ,lsub_dmm = NULL, lsub2dmm = NULL
+                            ,rp100 = NULL
+                            ,v1w_msq = NULL, xbkf_h = NULL, xbkf_w = NULL
+                            ,xfc_lwd = NULL, xslope = NULL, xwidth = NULL
+                            ) {
+# nrsaBedStability <- function(bankgeometry, thalweg, visits, channelgeometry,
+#   channelcrosssection, littoral, wood, fishcover, gisCalcs=NULL) {
 
 ################################################################################
 # Function: nrsaBedStability
@@ -174,91 +181,144 @@ nrsaBedStability <- function(bankgeometry, thalweg, visits, channelgeometry,
 #   metsFishCover - calculate fish cover metrics
 #   siteProtocol determine sampling protocol values
 #   nrsaBedStability.1 - calculate metrics
-################################################################################
+# ################################################################################
+# 
+# # Print an initial message
+#   cat('Bed Stability calculations:\n')
+# 
+# # Convert factors to character variables in the input data frames
+#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
+#   bankgeometry <- convert_to_char(bankgeometry)
+#   thalweg <- convert_to_char(thalweg)
+#   visits <- convert_to_char(visits)
+#   channelgeometry <- convert_to_char(channelgeometry)
+#   channelcrosssection <- convert_to_char(channelcrosssection)
+#   littoral <- convert_to_char(littoral)
+#   wood <- convert_to_char(wood)
+#   fishcover <- convert_to_char(fishcover)
+#   if(!is.null(gisCalcs))
+#     gisCalcs <- convert_to_char(gisCalcs)
+# 
+# # Call the metsChannelMorphology function
+#   intermediateMessage('.2 Call the metsChannelMorphology function.', loc='end')
+#   cm <- metsChannelMorphology(bankgeometry, thalweg, visits)
+# 
+# # Call the metsSlopeBearing function
+#   intermediateMessage('.3 Call the metsSlopeBearing function.', loc='end')
+#   sb <- metsSlopeBearing(thalweg, channelgeometry, visits, gisCalcs)
+# 
+# # Call the metsSubstrateCharacterization function
+#   intermediateMessage('.4 Call the metsSubstrateCharacterization function.',
+#     loc='end')
+#   sc <- metsSubstrateCharacterization(channelcrosssection, thalweg, littoral)
+# 
+# # Call the metsResidualPools function
+#   intermediateMessage('.5 Call the metsResidualPools function.',
+#     loc='end')
+#   rp <- metsResidualPools(thalweg, channelgeometry, visits, gisCalcs)
+# 
+# # Call the metsLargeWoody function
+#   intermediateMessage('.6 Call the metsLargeWoody function.',
+#     loc='end')
+#   lwd <- metsLargeWoody(thalweg, channelgeometry, bankgeometry, wood, visits)
+# 
+# # Call the metsFishCover function
+#   intermediateMessage('.7 Call the metsFishCover function.',
+#     loc='end')
+#   fc <- metsFishCover(fishcover, visits)
+# 
+# # Combine metrics data frames
+#   intermediateMessage('.8 Combine metrics data frames.', loc='end')
+#   mets <- rbind(subset(cm, METRIC %in% c('xdepth', 'sddepth', 'xbkf_h',
+#                                          'xbkf_w', 'xwidth')),
+#                 subset(sb, METRIC %in% c('xslope')),
+#                 subset(sc, METRIC %in% c('lsub_dmm', 'lsub2dmm')),
+#                 subset(rp, METRIC %in% c('rp100', 's_rp100')),
+#                 subset(lwd, METRIC %in% c('v1w_msq')),
+#                 subset(fc, METRIC %in% c('xfc_lwd'))
+#                 )
+#   mets$VALUE <- with(mets, ifelse(VALUE == 'NA', NA, VALUE))       
+# 
+# # Determine protocol used for each site
+#   intermediateMessage('.9 Set protocols.', loc='end')
+#   protocols <- siteProtocol(unique(mets$SITE), visits)
+# 
+# # Calculate the metrics
+#   intermediateMessage('.10 Call function nrsaBedStability.1.', loc='end')
+#   bs <- nrsaBedStability.1(mets, protocols)
+#   bs$VALUE <- as.numeric(bs$VALUE)
+# 
+# # Print an exit message
+#   intermediateMessage('Done.', loc='end')
+# 
+# # Return results
+#   return(bs)
+# }
+# 
+# 
+# 
+# nrsaBedStability.1 <- function(mets, protocols) {
+# # Does the work for for nrsaBedStability
+# #
+# # ARGUMENTS:
+# # mets      dataframe of relevant metrics: xdepth, sddepth, xbkf_h, xbkf_w,
+# #             xwidth, xslope, lsub_dmm, rp100, v1w_msq, xfc_lwd
+# # protocols dataframe specifying the protocol each SITE was sampled with.
 
-# Print an initial message
-  cat('Bed Stability calculations:\n')
+  intermediateMessage('Bed stability calculations', loc='start')
+    absentAsNULL <- function(df, ifdf, ...) {
+        if(is.null(df)) return(NULL)
+        else if(!is.data.frame(df)) return(NULL)
+        else if(nrow(df) == 0) return (NULL)
+        else if(is.function(ifdf)) return(ifdf(df, ...))
+        else return(df)
+    }
+    ifdf <- function(df, ...) {
+        if(is.null(...)) return(NULL)
+        else if(all(is.na(...))) return(NULL)
 
-# Convert factors to character variables in the input data frames
-  intermediateMessage('.1 Convert factors to character variables.', loc='end')
-  bankgeometry <- convert_to_char(bankgeometry)
-  thalweg <- convert_to_char(thalweg)
-  visits <- convert_to_char(visits)
-  channelgeometry <- convert_to_char(channelgeometry)
-  channelcrosssection <- convert_to_char(channelcrosssection)
-  littoral <- convert_to_char(littoral)
-  wood <- convert_to_char(wood)
-  fishcover <- convert_to_char(fishcover)
-  if(!is.null(gisCalcs))
-    gisCalcs <- convert_to_char(gisCalcs)
+        args <- list(...)
+        metName <- args[[1]]
+        rc <- df %>% 
+              select(SITE, VALUE) %>% 
+              mutate(METRIC=metName)
+        return(rc)
+    }
+    ifdfProtocol <- function(df, ...) {
+        if(is.null(...)) return(NULL)
+        else if(all(is.na(...))) return(NULL)
 
-# Call the metsChannelMorphology function
-  intermediateMessage('.2 Call the metsChannelMorphology function.', loc='end')
-  cm <- metsChannelMorphology(bankgeometry, thalweg, visits)
+        args <- list(...)
+        pName <- args[[1]]
+        rc <- df %>% 
+              select(SITE) %>% 
+              mutate(PROTOCOL=pName)
+        return(rc)
+    }
 
-# Call the metsSlopeBearing function
-  intermediateMessage('.3 Call the metsSlopeBearing function.', loc='end')
-  sb <- metsSlopeBearing(thalweg, channelgeometry, visits, gisCalcs)
+    mets <- rbind(absentAsNULL(bXdepth,  ifdf, 'xdepth')
+                 ,absentAsNULL(bSddepth, ifdf, 'sddepth')
+                 ,absentAsNULL(wXdepth,  ifdf, 'xdepth')
+                 ,absentAsNULL(wSddepth, ifdf, 'sddepth')
+                 ,absentAsNULL(lsub_dmm, ifdf, 'lsub_dmm')
+                 ,absentAsNULL(lsub2dmm, ifdf, 'lsub2dmm')
+                 ,absentAsNULL(rp100,    ifdf, 'rp100')
+                 ,absentAsNULL(v1w_msq,  ifdf, 'v1w_msq')
+                 ,absentAsNULL(xbkf_h,   ifdf, 'xbkf_h')
+                 ,absentAsNULL(xbkf_w,   ifdf, 'xbkf_w')
+                 ,absentAsNULL(xfc_lwd,  ifdf, 'xfc_lwd')
+                 ,absentAsNULL(xslope,   ifdf, 'xslope')
+                 ,absentAsNULL(xwidth,   ifdf, 'xwidth')
+                 )
+    protocols <- rbind(absentAsNULL(bXdepth, ifdfProtocol, 'BOATABLE')
+                      ,absentAsNULL(bSddepth, ifdfProtocol, 'BOATABLE')
+                      ,absentAsNULL(wXdepth, ifdfProtocol, 'WADEABLE')
+                      ,absentAsNULL(wSddepth, ifdfProtocol, 'WADEABLE')
+                      ) %>%
+                 unique()
+    if(is.null(protocols)) return(NULL)
 
-# Call the metsSubstrateCharacterization function
-  intermediateMessage('.4 Call the metsSubstrateCharacterization function.',
-    loc='end')
-  sc <- metsSubstrateCharacterization(channelcrosssection, thalweg, littoral)
-
-# Call the metsResidualPools function
-  intermediateMessage('.5 Call the metsResidualPools function.',
-    loc='end')
-  rp <- metsResidualPools(thalweg, channelgeometry, visits, gisCalcs)
-
-# Call the metsLargeWoody function
-  intermediateMessage('.6 Call the metsLargeWoody function.',
-    loc='end')
-  lwd <- metsLargeWoody(thalweg, channelgeometry, bankgeometry, wood, visits)
-
-# Call the metsFishCover function
-  intermediateMessage('.7 Call the metsFishCover function.',
-    loc='end')
-  fc <- metsFishCover(fishcover, visits)
-
-# Combine metrics data frames
-  intermediateMessage('.8 Combine metrics data frames.', loc='end')
-  mets <- rbind(subset(cm, METRIC %in% c('xdepth', 'sddepth', 'xbkf_h',
-                                         'xbkf_w', 'xwidth')),
-                subset(sb, METRIC %in% c('xslope')),
-                subset(sc, METRIC %in% c('lsub_dmm', 'lsub2dmm')),
-                subset(rp, METRIC %in% c('rp100', 's_rp100')),
-                subset(lwd, METRIC %in% c('v1w_msq')),
-                subset(fc, METRIC %in% c('xfc_lwd'))
-                )
-  mets$VALUE <- with(mets, ifelse(VALUE == 'NA', NA, VALUE))       
-
-# Determine protocol used for each site
-  intermediateMessage('.9 Set protocols.', loc='end')
-  protocols <- siteProtocol(unique(mets$SITE), visits)
-
-# Calculate the metrics
-  intermediateMessage('.10 Call function nrsaBedStability.1.', loc='end')
-  bs <- nrsaBedStability.1(mets, protocols)
-  bs$VALUE <- as.numeric(bs$VALUE)
-
-# Print an exit message
-  intermediateMessage('Done.', loc='end')
-
-# Return results
-  return(bs)
-}
-
-
-
-nrsaBedStability.1 <- function(mets, protocols) {
-# Does the work for for nrsaBedStability
-#
-# ARGUMENTS:
-# mets      dataframe of relevant metrics: xdepth, sddepth, xbkf_h, xbkf_w,
-#             xwidth, xslope, lsub_dmm, rp100, v1w_msq, xfc_lwd
-# protocols dataframe specifying the protocol each SITE was sampled with.
-
-  intermediateMessage('Beginning bed stability calculations', loc='start')
+    # The following code is unchanged
 
   # Convert long to wide so metrics are all on same row.  Drop prefix for
   # column names.

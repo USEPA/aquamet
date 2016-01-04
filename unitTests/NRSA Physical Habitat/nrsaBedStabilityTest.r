@@ -39,7 +39,20 @@ nrsaBedStabilityTest <- function()
 nrsaBedStabilityTestTest.process <- function (testData, metsExpected, protocols)   
 #
 {
-  rr <- nrsaBedStability.1(testData, protocols)
+  rr <- nrsaBedStability(bXdepth =  subset(testData, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+                        ,bSddepth = subset(testData, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+                        ,wXdepth =  subset(testData, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+                        ,wSddepth = subset(testData, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+                        ,lsub_dmm = subset(testData, METRIC == 'lsub_dmm')
+                        ,lsub2dmm = subset(testData, METRIC == 'lsub2dmm')
+                        ,rp100 =    subset(testData, METRIC == 'rp100')
+                        ,v1w_msq =  subset(testData, METRIC == 'v1w_msq')
+                        ,xbkf_h =   subset(testData, METRIC == 'xbkf_h')
+                        ,xbkf_w =   subset(testData, METRIC == 'xbkf_w')
+                        ,xfc_lwd =  subset(testData, METRIC == 'xfc_lwd')
+                        ,xslope =   subset(testData, METRIC == 'xslope')
+                        ,xwidth =   subset(testData, METRIC == 'xwidth')
+                        )
 
   # Calculated values should be within 10E-7 of expected values, should
   # only be missing where they are supposed to be missing and nonmissing where
@@ -81,6 +94,7 @@ nrsaBedStabilityTestTest.process <- function (testData, metsExpected, protocols)
                           )
                    ,c('SITE','METRIC'), zeroFudge=10^-4
                    )
+print(errs)
   checkEquals(NULL, errs
              ,"Error: Bed stability s_* metric is broken"
              )
