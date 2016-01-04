@@ -818,7 +818,7 @@ rp <- nrsaResidualPools(bDepth = thalweg %>%
                                                       ,nSta = NULL
                                                       )
                                                )
-                       ,writeIntermediateFiles = TRUE
+                       ,writeIntermediateFiles = FALSE
                        ,oldeMethods = FALSE
                        )
 rpClassic <- metsResidualPools.1(base_thalweg%>%                                # Use version of function in metsResidualPoolsUpdatedButWithOldCallingInterface.r to correctly use nWadeableStationsPerTransect()
@@ -981,8 +981,83 @@ ddRecalcNew <- dfCompare(rpClassic %>% dplyr::rename(SITE=UID, VALUE=RESULT)
 #
 
 ##################################################
-#
+# General metrics
+base_thalweg <- dbGet('NRSA0809', 'tblTHALWEG2')
+base_channelGeometry <- dbGet('NRSA0809', 'tblCHANNELGEOMETRY2')
+thalweg <- base_thalweg %>% 
+           dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+           mutate(TRANSECT = trimws(TRANSECT)
+                 ,STATION = as.numeric(trimws(STATION))
+                 ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
+                 ,PARAMETER = trimws(PARAMETER)
+                 ,VALUE = trimws(VALUE)
+                 ,UNITS = toupper(trimws(UNITS))
+                 ) %>% 
+           subset(TRANSECT %in% c(LETTERS,'NOT MARKED'))
+channelGeometry <- base_channelGeometry %>%
+                   dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
+                   mutate(TRANSECT = trimws(TRANSECT)
+                         ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
+                         ,PARAMETER = trimws(PARAMETER)
+                         ,LINE = trimws(LINE)
+                         ,VALUE = trimws(VALUE)
+                         )
 
+gm0<-gm
+gm <- nrsaGeneral(sampledTransects = subset(thalweg, PARAMETER == 'INCREMNT')
+                 ,sideChannels = subset(thalweg, PARAMETER %in% c('SIDCHN','OFF_CHAN') & TRANSECT %in% c('NOT MARKED', LETTERS))
+                 ,transectSpacing = rbind(merge(channelGeometry %>%                               # values for wadeable sites
+                                                subset(PARAMETER == 'DISTANCE' & TRANSECT %in% LETTERS) %>%               # sum DISTANCE between waypoints, if calculated
+                                                ddply(.(SITE,TRANSECT), summarise
+                                                     ,DISTANCE=protectedSum(as.numeric(VALUE), na.rm=TRUE) 
+                                                     )
+                                               ,channelGeometry %>%                               # ACTRANSP value is recorded distance between transects
+                                                subset(PARAMETER == 'ACTRANSP' & TRANSECT %in% LETTERS) %>%
+                                                dplyr::rename(ACTRANSP = VALUE) %>%
+                                                select(SITE, TRANSECT, ACTRANSP)
+                                               ,by=c('SITE','TRANSECT')
+                                               ,all=TRUE                                          # include all sites with ACTRANSP or DISTANCE, not just sites with both, dammit
+                                               ) %>% 
+                                          mutate(VALUE = ifelse(is.na(ACTRANSP), DISTANCE, ACTRANSP)) %>%
+                                          select(SITE,TRANSECT,VALUE)   
+                                         ,thalweg %>%                                             # values for wadeable sites in the standard fussy way
+                                          subset(PARAMETER == 'INCREMNT' & TRANSECT=='A' & STATION==0) %>%
+                                          select(SITE,VALUE) %>%
+                                          merge(merge(nWadeableStationsPerTransect(thalweg)       # decrement station count of last transect by 1
+                                                     ,ddply(subset(thalweg, TRANSECT %in% LETTERS[1:11] & VALUE %nin% c('',NA))
+                                                           ,'SITE'
+                                                           ,summarise, lastTransect = max(TRANSECT)
+                                                           )
+                                                     ,by='SITE', all.x=TRUE
+                                                     ) %>%
+                                                     mutate(nSta = ifelse(TRANSECT == lastTransect, nSta - 1, nSta)
+                                                           ,lastTransect = NULL
+                                                           )
+                                               ,by='SITE', all.x=TRUE
+                                               ) %>%
+                                          mutate(VALUE = as.numeric(VALUE) * nSta
+                                                ,nSta = NULL
+                                                )
+                                         )
+                 )
+
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(gm$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
+                mutate(VALUE = as.numeric(VALUE))
+               ,gm %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>%
+                mutate(VALUE = as.numeric(VALUE))
+               ,c('SITE','METRIC')
+               ,zeroFudge = 1e-9
+               )
+# Results in 1 difference:
+# Difference at SITE=12195, METRIC=REACHLEN; VALUE: First=<830.8211374> Second=<725.0417925>
+# This appears to due to DISTANCE values at transects D and E were added at line 
+# 999 instead of line 1, so they were treated as additional values rather than 
+# replacements.  These two values, added at 2010-10-06 and deprecated on 2013-01-24, 
+# were included in the previous calculations, but not in these.
 
 ##################################################
 #
