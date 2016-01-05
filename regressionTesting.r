@@ -1063,17 +1063,51 @@ dd <- dfCompare(currentMets %>%
 #
 # Bed Stability
 
-bankgeometryBase <- dbGet('NRSA0809','tblBANKGEOMETRY2')
-thalwegBase <- dbGet('NRSA0809','tblTHALWEG2')
-visitsBase <- dbGet('NRSA0809','tblVISITS2')
-channelgeometryBase <- dbGet('NRSA0809','tblCHANNELGEOMETRY2')
-channelcrosssectionBase <- dbGet('NRSA0809','tblCHANNELGEOMETRY2')
-littoralBase <- dbGet('NRSA0809','tblLITTORAL2')
-woodBase <- dbGet('NRSA0809','tblWOOD2')
-fishcoverBase <- dbGet('NRSA0809','tblFISHCOVER2')
-giscalcs0809 <- read.csv('l:/Priv/CORFiles/IM/Rwork/nrsa/results/gpsBasedCalculations_asOf201203008.csv', stringsAsFactors=FALSE)
 
-oldRecalcFull <- nrsaBedStability(bankgeometryBase, thalwegBase, visitsBase, channelgeometryBase, channelcrosssectionBase, littoralBase, woodBase, fishcoverBase, gisCalcs=giscalcs0809)
+protocols <- base_thalweg %>% 
+             mutate(SITE = BATCHNO
+                   ,PROTOCOL = ifelse(trimws(SAMPLE_TYPE)=='PHAB_THAL', 'BOATABLE'
+                              ,ifelse(trimws(SAMPLE_TYPE)=='PHAB_THALW', 'WADEABLE', NA
+                                     ))
+                   ) %>%
+            select(SITE, PROTOCOL) %>%
+            unique()
+            
+# cm_mets <- read.csv('c:/Users/cseelige/local/nrsa1314/projects/nrsaChannelMorphology.csv', stringsAsFactors=FALSE) 
+# lw_mets <- read.csv('c:/Users/cseelige/local/nrsa1314/projects/nrsaLargeWoody.csv', stringsAsFactors=FALSE) 
+# rp_mets <- read.csv('c:/Users/cseelige/local/nrsa1314/projects/nrsaResidualPools.csv', stringsAsFactors=FALSE) 
+# sb_mets <- read.csv('c:/Users/cseelige/local/nrsa1314/projects/nrsaSlopeBearing.csv', stringsAsFactors=FALSE) 
+# sc_mets <- read.csv('c:/Users/cseelige/local/nrsa1314/projects/nrsaSubstrateCharacterization.csv', stringsAsFactors=FALSE) 
+cm_mets <- sc_mets <- rp_mets <- lw_mets <- sb_mets <- currentMets %>% mutate(SITE = BATCHNO, METRIC = tolower(PARAMETER), VALUE=RESULT) %>% select(SITE,METRIC,VALUE)
+bs <- nrsaBedStability(bXdepth =  subset(cm_mets, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+                      ,bSddepth = subset(cm_mets, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+                      ,wXdepth =  subset(cm_mets, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+                      ,wSddepth = subset(cm_mets, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+                      ,lsub_dmm = subset(sc_mets, METRIC == 'lsub_dmm')
+                      ,lsub2dmm = subset(sc_mets, METRIC == 'lsub2dmm')
+                      ,rp100 =    subset(rp_mets, METRIC == 'rp100')
+                      ,v1w_msq =  subset(lw_mets, METRIC == 'v1w_msq')
+                      ,xbkf_h =   subset(cm_mets, METRIC == 'xbkf_h')
+                      ,xbkf_w =   subset(cm_mets, METRIC == 'xbkf_w')
+                      ,xfc_lwd =  subset(cm_mets, METRIC == 'xfc_lwd')
+                      ,xslope =   subset(sb_mets, METRIC == 'xslope')
+                      ,xwidth =   subset(cm_mets, METRIC == 'xwidth')
+                      )
+
+dd <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(bs$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
+                mutate(VALUE = as.numeric(VALUE))
+               ,bs %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>%
+                mutate(VALUE = as.numeric(VALUE), SITE=as.integer(SITE))
+               ,c('SITE','METRIC')
+               ,zeroFudge = 1e-8
+               )
+# Shows 24 differences, all for site 1417, with VALXSITE='PARBYBOAT' and processed
+# earlier as boatable, but was recorded as wadeable in the thalweg data and processed
+# as WADEABLE this time.
 
 
 # end of file
