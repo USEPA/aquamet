@@ -1,10 +1,12 @@
 nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
-                            ,wBearing = NULL, wIncrement = NULL, wProportion = NULL
-                            ,wSlope = NULL, wStations = NULL, gisCalcs=NULL
+                            ,wBearing = NULL, wTransectSpacing = NULL, wProportion = NULL
+                            ,wSlope = NULL, gisSinuosity=NULL, gisSlope=NULL
                             ) {
     
-# TODO: Remove use of PARAMETER column which serves to allow this code to determine LINE values.
-# TODO: rewrite to not require wStations argument.  Maybe use bTransectSpacing and wTransectSpacing in place of wStations and bDistance
+# TODO: Remove use of PARAMETER column which serves to allow this code to 
+#       determine LINE values.
+# TODO: rewrite to not require wStations argument.  Maybe use bTransectSpacing 
+#       and wTransectSpacing in place of wStations and bDistance
 # TODO: Separate gisCalcs into gisSiteSinuosity and gisSiteSlope
 # TODO: Handle slopes in DEGREES (1314 has 10 Dg rows), and maybe '' (39 rows)
 # TODO: Maybe separate bSlope and wSlope into values and units args
@@ -92,6 +94,12 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #            in a study (e.g. Calapooia). No change to unit test.
 #   10/27/15 cws Created nrsaSlopeBearing with new general calling interface
 #   12/28/15 cws Removed debugging print statements.
+#    1/05/15 cws Changed arguments from wIncrement and wStations to use 
+#            wTransectSpacing instead.  Removed PARAMETER column from 
+#            wProportion, wBearing, wSlope, and instead using LINE, as expected
+#            for bBearing, bSlope and bDistance.
+#    1/07/15 cws Allowing values in gisSlope and gisSinuosity to be used for sites
+#            that do not occur in the field data (w* and b* arguments).
 #
 # Arguments:
 #   thalweg = a data frame containing the thalweg data file.  The data frame
@@ -169,45 +177,127 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #       unique(gisCalcs$UID)), visits)
 #   }
 
-# Calculate the metrics
-#  intermediateMessage('.3 Call function nrsaSlopeBearing.1.', loc='end')
-  mets <- nrsaSlopeBearing.1(bBearing, bDistance, bSlope, wBearing, wIncrement, wProportion, wSlope, wStations, gisCalcs)
-  row.names(mets) <- 1:nrow(mets)
-
-# Print an exit message
-  intermediateMessage('Done.', loc='end')
-
-# Return results
-  return(mets)
-}
-
-
-
-nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement, wProportion, wSlope, wStations, gisCalcs) {
-
-# Does the work for for nrsaSlopeBearing
-#
-# ARGUMENTS:
-# thal        dataframe with thalweg data table
-# chanGeom    dataframe with channel geometry table
-# gisCalcs    dataframe with GIS based calculations of slope and sinuosity (in long
-#               UID,PARAMETER,RESULT format, or NULL if these calculations do not exist.
-# protocols   dataframe with protocol (WADEABLE, BOATABLE) used for each UID
-#
-# rm(dists,sbWadeable,sbBoatable,sb,nsta,tt,sumDists,tsb,transpc,tranEast, tranNorth, tranSlope, tran,totEast, totNorth, fishDist, nEast, nNorth, reach, xslope, vslope, nslp, reach, xbearing, sinu, mets)
+# # Calculate the metrics
+# #  intermediateMessage('.3 Call function nrsaSlopeBearing.1.', loc='end')
+#   mets <- nrsaSlopeBearing.1(bBearing, bDistance, bSlope, wBearing, wTransectSpacing
+#                             ,wProportion, wSlope, gisSinuosity, gisSlope
+#                             )
+#   row.names(mets) <- 1:nrow(mets)
+# 
+# # Print an exit message
+#   intermediateMessage('Done.', loc='end')
+# 
+# # Return results
+#   return(mets)
+# }
+# 
+# 
+# 
+# nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wTransectSpacing
+#                               ,wProportion, wSlope, gisSinuosity, gisSlope) {
+# 
+# # Does the work for for nrsaSlopeBearing
+# #
+# # ARGUMENTS:
+# # thal        dataframe with thalweg data table
+# # chanGeom    dataframe with channel geometry table
+# # gisCalcs    dataframe with GIS based calculations of slope and sinuosity (in long
+# #               UID,PARAMETER,RESULT format, or NULL if these calculations do not exist.
+# # protocols   dataframe with protocol (WADEABLE, BOATABLE) used for each UID
+# #
 
   intermediateMessage('Slope and bearing calculations', loc='start')
-#print(names(bBearing));print(names(bDistance));print(names(wBearing));print(names(wProportion));print(names(wSlope));print(names(wIncrement));print(names(wStations));print(names(gisCalcs));
   # standardize argument columns
-  if(!is.null(bBearing))    bBearing    <- bBearing %>%     select(SITE, TRANSECT, LINE, VALUE) 
-  if(!is.null(bDistance))   bDistance   <- bDistance %>%    select(SITE, TRANSECT, LINE, VALUE) 
-  if(!is.null(bSlope))      bSlope      <- bSlope %>%       select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
-  if(!is.null(wBearing))    wBearing    <- wBearing %>%     select(SITE, TRANSECT, PARAMETER, VALUE)
-  if(!is.null(wProportion)) wProportion <- wProportion %>%  select(SITE, TRANSECT, PARAMETER, VALUE)
-  if(!is.null(wSlope))      wSlope      <- wSlope %>%       select(SITE, TRANSECT, PARAMETER, VALUE, METHOD, UNITS)
-  if(!is.null(wIncrement))  wIncrement  <- wIncrement %>%   select(SITE, VALUE)
-  if(!is.null(wStations))   wStations   <- wStations %>%    select(SITE, TRANSECT, STATION) %>% mutate(STATION = as.integer(as.character(STATION)))
-  if(!is.null(gisCalcs))    gisCalcs    <- gisCalcs %>%     select(SITE, METRIC, VALUE)
+    absentAsNULL <- function(df, ifdf, ...) {
+        if(is.null(df)) return(NULL)
+        else if(!is.data.frame(df)) return(NULL)
+        else if(nrow(df) == 0) return (NULL)
+        else if(is.function(ifdf)) return(ifdf(df, ...))
+        else return(df)
+    }
+    ifdfTranspc <- function(df, ...) {
+        rc <- df %>% 
+              select(SITE, TRANSECT, VALUE) %>%
+              dplyr::rename(TRANSPC=VALUE)
+        return(rc)
+    }
+    ifdfLine <- function(df, ...) {
+        if(is.null(...)) return(NULL)
+        else if(all(is.na(...))) return(NULL)
+
+        args <- list(...)
+        pName <- args[[1]]
+        rc <- df %>% 
+              select(SITE, TRANSECT, LINE, VALUE) %>% 
+              mutate(PARAMETER=pName)
+        return(rc)
+    }
+    ifdfLineMethodUnits <- function(df, ...) {
+        if(is.null(...)) return(NULL)
+        else if(all(is.na(...))) return(NULL)
+
+        args <- list(...)
+        pName <- args[[1]]
+        rc <- df %>% 
+              select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS) %>% 
+              mutate(PARAMETER=pName)
+        return(rc)
+    }
+    ifdfLineAddMethodUnits <- function(df, ...) {
+        if(is.null(...)) return(NULL)
+        else if(all(is.na(...))) return(NULL)
+
+        args <- list(...)
+        pName <- args[[1]]
+        rc <- df %>% 
+              select(SITE, TRANSECT, LINE, VALUE) %>% 
+              mutate(PARAMETER=pName
+                    ,METHOD = ''
+                    ,UNITS = ''
+                    )
+        return(rc)
+    }
+    ifdfValue <- function(df, ...) {
+        rc <- df %>% 
+              select(SITE, VALUE)
+        return(rc)
+    }
+    
+    bBearing <- bBearing %>%                 absentAsNULL(ifdfLineAddMethodUnits, 'BEARING')
+    bDistance <- bDistance %>%               absentAsNULL(ifdfLineAddMethodUnits, 'DISTANCE')
+    bSlope <- bSlope %>%                     absentAsNULL(ifdfLineMethodUnits, 'SLOPE')
+    wBearing <- wBearing %>%                 absentAsNULL(ifdfLineAddMethodUnits, 'BEARING')
+    wProportion <- wProportion %>%           absentAsNULL(ifdfLineAddMethodUnits, 'PROPORTION')
+    wSlope <- wSlope %>%                     absentAsNULL(ifdfLineMethodUnits, 'SLOPE')
+    wTransectSpacing <- wTransectSpacing %>% absentAsNULL(ifdfTranspc)
+    gisSinuosity <- gisSinuosity %>%         absentAsNULL(ifdfValue)
+    gisSlope <- gisSlope %>%                 absentAsNULL(ifdfValue)
+
+
+#   if(!is.null(bBearing))    bBearing    <- bBearing %>%     
+#                                            select(SITE, TRANSECT, LINE, VALUE) 
+#   if(!is.null(bDistance))   bDistance   <- bDistance %>%    
+#                                            select(SITE, TRANSECT, LINE, VALUE) 
+#   if(!is.null(bSlope))      bSlope      <- bSlope %>%       
+#                                            select(SITE, TRANSECT, LINE, VALUE
+#                                                  ,METHOD, UNITS)
+#   if(!is.null(wBearing))    wBearing    <- wBearing %>%
+#                                            select(SITE, TRANSECT, LINE, VALUE)
+#   if(!is.null(wProportion)) wProportion <- wProportion %>%  
+#                                            select(SITE, TRANSECT, LINE, VALUE)
+#   if(!is.null(wSlope))      wSlope      <- wSlope %>%       
+#                                            select(SITE, TRANSECT, LINE
+#                                                  ,VALUE, METHOD, UNITS)
+# #   if(!is.null(wIncrement))  wIncrement  <- wIncrement %>%   
+# #                                            select(SITE, VALUE)
+#   if(!is.null(wTransectSpacing))  wTransectSpacing  <- wTransectSpacing %>%   
+#                                            select(SITE, TRANSECT, VALUE)
+# #   if(!is.null(wStations))   wStations   <- wStations %>%    
+# #                                            select(SITE, TRANSECT, STATION) %>% 
+# #                                            mutate(STATION = 
+# #                                                 as.integer(as.character(STATION)))
+#   if(!is.null(gisCalcs))    gisCalcs    <- gisCalcs %>%     
+#                                            select(SITE, METRIC, VALUE)
 
   intermediateMessage('.0')
   
@@ -224,23 +314,23 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
 #                  ,select=c(SITE,PARAMETER,VALUE)
 #                  )
 #  dists <- mutate(wIncrement, PARAMETER = 'INCREMNT')
-  dists <- wIncrement
-  # Calculate transect spacing TRANSPC in wadeable reaches.  Include TRANSPC
-  # as a parameter in the wadeable data. Fill in LINE and standardize PARAMETER
-  # values.
-  dists$VALUE <- as.numeric(as.character(dists$VALUE))
-# print('dists 10186:'); print(subset(dists, SITE==10186))
-# print('wStations 10186:'); print(subset(wStations, SITE==10186))
-  newDists <- NULL
-  if (nrow(dists)>0){
-      # Calculate transect spacing for wadeable sites
-      nsta <- nWadeableStationsPerTransect(wStations)
-      newDists <- merge(dists, nsta, by='SITE', all.x=TRUE)
-
-      newDists$TRANSPC <- as.character(newDists$nSta * as.numeric(newDists$VALUE))
-      newDists <- newDists[c('SITE','TRANSECT','TRANSPC')]
-  }
-
+#   dists <- wIncrement
+#   # Calculate transect spacing TRANSPC in wadeable reaches.  Include TRANSPC
+#   # as a parameter in the wadeable data. Fill in LINE and standardize PARAMETER
+#   # values.
+#   dists$VALUE <- as.numeric(as.character(dists$VALUE))
+# # print('dists 10186:'); print(subset(dists, SITE==10186))
+# # print('wStations 10186:'); print(subset(wStations, SITE==10186))
+#   newDists <- NULL
+#   if (nrow(dists)>0){
+#       # Calculate transect spacing for wadeable sites
+#       nsta <- nWadeableStationsPerTransect(wStations)
+#       newDists <- merge(dists, nsta, by='SITE', all.x=TRUE)
+# 
+#       newDists$TRANSPC <- as.character(newDists$nSta * as.numeric(newDists$VALUE))
+#       newDists <- newDists[c('SITE','TRANSECT','TRANSPC')]
+#   }
+    newDists <- wTransectSpacing #%>% dplyr::rename(TRANSPC=VALUE) ################# PROPAGATE THIS NAME CHANGE #####################################
 #   sbWadeable <- subset(chanGeom
 #                       ,PARAMETER %in% c('BEARING','BEARING2','BEARING3'
 #                                        ,'PROP','PROP2','PROP3'
@@ -250,13 +340,17 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
 #                        & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE
 #                       ,select=c(SITE,TRANSECT,PARAMETER,VALUE,UNITS)
 #                       )
-  sbWadeable <- rbind(wBearing %>% mutate(METHOD='', UNITS='')
-                     ,wProportion %>% mutate(METHOD='', UNITS='')
+  sbWadeable <- rbind(wBearing #%>% mutate(METHOD='', UNITS='')
+                     ,wProportion #%>% mutate(METHOD='', UNITS='')
                      ,wSlope 
-                     ) %>%
-                subset(TRANSECT %in% LETTERS[1:11]
-                      ,select=c(SITE,TRANSECT,PARAMETER,VALUE,UNITS, METHOD)
-                      )
+                     )
+    if(!is.null(sbWadeable)) {
+        sbWadeable <- sbWadeable %>%
+                      subset(TRANSECT %in% LETTERS[1:11]
+                            ,select=c(SITE,TRANSECT,LINE,PARAMETER,VALUE,UNITS, METHOD)
+                            )
+    }
+  intermediateMessage('.1')
 
 #   sbBoatable <- subset(chanGeom
 #                       ,PARAMETER %in% c('BEAR','SLOPE','DISTANCE')
@@ -264,17 +358,20 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
 #                        & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE
 #                       ,select=c(SITE,TRANSECT,LINE,PARAMETER,VALUE,UNITS)
 #                       )
-  sbBoatable <- rbind(bBearing  %>% mutate(METHOD='', UNITS='', PARAMETER='BEAR')
-                     ,bDistance  %>% mutate(METHOD='', UNITS='', PARAMETER='DISTANCE')
-                     ,bSlope %>% mutate(PARAMETER='SLOPE')
-                     ) %>%
-                subset(TRANSECT %in% LETTERS[1:11]
-                      ,select=c(SITE,TRANSECT,LINE,PARAMETER,VALUE,UNITS, METHOD)
-                      )
-  sbBoatable$LINE <- as.numeric(as.character(sbBoatable$LINE))
-  sbBoatable$VALUE <- as.numeric(as.character(sbBoatable$VALUE))
 
-  intermediateMessage('.1')
+  sbBoatable <- rbind(bBearing  #%>% mutate(METHOD='', UNITS='', PARAMETER='BEAR')
+                     ,bDistance # %>% mutate(METHOD='', UNITS='', PARAMETER='DISTANCE')
+                     ,bSlope # %>% mutate(PARAMETER='SLOPE')
+                     )
+    if(!is.null(sbBoatable)) {
+        sbBoatable <- sbBoatable %>%
+                      subset(TRANSECT %in% LETTERS[1:11]
+                            ,select=c(SITE,TRANSECT,LINE,PARAMETER,VALUE,UNITS, METHOD)
+                            ) 
+        sbBoatable$LINE <- as.numeric(as.character(sbBoatable$LINE))
+        sbBoatable$VALUE <- as.numeric(as.character(sbBoatable$VALUE))
+    }
+  intermediateMessage('.2')
 
   #########################################################################
   # Organize for wadeable and boatable reaches into a single structure with the
@@ -290,18 +387,18 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   
 
   
-  # Create LINE value based on PARAMETER, then standardize PARAMETER values
-  sbWadeable$LINE <- ifelse(sbWadeable$PARAMETER %in% c('PROP','SLOPE','BEARING'), 0
-                    ,ifelse(sbWadeable$PARAMETER %in% c('PROP2','SLOPE2','BEARING2'), 1
-                    ,ifelse(sbWadeable$PARAMETER %in% c('PROP3','SLOPE3','BEARING3'), 2
-                    ,NA
-                    )))
-  sbWadeable$PARAMETER <- ifelse(substr(sbWadeable$PARAMETER,1,4) == 'PROP', 'PROPORTION'
-                         ,ifelse(substr(sbWadeable$PARAMETER,1,4) == 'SLOP', 'SLOPE'
-                         ,ifelse(substr(sbWadeable$PARAMETER,1,4) == 'BEAR', 'BEARING'
-                         ,NA
-                         )))
-  intermediateMessage('.2')
+#   # Create LINE value based on PARAMETER, then standardize PARAMETER values
+#   sbWadeable$LINE <- ifelse(sbWadeable$PARAMETER %in% c('PROP','SLOPE','BEARING'), 0
+#                     ,ifelse(sbWadeable$PARAMETER %in% c('PROP2','SLOPE2','BEARING2'), 1
+#                     ,ifelse(sbWadeable$PARAMETER %in% c('PROP3','SLOPE3','BEARING3'), 2
+#                     ,NA
+#                     )))
+#   sbWadeable$PARAMETER <- ifelse(substr(sbWadeable$PARAMETER,1,4) == 'PROP', 'PROPORTION'
+#                          ,ifelse(substr(sbWadeable$PARAMETER,1,4) == 'SLOP', 'SLOPE'
+#                          ,ifelse(substr(sbWadeable$PARAMETER,1,4) == 'BEAR', 'BEARING'
+#                          ,NA
+#                          )))
+#  intermediateMessage('.2')
   
 
   # Calculate transect spacing TRANSPC from incremental DISTANCE values.
@@ -309,9 +406,9 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   # Handle TRANSPC as a parameter in a separate dataframe.  Boatable reaches
   # use LINE==999 at the transect, and 1,2... for partial bearings, so change
   # at-transect LINE values from 999 to 1 and increment other values.
-  tt <- subset(sbBoatable, PARAMETER=='DISTANCE')
   sumDists <- NULL
-  if (nrow(tt)>0){
+  if (!is.null(sbBoatable)){
+      tt <- subset(sbBoatable, PARAMETER=='DISTANCE')
       sumDists <- aggregate(list('transpc'=tt$VALUE)
                            ,list('SITE'=tt$SITE, 'TRANSECT'=tt$TRANSECT)
                            ,sum, na.rm=TRUE
@@ -348,7 +445,6 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   transpc <- rbind(newDists, sumDists)
 
   intermediateMessage('.3')
-
   # Transpose to wide format for intermediate calculations at each transect
   # Put TRANSPC values on every row, regardless of LINE value.
   # NOTE: Boatable slopes (SLOPE_ND at least) have units = 'NONE', but are
@@ -389,19 +485,23 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
    }
 
   # Convert mix of slopes in cm and percent to all percent.
-  sb$SLOPE <-  ifelse(sb$SITE %in% sbWadeable$SITE # subset(protocols, PROTOCOL %in% c('WADEABLE','NONE'))$SITE
+  sb$SLOPE <-  ifelse(sb$SITE %in% sbWadeable$SITE 
+                      # subset(protocols, PROTOCOL %in% c('WADEABLE','NONE'))$SITE
                      ,ifelse(sb$UNITS.SLOPE %in% c('PERCENT')
                             ,as.numeric(sb$SLOPE)
                             ,ifelse(sb$UNITS.SLOPE %in% c('CM','NONE')
-                                   ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/(sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
+                                                 (sb$TRANSPC*100 * sb$PROPORTION/100))
                                    ,NA
                                    )
                             )
-              ,ifelse(sb$SITE %in% sbBoatable$SITE # subset(protocols, PROTOCOL=='BOATABLE')$SITE
+              ,ifelse(sb$SITE %in% sbBoatable$SITE 
+                      # subset(protocols, PROTOCOL=='BOATABLE')$SITE
                      ,ifelse(sb$UNITS.SLOPE %in% c('PERCENT','NONE')
                             ,as.numeric(sb$SLOPE)
                             ,ifelse(sb$UNITS.SLOPE %in% c('CM')
-                                   ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/(sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
+                                                 (sb$TRANSPC*100 * sb$PROPORTION/100))
                                    ,NA
                                    )
                             )
@@ -521,7 +621,8 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   # xslope_map      mean slope calculated from a map (either by hand or by GIS)
   # xslope          Most reliable value of site slope at sites we have the choice.
   #                   Measurements made in the field by non-clinometer methods are most
-  #                   prefered, next are clinometer-based measurements with means > 1.5%.
+  #                   prefered, next are clinometer-based measurements with 
+  #                   means > 1.5%.
   #                   Sites which do not have either of these choices are assigned 
   #                   map-based values.
   # pctClinometer   Percent of field based slope values which were taken by clinometer.
@@ -551,17 +652,37 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
 #              ,wProportion %>% select(SITE,TRANSECT,PARAMETER,METHOD)
 #              ,wSlope %>% select(SITE,TRANSECT,PARAMETER,METHOD)
 #              ) %>%
-  tt <- rbind(sbWadeable %>% select(SITE,TRANSECT,PARAMETER,METHOD)
-             ,sbBoatable %>% select(SITE,TRANSECT,PARAMETER,METHOD)
-             ) %>%
-        subset(PARAMETER %in% c('SLOPE','SLOPE2','SLOPE3')
-               & TRANSECT %in% LETTERS[1:11]
-              ,select=c(SITE,TRANSECT,PARAMETER,METHOD)
-              )
+#
+#     slopeData <- rbind(sbWadeable %>% select(SITE,TRANSECT,PARAMETER,METHOD)
+#              ,sbBoatable %>% select(SITE,TRANSECT,PARAMETER,METHOD)
+#              ) %>%
+#         subset(PARAMETER %in% c('SLOPE','SLOPE2','SLOPE3')
+#                & TRANSECT %in% LETTERS[1:11]
+#               ,select=c(SITE,TRANSECT,PARAMETER,METHOD)
+#               )
+    slopeData <- NULL
+    if(!is.null(sbWadeable)) {
+        slopeData <- sbWadeable %>% select(SITE,TRANSECT,PARAMETER,METHOD)
+    }
+    if(!is.null(sbBoatable)) {
+        slopeData <- rbind(slopeData
+                          ,sbBoatable %>% select(SITE,TRANSECT,PARAMETER,METHOD)
+                          )
+    }
+    if(!is.null(slopeData)) {
+        slopeData <- slopeData %>%
+                     subset(PARAMETER == 'SLOPE' #%in% c('SLOPE','SLOPE2','SLOPE3')
+                            & TRANSECT %in% LETTERS[1:11]
+                           ,select=c(SITE,TRANSECT,PARAMETER,METHOD)
+                           )
+    }
+
+if(1319 %in% slopeData$SITE) intermediateMessage('[1319]')
+if(16155 %in% slopeData$SITE) intermediateMessage('[16155]')
   
 #  noSlopeSITEs <- unique(subset(chanGeom,SITE %nin% tt$SITE)$SITE)
-#  noSlopeSITEs <- unique(subset(rbind(bBearing, bDistance, bSlope, wBearing, wProportion, wSlope), SITE %nin% tt$SITE)$SITE)
-  noSlopeSITEs <- setdiff(c(sbWadeable$SITE, sbBoatable$SITE), tt$SITE) 
+#  noSlopeSITEs <- setdiff(c(sbWadeable$SITE, sbBoatable$SITE), slopeData$SITE) 
+  noSlopeSITEs <- setdiff(c(sbWadeable$SITE, sbBoatable$SITE, gisSinuosity$SITE, gisSlope$SITE), slopeData$SITE) 
   if(length(noSlopeSITEs) > 0) {
       noSlopeData <- data.frame(SITE = noSlopeSITEs
                                ,TRANSECT = ''
@@ -574,15 +695,17 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
   }
   intermediateMessage('.10')
   
-  slopeMethods <- rbind(tt          # Methods for slopes recorded in field
-                       ,noSlopeData # Method for absent slopes, if any, so pctClinometer will have a value.
+  slopeMethods <- rbind(slopeData   # Methods for slopes recorded in field
+                       ,noSlopeData # Method for absent slopes, if any, 
+                                    # so pctClinometer will have a value.
                        )
   pctClinometer <- aggregate(list(VALUE=slopeMethods$METHOD)
                             ,list(SITE=slopeMethods$SITE)
                             ,function(m) { 
-                                # Assume everything not explicitely noted as CL is not CL
-                                # including missing and NONE methods.  Thus if a site is
-                                # always missing (and thus has a mean of NA), it is 0 % CL.
+                                # Assume everything not explicitely noted as CL 
+                                # is not CL including missing and NONE methods.  
+                                # Thus if a site is always missing (and thus has
+                                # a mean of NA), it is 0 % CL.
                                 p <- 100*mean(toupper(m) == 'CL', na.rm=TRUE)
                                 p <- ifelse(is.na(p), 0, p)
                                 return(p)
@@ -592,33 +715,38 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
 
   intermediateMessage('.11')
 
-  if(is.null(gisCalcs)) {
+  if(is.null(gisSlope)) {
       xslope_map <- subset(data.frame(SITE=1, METRIC='two', VALUE=3), FALSE)
   } else {
-      xslope_map <- within(subset(gisCalcs
-                                 ,tolower(METRIC) == 'xslope' & 
-#                                   SITE %in% unique(c(thal$SITE, chanGeom$SITE))
-                                  SITE %in% unique(c(wStations$SITE, sbWadeable$SITE, sbBoatable$SITE))
-                                 )
-                          ,METRIC <- paste(METRIC, '_map', sep='')
-                          )
+      xslope_map <- gisSlope %>% mutate(METRIC='xslope_map')
+#       xslope_map <- within(subset(gisSlope
+#                                  ,#tolower(METRIC) == 'xslope' & 
+# #                                   SITE %in% unique(c(thal$SITE, chanGeom$SITE))
+#                                   SITE %in% unique(c(wTransectSpacing$SITE
+#                                                     ,sbWadeable$SITE
+#                                                     ,sbBoatable$SITE
+#                                                     ))
+#                                  )
+#                           ,METRIC <- 'xslope_map' #paste(METRIC, '_map', sep='')
+#                           )
   }
   
   intermediateMessage('.12')
 
   usingMapSlopes <- subset(xslope_map
-                          ,(!is.na(VALUE) &                                   # replace unreliable field value
+                          ,(!is.na(VALUE) &     # replace unreliable field value
                             SITE %in% subset(pctClinometer, VALUE > 20)$SITE & 
                             SITE %in% subset(xslope_field, VALUE < 1.5)$SITE
-                           ) | 
-                           SITE %nin% subset(xslope_field, !is.na(VALUE))$SITE  # fill in missing field value
+                           ) |                  # fill in missing field value
+                           SITE %nin% subset(xslope_field, !is.na(VALUE))$SITE  
                           )$SITE
   xslope <- within(rbind(subset(xslope_field, SITE %nin% usingMapSlopes)
                         ,subset(xslope_map, SITE %in% usingMapSlopes)
                         )
                   ,METRIC <- 'xslope'
-                  )
-  
+                  ) 
+  intermediateMessage('.13')
+
   vslope <- aggregate(list('VALUE'=tran$tranSlope)
                      ,list('SITE'=tran$SITE)
                      ,sd, na.rm=TRUE
@@ -631,6 +759,7 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
                       )
   transpc$METRIC <- 'transpc'
 
+  intermediateMessage('.14')
   reach$VALUE <- ifelse(reach$totEast > 0
                           ,(360/(2*pi))*acos(reach$totNorth/reach$crowDist)
                           ,360 - (360/(2*pi))*acos(reach$totNorth/reach$crowDist)
@@ -644,21 +773,29 @@ nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wIncrement
                         )
   field_sinu <- reach[c('SITE','VALUE')]
   field_sinu$METRIC <- 'sinu'
-  if(is.null(gisCalcs)) {
+  if(is.null(gisSinuosity)) {
       sinu <- field_sinu
   } else {
-      sinu <- rbind(subset(field_sinu, SITE %nin% subset(gisCalcs, tolower(METRIC) == 'sinu')$SITE )
-                   ,subset(gisCalcs, tolower(METRIC) == 'sinu' & 
-#                                      SITE %in% unique(c(thal$SITE, chanGeom$SITE))
-                                     SITE %in% unique(c(sbBoatable$SITE, wStations$SITE, sbWadeable$SITE))
+      sinu <- rbind(subset(field_sinu
+                          ,SITE %nin% gisSinuosity$SITE #subset(gisCalcs, tolower(METRIC) == 'sinu')$SITE 
                           )
+                   ,gisSinuosity %>% mutate(METRIC = 'sinu')
+#                    ,subset(gisSinuosity, #tolower(METRIC) == 'sinu' & 
+# #                                      SITE %in% unique(c(thal$SITE, chanGeom$SITE))
+#                                      SITE %in% unique(c(sbBoatable$SITE
+#                                                        ,wTransectSpacing$SITE
+#                                                        ,sbWadeable$SITE
+#                                                        ))
+#                           ) %>%
+#                    mutate(METRIC = 'sinu')
                    )
   }
+  intermediateMessage('.15')
   
   mets <- rbind(xslope, xslope_map, xslope_field, pctClinometer, vslope, nslp
                ,transpc, xbearing, sinu
                )
-  intermediateMessage('.9')
+  intermediateMessage('.16')
 
   
   #########################################################################

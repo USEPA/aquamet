@@ -258,12 +258,39 @@ sb0 <- sb
 sb <- nrsaSlopeBearing(bBearing = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>% select(SITE, TRANSECT, LINE, VALUE)
                       ,bDistance = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')   %>% select(SITE, TRANSECT, LINE, VALUE)
                       ,bSlope = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')  %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS) # excludes SLOPE_ND rows, and hence causes PCTCLINOMETER =0 rows to be missing
-                      ,wBearing = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER))
-                      ,wIncrement = subset(thal, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
-                      ,wProportion = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER))
-                      ,wSlope = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER))
-                      ,wStations = thal[c('SITE','TRANSECT','STATION')] 
-                      ,gisCalcs = gisCalcs
+                      ,wBearing = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER))  %>%
+                                         mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
+                                                      ,ifelse(PARAMETER == 'BEARING2', 1
+                                                      ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                                                       )))
+                                                ,PARAMETER = NULL
+                                                )                                         
+                      ,wTransectSpacing = merge(subset(thal, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
+                                                mutate(VALUE=as.numeric(VALUE))
+                                               ,nWadeableStationsPerTransect(thal[c('SITE','TRANSECT','STATION')])
+                                               ,'SITE'
+                                               ) %>%
+                                          mutate(VALUE = VALUE * nSta
+                                                ,nSta = NULL
+                                                )
+#                      ,wIncrement = subset(thal, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
+                      ,wProportion = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
+                                       mutate(LINE = ifelse(PARAMETER == 'PROP', 0
+                                                    ,ifelse(PARAMETER == 'PROP2', 1
+                                                    ,ifelse(PARAMETER == 'PROP3', 2, NA
+                                                     )))
+                                              ,PARAMETER = NULL
+                                              )                                         
+                      ,wSlope = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
+                                       mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
+                                                    ,ifelse(PARAMETER == 'SLOPE2', 1
+                                                    ,ifelse(PARAMETER == 'SLOPE3', 2, NA
+                                                    )))
+                                              ,PARAMETER = NULL
+                                              )                                         
+#                      ,wStations = thal[c('SITE','TRANSECT','STATION')] 
+                      ,gisSinuosity = subset(gisCalcs, METRIC == 'sinu')
+                      ,gisSlope = subset(gisCalcs, METRIC == 'xslope')
                       )
 identical(sb,sb0)
 dd0 <- dd
@@ -278,7 +305,17 @@ dd <- dfCompare(currentMets %>%
                ,c('SITE','METRIC')
                ,zeroFudge=1e-6
                )
-# 46 differences:
+# 28 differences after most recent change in call interface and related changes:
+#   11 rows of PCTCLINOMETER now present that were not in old calculations - 2 boatable, 9 wadeable, all 0
+#   5 rows for 1417 (PARBYBOAT) that has transpc=64 but no other field data
+#   6 rows for 15508 (OTHER_NSP) - VSLOPE=0, positive values elsewhere. Site excluded earlier
+#       due to valxsite value.
+#   15197 (WADEABLE) has SINU = NA
+#   2 differences at 12195 of TRANSPC and XBEARING
+#   2 differences at 12200 of TRANSPC and XBEARING
+#   1 difference at 15508 of XSLOPE
+#
+# 46 differences after initial change in call interface:
 #   30 PCTCLINOMETER rows present in old calculations and missing in new calculations
 #   Values for sites 1417 & 15508 of XSLOPE_FIELD, VSLOPE, NSLP, TRANSPC & XBEARING in new calculations but not in old ones
 #   Value of SINU for site 15508 in new calculations but not in old ones
