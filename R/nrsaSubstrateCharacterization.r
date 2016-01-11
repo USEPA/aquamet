@@ -1,4 +1,10 @@
-nrsaSubstrateCharacterization <- function(bBottomDom=NULL, bBottomSec=NULL, bShoreDom=NULL, bShoreSec=NULL, bSizeClass=NULL, wSizeClass=NULL, wMezzoSizeClass=NULL) {
+nrsaSubstrateCharacterization <- function(bBottomDom=NULL
+                                         ,bBottomSec=NULL
+                                         ,bShoreDom=NULL
+                                         ,bShoreSec=NULL
+                                         ,bSizeClass=NULL
+                                         ,wSizeClass=NULL
+                                         ,wMezzoSizeClass=NULL) {
 
 ################################################################################
 # Function: nrsaSubstrateCharacterization

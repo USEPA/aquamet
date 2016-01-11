@@ -55,13 +55,15 @@ bm <- nrsaBankMorphology(bAngle = subset(bankgeom, PARAMETER=='ANGLE' & SAMPLE_T
                         ,wUndercut = subset(bankgeom, PARAMETER=='UNDERCUT' & SAMPLE_TYPE=='PHAB_CHANW')
                         )
 
-dd <- dfCompare(currentMets %>% dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(METRIC=trimws(METRIC), VALUE=trimws(VALUE)) %>% subset(METRIC %in% toupper(unique(bm$METRIC)))
+dd <- dfCompare(currentMets %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% 
+                mutate(METRIC=trimws(METRIC), VALUE=ifelse(trimws(VALUE)=='NA', NA, trimws(VALUE))) %>% 
+                subset(METRIC %in% toupper(unique(bm$METRIC)))
                ,bm %>% mutate(METRIC=toupper(METRIC))
                ,c('SITE','METRIC')
                )
 
-# shows 260 differences:
-#  Lots of differences because current 'NA' does not match new NA.
+# shows 35 differences:
 #  1417 is PARBYBOAT and was calculated as boatable, but it has wadeable bank geometry data so different mets are calculated now
 #  15508 is OTHER_NSP, but has wadeable bank geometry data so mets were not calculated at all, but are calculated now
 #  15639 has changes in BAP_MED, BAP_STP, BAP_VST values and N_BA changes from 10 to 9.  It looks like we dropped a '75-100' somewhere, no change in history after 2010-04-05...
@@ -146,113 +148,108 @@ thal <- base_thal %>%
 gisCalcs <- read.csv('l:/Priv/CORFiles/IM/Rwork/nrsa/results/gpsBasedCalculations_asOf201203008.csv'
                     ,stringsAsFactors=FALSE, na='', header=TRUE
                     ) %>%
-            dplyr::rename(SITE=UID, VALUE=RESULT) # %>%
-#             mutate(PARAMETER=trimws(PARAMETER)
-#                   ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
-#                   ,TRANSECT = trimws(TRANSECT)
-#                   ,VALUE=trimws(VALUE)
-#                   )
+            dplyr::rename(SITE=UID, VALUE=RESULT) 
 
-protocols <- siteProtocol(c(unique(base_cg$BATCHNO), unique(base_thal$BATCHNO), unique(gisCalcs$SITE)), mutate(visits, UID=SITE)[c('UID','VALXSITE')])
-oldrecalc <- metsSlopeBearing.1(base_thal %>% dplyr::rename(UID=BATCHNO) %>% mutate(PARAMETER=trimws(PARAMETER)
-                                                                                  ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
-                                                                                  ,TRANSECT = trimws(TRANSECT)
-                                                                                  ,RESULT=trimws(RESULT)
-                                                                                  ,STATION=as.integer(STATION)
-                                                                                  )
-                               ,base_cg   %>% dplyr::rename(UID=BATCHNO) %>% mutate(PARAMETER=trimws(PARAMETER)
-                                                                                   ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
-                                                                                   ,TRANSECT = trimws(TRANSECT)
-                                                                                   ,RESULT=trimws(RESULT)
-                                                                                   ,UNITS=toupper(trimws(UNITS))
-                                                                                   ,METHOD=toupper(trimws(METHOD))
-                                                                                   )
-                               ,gisCalcs  %>% dplyr::rename(UID=SITE,RESULT=VALUE)
-                               ,protocols)
-oldrecalc2 <- metsSlopeBearing.1(thal %>% dplyr::rename(UID=SITE, RESULT=VALUE) 
-                                ,cg   %>% dplyr::rename(UID=SITE, RESULT=VALUE) 
-                                ,gisCalcs  %>% dplyr::rename(UID=SITE,RESULT=VALUE)
-                                ,protocols)
-currentSB <- currentMets %>% 
-                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% 
-                mutate(METRIC=trimws(METRIC), VALUE=as.numeric(trimws(VALUE))) %>% 
-                subset(METRIC %in% toupper(unique(oldrecalc$METRIC)))
-ddOld <- dfCompare(currentSB
-               ,oldrecalc %>% 
-                mutate(SITE=UID
-                      ,METRIC=toupper(METRIC)
-                      ,VALUE=as.numeric(RESULT)
-                      ,UID=NULL
-                      ,RESULT=NULL
-                      )
-               ,c('SITE','METRIC')
-               ,zeroFudge=1e-6
-               )
-# > ddOld
-#      [,1]                                                                                                  
-# [1,] "Difference at SITE=12195, METRIC=TRANSPC; VALUE: First=<75.5291943090909> Second=<84.148043>"        
-# [2,] "Difference at SITE=12195, METRIC=XBEARING; VALUE: First=<289.252393606211> Second=<298.003867517293>"
-# [3,] "Difference at SITE=12200, METRIC=TRANSPC; VALUE: First=<313671.231655836> Second=<40>"               
-# [4,] "Difference at SITE=12200, METRIC=XBEARING; VALUE: First=<99.9549350001598> Second=<273.732299601608>"
-expandValueRows <- function(df, targetRowCombos, keys=c('SITE','SAMPLE_TYPE','TRANSECT','REP')) {
-    # Used to make sure that a slope value exists in all rows that PROPORTION does 
-    # within a site's transect.
-#    rc <- merge(df, targetRowCombos[keys], by=keys, all=TRUE)
-    grps <- split(df, with(df, paste(SITE,SAMPLE_TYPE,TRANSECT))) %>%
-                 lapply(function(rowGroup) {
-                            expandedGroup <- merge(rowGroup[setdiff(names(rowGroup), 'REP')]
-                                                  ,targetRowCombos %>%
-                                                   subset(paste(SITE, SAMPLE_TYPE, TRANSECT) %in% with(rowGroup, paste(SITE, SAMPLE_TYPE, TRANSECT))
-                                                         )[c('SITE','SAMPLE_TYPE','TRANSECT','REP')] %>% 
-                                                   unique()
-                                                  ,c('SITE','SAMPLE_TYPE','TRANSECT')
-                                                  )
-                            return(expandedGroup)
-                        }
-                       )
-    rc <- do.call(rbind, grps)
-}
-
-expandValueRowsTest <- function() {
-    # Unit test for expandValueRows
-    fullData <- expand.grid(SITE=1:3, SAMPLE_TYPE=1:2, TRANSECT=LETTERS[1:5], REP=1:3, stringsAsFactors=FALSE) %>%
-                as.data.frame() %>%
-                mutate(VALUE = paste(SITE, SAMPLE_TYPE, TRANSECT, REP)) 
-    
-    # Test case where no changes should be made to data that has full range of all keys
-    actual <- expandValueRows(fullData, fullData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
-    dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
-    checkTrue(is.null(dd), "Incorrectly changed full data that did not need expansion")
-    
-    # Test case where no changes should be made to data that has partial range of keys
-    partialData <- fullData %>%
-                   subset(SITE==1 & SAMPLE_TYPE==1 |                                           # site 1 1 has all reps in all transects
-                          SITE==1 & SAMPLE_TYPE==2 & REP==1 |                                  # site 1 2 has 1 rep in all transects
-                          SITE==2 & SAMPLE_TYPE==1 & (REP==1 | TRANSECT %in% LETTERS[3:5]) |   # site 2 1 has rep 1 in C,D,E
-                          SITE==2 & SAMPLE_TYPE==2 & (REP==3 | TRANSECT %in% LETTERS[4:9]) |   # site 2 2 has rep 3 in C,D,E
-                          SITE==3 & SAMPLE_TYPE==1 & (REP==1 | REP==2 & TRANSECT %in% LETTERS[2:3] | REP==3 & TRANSECT %in% LETTERS[4:5]) |
-                          SITE==3 & SAMPLE_TYPE==1 & (REP==3 | REP==2 & TRANSECT %in% LETTERS[2:3] | REP==1 & TRANSECT %in% LETTERS[4:5]) 
-                         )
-    actual <- expandValueRows(partialData, partialData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
-    dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
-    checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
-    
-    # Test case where changes should be made to data that has partial range of keys
-    # where data is expected to be full
-    actual <- expandValueRows(partialData, fullData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
-    dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
-    checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
-    
-    # Test case where changes should be made to data that has partial range of keys
-    # where data is NOT expected to be full.  This mirrors the case when crews
-    # have recorded one slope for a transect but several subsightings.
-    actual <- expandValueRows(subset(partialData, SITE %in% 1:2 | REP==1)
-                             ,partialData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')]
-                             )
-    dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
-    checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
-    
-}
+# protocols <- siteProtocol(c(unique(base_cg$BATCHNO), unique(base_thal$BATCHNO), unique(gisCalcs$SITE)), mutate(visits, UID=SITE)[c('UID','VALXSITE')])
+# oldrecalc <- metsSlopeBearing.1(base_thal %>% dplyr::rename(UID=BATCHNO) %>% mutate(PARAMETER=trimws(PARAMETER)
+#                                                                                   ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+#                                                                                   ,TRANSECT = trimws(TRANSECT)
+#                                                                                   ,RESULT=trimws(RESULT)
+#                                                                                   ,STATION=as.integer(STATION)
+#                                                                                   )
+#                                ,base_cg   %>% dplyr::rename(UID=BATCHNO) %>% mutate(PARAMETER=trimws(PARAMETER)
+#                                                                                    ,SAMPLE_TYPE=trimws(SAMPLE_TYPE)
+#                                                                                    ,TRANSECT = trimws(TRANSECT)
+#                                                                                    ,RESULT=trimws(RESULT)
+#                                                                                    ,UNITS=toupper(trimws(UNITS))
+#                                                                                    ,METHOD=toupper(trimws(METHOD))
+#                                                                                    )
+#                                ,gisCalcs  %>% dplyr::rename(UID=SITE,RESULT=VALUE)
+#                                ,protocols)
+# oldrecalc2 <- metsSlopeBearing.1(thal %>% dplyr::rename(UID=SITE, RESULT=VALUE) 
+#                                 ,cg   %>% dplyr::rename(UID=SITE, RESULT=VALUE) 
+#                                 ,gisCalcs  %>% dplyr::rename(UID=SITE,RESULT=VALUE)
+#                                 ,protocols)
+# currentSB <- currentMets %>% 
+#                 dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% 
+#                 mutate(METRIC=trimws(METRIC), VALUE=as.numeric(trimws(VALUE))) %>% 
+#                 subset(METRIC %in% toupper(unique(oldrecalc$METRIC)))
+# ddOld <- dfCompare(currentSB
+#                ,oldrecalc %>% 
+#                 mutate(SITE=UID
+#                       ,METRIC=toupper(METRIC)
+#                       ,VALUE=as.numeric(RESULT)
+#                       ,UID=NULL
+#                       ,RESULT=NULL
+#                       )
+#                ,c('SITE','METRIC')
+#                ,zeroFudge=1e-6
+#                )
+# # > ddOld
+# #      [,1]                                                                                                  
+# # [1,] "Difference at SITE=12195, METRIC=TRANSPC; VALUE: First=<75.5291943090909> Second=<84.148043>"        
+# # [2,] "Difference at SITE=12195, METRIC=XBEARING; VALUE: First=<289.252393606211> Second=<298.003867517293>"
+# # [3,] "Difference at SITE=12200, METRIC=TRANSPC; VALUE: First=<313671.231655836> Second=<40>"               
+# # [4,] "Difference at SITE=12200, METRIC=XBEARING; VALUE: First=<99.9549350001598> Second=<273.732299601608>"
+# expandValueRows <- function(df, targetRowCombos, keys=c('SITE','SAMPLE_TYPE','TRANSECT','REP')) {
+#     # Used to make sure that a slope value exists in all rows that PROPORTION does 
+#     # within a site's transect.
+# #    rc <- merge(df, targetRowCombos[keys], by=keys, all=TRUE)
+#     grps <- split(df, with(df, paste(SITE,SAMPLE_TYPE,TRANSECT))) %>%
+#                  lapply(function(rowGroup) {
+#                             expandedGroup <- merge(rowGroup[setdiff(names(rowGroup), 'REP')]
+#                                                   ,targetRowCombos %>%
+#                                                    subset(paste(SITE, SAMPLE_TYPE, TRANSECT) %in% with(rowGroup, paste(SITE, SAMPLE_TYPE, TRANSECT))
+#                                                          )[c('SITE','SAMPLE_TYPE','TRANSECT','REP')] %>% 
+#                                                    unique()
+#                                                   ,c('SITE','SAMPLE_TYPE','TRANSECT')
+#                                                   )
+#                             return(expandedGroup)
+#                         }
+#                        )
+#     rc <- do.call(rbind, grps)
+# }
+# 
+# expandValueRowsTest <- function() {
+#     # Unit test for expandValueRows
+#     fullData <- expand.grid(SITE=1:3, SAMPLE_TYPE=1:2, TRANSECT=LETTERS[1:5], REP=1:3, stringsAsFactors=FALSE) %>%
+#                 as.data.frame() %>%
+#                 mutate(VALUE = paste(SITE, SAMPLE_TYPE, TRANSECT, REP)) 
+#     
+#     # Test case where no changes should be made to data that has full range of all keys
+#     actual <- expandValueRows(fullData, fullData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
+#     dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
+#     checkTrue(is.null(dd), "Incorrectly changed full data that did not need expansion")
+#     
+#     # Test case where no changes should be made to data that has partial range of keys
+#     partialData <- fullData %>%
+#                    subset(SITE==1 & SAMPLE_TYPE==1 |                                           # site 1 1 has all reps in all transects
+#                           SITE==1 & SAMPLE_TYPE==2 & REP==1 |                                  # site 1 2 has 1 rep in all transects
+#                           SITE==2 & SAMPLE_TYPE==1 & (REP==1 | TRANSECT %in% LETTERS[3:5]) |   # site 2 1 has rep 1 in C,D,E
+#                           SITE==2 & SAMPLE_TYPE==2 & (REP==3 | TRANSECT %in% LETTERS[4:9]) |   # site 2 2 has rep 3 in C,D,E
+#                           SITE==3 & SAMPLE_TYPE==1 & (REP==1 | REP==2 & TRANSECT %in% LETTERS[2:3] | REP==3 & TRANSECT %in% LETTERS[4:5]) |
+#                           SITE==3 & SAMPLE_TYPE==1 & (REP==3 | REP==2 & TRANSECT %in% LETTERS[2:3] | REP==1 & TRANSECT %in% LETTERS[4:5]) 
+#                          )
+#     actual <- expandValueRows(partialData, partialData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
+#     dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
+#     checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
+#     
+#     # Test case where changes should be made to data that has partial range of keys
+#     # where data is expected to be full
+#     actual <- expandValueRows(partialData, fullData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')])
+#     dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
+#     checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
+#     
+#     # Test case where changes should be made to data that has partial range of keys
+#     # where data is NOT expected to be full.  This mirrors the case when crews
+#     # have recorded one slope for a transect but several subsightings.
+#     actual <- expandValueRows(subset(partialData, SITE %in% 1:2 | REP==1)
+#                              ,partialData[c('SITE','SAMPLE_TYPE','TRANSECT','REP')]
+#                              )
+#     dd <- dfCompare(fullData, actual, c('SITE','SAMPLE_TYPE','TRANSECT','REP'))
+#     checkTrue(is.null(dd), "Incorrectly changed partial data that did not need expansion")
+#     
+# }
 
 sb0 <- sb
 sb <- nrsaSlopeBearing(bBearing = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>% select(SITE, TRANSECT, LINE, VALUE)
@@ -327,27 +324,43 @@ dd <- dfCompare(currentMets %>%
 ##########################################################
 #
 # Human Disturbance
-nrsa0809<-odbcConnect('NRSA0809')
-currentMets0 <- sqlFetch(nrsa0809, 'tblPHABMET', stringsAsFactors=FALSE)
-raw0809 <- sqlFetch(nrsa0809, 'tblvisrip2', stringsAsFactors=FALSE)
-rip0809 <- dbGet('NRSA0809','tblvisrip2') %>% mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), PARAMETER=trimws(PARAMETER), RESULT=trimws(RESULT)) %>% dplyr::rename(UID=BATCHNO)
+# nrsa0809<-odbcConnect('NRSA0809')
+# currentMets0 <- sqlFetch(nrsa0809, 'tblPHABMET', stringsAsFactors=FALSE)
+# raw0809 <- sqlFetch(nrsa0809, 'tblvisrip2', stringsAsFactors=FALSE)
+base_rip0809 <- dbGet('NRSA0809','tblvisrip2')
+rip0809 <- base_rip0809 %>%
+           mutate(TRANSECT=trimws(TRANSECT)
+                 ,TRANSDIR=trimws(TRANSDIR)
+                 ,PARAMETER=trimws(PARAMETER)
+                 ,RESULT=trimws(RESULT)
+                 ) %>% 
+           dplyr::rename(SITE=BATCHNO
+                        ,VALUE=RESULT
+                        ) %>%
+          subset(TRANSECT %in% LETTERS | SAMPLE_TYPE=='PHAB_CHANW')
 #hd1 <- metsHumanInfluence.1(rip0809)
-hd <- nrsaHumanInfluence(buildings =          rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='BUILD', select=-PARAMETER)
-                        ,landfillTrash =      rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='LANDFL', select=-PARAMETER)
-                        ,logging =            rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='LOG', select=-PARAMETER)
-                        ,mining =             rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='MINE', select=-PARAMETER)
-                        ,parkLawn =           rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='PARK', select=-PARAMETER)
-                        ,pastureRangeHay =    rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='PAST', select=-PARAMETER)
-                        ,pavementClearedlot = rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='PAVE', select=-PARAMETER)
-                        ,pipesInOut =         rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='PIPES', select=-PARAMETER)
-                        ,roadsRailroads =     rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='ROAD', select=-PARAMETER)
-                        ,rowcrops =           rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='ROW', select=-PARAMETER)
-                        ,wallRevetment =      rip0809 %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% subset(PARAMETER=='WALL', select=-PARAMETER)
+hd <- nrsaHumanInfluence(buildings =          rip0809 %>% subset(PARAMETER=='BUILD', select=-PARAMETER)
+                        ,landfillTrash =      rip0809 %>% subset(PARAMETER=='LANDFL', select=-PARAMETER)
+                        ,logging =            rip0809 %>% subset(PARAMETER=='LOG', select=-PARAMETER)
+                        ,mining =             rip0809 %>% subset(PARAMETER=='MINE', select=-PARAMETER)
+                        ,parkLawn =           rip0809 %>% subset(PARAMETER=='PARK', select=-PARAMETER)
+                        ,pastureRangeHay =    rip0809 %>% subset(PARAMETER=='PAST', select=-PARAMETER)
+                        ,pavementClearedlot = rip0809 %>% subset(PARAMETER=='PAVE', select=-PARAMETER)
+                        ,pipesInOut =         rip0809 %>% subset(PARAMETER=='PIPES', select=-PARAMETER)
+                        ,roadsRailroads =     rip0809 %>% subset(PARAMETER=='ROAD', select=-PARAMETER)
+                        ,rowcrops =           rip0809 %>% subset(PARAMETER=='ROW', select=-PARAMETER)
+                        ,wallRevetment =      rip0809 %>% subset(PARAMETER=='WALL', select=-PARAMETER)
                         ,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
                         )
-oldhd <- currentMets %>% subset(PARAMETER %in% toupper(hd$METRIC)) %>% dplyr::rename(UID=BATCHNO,METRIC=PARAMETER)
-dd<-dfCompare(hd1 %>% dplyr::rename(SITE=UID,VALUE=RESULT), hd, c('SITE','METRIC')) # no diffs with recalculations.
-dd<-dfCompare(oldhd, hd %>% mutate(METRIC=toupper(METRIC)), c('UID','METRIC'))
+oldhd <- currentMets %>% subset(PARAMETER %in% toupper(hd$METRIC)) %>% dplyr::rename(SITE=BATCHNO,METRIC=PARAMETER, VALUE=RESULT)
+#dd<-dfCompare(hd1 %>% dplyr::rename(SITE=UID,VALUE=RESULT), hd, c('SITE','METRIC')) # no diffs with recalculations.
+dd<-dfCompare(oldhd 
+             ,hd %>% mutate(METRIC=toupper(METRIC))
+             ,c('SITE','METRIC')
+             )
+
+# Zero differences!
+
 
 #######################################################
 #
@@ -356,27 +369,15 @@ dd<-dfCompare(oldhd, hd %>% mutate(METRIC=toupper(METRIC)), c('UID','METRIC'))
 chancovbase <- dbGet('NRSA0809','tblCHANCOV2')
 chancov <- chancovbase %>% dplyr::rename(SITE=BATCHNO, VALUE=RESULT) %>% 
            mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE), VALUE=as.numeric(trimws(VALUE)), DIRECTION=trimws(TRANSDIR)
-                 )
-chancovMain <- chancov %>% subset(TRANSECT %in% LETTERS) %>% 
-               mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE))
+                 ) %>%
+          subset(TRANSECT %in% LETTERS | SAMPLE_TYPE=='PHAB_CHANW')
 
 cd <- nrsaCanopyDensiometer(bDensiom=subset(chancov, SAMPLE_TYPE=='PHAB_CHANB'), wDensiom=subset(chancov, SAMPLE_TYPE=='PHAB_CHANW'))
-chancovForOldCode <- chancovbase %>% 
-                     dplyr::rename(UID=BATCHNO) %>% 
-                     mutate(TRANSECT=trimws(TRANSECT), TRANSDIR=trimws(TRANSDIR), SAMPLE_TYPE=trimws(SAMPLE_TYPE), PARAMETER=trimws(PARAMETER), RESULT=as.numeric(trimws(RESULT)))
-oldrecalc <- metsCanopyDensiometer.1(chancovForOldCode)
 
 cd0809 <- subset(currentMets, PARAMETER %in% c('XCDENBK', 'VCDENBK','NBNK', 'XCDENMID','VCDENMID','NMID')) %>% dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
 dd <- dfCompare(cd0809, cd %>% mutate(METRIC=toupper(METRIC)), c('SITE','METRIC'))
-ddold <- dfCompare(subset(currentMets, PARAMETER %in% c('XCDENBK', 'VCDENBK','NBNK', 'XCDENMID','VCDENMID','NMID')) %>% dplyr::rename(UID=BATCHNO, METRIC=PARAMETER)
-                  ,oldrecalc %>% mutate(METRIC=toupper(METRIC))
-                  ,c('UID','METRIC')
-                  )
-recalcDiffs <- dfCompare(oldrecalc %>% dplyr::rename(SITE=UID, VALUE=RESULT), cd, c('SITE','METRIC'))
-# recalcs using unchanged mets code are identical to recalcs using new code.
-# total of 33 differences at 11 sites when including side channels, all boatables and now with larger N values: 11727, 12353, 13626, 14217, 14622, 14968, 14969, 14970, 14971, 15297, 15408
-# total of 271 differences at many sites when excluding side channels
 
+# Zero differences!
 
 ##################################################
 #
@@ -392,14 +393,14 @@ bankgeometry <- bankgeometryBase %>%
 channelchar <- channelcharBase %>% 
                 dplyr::rename(SITE=BATCHNO, VALUE=RESULT) %>% 
                 mutate(PARAMETER=trimws(PARAMETER), SAMPLE_TYPE=trimws(SAMPLE_TYPE), TRANSECT=trimws(TRANSECT), VALUE=trimws(VALUE))
-ccRecalc <- nrsaChannelChar(bankgeometry, channelchar)
-
-dd0 <- dfCompare(currentMets %>% 
-                subset(PARAMETER %in% toupper(unique(ccRecalc$METRIC))) %>% 
-                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
-               ,ccRecalc %>% mutate(METRIC=toupper(METRIC))
-               ,c('SITE','METRIC')
-               )
+# ccRecalc <- nrsaChannelChar(bankgeometry, channelchar)
+# 
+# dd0 <- dfCompare(currentMets %>% 
+#                 subset(PARAMETER %in% toupper(unique(ccRecalc$METRIC))) %>% 
+#                 dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
+#                ,ccRecalc %>% mutate(METRIC=toupper(METRIC))
+#                ,c('SITE','METRIC')
+#                )
 # There are 9 differences, all because 'NA' is not equal to NA.
 
 cc <- nrsaChannelChar(bankfullWidth =         subset(channelchar, PARAMETER == 'BANKFULL')
@@ -414,7 +415,7 @@ cc <- nrsaChannelChar(bankfullWidth =         subset(channelchar, PARAMETER == '
                      ,valleyWidth =           subset(channelchar, PARAMETER == 'VALLEY')
                      )
 dd <- dfCompare(currentMets %>% 
-                subset(PARAMETER %in% toupper(unique(ccRecalc$METRIC))) %>% 
+                subset(PARAMETER %in% toupper(unique(cc$METRIC))) %>% 
                 dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
                ,cc %>% mutate(METRIC=toupper(METRIC))
                ,c('SITE','METRIC')
@@ -427,23 +428,29 @@ dd <- dfCompare(currentMets %>%
 # Channel Habitat
 thalwegBase <-  dbGet('NRSA0809', 'tblTHALWEG2')
 thalweg <- thalwegBase %>% mutate(PARAMETER=trimws(PARAMETER), SAMPLE_TYPE=trimws(SAMPLE_TYPE), TRANSECT=trimws(TRANSECT), STATION=trimws(STATION), RESULT=trimws(RESULT)) %>% 
-           dplyr::rename(SITE=BATCHNO,VALUE=RESULT) 
-chRecalc <- metsChannelHabitat(thalweg)
-dd0 <- dfCompare(currentMets %>% 
-                subset(PARAMETER %in% toupper(unique(chRecalc$METRIC))) %>% 
-                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
-               ,chRecalc %>% mutate(METRIC=toupper(METRIC))
-               ,c('SITE','METRIC')
-               )
-# Zero differences!
+           dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>%
+           subset(TRANSECT %in% LETTERS)
+# chRecalc <- metsChannelHabitat(thalweg)
+# dd0 <- dfCompare(currentMets %>% 
+#                 subset(PARAMETER %in% toupper(unique(chRecalc$METRIC))) %>% 
+#                 dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
+#                ,chRecalc %>% mutate(METRIC=toupper(METRIC))
+#                ,c('SITE','METRIC')
+#                )
+# # Zero differences!
 ch <- nrsaChannelHabitat(bChannelUnit=thalweg %>% subset(PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THAL')
                         ,wChannelUnit=thalweg %>% subset(PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THALW')
                         )
 dd <- dfCompare(currentMets %>% 
-                subset(PARAMETER %in% toupper(unique(chRecalc$METRIC))) %>% 
-                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT)
-               ,chRecalc %>% mutate(METRIC=toupper(METRIC))
+                subset(PARAMETER %in% toupper(unique(ch$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>%
+                mutate(VALUE=as.numeric(VALUE))
+               ,ch %>% 
+                mutate(METRIC=toupper(METRIC)
+                      ,VALUE=as.numeric(VALUE)
+                      )
                ,c('SITE','METRIC')
+               ,zeroFudge=1e-7
                )
 # Zero differences still!
 
@@ -455,6 +462,9 @@ dd <- dfCompare(currentMets %>%
 bankgeometryBase <- dbGet('NRSA0809', 'tblBANKGEOMETRY2')
 thalwegBase <- dbGet('NRSA0809', 'tblThalweg2')
 visitsBase <- dbGet('NRSA0809', 'tblVisits2')
+
+visits <- visitsBase %>% dplyr::rename(SITE=BATCHNO) %>% mutate(VALXSITE=trimws(VALXSITE))
+wadedSites <- subset(siteProtocol(visits$SITE, visits), PROTOCOL=='WADEABLE' | SITE %in% c(1417,15508))$SITE # Two sites are OTHER_NSP and PARBYBOAT but were waded
 bankgeometry <- bankgeometryBase %>% 
                 dplyr::rename(SITE=BATCHNO,VALUE=RESULT) %>% 
                 mutate(TRANSECT=trimws(TRANSECT)
@@ -475,18 +485,16 @@ thalweg <- thalwegBase %>%
                   ,UNITS=toupper(trimws(UNITS))
                   ) %>% 
             subset(TRANSECT %in% c(LETTERS,'NOT MARKED') | SITE %in% wadedSites)
-visits <- visitsBase %>% dplyr::rename(SITE=BATCHNO) %>% mutate(VALXSITE=trimws(VALXSITE))
 
-wadedSites <- subset(siteProtocol(visits$SITE, visits), PROTOCOL=='WADEABLE' | SITE %in% c(1417,15508))$SITE # Two sites are OTHER_NSP and PARBYBOAT but were waded
 #wadedSites <- subset(siteProtocol(visits$SITE, visits), PROTOCOL=='WADEABLE')$SITE 
-cmRecalc <- nrsaChannelMorphology(bankgeometry, thalweg, visits)
-dd0 <- dfCompare(currentMets %>% 
-                subset(PARAMETER %in% toupper(unique(cmRecalc$METRIC))) %>% 
-                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
-               ,cmRecalc %>% mutate(METRIC=toupper(METRIC)) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE))
-               ,c('SITE','METRIC')
-               )
-# zero differences! after some finagling..
+# cmRecalc <- nrsaChannelMorphology(bankgeometry, thalweg, visits)
+# dd0 <- dfCompare(currentMets %>% 
+#                 subset(PARAMETER %in% toupper(unique(cmRecalc$METRIC))) %>% 
+#                 dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
+#                ,cmRecalc %>% mutate(METRIC=toupper(METRIC)) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE))
+#                ,c('SITE','METRIC')
+#                )
+# # zero differences! after some finagling..
 
 cm <- nrsaChannelMorphology(bBankHeight =     bankgeometry %>% subset(SITE %nin% wadedSites & PARAMETER %in% c('BANKHT','BANKHGT'))
                            ,bBankWidth =      bankgeometry %>% subset(SITE %nin% wadedSites & PARAMETER=='BANKWID')
@@ -571,7 +579,7 @@ is <- nrsaInvasiveSpecies(arudon = oneSpecies('G_REED')
                          ,lytsal = oneSpecies('P_LSTRIFE')
                          ,myrspi = oneSpecies('E_WTRMILF')
                          ,none   = oneSpecies('NO_INVASIVES')
-                         ,nympel = oneSpecies('YLW_FLHEAR')
+                         ,nympel = oneSpecies('YLW_FLHEAR')     # correct spelling of PARAMETER value
                          ,rosmul = oneSpecies('MF_ROSE')
                          ,tamspp = oneSpecies('SALT_CED')
                          )
@@ -588,7 +596,9 @@ isold <- nrsaInvasiveSpecies(arudon = oneSpecies('G_REED')
                          ,tamspp = oneSpecies('SALT_CED')
                          )
 
-# make comparisons after removing new rows with f_* = 0, which weren't included in the old mets
+# make comparisons after removing new rows with f_* = 0, which weren't included 
+# in the old mets (but IP_SCORE=0 rows were included in the old mets).
+
 dd <- dfCompare(currentMets %>% 
                 subset(PARAMETER %in% toupper(unique(is$METRIC))) %>% 
                 dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
@@ -599,7 +609,7 @@ dd <- dfCompare(currentMets %>%
                ,c('SITE','METRIC')
                )
 dd2 <- dfCompare(currentMets %>% 
-                subset(PARAMETER %in% toupper(unique(is$METRIC))) %>% 
+                subset(PARAMETER %in% toupper(unique(isold$METRIC))) %>% 
                 dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE))
                ,isold %>% 
                 mutate(METRIC=toupper(METRIC)) %>% 
@@ -608,14 +618,18 @@ dd2 <- dfCompare(currentMets %>%
                ,c('SITE','METRIC')
                )
 
-# 5 differences, all in 15652 and due to difference in how yellow floating heart data was included or not.  Damn.
+# 5 differences, all in 15652 and due to difference in how yellow floating heart 
+# data was included or not.  Damn.
+# Note that the way the data are handled result in possibly incomplete 
+# representation of sampled transects, e.g. site 15652 has only 6 transects with
+# data; E,F,H,J,K are not included as those have no values recorded.
 
-source('c:/Users/cseelige/local/aquamet/R/metsInvasiveSpecies.r')
-isRecalc <- metsInvasiveSpecies(base_invasiveLegacy %>% dplyr::rename(UID=BATCHNO) %>% mutate(TRANSECT=trimws(TRANSECT),PARAMETER=trimws(PARAMETER),RESULT=trimws(RESULT)) )
-ddRecalc <- dfCompare(is %>% subset(METRIC=='IP_SCORE' | as.numeric(VALUE) != 0)
-                     ,isRecalc %>% dplyr::rename(SITE=UID, VALUE=RESULT)
-                     ,c('SITE','METRIC')
-                     )
+# source('c:/Users/cseelige/local/aquamet/R/metsInvasiveSpecies.r')
+# isRecalc <- metsInvasiveSpecies(base_invasiveLegacy %>% dplyr::rename(UID=BATCHNO) %>% mutate(TRANSECT=trimws(TRANSECT),PARAMETER=trimws(PARAMETER),RESULT=trimws(RESULT)) )
+# ddRecalc <- dfCompare(is %>% subset(METRIC=='IP_SCORE' | as.numeric(VALUE) != 0)
+#                      ,isRecalc %>% dplyr::rename(SITE=UID, VALUE=RESULT)
+#                      ,c('SITE','METRIC')
+#                      )
 
 ##################################################
 # Large woody debris
@@ -687,23 +701,13 @@ dd <- dfCompare(currentMets %>%
                 mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) 
                ,c('SITE','METRIC')
                )
-ss <- merge(currentMets %>% 
-                subset(PARAMETER %in% toupper(unique(lw$METRIC))) %>% 
-                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% 
-                mutate(oldVALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
-                select(SITE, METRIC, oldVALUE) %>% mutate(inOld = TRUE)
-               ,lw %>% 
-                mutate(METRIC=toupper(METRIC)) %>% 
-                mutate(newVALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE))  %>%
-                select(SITE, METRIC, newVALUE) %>% mutate(inNew = TRUE)
-               ,c('SITE','METRIC'), all=TRUE
-               )
-# 276 new rows, all for sites 13785 & 15508, plus 45 differences in site 1417. 
-# Reasons:
-# 1417 was calculated as boatable, but here is calculated as wadeable.
-# 15508 is OTHER_NSP (neither boatable nor wadeable)
-# 13785 is not in tblVISITS2
-
+# 321 differences:
+#   1417 has 44 differences; this site was calculated as boatable, but here is calculated as wadeable.
+#   13506 has 1 difference
+#   There are 276 new rows, all for sites 13785 & 15508. 15508 is OTHER_NSP and thus
+#     was neither wadeable nor boatable and not included.  Site 13785 is anomalous
+#     in that it is not in tblVISITS2
+#
 
 ##################################################
 # Legacy Tree metrics
@@ -815,7 +819,7 @@ channelGeometry <- base_channelGeometry %>%
                          ,LINE = trimws(LINE)
                          ,VALUE = trimws(VALUE)
                          )
-rp0 <- rp
+# rp0 <- rp
 rp <- nrsaResidualPools(bDepth = thalweg %>% 
                                  subset(PARAMETER %in% c('DEP_POLE','DEP_SONR')) %>%
                                  mutate(VALUE = ifelse(UNITS == 'M', as.numeric(VALUE)
@@ -1040,7 +1044,7 @@ channelGeometry <- base_channelGeometry %>%
                          ,VALUE = trimws(VALUE)
                          )
 
-gm0<-gm
+# gm0<-gm
 gm <- nrsaGeneral(sampledTransects = subset(thalweg, PARAMETER == 'INCREMNT')
                  ,sideChannels = subset(thalweg, PARAMETER %in% c('SIDCHN','OFF_CHAN') & TRANSECT %in% c('NOT MARKED', LETTERS))
                  ,transectSpacing = rbind(merge(channelGeometry %>%                               # values for wadeable sites
@@ -1115,7 +1119,7 @@ protocols <- base_thalweg %>%
 # rp_mets <- read.csv('c:/Users/cseelige/local/nrsa1314/projects/nrsaResidualPools.csv', stringsAsFactors=FALSE) 
 # sb_mets <- read.csv('c:/Users/cseelige/local/nrsa1314/projects/nrsaSlopeBearing.csv', stringsAsFactors=FALSE) 
 # sc_mets <- read.csv('c:/Users/cseelige/local/nrsa1314/projects/nrsaSubstrateCharacterization.csv', stringsAsFactors=FALSE) 
-cm_mets <- sc_mets <- rp_mets <- lw_mets <- sb_mets <- currentMets %>% mutate(SITE = BATCHNO, METRIC = tolower(PARAMETER), VALUE=RESULT) %>% select(SITE,METRIC,VALUE)
+cm_mets <- sc_mets <- rp_mets <- lw_mets <- fc_mets <- sb_mets <- currentMets %>% mutate(SITE = BATCHNO, METRIC = tolower(PARAMETER), VALUE=RESULT) %>% select(SITE,METRIC,VALUE)
 bs <- nrsaBedStability(bXdepth =  subset(cm_mets, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
                       ,bSddepth = subset(cm_mets, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
                       ,wXdepth =  subset(cm_mets, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
@@ -1126,7 +1130,7 @@ bs <- nrsaBedStability(bXdepth =  subset(cm_mets, METRIC == 'xdepth' & SITE %in%
                       ,v1w_msq =  subset(lw_mets, METRIC == 'v1w_msq')
                       ,xbkf_h =   subset(cm_mets, METRIC == 'xbkf_h')
                       ,xbkf_w =   subset(cm_mets, METRIC == 'xbkf_w')
-                      ,xfc_lwd =  subset(cm_mets, METRIC == 'xfc_lwd')
+                      ,xfc_lwd =  subset(fc_mets, METRIC == 'xfc_lwd')
                       ,xslope =   subset(sb_mets, METRIC == 'xslope')
                       ,xwidth =   subset(cm_mets, METRIC == 'xwidth')
                       )
@@ -1146,5 +1150,38 @@ dd <- dfCompare(currentMets %>%
 # earlier as boatable, but was recorded as wadeable in the thalweg data and processed
 # as WADEABLE this time.
 
+# Recalculate with new values instead of new ones:
+bs2 <- nrsaBedStability(bXdepth =  subset(cm, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+                       ,bSddepth = subset(cm, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+                       ,wXdepth =  subset(cm, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+                       ,wSddepth = subset(cm, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+                       ,lsub_dmm = subset(sc, METRIC == 'lsub_dmm')
+                       ,lsub2dmm = subset(sc, METRIC == 'lsub2dmm')
+                       ,rp100 =    subset(rp, METRIC == 'rp100')
+                       ,v1w_msq =  subset(lw, METRIC == 'v1w_msq')
+                       ,xbkf_h =   subset(cm, METRIC == 'xbkf_h')
+                       ,xbkf_w =   subset(cm, METRIC == 'xbkf_w')
+                       ,xfc_lwd =  subset(fc, METRIC == 'xfc_lwd')
+                       ,xslope =   subset(sb, METRIC == 'xslope')
+                       ,xwidth =   subset(cm, METRIC == 'xwidth')
+                       )
 
+dd2 <- dfCompare(currentMets %>% 
+                subset(PARAMETER %in% toupper(unique(bs2$METRIC))) %>% 
+                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
+                mutate(VALUE = as.numeric(VALUE))
+               ,bs2 %>% 
+                mutate(METRIC=toupper(METRIC)) %>% 
+                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>%
+                mutate(VALUE = as.numeric(VALUE), SITE=as.integer(SITE))
+               ,c('SITE','METRIC')
+               ,zeroFudge = 1e-8
+               )
+
+# Shows 71 differences
+#   24 differences due to new rows for 13785, which is an anomalous site
+#   10 differences in site 12195, which has different rp100 value because of values of LINE in tblCHANNELGEOMETRY2
+#   5 differences in site 12200, which has different rp100 value because of earlier mishandling of ACTRANSP and DISTANCE values
+#   17 differences in site 1417, which was recorded as wadeable but is PARBYBOAT
+#   15 differences in site 15508, mostly due to new values available because it was not processed earlier.
 # end of file

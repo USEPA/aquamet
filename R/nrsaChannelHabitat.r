@@ -2,7 +2,7 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
                               ,bChannelUnitCodeList = data.frame(code=c('FA','RA','RI','GL','PO','CA','DR')
                                                                 ,metsSuffix=c('fa','ra','ri','gl','pool','ca','dr')
                                                                 ,category=c('FALLS','RAPID','RIFFLE','GLIDE','POOL','CASCADE','DRY')
-                                                                ,isFast=c(TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,FALSE)
+                                                                ,isFast=c(TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,NA)
                                                                 #,isPool=c(FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE)
                                                                 ,stringsAsFactors=FALSE
                                                                 )
@@ -22,7 +22,7 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
                                                                            )
                                                                 ,isFast=c(TRUE,TRUE,TRUE,TRUE,FALSE
                                                                          ,FALSE,FALSE,FALSE,FALSE,FALSE
-                                                                         ,FALSE,FALSE#,FALSE
+                                                                         ,FALSE,NA#,FALSE
                                                                          )
                                                                 ,isPool=c(FALSE,FALSE,FALSE,FALSE,FALSE
                                                                          ,TRUE,TRUE,TRUE,TRUE,TRUE
@@ -70,6 +70,13 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
 #            character variables.
 #   11/18/15 cws Updated calling interface.  Changed UID and RESULT to SITE and 
 #            VALUE.
+#    1/07/15 cws Changing default value of isFast for DR from FALSE to NA, and
+#            changing PCT_SLOW calculations from including channel codes that
+#            are isFast != TRUE, to include codes that are isFast = FALSE.  Dry
+#            sections are neither fast nor slow.  No change to unit test as it 
+#            passes.  Deleted section of old code at the bottom.
+#
+# TODO: Update unit test to see whether DR is handled properly
 #
 # Arguments:
 #   thalweg = a data frame containing the thalweg data file.  The data frame
@@ -225,7 +232,7 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
                                 dplyr::summarise(VALUE=100*protectedMean(isfast, na.rm=TRUE)) %>%
                                 mutate(METRIC='pct_fast')
             pct_slowWadeable <- wChannelUnit %>% 
-                                mutate(isslow=ifelse(VALUE %in% subset(wChannelUnitCodeList, isFast)$code, 0, 1)) %>%
+                                mutate(isslow=ifelse(VALUE %in% subset(wChannelUnitCodeList, !isFast)$code, 1, 0)) %>%
                                 group_by(SITE) %>%
                                 dplyr::summarise(VALUE=100*protectedMean(isslow, na.rm=TRUE)) %>%
                                 mutate(METRIC='pct_slow')
@@ -252,187 +259,5 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
     intermediateMessage('.Done', loc='end')
     return(mets)
 }
-
-
-##############################################################################################################################
-oldChannelHabitatCode <- function(thalweg) {
-  indat <- thalweg
-  cdData <- subset(indat
-                  ,PARAMETER == 'CHANUNCD' &
-                   ((VALUE %in% c('FA','CA','RA','RI','GL','PB','PP','PD','PL'
-                                  ,'PT','P','DR','SB'
-                                  )
-                     &
-                     SAMPLE_TYPE == 'PHAB_THALW'
-                    )
-                    |
-                    (VALUE %in% c('FA','RA','RI','GL','PO','CA','DR')
-                     &
-                     SAMPLE_TYPE == 'PHAB_THAL'
-                    )
-                   ) &
-                   TRANSECT %in% LETTERS[1:11]
-                  )
-
-  intermediateMessage('.1')
-
-  # Metrics common to both wadeable and boatable protocols
-  tgl <- summaryby(cdData,'count',"pct_gl")
-  tyout<-aggregate( list(typesum=cdData$VALUE),list(SITE=cdData$SITE),function(x){sum(x=='GL',na.rm=TRUE)})
-  tgl<-merge(tgl,tyout,by='SITE',all.x=TRUE)
-  #tgl$typesum<- ifelse( is.na(tgl$yessum),0,tgl$yessum)
-  tgl$VALUE <- (tgl$typesum/tgl$VALUE)*100
-  tgl<-tgl[c('SITE','METRIC','VALUE')]
-
-  tri <- summaryby(cdData,'count',"pct_ri")
-  tyout<-aggregate( list(typesum=cdData$VALUE),list(SITE=cdData$SITE),function(x){sum(x=='RI',na.rm=TRUE)})
-  tri<-merge(tri,tyout,by='SITE',all.x=TRUE)
-  #tri$typesum<- ifelse( is.na(tri$yessum),0,tri$yessum)
-  tri$VALUE <- (tri$typesum/tri$VALUE)*100
-  tri<-tri[c('SITE','METRIC','VALUE')]
-
-  tra <- summaryby(cdData,'count',"pct_ra")
-  tyout<-aggregate( list(typesum=cdData$VALUE),list(SITE=cdData$SITE),function(x){sum(x=='RA',na.rm=TRUE)})
-  tra<-merge(tra,tyout,by='SITE',all.x=TRUE)
-  #tra$typesum<- ifelse( is.na(tra$yessum),0,tra$yessum)
-  tra$VALUE <- (tra$typesum/tra$VALUE)*100
-  tra<-tra[c('SITE','METRIC','VALUE')]
-
-  tca <- summaryby(cdData,'count',"pct_ca")
-  tyout<-aggregate( list(typesum=cdData$VALUE),list(SITE=cdData$SITE),function(x){sum(x=='CA',na.rm=TRUE)})
-  tca<-merge(tca,tyout,by='SITE',all.x=TRUE)
-  #tca$typesum<- ifelse( is.na(tca$yessum),0,tca$yessum)
-  tca$VALUE <- (tca$typesum/tca$VALUE)*100
-  tca<-tca[c('SITE','METRIC','VALUE')]
-
-  tfa <- summaryby(cdData,'count',"pct_fa")
-  tyout<-aggregate( list(typesum=cdData$VALUE),list(SITE=cdData$SITE),function(x){sum(x=='FA',na.rm=TRUE)})
-  tfa<-merge(tfa,tyout,by='SITE',all.x=TRUE)
-  #tfa$typesum<- ifelse( is.na(tfa$yessum),0,tfa$yessum)
-  tfa$VALUE <- (tfa$typesum/tfa$VALUE)*100
-  tfa<-tfa[c('SITE','METRIC','VALUE')]
-
-  tdr <- summaryby(cdData,'count',"pct_dr")
-  tyout<-aggregate( list(typesum=cdData$VALUE),list(SITE=cdData$SITE),function(x){sum(x=='DR',na.rm=TRUE)})
-  tdr<-merge(tdr,tyout,by='SITE',all.x=TRUE)
-  #tdr$typesum<- ifelse( is.na(tdr$yessum),0,tdr$yessum)
-  tdr$VALUE <- (tdr$typesum/tdr$VALUE)*100
-  tdr<-tdr[c('SITE','METRIC','VALUE')]
-
-  intermediateMessage('.2')
-  
-  # Boatable-only protocol metric
-  btdata  <- subset(cdData,SAMPLE_TYPE == 'PHAB_THAL')
-  if(nrow(btdata)>0) {
-      tpo <- summaryby(btdata,'count',"pct_po")
-      tyout<-aggregate( list(typesum=btdata$VALUE),list(SITE=btdata$SITE),function(x){sum(x=='PO',na.rm=TRUE)})
-      tpo<-merge(tpo,tyout,by='SITE',all.x=TRUE)
-      #tpo$typesum<- ifelse( is.na(tpo$yessum),0,tpo$yessum)
-      tpo$VALUE <- (tpo$typesum/tpo$VALUE)*100
-      tpo<-tpo[c('SITE','METRIC','VALUE')]
-  }
-  intermediateMessage('.3')
-
-  #subset data for wadeable  only VALUE values
-
-  intermediateMessage('.4')
-  wddata  <- subset(cdData,SAMPLE_TYPE == 'PHAB_THALW')
-  if(nrow(wddata)>0) {
-      tpp <- summaryby(wddata,'count',"pct_pp")
-      tyout<-aggregate( list(typesum=wddata$VALUE),list(SITE=wddata$SITE),function(x){sum(x=='PP',na.rm=TRUE)})
-      tpp<-merge(tpp,tyout,by='SITE',all.x=TRUE)
-      #tpp$typesum<- ifelse( is.na(tpp$yessum),0,tpp$yessum)
-      tpp$VALUE <- (tpp$typesum/tpp$VALUE)*100
-      tpp<-tpp[c('SITE','METRIC','VALUE')]
-
-      tpd <- summaryby(wddata,'count',"pct_pd")
-      tyout<-aggregate( list(typesum=wddata$VALUE),list(SITE=wddata$SITE),function(x){sum(x=='PD',na.rm=TRUE)})
-      tpd<-merge(tpd,tyout,by='SITE',all.x=TRUE)
-      #tpd$typesum<- ifelse( is.na(tpd$yessum),0,tpd$yessum)
-      tpd$VALUE <- (tpd$typesum/tpd$VALUE)*100
-      tpd<-tpd[c('SITE','METRIC','VALUE')]
-
-      tpb <- summaryby(wddata,'count',"pct_pb")
-      tyout<-aggregate( list(typesum=wddata$VALUE),list(SITE=wddata$SITE),function(x){sum(x=='PB',na.rm=TRUE)})
-      tpb<-merge(tpb,tyout,by='SITE',all.x=TRUE)
-      #tpb$typesum<- ifelse( is.na(tpb$yessum),0,tpb$yessum)
-      tpb$VALUE <- (tpb$typesum/tpb$VALUE)*100
-      tpb<-tpb[c('SITE','METRIC','VALUE')]
-
-
-      tpl <- summaryby(wddata,'count',"pct_pl")
-      tyout<-aggregate( list(typesum=wddata$VALUE),list(SITE=wddata$SITE),function(x){sum(x=='PL',na.rm=TRUE)})
-      tpl<-merge(tpl,tyout,by='SITE',all.x=TRUE)
-      #tpl$typesum<- ifelse( is.na(tpl$yessum),0,tpl$yessum)
-      tpl$VALUE <- (tpl$typesum/tpl$VALUE)*100
-      tpl<-tpl[c('SITE','METRIC','VALUE')]
-
-
-      tpt <- summaryby(wddata,'count',"pct_pt")
-      tyout<-aggregate( list(typesum=wddata$VALUE),list(SITE=wddata$SITE),function(x){sum(x=='PT',na.rm=TRUE)})
-      tpt<-merge(tpt,tyout,by='SITE',all.x=TRUE)
-      #tpt$typesum<- ifelse( is.na(tpt$yessum),0,tpt$yessum)
-      tpt$VALUE <- (tpt$typesum/tpt$VALUE)*100
-      tpt<-tpt[c('SITE','METRIC','VALUE')]
-
-      tp <- summaryby(wddata,'count',"pct_p")
-      tyout<-aggregate( list(typesum=wddata$VALUE),list(SITE=wddata$SITE),function(x){sum(x=='P',na.rm=TRUE)})
-      tp<-merge(tp,tyout,by='SITE',all.x=TRUE)
-      #tp$typesum<- ifelse( is.na(tp$yessum),0,tp$yessum)
-      tp$VALUE <- (tp$typesum/tp$VALUE)*100
-      tp<-tp[c('SITE','METRIC','VALUE')]
-
-#               tsb <- summaryby(wddata,'count',"pct_sb")
-#               tyout<-aggregate( list(typesum=wddata$RESULT),list(UID=wddata$UID),function(x){sum(x=='SB',na.rm=TRUE)})
-#               tsb<-merge(tsb,tyout,by='UID',all.x=TRUE)
-#               #tsb$typesum<- ifelse( is.na(tsb$yessum),0,tsb$yessum)
-#               tsb$RESULT <- (tsb$typesum/tsb$RESULT)*100
-#               tsb<-tsb[c('UID','METRIC','RESULT')]
-
-  }
-  intermediateMessage('.5')
-
-  #compute summed metrics
-
-  pfast<-rbind(tfa,tca,tra,tri)
-  tfast<-summaryby(pfast,'sum','pct_fast')
-
-
-  wSlow <- NULL
-  wPool <- NULL
-  wmets <- NULL
-  if (nrow(wddata)>0) {
-      wSlow <- rbind(tpp,tpd,tpb,tpl,tpt,tp)
-      wPool <- rbind(tpp,tpd,tpb,tpl,tpt,tp)
-      wmets <- rbind(tpp,tpd,tpb,tpl,tpt,tp)
-  }
-  bSlow <- NULL
-  bPool <- NULL
-  bmets <- NULL
-  if (nrow(btdata)>0) {
-      bSlow <- tpo
-      bPool <- tpo
-      bmets <- tpo
-  }
-
-#  pslow <- rbind(tpp,tpd,tpb,tpl,tpt,tp,tgl,tpo)
-  pslow <- rbind(wSlow,bSlow,tgl)
-  tslow <- summaryby(pslow,'sum','pct_slow')
-
-#  ppool <- rbind(tpp,tpd,tpb,tpl,tpt,tp,tpo)
-  ppool <- rbind(wPool,bPool)
-  tpool <- summaryby(ppool,'sum','pct_pool')
-
-  intermediateMessage('.6')
-#  mets <- rbind(tdr,tp,tpt,tpl,tpb,tpd,tpp,tgl,tri,tra,tca,tfa,tfast,tslow,tpool)
-  mets <- rbind(tgl,tri,tra,tca,tfa,tdr,wmets,tfast,tslow,tpool)
-
-  intermediateMessage('.  Done.', loc='end')
-   
-  return(mets)
-    
-}
-
-
 
 # end of file
