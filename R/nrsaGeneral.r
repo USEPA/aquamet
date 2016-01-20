@@ -1,4 +1,6 @@
-nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSpacing = NULL) {
+nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSpacing = NULL
+                       ,sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')
+                       ) {
   
 ################################################################################
 # Function: metsGeneral
@@ -47,6 +49,8 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
 #   01/11/13 tmk: Inserted code to convert factors in the input data frames to
 #            character variables.
 #   12/29/15 cws Modified calling interface for generalized use.
+#    1/19/16 cws Pulled list of side channel transect values out as argument
+#            'sideChannelTransects'. No change to unit test at this time.
 #
 # Arguments:
 #   thalweg = a data frame containing the thalweg data file.  The data frame
@@ -167,7 +171,7 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
     sideChannels <- absentAsNULL(sideChannels, ifdfValues)
     transectSpacing <- absentAsNULL(transectSpacing, ifdfValues)
    
-    sideChannelTransects <- c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')
+#    sideChannelTransects <- c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')
 
 
     # Calculate count of side channels SIDECNT (only meaningful for wadeables)

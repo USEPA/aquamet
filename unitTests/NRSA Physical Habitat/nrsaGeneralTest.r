@@ -8,6 +8,9 @@ nrsaGeneralTest <- function()
 #has only wadable sites.  The  metsGeneral.1 function needs data for
 #both SAMPLE_TYPES, so the data was duplicated and VALUES for Boatable obs.
 #were set to zero.
+#
+#  1/19/16 cws Removed debug print statements
+#
 {
   testData <- nrsaGeneral.testData()
 
@@ -91,13 +94,10 @@ nrsaGeneralTest.process <- function(testData, metsExpected)
   # they are supposed to be nonmissing.
   # Note: the errs dataframe can be printed to show where the errors occur when
   # debugging.
-#print(str(testDataResult)); print(str(metsExpected))
   tt <- merge(testDataResult, metsExpected, by=c('SITE','METRIC'), all=TRUE)
-#print(str(tt))
   tt$diff <- tt$VALUE - tt$EXPECTED
 
   errs <- subset(tt, abs(diff) > 10^-7 | is.na(VALUE) != is.na(EXPECTED))
-print(errs)
   checkEquals(0, nrow(errs)
              ,"Error: General  metrics are broken"
              )
