@@ -51,6 +51,7 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
 #   12/29/15 cws Modified calling interface for generalized use.
 #    1/19/16 cws Pulled list of side channel transect values out as argument
 #            'sideChannelTransects'. No change to unit test at this time.
+#    1/20/16 cws No longer requiring TRANSECT column in sideChannels argument.
 #
 # Arguments:
 #   thalweg = a data frame containing the thalweg data file.  The data frame
@@ -166,9 +167,14 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
               select(SITE, TRANSECT, VALUE) 
         return(rc)
     }
+    ifdf <- function(df, ...) {
+        rc <- df %>% 
+              select(SITE, VALUE) 
+        return(rc)
+    }
     
     sampledTransects <- absentAsNULL(sampledTransects, ifdfTransects)
-    sideChannels <- absentAsNULL(sideChannels, ifdfValues)
+    sideChannels <- absentAsNULL(sideChannels, ifdf)
     transectSpacing <- absentAsNULL(transectSpacing, ifdfValues)
    
 #    sideChannelTransects <- c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')

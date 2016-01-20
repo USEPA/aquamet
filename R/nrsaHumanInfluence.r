@@ -82,6 +82,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #   01/11/13 tmk: Inserted code to convert factors in the input data frame to
 #            character variables.
 #   11/13/15 cws Rewrote calling interface.
+#    1/20/16 cws Removed test is.na(ifdf); now using is.function(ifdf) instead.
 #
 #  TODO: rewrite interior. Add use of influenceWeights and test it.  Make PARAMETER
 #        values less cryptic.
@@ -120,8 +121,7 @@ nrsaHumanInfluence <- function(buildings = NULL
         if(is.null(df)) return(NULL)
         else if(!is.data.frame(df)) return(NULL)
         else if(nrow(df) == 0) return (NULL)
-        else if(is.null(ifdf)) return(df)
-        else if(is.na(ifdf)) return(df)
+        else if(!is.function(ifdf)) return(df)
         else return(ifdf(df, ...))
     }
     ifdf <- function(df, pName) {
