@@ -4,9 +4,11 @@
 # 10/29/15 cws Updated to match changes in nrsaSlopeBearing: renamed columns
 #          to SITE and VALUE; changed arguments from 0809 database-related
 #          to generalized arguments.
-#  1/07/15 cws Updated to match additional changes in nrsaSlopeBearing arguments.
+#  1/07/16 cws Updated to match additional changes in nrsaSlopeBearing arguments.
 #          Also now expecting values from gisSinuosity and gisSlope for sites
 #          that do not have field data (rows in b* or w* arguments).
+#  1/21/16 cws Changed input data to use LINE=0 instead of LINE=999 to indicate
+#          at-transect location in boatable reaches.
 #
 
 
@@ -178,9 +180,15 @@ nrsaSlopeBearingTest <- function()
                            
   # Test calculations with both wadeable and boatable data AND with extra incremnt values.
 #  results <- nrsaSlopeBearing.1(fakeThal_IncremntsAtEachSITE, fakeChanGeom, NULL, fakeProtocol)
-  results <- nrsaSlopeBearing(bBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
-                             ,bDistance = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
-                             ,bSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
+  results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>% 
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
+                             ,bDistance = fakeChanGeom %>% 
+                                          subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                          mutate(LINE=ifelse(LINE==999, 0, LINE))
+                             ,bSlope = fakeChanGeom %>% 
+                                       subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
+                                       mutate(LINE=ifelse(LINE==999, 0, LINE))
                              ,wBearing = fakeChanGeom %>%
                                          subset(SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
@@ -251,9 +259,15 @@ nrsaSlopeBearingTest <- function()
   expectedWithGIS <- nrsaSlopeBearingTest.makeExpectedResultsWithGIS()
   
 #  results <- nrsaSlopeBearing.1(fakeThal, fakeChanGeom, fakeGisCalcs, fakeProtocol)
-    results <- nrsaSlopeBearing(bBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
-                               ,bDistance = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
-                               ,bSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
+    results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
+                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bDistance = fakeChanGeom %>%
+                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bSlope = fakeChanGeom %>%
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
                                ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                       ,ifelse(PARAMETER == 'BEARING2', 1
@@ -303,9 +317,15 @@ nrsaSlopeBearingTest <- function()
   # Test calculations with both wadeable and boatable data AND with extra incremnt 
   # values AND GIS values
 #  results <- nrsaSlopeBearing.1(fakeThal_IncremntsAtEachSITE, fakeChanGeom, fakeGisCalcs, fakeProtocol)
-  results <- nrsaSlopeBearing(bBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
-                               ,bDistance = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
-                               ,bSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
+  results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bDistance = fakeChanGeom %>%
+                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bSlope = fakeChanGeom %>%
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
                                ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                       ,ifelse(PARAMETER == 'BEARING2', 1
@@ -355,9 +375,15 @@ nrsaSlopeBearingTest <- function()
   # Test calculation with both wadeable and boatable reach data and no GIS 
   # based calculations or extra incremnt values.
 #  results <- nrsaSlopeBearing.1(fakeThal, fakeChanGeom, NULL, fakeProtocol)
-  results <- nrsaSlopeBearing(bBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
-                               ,bDistance = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
-                               ,bSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
+  results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bDistance = fakeChanGeom %>%
+                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bSlope = fakeChanGeom %>%
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
                                ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                       ,ifelse(PARAMETER == 'BEARING2', 1
@@ -412,9 +438,12 @@ nrsaSlopeBearingTest <- function()
 
 #   results.s <- nrsaSlopeBearing.1(fakeThal.s, fakeChanGeom.s, NULL, fakeProtocol.s)
 # TODO: the boatable args have zero rows, and would normally be allowed to be NULL -- that case should be tested as well
-  results.s <- nrsaSlopeBearing(bBearing = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
-                               ,bDistance = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
-                               ,bSlope = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
+  results.s <- nrsaSlopeBearing(bBearing = fakeChanGeom.s %>%
+                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
+                               ,bDistance = fakeChanGeom.s %>%
+                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
+                               ,bSlope = fakeChanGeom.s %>%
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
                                ,wBearing = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                       ,ifelse(PARAMETER == 'BEARING2', 1
@@ -465,9 +494,15 @@ nrsaSlopeBearingTest <- function()
   
 #   results.r <- nrsaSlopeBearing.1(fakeThal.r, fakeChanGeom.r, NULL, fakeProtocol.r)
 # TODO: the wadetable args have zero rows, and would normally be allowed to be NULL -- that case should be tested as well
-  results.r <- nrsaSlopeBearing(bBearing = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
-                               ,bDistance = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
-                               ,bSlope = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
+  results.r <- nrsaSlopeBearing(bBearing = fakeChanGeom.r %>%
+                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bDistance = fakeChanGeom.r %>%
+                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bSlope = fakeChanGeom.r %>%
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
                                ,wBearing = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                       ,ifelse(PARAMETER == 'BEARING2', 1

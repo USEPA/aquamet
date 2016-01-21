@@ -98,8 +98,10 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #            wTransectSpacing instead.  Removed PARAMETER column from 
 #            wProportion, wBearing, wSlope, and instead using LINE, as expected
 #            for bBearing, bSlope and bDistance.
-#    1/07/15 cws Allowing values in gisSlope and gisSinuosity to be used for sites
+#    1/07/16 cws Allowing values in gisSlope and gisSinuosity to be used for sites
 #            that do not occur in the field data (w* and b* arguments).
+#    1/21/16 cws Changed to no longer convert LINE=999 to LINE=0 (indicating
+#            at-transect location in boatable reaches).
 #
 # Arguments:
 #   thalweg = a data frame containing the thalweg data file.  The data frame
@@ -433,7 +435,7 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
                                     ,'BEARING'
                                     ,sbBoatable$PARAMETER
                                     )
-      sbBoatable$LINE <- ifelse(sbBoatable$LINE==999, 0, sbBoatable$LINE + 1)
+#      sbBoatable$LINE <- ifelse(sbBoatable$LINE==999, 0, sbBoatable$LINE + 1)
       
       sumDists <- sumDists[c('SITE','TRANSECT','TRANSPC')]
   }
