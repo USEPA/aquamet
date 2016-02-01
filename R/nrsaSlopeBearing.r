@@ -3,11 +3,6 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
                             ,wSlope = NULL, gisSinuosity=NULL, gisSlope=NULL
                             ) {
     
-# TODO: Remove use of PARAMETER column which serves to allow this code to 
-#       determine LINE values.
-# TODO: rewrite to not require wStations argument.  Maybe use bTransectSpacing 
-#       and wTransectSpacing in place of wStations and bDistance
-# TODO: Separate gisCalcs into gisSiteSinuosity and gisSiteSlope
 # TODO: Handle slopes in DEGREES (1314 has 10 Dg rows), and maybe '' (39 rows)
 # TODO: Maybe separate bSlope and wSlope into values and units args
     
@@ -101,112 +96,94 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #    1/07/16 cws Allowing values in gisSlope and gisSinuosity to be used for sites
 #            that do not occur in the field data (w* and b* arguments).
 #    1/21/16 cws Changed to no longer convert LINE=999 to LINE=0 (indicating
-#            at-transect location in boatable reaches).
+#            at-transect location in boatable reaches). Updated argument 
+#            descriptions.
 #
 # Arguments:
-#   thalweg = a data frame containing the thalweg data file.  The data frame
-#     must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       STATION - station number along thalweg between transects
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   channelgeometry = a data frame containing the channel geometry data file.
-#     The data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANLINE - location (mid-channel or bank)along transect
-#       BANK - bank (left or right) along transect
-#       LINE - way point (1,2, etc.) between transects
-#       METHOD - method used to measure slope
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   visits = a data frame containing the stream verification form data file.
-#     The data frame contains a protocol value for each UID value.  It also
-#     should include columns that relate UID to values meaningfull to the user,
-#     e.g., site ID, date collected, and visit number.  The data frame must
-#     include columns that are named as follows:
-#       UID - universal ID value
-#       VALXSITE - protocol used during a site visit (BOATABLE, PARBYBOAT,
-#         ALTERED, INTWADE, PARBYWADE, WADEABLE)
-#   gisCalcs = a data frame containing metric values that were determined using
-#     GPS based calculations.  The default value for this argument is NULL.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       METRIC - metric name
-#       RESULT - metric value
-#   Note that possible values for variables in the input data frames are
-#   provided in the document named "NRSA Documentation.pdf" included in the help
-#   directory for the package.
-# Output:
-#   Either a data frame when metric calculation is successful or a character
-#   string containing an error message when metric calculation is not
-#   successful.  The data frame contains the following columns:
-#     UID - universal ID value
-#     METRIC - metric name
-#     RESULT - metric value
+# bBearing          dataframe containing bearing values recorded in the field 
+#                   for boatable reaches.  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       TRANSECT    character identifying the transect the value
+#                                   is for.
+#                       LINE        integer specifying the within-transect 
+#                                   segment the value is for.  Values begin at 0
+#                       VALUE       numeric value of data
+# bDistance         dataframe containing segment distance values recorded in the 
+#                   field for boatable reaches.  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       TRANSECT    character identifying the transect the value
+#                                   is for.
+#                       LINE        integer specifying the within-transect 
+#                                   segment the value is for.  Values begin at 0
+#                       VALUE       numeric value of data
+# bSlope            dataframe containing slope values recorded in the field for 
+#                   boatable reaches.  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       TRANSECT    character identifying the transect the value
+#                                   is for.
+#                       LINE        integer specifying the within-transect 
+#                                   segment the value is for.  Values begin at 0
+#                       VALUE       numeric value of data
+#                       METHOD      Method used to determine the value
+#                       UNITS       Units the value is recorded in.  Expected to
+#                                   be PERCENT (slope) or CM (elevation change).
+# wBearing          dataframe containing bearing values recorded in the field 
+#                   for wadeable reaches.  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       TRANSECT    character identifying the transect the value
+#                                   is for.
+#                       LINE        integer specifying the within-transect 
+#                                   segment the value is for.  Values begin at 0
+#                       VALUE       numeric value of data
+# wTransectSpacing  dataframe containing transect spacing values recorded in the 
+#                   field for wadeable reaches.  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       TRANSECT    character identifying the transect the value
+#                                   is for.
+#                       VALUE       numeric value of data
+# wProportion       dataframe containing segment proportion values recorded in 
+#                   the field for wadeable reaches .  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       TRANSECT    character identifying the transect the value
+#                                   is for.
+#                       LINE        integer specifying the within-transect 
+#                                   segment the value is for.  Values begin at 0
+#                       VALUE       numeric value of data. Expected to run 0-100
+# wSlope            dataframe containing slope values recorded in the field for 
+#                   wadeable reaches  .  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       TRANSECT    character identifying the transect the value
+#                                   is for.
+#                       LINE        integer specifying the within-transect 
+#                                   segment the value is for.  Values begin at 0
+#                       VALUE       numeric value of data
+#                       METHOD      Method used to determine the value
+#                       UNITS       Units the value is recorded in.  Expected to
+#                                   be PERCENT (slope) or CM (elevation change).
+# gisSinuosity      dataframe containing calculated sinuosity values for any 
+#                   reach.  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       VALUE       numeric value of data. Value is unitless.
+# gisSlope          dataframe containing calculated mean slope values for any 
+#                   reach.  Expected to include columns
+#                       SITE        integer or character type identifying the 
+#                                   site.
+#                       VALUE       numeric value of data. Expected to be 
+#                                   expressed in percent slope.
+#
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
-#   siteProtocol determine sampling protocol values
-#   nrsaSlopeBearing.1 - calculate metrics
+#
 ################################################################################
-
-# # Print an initial message
-#   cat('Slope and Bearing calculations:\n')
-# 
-# # Convert factors to character variables in the input data frames
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   thalweg <- convert_to_char(thalweg)
-#   channelgeometry <- convert_to_char(channelgeometry)
-#   visits <- convert_to_char(visits)
-#   if(!is.null(gisCalcs))
-#     gisCalcs <- convert_to_char(gisCalcs)
-# 
-# # Determine protocol used for each site
-#   intermediateMessage('.2 Set protocols.', loc='end')
-#   if(is.null(gisCalcs)) {
-#     protocols <- siteProtocol(c(unique(channelgeometry$UID), unique(thalweg$UID)),
-#       visits)
-#   } else {
-#     protocols <- siteProtocol(c(unique(channelgeometry$UID), unique(thalweg$UID),
-#       unique(gisCalcs$UID)), visits)
-#   }
-
-# # Calculate the metrics
-# #  intermediateMessage('.3 Call function nrsaSlopeBearing.1.', loc='end')
-#   mets <- nrsaSlopeBearing.1(bBearing, bDistance, bSlope, wBearing, wTransectSpacing
-#                             ,wProportion, wSlope, gisSinuosity, gisSlope
-#                             )
-#   row.names(mets) <- 1:nrow(mets)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(mets)
-# }
-# 
-# 
-# 
-# nrsaSlopeBearing.1 <- function(bBearing, bDistance, bSlope, wBearing, wTransectSpacing
-#                               ,wProportion, wSlope, gisSinuosity, gisSlope) {
-# 
-# # Does the work for for nrsaSlopeBearing
-# #
-# # ARGUMENTS:
-# # thal        dataframe with thalweg data table
-# # chanGeom    dataframe with channel geometry table
-# # gisCalcs    dataframe with GIS based calculations of slope and sinuosity (in long
-# #               UID,PARAMETER,RESULT format, or NULL if these calculations do not exist.
-# # protocols   dataframe with protocol (WADEABLE, BOATABLE) used for each UID
-# #
 
   intermediateMessage('Slope and bearing calculations', loc='start')
   # standardize argument columns
@@ -276,72 +253,10 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
     gisSlope <- gisSlope %>%                 absentAsNULL(ifdfValue)
 
 
-#   if(!is.null(bBearing))    bBearing    <- bBearing %>%     
-#                                            select(SITE, TRANSECT, LINE, VALUE) 
-#   if(!is.null(bDistance))   bDistance   <- bDistance %>%    
-#                                            select(SITE, TRANSECT, LINE, VALUE) 
-#   if(!is.null(bSlope))      bSlope      <- bSlope %>%       
-#                                            select(SITE, TRANSECT, LINE, VALUE
-#                                                  ,METHOD, UNITS)
-#   if(!is.null(wBearing))    wBearing    <- wBearing %>%
-#                                            select(SITE, TRANSECT, LINE, VALUE)
-#   if(!is.null(wProportion)) wProportion <- wProportion %>%  
-#                                            select(SITE, TRANSECT, LINE, VALUE)
-#   if(!is.null(wSlope))      wSlope      <- wSlope %>%       
-#                                            select(SITE, TRANSECT, LINE
-#                                                  ,VALUE, METHOD, UNITS)
-# #   if(!is.null(wIncrement))  wIncrement  <- wIncrement %>%   
-# #                                            select(SITE, VALUE)
-#   if(!is.null(wTransectSpacing))  wTransectSpacing  <- wTransectSpacing %>%   
-#                                            select(SITE, TRANSECT, VALUE)
-# #   if(!is.null(wStations))   wStations   <- wStations %>%    
-# #                                            select(SITE, TRANSECT, STATION) %>% 
-# #                                            mutate(STATION = 
-# #                                                 as.integer(as.character(STATION)))
-#   if(!is.null(gisCalcs))    gisCalcs    <- gisCalcs %>%     
-#                                            select(SITE, METRIC, VALUE)
-
   intermediateMessage('.0')
   
-  # Get expected parameters from each dataframe for main channel only.  Calculate
-  # transect spacing in wadeables (like ACTRANSP in boatable reaches) as the
-  # expected number of stations in the transect times INCREMNT (the distance
-  # between adjacent stations) in that transect.  Calculate backsighting
-  # percentages for the boatable reaches based on the backsighted distances.
-  # The boatable parameter ACTRANSP is ignored in favour of the distances over
-  # which backsightings are made.
-#   dists <- subset(thal
-#                  ,PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0
-#                   & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE
-#                  ,select=c(SITE,PARAMETER,VALUE)
-#                  )
-#  dists <- mutate(wIncrement, PARAMETER = 'INCREMNT')
-#   dists <- wIncrement
-#   # Calculate transect spacing TRANSPC in wadeable reaches.  Include TRANSPC
-#   # as a parameter in the wadeable data. Fill in LINE and standardize PARAMETER
-#   # values.
-#   dists$VALUE <- as.numeric(as.character(dists$VALUE))
-# # print('dists 10186:'); print(subset(dists, SITE==10186))
-# # print('wStations 10186:'); print(subset(wStations, SITE==10186))
-#   newDists <- NULL
-#   if (nrow(dists)>0){
-#       # Calculate transect spacing for wadeable sites
-#       nsta <- nWadeableStationsPerTransect(wStations)
-#       newDists <- merge(dists, nsta, by='SITE', all.x=TRUE)
-# 
-#       newDists$TRANSPC <- as.character(newDists$nSta * as.numeric(newDists$VALUE))
-#       newDists <- newDists[c('SITE','TRANSECT','TRANSPC')]
-#   }
     newDists <- wTransectSpacing #%>% dplyr::rename(TRANSPC=VALUE) ################# PROPAGATE THIS NAME CHANGE #####################################
-#   sbWadeable <- subset(chanGeom
-#                       ,PARAMETER %in% c('BEARING','BEARING2','BEARING3'
-#                                        ,'PROP','PROP2','PROP3'
-#                                        ,'SLOPE','SLOPE2','SLOPE3'
-#                                        )
-#                        & TRANSECT %in% LETTERS[1:11]
-#                        & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE
-#                       ,select=c(SITE,TRANSECT,PARAMETER,VALUE,UNITS)
-#                       )
+
   sbWadeable <- rbind(wBearing #%>% mutate(METHOD='', UNITS='')
                      ,wProportion #%>% mutate(METHOD='', UNITS='')
                      ,wSlope 
@@ -354,17 +269,11 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
     }
   intermediateMessage('.1')
 
-#   sbBoatable <- subset(chanGeom
-#                       ,PARAMETER %in% c('BEAR','SLOPE','DISTANCE')
-#                        & TRANSECT %in% LETTERS[1:11]
-#                        & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE
-#                       ,select=c(SITE,TRANSECT,LINE,PARAMETER,VALUE,UNITS)
-#                       )
 
-  sbBoatable <- rbind(bBearing  #%>% mutate(METHOD='', UNITS='', PARAMETER='BEAR')
-                     ,bDistance # %>% mutate(METHOD='', UNITS='', PARAMETER='DISTANCE')
-                     ,bSlope # %>% mutate(PARAMETER='SLOPE')
-                     )
+    sbBoatable <- rbind(bBearing  #%>% mutate(METHOD='', UNITS='', PARAMETER='BEAR')
+                       ,bDistance # %>% mutate(METHOD='', UNITS='', PARAMETER='DISTANCE')
+                       ,bSlope # %>% mutate(PARAMETER='SLOPE')
+                       )
     if(!is.null(sbBoatable)) {
         sbBoatable <- sbBoatable %>%
                       subset(TRANSECT %in% LETTERS[1:11]
@@ -375,33 +284,6 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
     }
   intermediateMessage('.2')
 
-  #########################################################################
-  # Organize for wadeable and boatable reaches into a single structure with the
-  # following columns:
-  # UID         Unique Identifier
-  # TRANSECT    A-K
-  # LINE        a numeric value = 0 for the main reading, 1, 2 or 3 thereafter.
-  #               This value will be NA for TRANSPC, which is not associated
-  #               with a specific line on the form.
-  # PARAMETER   with values BEARING, SLOPE, PROPORTION, TRANSPC
-  # RESULT      The numeric value of the measured parameter.
-  # UNITS       The measurement units, CM or PERCENT for slopes, NONE for others.
-  
-
-  
-#   # Create LINE value based on PARAMETER, then standardize PARAMETER values
-#   sbWadeable$LINE <- ifelse(sbWadeable$PARAMETER %in% c('PROP','SLOPE','BEARING'), 0
-#                     ,ifelse(sbWadeable$PARAMETER %in% c('PROP2','SLOPE2','BEARING2'), 1
-#                     ,ifelse(sbWadeable$PARAMETER %in% c('PROP3','SLOPE3','BEARING3'), 2
-#                     ,NA
-#                     )))
-#   sbWadeable$PARAMETER <- ifelse(substr(sbWadeable$PARAMETER,1,4) == 'PROP', 'PROPORTION'
-#                          ,ifelse(substr(sbWadeable$PARAMETER,1,4) == 'SLOP', 'SLOPE'
-#                          ,ifelse(substr(sbWadeable$PARAMETER,1,4) == 'BEAR', 'BEARING'
-#                          ,NA
-#                          )))
-#  intermediateMessage('.2')
-  
 
   # Calculate transect spacing TRANSPC from incremental DISTANCE values.
   # Calculate incremental proportion values from DISTANCE and TRANSPC.

@@ -92,6 +92,9 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #            the column correctly in aggregate(), or use dplyr::rename instead,
 #            as appropriate
 #   10/21/15 cws Modified calling interface of metsBankMorphology for general use.
+#    1/28/16 cws Removed useless PARAMETER column from boatable substrate count
+#            section.  Updated absentAsNULL and using ifdf* functions to enforce
+#            data standards.
 #
 # Arguments:
 #   channelcrosssection = a data frame containing the channel crosssection data
@@ -179,19 +182,43 @@ nrsaSubstrateCharacterization.1 <- function(bBottomDom, bBottomSec, bShoreDom, b
     intermediateMessage ('Substrate Characterization', loc='start')
     
     # Standardize data arguments with no data as NULL
-    absentAsNULL <- function(df) {
+#     absentAsNULL <- function(df) {
+#         if(is.null(df)) return(NULL)
+#         else if(!is.data.frame(df)) return(NULL)
+#         else if(nrow(df) == 0) return (NULL)
+#         else return(df)
+#     }
+#     bBottomDom <- absentAsNULL(bBottomDom)
+#     bBottomSec <- absentAsNULL(bBottomSec)
+#     bShoreDom <- absentAsNULL(bShoreDom)
+#     bShoreSec <- absentAsNULL(bShoreSec)
+#     bSizeClass <- absentAsNULL(bSizeClass)
+#     wSizeClass <- absentAsNULL(wSizeClass)
+#     wMezzoSizeClass <- absentAsNULL(wMezzoSizeClass)
+    absentAsNULL <- function(df, ifdf, ...) {
         if(is.null(df)) return(NULL)
         else if(!is.data.frame(df)) return(NULL)
         else if(nrow(df) == 0) return (NULL)
+        else if(is.function(ifdf)) return(ifdf(df, ...))
         else return(df)
     }
-    bBottomDom <- absentAsNULL(bBottomDom)
-    bBottomSec <- absentAsNULL(bBottomSec)
-    bShoreDom <- absentAsNULL(bShoreDom)
-    bShoreSec <- absentAsNULL(bShoreSec)
-    bSizeClass <- absentAsNULL(bSizeClass)
-    wSizeClass <- absentAsNULL(wSizeClass)
-    wMezzoSizeClass <- absentAsNULL(wMezzoSizeClass)
+    ifdfLittoral <- function(df, ...) {
+        rc <- df %>% 
+              select(SITE, TRANSECT, VALUE)
+        return(rc)
+    }
+    ifdf <- function(df, ...) {
+        rc <- df %>% 
+              select(SITE, VALUE) 
+        return(rc)
+    }
+    bBottomDom <- absentAsNULL(bBottomDom, ifdfLittoral)
+    bBottomSec <- absentAsNULL(bBottomSec, ifdfLittoral)
+    bShoreDom <- absentAsNULL(bShoreDom, ifdfLittoral)
+    bShoreSec <- absentAsNULL(bShoreSec, ifdfLittoral)
+    bSizeClass <- absentAsNULL(bSizeClass, ifdfLittoral)
+    wSizeClass <- absentAsNULL(wSizeClass, ifdf)
+    wMezzoSizeClass <- absentAsNULL(wMezzoSizeClass, ifdf)
 
 
   # Substrate class information
@@ -273,7 +300,6 @@ nrsaSubstrateCharacterization.1 <- function(bBottomDom, bBottomSec, bShoreDom, b
                              ) #diametersmm
                       ,by.x='VALUE', by.y='class'
                       ,all.x=TRUE)
-
       ldBug2mm <- aggregate(list(VALUE = ldBugmm$lDiam)
                            ,list('SITE'=ldBugmm$SITE)
                            ,quantile, 0.16, na.rm=TRUE, names=FALSE, type=2
@@ -896,17 +922,17 @@ intermediateMessage('e')
 
       # Initial summaries for rivers.  Get counts for each size class from the
       # back of the thalweg form
-      indivcl <- ddply(bSizeClass, c('SITE','PARAMETER','VALUE'), summarise, n=length(na.omit(VALUE)))
+      indivcl <- ddply(bSizeClass, c('SITE','VALUE'), summarise, n=length(na.omit(VALUE)))
 #       indivcl <- aggregate (list('n'=df2$RESULT)
 #                            ,list('UID'=df2$UID, 'PARAMETER'=df2$PARAMETER, 'RESULT'=df2$RESULT)
 #                            ,count
 #                            )
-      allct <- ddply(bSizeClass, c('SITE','PARAMETER'), summarise, nAll=length(na.omit(VALUE)))
+      allct <- ddply(bSizeClass, c('SITE'), summarise, nAll=length(na.omit(VALUE)))
 #       allct <- aggregate (list('nAll'=df2$RESULT)
 #                          ,list ('UID'=df2$UID, 'PARAMETER'=df2$PARAMETER)
 #                          ,count
 #                          )
-      scCTS <- merge(indivcl, allct, by=c('SITE', 'PARAMETER'))
+      scCTS <- merge(indivcl, allct, by=c('SITE'))
 
       sc <- expand.grid (SITE=unique(scCTS$SITE)
                         ,VALUE=boatableAllThalwegClasses # c('BH', 'BL', 'CB', 'GR', 'SA', 'FN','OT')

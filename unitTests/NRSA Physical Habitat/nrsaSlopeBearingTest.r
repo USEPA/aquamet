@@ -9,120 +9,8 @@
 #          that do not have field data (rows in b* or w* arguments).
 #  1/21/16 cws Changed input data to use LINE=0 instead of LINE=999 to indicate
 #          at-transect location in boatable reaches.
+#  1/22/16 cws Removed old commented out code and prettyprinted test code a bit.
 #
-
-
-# metsSlopeBearing.adjustElevations <- function(df)
-# # Adjusts slopes recorded as elevations to account for a change in the field
-# # protocol that didn't quite get mentioned to us until last week.  Crews
-# # recording slopes using the elevation method were told they could record
-# # the change in elevation for more than one supplemental sighting since the
-# # water tube goes around bends that would occlude our vision.  This is the
-# # reason for large numbers of transects in which we have missing supplemental
-# # slopes.
-# # This function spreads the recorded slope value along subsequent supplemental
-# # readings within a transect.  The return value is the input dataframe with
-# # the adjusted slope values in the SLOPE column.
-# #
-# # ARGUMENTS:
-# # df        dataframe with slope & bearing information, one row per subsighting,
-# #           with columns SITE, TRANSECT, LINE, SLOPE, UNITS.SLOPE, PROPORTION,
-# #           UNITS.PROPORTION, BEARING, UNITS.BEARING, TRANSPC.
-# #
-# # ASSUMPTIONS:
-# # Only wadeable reach data are included in the dataframe.
-# #
-# {
-#   # Assign group membership for each 'sighting'.  A 'group' is the set of
-#   # rows/sightings for which an elevation was recorded.  It is defined as
-#   # follows:
-#   #   group[1] = 1 at the start of the data
-#   #   group[n] = 1 + group[n-1] when the transect changes OR
-#   #                                  the slope value is not missing
-#   #            = group[n-1]     when the slope is missing AND the transect
-#   #                                  has not changed.
-#   #
-#   #   (this assumes that the slope value is recorded at the start of each group)
-#   #
-#   # As an example (leaving out the UID column and a few others):
-#   #
-#   #   Tran  Line  Slope  Units  Prop 'Group' groupSlope groupUnits
-#   #   A     0     2      CM      100  1      2          CM
-#   #   B     0     3      CM      100  2      3          CM
-#   #   C     0     4      CM      30   3      4          CM
-#   #   C     1     NA     NA      70   3      4          CM
-#   #   D     0     1      CM      100  4      1          CM
-#   #   ...
-#   #
-#   # Group membership will be used to distribute the recorded elevation change
-#   # at the first line of the group through out all lines/sightings in the group.
-#   
-#   df <- df[order(df$SITE, df$TRANSECT, df$LINE),]
-#   df$group <- as.integer(NA)
-#   for(i in 1: nrow(df)) {
-#       if(i==1) {
-#           df$group[i] <- 1
-#       } else {
-#           if(df$TRANSECT[i] != df$TRANSECT[i-1] | !is.na(df$SLOPE[i])) {
-#               df$group[i] <- 1 + df$group[i-1]
-#           } else {
-#               df$group[i] <- df$group[i-1]
-#           }
-#       }
-#   }
-# 
-#   # Put first SLOPE and UNITS.SLOPE of each group on every row in the group.
-#   df <- merge(df
-#              ,transform(subset(first(df, 'group', 'first.group'), first.group
-#                               ,select=c(group, SLOPE, UNITS.SLOPE)
-#                               )
-#                        ,groupSlope=as.numeric(SLOPE)
-#                        ,groupUnits=UNITS.SLOPE
-#                        ,SLOPE=NULL
-#                        ,UNITS.SLOPE=NULL
-#                        ,stringsAsFactors=FALSE
-#                        )
-#              ,by='group'
-#              )
-# 
-#   # Flag groups that require slope adjustments (groups of 1 do not, others may).
-#   df <- merge(df
-#              ,aggregate(list(groupAdjust=df$group)
-#                        ,list(group=df$group)
-#                        ,function(x) { ifelse(length(x)==1, FALSE, TRUE) }
-#                        )
-#              ,by='group'
-#              )
-#   
-#   # Make adjustments to the recorded slope when it's an elevation change, ignoring
-#   # slopes recorded directly in percent.  Using the example from the above
-#   # section:
-#   #               OLD    OLD                                       NEW    NEW
-#   #   Tran  Line  Slope  Units  Prop 'Group' groupSlope groupUnits Slope  Units
-#   #   A     0     2      CM      100  1      2          CM         2      CM
-#   #   B     0     3      CM      100  2      3          CM         3      CM
-#   #   C     0     4      CM      30   3      4          CM         1.2    CM
-#   #   C     1     NA     NA      70   3      4          CM         2.8    CM
-#   #   D     0     1      CM      100  4      1          CM         1      CM
-#   #   ...
-#   df$SLOPE <- ifelse(df$groupUnits=='PERCENT'
-#                     ,df$SLOPE
-#                     ,ifelse(df$groupAdjust
-#                            ,df$groupSlope * df$PROPORTION/100
-#                            ,df$SLOPE
-#                            )
-#                     )
-#   df$UNITS.SLOPE <- df$groupUnits
-#   
-#   df$groupSlope <- NULL
-#   df$groupUnits <- NULL
-#   df$groupAdjust <- NULL
-#   df$group <- NULL
-# 
-#   return(df)
-# }
-
-
 
 nrsaSlopeBearingTest <- function()
 # Unit test for nrsaSlopeBearing. Test data taken from WEMAP data on 2-Feb-2010,
@@ -160,105 +48,86 @@ nrsaSlopeBearingTest <- function()
 #       transect.
 #
 {
-  # Create fake input data.  Thalweg data initially has 1 incremnt at
-  # each station, instead of once per site as expected by the calculation code,
-  # for testing purposes.
-  fakeThal_IncremntsAtEachSITE <- nrsaSlopeBearingTest.makeThalweg()
-  fakeThal <- subset(fakeThal_IncremntsAtEachSITE
-                    ,!(PARAMETER=='INCREMNT' & TRANSECT !='A' & STATION !=0)
-                    )
+    # Create fake input data.  Thalweg data initially has 1 incremnt at
+    # each station, instead of once per site as expected by the calculation code,
+    # for testing purposes.
+    fakeThal_IncremntsAtEachSITE <- nrsaSlopeBearingTest.makeThalweg()
+    fakeThal <- subset(fakeThal_IncremntsAtEachSITE
+                      ,!(PARAMETER=='INCREMNT' & TRANSECT !='A' & STATION !=0)
+                      )
 
-  fakeChanGeom <- nrsaSlopeBearingTest.makeChannelGeometry()
+    fakeChanGeom <- nrsaSlopeBearingTest.makeChannelGeometry()
 
-  fakeGisCalcs <- nrsaSlopeBearingTest.makeGisCalcs()
+    fakeGisCalcs <- nrsaSlopeBearingTest.makeGisCalcs()
   
-  fakeProtocol <- nrsaSlopeBearingTest.makeProtocols()
+    fakeProtocol <- nrsaSlopeBearingTest.makeProtocols()
 
-  # Create expected results.
-  expected <- nrsaSlopeBearingTest.makeExpectedResults()
+    # Create expected results.
+    expected <- nrsaSlopeBearingTest.makeExpectedResults()
   
                            
-  # Test calculations with both wadeable and boatable data AND with extra incremnt values.
-#  results <- nrsaSlopeBearing.1(fakeThal_IncremntsAtEachSITE, fakeChanGeom, NULL, fakeProtocol)
-  results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>% 
-                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+    # Test calculations with both wadeable and boatable data AND with extra incremnt values.
+    results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>% 
+                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bDistance = fakeChanGeom %>% 
+                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bSlope = fakeChanGeom %>% 
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
                                          mutate(LINE=ifelse(LINE==999, 0, LINE))
-                             ,bDistance = fakeChanGeom %>% 
-                                          subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
-                                          mutate(LINE=ifelse(LINE==999, 0, LINE))
-                             ,bSlope = fakeChanGeom %>% 
-                                       subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-                                       mutate(LINE=ifelse(LINE==999, 0, LINE))
-                             ,wBearing = fakeChanGeom %>%
-                                         subset(SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
-                                         mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
-                                                      ,ifelse(PARAMETER == 'BEARING2', 1
-                                                      ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                               ,wBearing = fakeChanGeom %>%
+                                           subset(SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
+                                           mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
+                                                        ,ifelse(PARAMETER == 'BEARING2', 1
+                                                        ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                                                         )))
+                                                  ,PARAMETER = NULL
+                                                  )                                         
+                               ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
+                                                         mutate(VALUE=as.numeric(VALUE))
+                                                        ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
+                                                        ,'SITE'
+                                                        ) %>%
+                                                   mutate(VALUE = VALUE * nSta
+                                                         ,nSta = NULL
+                                                         )
+                               ,wProportion = fakeChanGeom %>%
+                                              subset(SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
+                                         mutate(LINE = ifelse(PARAMETER == 'PROP', 0
+                                                      ,ifelse(PARAMETER == 'PROP2', 1
+                                                      ,ifelse(PARAMETER == 'PROP3', 2, NA
                                                        )))
                                                 ,PARAMETER = NULL
+                                                )
+                               ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
+                                         mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
+                                                      ,ifelse(PARAMETER == 'SLOPE2', 1
+                                                      ,ifelse(PARAMETER == 'SLOPE3', 2, NA
+                                                      )))
+                                                ,PARAMETER = NULL
                                                 )                                         
-                             ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
-                                                       mutate(VALUE=as.numeric(VALUE))
-                                                      ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
-                                                      ,'SITE'
-                                                      ) %>%
-                                                 mutate(VALUE = VALUE * nSta
-                                                       ,nSta = NULL
-                                                       )
-#                             ,wIncrement = subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
-                             ,wProportion = fakeChanGeom %>%
-                                            subset(SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'PROP', 0
-                                                    ,ifelse(PARAMETER == 'PROP2', 1
-                                                    ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                     )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-                                            
-                             ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
-                                                    ,ifelse(PARAMETER == 'SLOPE2', 1
-                                                    ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                    )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-#                             ,wStations = fakeThal[c('SITE','TRANSECT','STATION')]
-                             ,gisSinuosity = NULL
-                             ,gisSlope = NULL
-                             )
-  results <- results[order(results$SITE, results$METRIC),]
-  results$VALUE <- as.numeric(results$VALUE)
+                               ,gisSinuosity = NULL
+                               ,gisSlope = NULL
+                               )
+    results <- results[order(results$SITE, results$METRIC),]
+    results$VALUE <- as.numeric(results$VALUE)
 
-  # Compare expected and actual results
-  expected <- expected[order(expected$SITE, expected$METRIC),]
-  expected$VALUE <- as.numeric(expected$VALUE)
-  errs <- dfCompare(expected, results, c('SITE','METRIC'), zeroFudge=1e-4)
-#  return(errs)
-  checkEquals(NULL, errs
-             ,"Error: Slope and bearing metrics are broken with both protocols and extra incremnt values in thalweg table"
-             )
+    # Compare expected and actual results
+    expected <- expected[order(expected$SITE, expected$METRIC),]
+    expected$VALUE <- as.numeric(expected$VALUE)
+    errs <- dfCompare(expected, results, c('SITE','METRIC'), zeroFudge=1e-4)
+#    return(errs)
+    checkEquals(NULL, errs
+               ,"Error: Slope and bearing metrics are broken with both protocols and extra incremnt values in thalweg table"
+               )
 
              
-  # Test calculations with both wadeable and boatable data AND GIS values
-  # Fold GIS results into expected values, removing unexpected site and overwriting
-  # sinuosity values based on field values with those based on map calculations.
-#  expectedWithGIS <- rbind(subset(expected, !(METRIC=='sinu' & 
-#                                              UID %in% unique(subset(fakeGisCalcs, METRIC=='sinu')$UID)
-#                                             )
-#                                 )
-#                          ,subset(fakeGisCalcs
-#                                 ,UID %nin% c('An extra reach not in the main expected results','2000 WAZP99-0505 1') &
-#                                  METRIC=='xslope'
-#                                 )
-#                          ,within(subset(fakeGisCalcs
-#                                        ,UID != 'An extra reach not in the main expected results'
-#                                        )
-#                                 ,METRIC <- ifelse(METRIC == 'xslope', 'xslope_map', METRIC)
-#                                 )
-#                          )
-  expectedWithGIS <- nrsaSlopeBearingTest.makeExpectedResultsWithGIS()
+    # Test calculations with both wadeable and boatable data AND GIS values
+    # Fold GIS results into expected values, removing unexpected site and overwriting
+    # sinuosity values based on field values with those based on map calculations.
+    expectedWithGIS <- nrsaSlopeBearingTest.makeExpectedResultsWithGIS()
   
-#  results <- nrsaSlopeBearing.1(fakeThal, fakeChanGeom, fakeGisCalcs, fakeProtocol)
     results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
@@ -269,12 +138,12 @@ nrsaSlopeBearingTest <- function()
                                          subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
                                          mutate(LINE=ifelse(LINE==999, 0, LINE))
                                ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
-                                         mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
-                                                      ,ifelse(PARAMETER == 'BEARING2', 1
-                                                      ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                       )))
-                                                ,PARAMETER = NULL
-                                                )                                    
+                                           mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
+                                                        ,ifelse(PARAMETER == 'BEARING2', 1
+                                                        ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                                                         )))
+                                                 ,PARAMETER = NULL
+                                                 )                                    
                                ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
                                                          mutate(VALUE=as.numeric(VALUE))
                                                         ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
@@ -283,233 +152,53 @@ nrsaSlopeBearingTest <- function()
                                                    mutate(VALUE = VALUE * nSta
                                                          ,nSta = NULL
                                                          )
-#                               ,wIncrement = subset(fakeThal, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
                                ,wProportion = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'PROP', 0
-                                                    ,ifelse(PARAMETER == 'PROP2', 1
-                                                    ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                     )))
-                                              ,PARAMETER = NULL
-                                              )                                         
+                                              mutate(LINE = ifelse(PARAMETER == 'PROP', 0
+                                                           ,ifelse(PARAMETER == 'PROP2', 1
+                                                           ,ifelse(PARAMETER == 'PROP3', 2, NA
+                                                            )))
+                                                    ,PARAMETER = NULL
+                                                    )                                         
                                ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
-                                                    ,ifelse(PARAMETER == 'SLOPE2', 1
-                                                    ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                    )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-#                               ,wStations = fakeThal[c('SITE','TRANSECT','STATION')]
+                                         mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
+                                                      ,ifelse(PARAMETER == 'SLOPE2', 1
+                                                      ,ifelse(PARAMETER == 'SLOPE3', 2, NA
+                                                      )))
+                                               ,PARAMETER = NULL
+                                               )                                         
                                ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
                                ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
                                )
-  results <- results[order(results$SITE, results$METRIC),]
-  results$VALUE <- as.numeric(results$VALUE)
+    results <- results[order(results$SITE, results$METRIC),]
+    results$VALUE <- as.numeric(results$VALUE)
     
-  expectedWithGIS <- expectedWithGIS[order(expectedWithGIS$SITE, expectedWithGIS$METRIC),]
-  expectedWithGIS$VALUE <- as.numeric(expectedWithGIS$VALUE)
-  errs <- dfCompare(expectedWithGIS, results, c('SITE','METRIC'), zeroFudge=1e-4)
-#   return(errs)
-  checkEquals(NULL, errs
-             ,"Error: Slope and bearing metrics are broken with GIS calculations, both protocols"
-             )
-
-
-  # Test calculations with both wadeable and boatable data AND with extra incremnt 
-  # values AND GIS values
-#  results <- nrsaSlopeBearing.1(fakeThal_IncremntsAtEachSITE, fakeChanGeom, fakeGisCalcs, fakeProtocol)
-  results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
-                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
-                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,bDistance = fakeChanGeom %>%
-                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
-                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,bSlope = fakeChanGeom %>%
-                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
-                                         mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
-                                                      ,ifelse(PARAMETER == 'BEARING2', 1
-                                                      ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                       )))
-                                                ,PARAMETER = NULL
-                                                )                                         
-                               ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
-                                                         mutate(VALUE=as.numeric(VALUE))
-                                                        ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
-                                                        ,'SITE'
-                                                        ) %>%
-                                                   mutate(VALUE = VALUE * nSta
-                                                         ,nSta = NULL
-                                                         )
-#                               ,wIncrement = subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
-                               ,wProportion = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'PROP', 0
-                                                    ,ifelse(PARAMETER == 'PROP2', 1
-                                                    ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                     )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-                               ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
-                                                    ,ifelse(PARAMETER == 'SLOPE2', 1
-                                                    ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                    )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-#                               ,wStations = fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')]
-                               ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
-                               ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
-                               )
-  results <- results[order(results$SITE, results$METRIC),]
-  results$VALUE <- as.numeric(results$VALUE)
-    
-  expectedWithGIS <- expectedWithGIS[order(expectedWithGIS$SITE, expectedWithGIS$METRIC),]
-  expectedWithGIS$VALUE <- as.numeric(expectedWithGIS$VALUE)
-  errs <- dfCompare(expectedWithGIS, results, c('SITE','METRIC'), zeroFudge=1e-4)
+    expectedWithGIS <- expectedWithGIS[order(expectedWithGIS$SITE, expectedWithGIS$METRIC),]
+    expectedWithGIS$VALUE <- as.numeric(expectedWithGIS$VALUE)
+    errs <- dfCompare(expectedWithGIS, results, c('SITE','METRIC'), zeroFudge=1e-4)
 #    return(errs)
-  checkEquals(NULL, errs
-             ,"Error: Slope and bearing metrics are broken with GIS calculations, both protocols and extra incremnt values in thalweg table"
-             )
+    checkEquals(NULL, errs
+               ,"Error: Slope and bearing metrics are broken with GIS calculations, both protocols"
+               )
 
 
-  # Test calculation with both wadeable and boatable reach data and no GIS 
-  # based calculations or extra incremnt values.
-#  results <- nrsaSlopeBearing.1(fakeThal, fakeChanGeom, NULL, fakeProtocol)
-  results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
-                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
-                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,bDistance = fakeChanGeom %>%
-                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
-                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,bSlope = fakeChanGeom %>%
-                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
-                                         mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
-                                                      ,ifelse(PARAMETER == 'BEARING2', 1
-                                                      ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                       )))
-                                                ,PARAMETER = NULL
-                                                )                                         
-                               ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
-                                                         mutate(VALUE=as.numeric(VALUE))
-                                                        ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
-                                                        ,'SITE'
-                                                        ) %>%
-                                                   mutate(VALUE = VALUE * nSta
-                                                         ,nSta = NULL
-                                                         )
-#                               ,wIncrement = subset(fakeThal, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
-                               ,wProportion = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'PROP', 0
-                                                    ,ifelse(PARAMETER == 'PROP2', 1
-                                                    ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                     )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-                               ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
-                                                    ,ifelse(PARAMETER == 'SLOPE2', 1
-                                                    ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                    )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-#                               ,wStations = fakeThal[c('SITE','TRANSECT','STATION')]
-                               ,gisSinuosity = NULL
-                               ,gisSlope = NULL
-                               )
-
-  expected <- expected[order(expected$SITE, expected$METRIC),]
-  results <- results[order(results$SITE, results$METRIC),]
-  expected$VALUE <- as.numeric(expected$VALUE)
-  results$VALUE <- as.numeric(results$VALUE)
-  errs <- dfCompare(expected, results, c('SITE','METRIC'), zeroFudge=1e-3)
-#  return(errs)
-  checkEquals(NULL, errs
-             ,"Error: Slope and bearing metrics are broken with both protocols using normal thalweg data"
-             )
-             
-             
-  # Test calculation restricted to wadeable reaches
-  fakeProtocol.s <- subset(fakeProtocol, PROTOCOL=='WADEABLE')
-  fakeThal.s <- subset(fakeThal, SITE %in% fakeProtocol.s$SITE)
-  fakeChanGeom.s <- subset(fakeChanGeom, SITE %in% fakeProtocol.s$SITE)
-  expected.s <- subset(expected, SITE %in% fakeProtocol.s$SITE)
-
-#   results.s <- nrsaSlopeBearing.1(fakeThal.s, fakeChanGeom.s, NULL, fakeProtocol.s)
-# TODO: the boatable args have zero rows, and would normally be allowed to be NULL -- that case should be tested as well
-  results.s <- nrsaSlopeBearing(bBearing = fakeChanGeom.s %>%
-                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
-                               ,bDistance = fakeChanGeom.s %>%
-                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
-                               ,bSlope = fakeChanGeom.s %>%
-                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
-                               ,wBearing = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
-                                         mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
-                                                      ,ifelse(PARAMETER == 'BEARING2', 1
-                                                      ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                       )))
-                                                ,PARAMETER = NULL
-                                                )                                         
-                               ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
-                                                         mutate(VALUE=as.numeric(VALUE))
-                                                        ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
-                                                        ,'SITE'
-                                                        ) %>%
-                                                   mutate(VALUE = VALUE * nSta
-                                                         ,nSta = NULL
-                                                         )
-#                               ,wIncrement = subset(fakeThal.s, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
-                               ,wProportion = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'PROP', 0
-                                                    ,ifelse(PARAMETER == 'PROP2', 1
-                                                    ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                     )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-                               ,wSlope = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
-                                                    ,ifelse(PARAMETER == 'SLOPE2', 1
-                                                    ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                    )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-#                               ,wStations = fakeThal.s[c('SITE','TRANSECT','STATION')]
-                               ,gisSinuosity = NULL
-                               ,gisSlope = NULL
-                               )
-  results.s$VALUE <- as.numeric(results.s$VALUE)
-  errs.s <- dfCompare(expected.s, results.s, c('SITE','METRIC'), zeroFudge=1e-3)
-#  return(errs.s)
-  checkEquals(NULL, errs.s
-             ,"Error: Slope and bearing metrics are broken with wadeable data"
-             )
-
-             
-  # Test calculation restricted to boatable reaches
-  fakeProtocol.r <- subset(fakeProtocol, PROTOCOL=='BOATABLE')
-  fakeThal.r <- subset(fakeThal, SITE %in% fakeProtocol.r$SITE)
-  fakeChanGeom.r <- subset(fakeChanGeom, SITE %in% fakeProtocol.r$SITE)
-  expected.r <- subset(expected, SITE %in% fakeProtocol.r$SITE)
-  
-#   results.r <- nrsaSlopeBearing.1(fakeThal.r, fakeChanGeom.r, NULL, fakeProtocol.r)
-# TODO: the wadetable args have zero rows, and would normally be allowed to be NULL -- that case should be tested as well
-  results.r <- nrsaSlopeBearing(bBearing = fakeChanGeom.r %>%
+    # Test calculations with both wadeable and boatable data AND with extra incremnt 
+    # values AND GIS values
+    results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,bDistance = fakeChanGeom.r %>%
+                               ,bDistance = fakeChanGeom %>%
                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
                                             mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,bSlope = fakeChanGeom.r %>%
+                               ,bSlope = fakeChanGeom %>%
                                          subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
                                          mutate(LINE=ifelse(LINE==999, 0, LINE))
-                               ,wBearing = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
-                                         mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
-                                                      ,ifelse(PARAMETER == 'BEARING2', 1
-                                                      ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                       )))
-                                                ,PARAMETER = NULL
-                                                )                                         
+                               ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
+                                           mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
+                                                        ,ifelse(PARAMETER == 'BEARING2', 1
+                                                        ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                                                         )))
+                                                  ,PARAMETER = NULL
+                                                  )                                         
                                ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
                                                          mutate(VALUE=as.numeric(VALUE))
                                                         ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
@@ -518,35 +207,199 @@ nrsaSlopeBearingTest <- function()
                                                    mutate(VALUE = VALUE * nSta
                                                          ,nSta = NULL
                                                          )
-#                               ,wIncrement = subset(fakeThal.r, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')]
-                               ,wProportion = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'PROP', 0
-                                                    ,ifelse(PARAMETER == 'PROP2', 1
-                                                    ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                     )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-                               ,wSlope = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
-                                       mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
-                                                    ,ifelse(PARAMETER == 'SLOPE2', 1
-                                                    ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                    )))
-                                              ,PARAMETER = NULL
-                                              )                                         
-#                               ,wStations = fakeThal.r[c('SITE','TRANSECT','STATION')]
+                               ,wProportion = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
+                                              mutate(LINE = ifelse(PARAMETER == 'PROP', 0
+                                                           ,ifelse(PARAMETER == 'PROP2', 1
+                                                           ,ifelse(PARAMETER == 'PROP3', 2, NA
+                                                            )))
+                                                    ,PARAMETER = NULL
+                                                    )                                         
+                               ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
+                                         mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
+                                                      ,ifelse(PARAMETER == 'SLOPE2', 1
+                                                      ,ifelse(PARAMETER == 'SLOPE3', 2, NA
+                                                       )))
+                                                ,PARAMETER = NULL
+                                                )                                         
+                               ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
+                               ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
+                               )
+    results <- results[order(results$SITE, results$METRIC),]
+    results$VALUE <- as.numeric(results$VALUE)
+    
+    expectedWithGIS <- expectedWithGIS[order(expectedWithGIS$SITE, expectedWithGIS$METRIC),]
+    expectedWithGIS$VALUE <- as.numeric(expectedWithGIS$VALUE)
+    errs <- dfCompare(expectedWithGIS, results, c('SITE','METRIC'), zeroFudge=1e-4)
+#    return(errs)
+    checkEquals(NULL, errs
+               ,"Error: Slope and bearing metrics are broken with GIS calculations, both protocols and extra incremnt values in thalweg table"
+               )
+
+
+    # Test calculation with both wadeable and boatable reach data and no GIS 
+    # based calculations or extra incremnt values.
+    results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
+                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bDistance = fakeChanGeom %>%
+                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,bSlope = fakeChanGeom %>%
+                                         subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
+                               ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
+                                           mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
+                                                        ,ifelse(PARAMETER == 'BEARING2', 1
+                                                        ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                                                         )))
+                                                  ,PARAMETER = NULL
+                                                  )                                         
+                               ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
+                                                         mutate(VALUE=as.numeric(VALUE))
+                                                        ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
+                                                        ,'SITE'
+                                                        ) %>%
+                                                   mutate(VALUE = VALUE * nSta
+                                                         ,nSta = NULL
+                                                         )
+                               ,wProportion = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
+                                              mutate(LINE = ifelse(PARAMETER == 'PROP', 0
+                                                           ,ifelse(PARAMETER == 'PROP2', 1
+                                                           ,ifelse(PARAMETER == 'PROP3', 2, NA
+                                                            )))
+                                                    ,PARAMETER = NULL
+                                                    )                                         
+                               ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
+                                         mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
+                                                      ,ifelse(PARAMETER == 'SLOPE2', 1
+                                                      ,ifelse(PARAMETER == 'SLOPE3', 2, NA
+                                                      )))
+                                               ,PARAMETER = NULL
+                                               )                                         
                                ,gisSinuosity = NULL
                                ,gisSlope = NULL
                                )
-  results.r$VALUE <- as.numeric(results.r$VALUE)
-  errs.r <- dfCompare(expected.r, results.r, c('SITE','METRIC'), zeroFudge=1e-3)
-#  return(errs.r)
-  checkEquals(NULL, errs.r
-             ,"Error: Slope and bearing metrics are broken with boatable data"
-             )
 
+    expected <- expected[order(expected$SITE, expected$METRIC),]
+    results <- results[order(results$SITE, results$METRIC),]
+    expected$VALUE <- as.numeric(expected$VALUE)
+    results$VALUE <- as.numeric(results$VALUE)
+    errs <- dfCompare(expected, results, c('SITE','METRIC'), zeroFudge=1e-3)
+#    return(errs)
+    checkEquals(NULL, errs
+               ,"Error: Slope and bearing metrics are broken with both protocols using normal thalweg data"
+               )
+             
+             
+    # Test calculation restricted to wadeable reaches
+    fakeProtocol.s <- subset(fakeProtocol, PROTOCOL=='WADEABLE')
+    fakeThal.s <- subset(fakeThal, SITE %in% fakeProtocol.s$SITE)
+    fakeChanGeom.s <- subset(fakeChanGeom, SITE %in% fakeProtocol.s$SITE)
+    expected.s <- subset(expected, SITE %in% fakeProtocol.s$SITE)
+
+    # TODO: the boatable args have zero rows, and would normally be allowed to be NULL -- that case should be tested as well
+    results.s <- nrsaSlopeBearing(bBearing = fakeChanGeom.s %>%
+                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
+                                 ,bDistance = fakeChanGeom.s %>%
+                                              subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
+                                 ,bSlope = fakeChanGeom.s %>%
+                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
+                                 ,wBearing = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
+                                             mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
+                                                          ,ifelse(PARAMETER == 'BEARING2', 1
+                                                          ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                                                           )))
+                                                   ,PARAMETER = NULL
+                                                   )                                         
+                                 ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
+                                                           mutate(VALUE=as.numeric(VALUE))
+                                                          ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
+                                                          ,'SITE'
+                                                          ) %>%
+                                                     mutate(VALUE = VALUE * nSta
+                                                           ,nSta = NULL
+                                                           )
+                                 ,wProportion = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
+                                                mutate(LINE = ifelse(PARAMETER == 'PROP', 0
+                                                             ,ifelse(PARAMETER == 'PROP2', 1
+                                                             ,ifelse(PARAMETER == 'PROP3', 2, NA
+                                                              )))
+                                                      ,PARAMETER = NULL
+                                                      )                                         
+                                 ,wSlope = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
+                                           mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
+                                                        ,ifelse(PARAMETER == 'SLOPE2', 1
+                                                        ,ifelse(PARAMETER == 'SLOPE3', 2, NA
+                                                         )))
+                                                 ,PARAMETER = NULL
+                                                 )                                         
+                                 ,gisSinuosity = NULL
+                                 ,gisSlope = NULL
+                                 )
+    results.s$VALUE <- as.numeric(results.s$VALUE)
+    errs.s <- dfCompare(expected.s, results.s, c('SITE','METRIC'), zeroFudge=1e-3)
+#    return(errs.s)
+    checkEquals(NULL, errs.s
+               ,"Error: Slope and bearing metrics are broken with wadeable data"
+               )
+
+             
+    # Test calculation restricted to boatable reaches
+    fakeProtocol.r <- subset(fakeProtocol, PROTOCOL=='BOATABLE')
+    fakeThal.r <- subset(fakeThal, SITE %in% fakeProtocol.r$SITE)
+    fakeChanGeom.r <- subset(fakeChanGeom, SITE %in% fakeProtocol.r$SITE)
+    expected.r <- subset(expected, SITE %in% fakeProtocol.r$SITE)
+  
+    # TODO: the wadetable args have zero rows, and would normally be allowed to be NULL -- that case should be tested as well
+    results.r <- nrsaSlopeBearing(bBearing = fakeChanGeom.r %>%
+                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                             mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                 ,bDistance = fakeChanGeom.r %>%
+                                              subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                              mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                 ,bSlope = fakeChanGeom.r %>%
+                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
+                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                 ,wBearing = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
+                                             mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
+                                                          ,ifelse(PARAMETER == 'BEARING2', 1
+                                                          ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                                                           )))
+                                                   ,PARAMETER = NULL
+                                                   )                                         
+                                 ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
+                                                           mutate(VALUE=as.numeric(VALUE))
+                                                          ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
+                                                          ,'SITE'
+                                                          ) %>%
+                                                     mutate(VALUE = VALUE * nSta
+                                                           ,nSta = NULL
+                                                           )
+                                 ,wProportion = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
+                                                mutate(LINE = ifelse(PARAMETER == 'PROP', 0
+                                                             ,ifelse(PARAMETER == 'PROP2', 1
+                                                             ,ifelse(PARAMETER == 'PROP3', 2, NA
+                                                              )))
+                                                      ,PARAMETER = NULL
+                                                      )                                         
+                                 ,wSlope = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
+                                           mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
+                                                        ,ifelse(PARAMETER == 'SLOPE2', 1
+                                                        ,ifelse(PARAMETER == 'SLOPE3', 2, NA
+                                                         )))
+                                                 ,PARAMETER = NULL
+                                                 )                                         
+                                 ,gisSinuosity = NULL
+                                 ,gisSlope = NULL
+                                 )
+    results.r$VALUE <- as.numeric(results.r$VALUE)
+    errs.r <- dfCompare(expected.r, results.r, c('SITE','METRIC'), zeroFudge=1e-3)
+#    return(errs.r)
+    checkEquals(NULL, errs.r
+               ,"Error: Slope and bearing metrics are broken with boatable data"
+               )
 
 }
-
 
 
 nrsaSlopeBearingTest.makeTestDataDEPRECATED <- function()
@@ -877,7 +730,6 @@ nrsaSlopeBearingTest.makeTestDataDEPRECATED <- function()
 
   return(list(fakeThal, fakeChanGeom))
 }
-
 
 
 nrsaSlopeBearingTest.makeThalweg <- function()
@@ -3018,7 +2870,6 @@ nrsaSlopeBearingTest.makeThalweg <- function()
 }
 
 
-
 nrsaSlopeBearingTest.makeChannelGeometry <- function()
 # Create dataframe of channel geometry data for unit test
 {
@@ -3790,7 +3641,6 @@ nrsaSlopeBearingTest.makeChannelGeometry <- function()
 }
 
 
-
 nrsaSlopeBearingTest.makeChannelGeometryOLD <- function()
 # Create dataframe of channel geometry data for unit test
 {
@@ -4375,7 +4225,6 @@ nrsaSlopeBearingTest.makeChannelGeometryOLD <- function()
 }
 
 
-
 nrsaSlopeBearingTest.makeProtocols <- function()
 # Create dataframe of protocol information for unit test
 {
@@ -4408,7 +4257,6 @@ nrsaSlopeBearingTest.makeProtocols <- function()
                    )
         )
 }
-
 
 
 nrsaSlopeBearingTest.makeExpectedResults <- function()
@@ -4571,7 +4419,6 @@ nrsaSlopeBearingTest.makeExpectedResults <- function()
 
   return(expected)
 }
-
 
 
 nrsaSlopeBearingTest.makeExpectedResultsWithGIS <- function()
@@ -4780,7 +4627,6 @@ nrsaSlopeBearingTest.makeGisCalcs <- function()
 
   return(gisCalcs)
 }
-
 
 
 # end of file
