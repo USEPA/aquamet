@@ -52,6 +52,8 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
 #    1/19/16 cws Pulled list of side channel transect values out as argument
 #            'sideChannelTransects'. No change to unit test at this time.
 #    1/20/16 cws No longer requiring TRANSECT column in sideChannels argument.
+#    2/01/16 cws Added xtranspc = mean transect spacing to output, mostly for
+#            use in nrsaResidualPools
 #
 # Arguments:
 #   thalweg = a data frame containing the thalweg data file.  The data frame
@@ -212,21 +214,27 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
     intermediateMessage('.2')
 
 
-    # Calculate reach length REACHLEN
+    # Calculate reach length REACHLEN and mean transect spacing xtranspc
     if(is.null(transectSpacing)) {
         reachlen <- NULL
+        xtranspc <- NULL
     } else {
         reachlen <- transectSpacing %>%
                     ddply('SITE', summarise
                          ,VALUE = protectedSum(as.numeric(VALUE), na.rm=TRUE)
                          ) %>%
                     mutate(METRIC = 'reachlen')
+        xtranspc <- transectSpacing %>%
+                    ddply('SITE', summarise
+                         ,VALUE = protectedMean(as.numeric(VALUE), na.rm=TRUE)
+                         ) %>%
+                    mutate(METRIC = 'xtranspc')
     }
 
     intermediateMessage('.3')
 
 
-    rc <- rbind(sidecnt, pct_side, reachlen)
+    rc <- rbind(sidecnt, pct_side, reachlen, xtranspc)
     intermediateMessage('.Done', loc='end')
 
     return(rc)

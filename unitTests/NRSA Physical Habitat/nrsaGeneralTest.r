@@ -10,11 +10,13 @@ nrsaGeneralTest <- function()
 #were set to zero.
 #
 #  1/19/16 cws Removed debug print statements
+#  2/01/16 cws Modified to include xtranspc metric calculation. Corrected
+#          naming of 'helper' functions by adding 'Test'.
 #
 {
-  testData <- nrsaGeneral.testData()
+  testData <- nrsaGeneralTest.testData()
 
-  metsExpected <- nrsaGeneral.expectedMets()
+  metsExpected <- nrsaGeneralTest.expectedMets()
 
   nrsaGeneralTest.process(testData, metsExpected)
 
@@ -105,14 +107,7 @@ nrsaGeneralTest.process <- function(testData, metsExpected)
 }
 
 
-nrsaGeneral.cleanup <- function(indb)
-# Clean up when metsGeneral() terminates
-{
-  odbcClose(indb)
-}
-
-
-nrsaGeneral.testData <- function()
+nrsaGeneralTest.testData <- function()
 # Creates test data for metsGeneral unit test
 # Wadeable SITEs: WCAP99-0587, WCAP99-0592, WCAP99-0905
 # Boatable SITEs: WCAP99-0585, WCAP99-0591
@@ -340,7 +335,7 @@ nrsaGeneral.testData <- function()
 
 
 
-nrsaGeneral.expectedMets <- function()
+nrsaGeneralTest.expectedMets <- function()
 # Create dataframe of expected metrics calculations
 # The sidecnt value for WCAP99-0905 was changed from 3 to 2 due to the
 # difference in how the value was calculated -- EMAP defines it as the
@@ -359,6 +354,13 @@ nrsaGeneral.expectedMets <- function()
                                    VALUE=c(#NA,NA,
                                             153,6000,8000,6000,5600,148.5,158.4
                                            )
+                                   ,stringsAsFactors=FALSE
+                                  )
+                       ,data.frame(SITE = c('WCAP99-0585','WCAP99-0585 w/DISTANCE',
+                                           'WCAP99-0587','WCAP99-0591','WCAP99-0591 w/DISTANCE','WCAP99-0591 w/ACTRANSP+DISTANCE','WCAP99-0591 w/ACTRANSP+DISTANCE and some NA','WCAP99-0592','WCAP99-0905'
+                                          ),
+                                   METRIC='xtranspc',
+                                   VALUE=c(NA,NA,15.3,600,800,600,622.2222222,14.85,15.84)
                                    ,stringsAsFactors=FALSE
                                   )
                        ,data.frame(SITE = c('WCAP99-0585','WCAP99-0587','WCAP99-0591','WCAP99-0592','WCAP99-0905'),
