@@ -2,6 +2,11 @@
 #
 # Compare current metrics values with values from new generalized metrics 
 # functions.  Should be no difference.
+#
+#  2/10/16 cws Modified boatable LINE values to slopeBearing inputs, now getting
+#          same differences as before. Modified call to nrsaResidualPools to
+#          provide boatable depths without converting them all to M; this reflects
+#          yesterday's change to the code.
 
 source('l:/Priv/CORFiles/IM/Rwork/sharedCode/db.r')
 
@@ -252,8 +257,18 @@ gisCalcs <- read.csv('l:/Priv/CORFiles/IM/Rwork/nrsa/results/gpsBasedCalculation
 # }
 
 sb0 <- sb
-sb <- nrsaSlopeBearing(bBearing = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>% select(SITE, TRANSECT, LINE, VALUE)
-                      ,bDistance = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')   %>% select(SITE, TRANSECT, LINE, VALUE)
+sb <- nrsaSlopeBearing(bBearing = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')  %>% 
+                                  mutate(LINE = as.integer(trimws(LINE))
+                                        ,LINE = ifelse(LINE==999, 0
+                                               ,ifelse(SITE==11094, LINE, LINE-1
+                                                ))
+                                         ) %>%
+                                  select(SITE, TRANSECT, LINE, VALUE)
+                      ,bDistance = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>% 
+                                   mutate(LINE = as.integer(trimws(LINE))
+                                         ,LINE = ifelse(LINE==999, 0, LINE-1)
+                                         ) %>%
+                                   select(SITE, TRANSECT, LINE, VALUE)
                       ,bSlope = subset(cg, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')  %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS) # excludes SLOPE_ND rows, and hence causes PCTCLINOMETER =0 rows to be missing
                       ,wBearing = subset(cg, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER))  %>%
                                          mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
@@ -640,56 +655,11 @@ largewoody <- base_largewoody %>%
                     ,PARAMETER=trimws(PARAMETER)
                     ,VALUE=trimws(VALUE)
                     ) %>%
+              dplyr::rename(CLASS=PARAMETER) %>%
               subset(TRANSECT %in% LETTERS | SAMPLE_TYPE == 'PHAB_THALW') # get rid of boatable side channels, as we did before for some reason
 
-lw <- nrsaLargeWoody(bDryExtralargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DXDLL')
-                    ,bDryLargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DLDLL')
-                    ,bDryMediumDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DMDLL')
-                    ,bDrySmallDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DSDLL')
-                    ,bDryExtralargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DXDML')
-                    ,bDryLargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DLDML')
-                    ,bDryMediumDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DMDML')
-                    ,bDrySmallDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DSDML')
-                    ,bDryExtralargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DXDSL')
-                    ,bDryLargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DLDSL')
-                    ,bDryMediumDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DMDSL')
-                    ,bDrySmallDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DSDSL')
-                    ,bWetExtralargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WXDLL')
-                    ,bWetLargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WLDLL')
-                    ,bWetMediumDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WMDLL')
-                    ,bWetSmallDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WSDLL')
-                    ,bWetExtralargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WXDML')
-                    ,bWetLargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WLDML')
-                    ,bWetMediumDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WMDML')
-                    ,bWetSmallDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WSDML')
-                    ,bWetExtralargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WXDSL')
-                    ,bWetLargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WLDSL')
-                    ,bWetMediumDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WMDSL')
-                    ,bWetSmallDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='WSDSL')
-                    ,wDryExtralargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DXDLL')
-                    ,wDryLargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DLDLL')
-                    ,wDryMediumDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DMDLL')
-                    ,wDrySmallDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DSDLL')
-                    ,wDryExtralargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DXDML')
-                    ,wDryLargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DLDML')
-                    ,wDryMediumDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DMDML')
-                    ,wDrySmallDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DSDML')
-                    ,wDryExtralargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DXDSL')
-                    ,wDryLargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DLDSL')
-                    ,wDryMediumDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DMDSL')
-                    ,wDrySmallDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='DSDSL')
-                    ,wWetExtralargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WXDLL')
-                    ,wWetLargeDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WLDLL')
-                    ,wWetMediumDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WMDLL')
-                    ,wWetSmallDiamLongLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WSDLL')
-                    ,wWetExtralargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WXDML')
-                    ,wWetLargeDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WLDML')
-                    ,wWetMediumDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WMDML')
-                    ,wWetSmallDiamMediumLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WSDML')
-                    ,wWetExtralargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WXDSL')
-                    ,wWetLargeDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WLDSL')
-                    ,wWetMediumDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WMDSL')
-                    ,wWetSmallDiamShortLength = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW' & PARAMETER=='WSDSL')
+lw <- nrsaLargeWoody(bCounts = subset(largewoody, SAMPLE_TYPE=='PHAB_CHANBFRONT') 
+                    ,wCounts = subset(largewoody, SAMPLE_TYPE=='PHAB_THALW')
                     ,reachlength = subset(currentMets, PARAMETER=='REACHLEN') %>% dplyr::rename(SITE=BATCHNO,VALUE=RESULT)
                     ,meanBankfullWidth = subset(currentMets, PARAMETER=='XBKF_W') %>% dplyr::rename(SITE=BATCHNO,VALUE=RESULT)
                     )
@@ -822,10 +792,12 @@ channelGeometry <- base_channelGeometry %>%
 # rp0 <- rp
 rp <- nrsaResidualPools(bDepth = thalweg %>% 
                                  subset(PARAMETER %in% c('DEP_POLE','DEP_SONR')) %>%
-                                 mutate(VALUE = ifelse(UNITS == 'M', as.numeric(VALUE)
-                                               ,ifelse(UNITS == 'FT', 0.3048 * as.numeric(VALUE), NA
-                                                      ))
-                                       )
+                                 mutate(VALUE=as.numeric(VALUE))
+#                                  subset(PARAMETER %in% c('DEP_POLE','DEP_SONR')) %>%
+#                                  mutate(VALUE = ifelse(UNITS == 'M', as.numeric(VALUE)
+#                                                ,ifelse(UNITS == 'FT', 0.3048 * as.numeric(VALUE), NA
+#                                                       ))
+#                                        )
                        ,wDepth = thalweg %>% subset(PARAMETER %in% c('DEPTH'))
                        ,siteSlopes = sb %>% subset(METRIC == 'xslope')
 #                       ,siteSlopes = currentMets %>% dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% subset(METRIC == 'XSLOPE')
@@ -862,51 +834,51 @@ rp <- nrsaResidualPools(bDepth = thalweg %>%
                        ,writeIntermediateFiles = FALSE
                        ,oldeMethods = FALSE
                        )
-rpClassic <- metsResidualPools.1(base_thalweg%>%                                # Use version of function in metsResidualPoolsUpdatedButWithOldCallingInterface.r to correctly use nWadeableStationsPerTransect()
-                                 dplyr::rename(UID=BATCHNO) %>% 
-                                 mutate(TRANSECT = trimws(TRANSECT)
-                                       ,STATION = as.numeric(trimws(STATION))
-                                       ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
-                                       ,PARAMETER = trimws(PARAMETER)
-                                       ,RESULT = trimws(RESULT)
-                                       ,UNITS = toupper(trimws(UNITS))
-                                       ) %>% 
-                                 subset(TRANSECT %in% LETTERS)
-                                ,base_channelGeometry %>% 
-                                 dplyr::rename(UID=BATCHNO) %>% 
-                                 mutate(TRANSECT = trimws(TRANSECT)
-                                       ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
-                                       ,PARAMETER = trimws(PARAMETER)
-                                       ,LINE = trimws(LINE)
-                                       ,RESULT = trimws(RESULT)
-                                       ) %>%
-                                 subset(PARAMETER %in% c('ACTRANSP','DISTANCE'))
-                                ,subset(currentMets, PARAMETER %in% c('XSLOPE','VSLOPE')) %>% 
-                                 mutate(PARAMETER = tolower(PARAMETER)) %>%
-                                 dplyr::rename(UID=BATCHNO, METRIC=PARAMETER)
-                                ,siteProtocol(unique(thalweg$SITE), visits) %>%
-                                 dplyr::rename(UID=SITE)
-                                ,writeIntermediateFiles=TRUE
-                                )
-ddOldRecalc <- dfCompare(currentMets %>% 
-                subset(PARAMETER %in% toupper(unique(rpClassic$METRIC))) %>% 
-                dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
-                mutate(VALUE = as.numeric(VALUE))
-               ,rpClassic %>% dplyr::rename(SITE=UID,VALUE=RESULT) %>% 
-                mutate(METRIC=toupper(METRIC)) %>% 
-                mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>%
-                mutate(VALUE = as.numeric(VALUE))
-               ,c('SITE','METRIC')
-               ,zeroFudge = 1e-10
-               )
-# Shows 30 differences
-#   21 values for boatable site 12195 now have non-NA values.  This was due to 
-#      how transect spacing was obtained from channelGeometry; this site used LINE=1
-#      instead of NA or 999; hence subsetting by LINE is not needed or wanted.
-#    9 values for boatable site 12200 are different.  Most are close, but rp100
-#      is over 2x the previous value.  Since areasum is very close, this means 
-#      that the reachlen value (calculated as the sum of the incremnt values) is
-#      now less than half what it was.
+# rpClassic <- metsResidualPools.1(base_thalweg%>%                                # Use version of function in metsResidualPoolsUpdatedButWithOldCallingInterface.r to correctly use nWadeableStationsPerTransect()
+#                                  dplyr::rename(UID=BATCHNO) %>% 
+#                                  mutate(TRANSECT = trimws(TRANSECT)
+#                                        ,STATION = as.numeric(trimws(STATION))
+#                                        ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
+#                                        ,PARAMETER = trimws(PARAMETER)
+#                                        ,RESULT = trimws(RESULT)
+#                                        ,UNITS = toupper(trimws(UNITS))
+#                                        ) %>% 
+#                                  subset(TRANSECT %in% LETTERS)
+#                                 ,base_channelGeometry %>% 
+#                                  dplyr::rename(UID=BATCHNO) %>% 
+#                                  mutate(TRANSECT = trimws(TRANSECT)
+#                                        ,SAMPLE_TYPE = trimws(SAMPLE_TYPE)
+#                                        ,PARAMETER = trimws(PARAMETER)
+#                                        ,LINE = trimws(LINE)
+#                                        ,RESULT = trimws(RESULT)
+#                                        ) %>%
+#                                  subset(PARAMETER %in% c('ACTRANSP','DISTANCE'))
+#                                 ,subset(currentMets, PARAMETER %in% c('XSLOPE','VSLOPE')) %>% 
+#                                  mutate(PARAMETER = tolower(PARAMETER)) %>%
+#                                  dplyr::rename(UID=BATCHNO, METRIC=PARAMETER)
+#                                 ,siteProtocol(unique(thalweg$SITE), visits) %>%
+#                                  dplyr::rename(UID=SITE)
+#                                 ,writeIntermediateFiles=TRUE
+#                                 )
+# ddOldRecalc <- dfCompare(currentMets %>% 
+#                 subset(PARAMETER %in% toupper(unique(rpClassic$METRIC))) %>% 
+#                 dplyr::rename(SITE=BATCHNO, METRIC=PARAMETER, VALUE=RESULT) %>% mutate(VALUE = ifelse(VALUE %in% c(NA, 'NA'), NA, VALUE)) %>%
+#                 mutate(VALUE = as.numeric(VALUE))
+#                ,rpClassic %>% dplyr::rename(SITE=UID,VALUE=RESULT) %>% 
+#                 mutate(METRIC=toupper(METRIC)) %>% 
+#                 mutate(VALUE = ifelse(VALUE %in% c(NA, NaN), NA, VALUE)) %>%
+#                 mutate(VALUE = as.numeric(VALUE))
+#                ,c('SITE','METRIC')
+#                ,zeroFudge = 1e-10
+#                )
+# # Shows 30 differences
+# #   21 values for boatable site 12195 now have non-NA values.  This was due to 
+# #      how transect spacing was obtained from channelGeometry; this site used LINE=1
+# #      instead of NA or 999; hence subsetting by LINE is not needed or wanted.
+# #    9 values for boatable site 12200 are different.  Most are close, but rp100
+# #      is over 2x the previous value.  Since areasum is very close, this means 
+# #      that the reachlen value (calculated as the sum of the incremnt values) is
+# #      now less than half what it was.
 
 
 ddOldNew <- dfCompare(currentMets %>% 
@@ -956,70 +928,70 @@ ddOldNew <- dfCompare(currentMets %>%
 #       arguments are correct.
 
 
-ddRecalcNew <- dfCompare(rpClassic %>% dplyr::rename(SITE=UID, VALUE=RESULT)
-                        ,rp  
-                        ,c('SITE','METRIC')
-                        ,zeroFudge = 1e-10
-                        )
-# Results in 45 differences
-# 12195 is boatable and has 17 (was 21) differences due to the ACTRANSP/DISTANCE values not being included      # EXPLAINED by correcting how DISTANCE was included in transectSpacing
-#       because they occur on LINE=1,2.  To fix this, DISTANCE in this argument
-#       needs to be the sum of DISTANCE values at each TRANSECT. New values are
-#       correct.
-# 12200 is boatable and has 9 differences, all within 1e-3 except rp100, which is over 2x the previous value.   # EXPLAINED by correcting how DISTANCE was included in transectSpacing
-#       Since areasum is very close, this means that the reachlen value (calculated as the
-#       sum of the incremnt values) is now less than half what it was.  After some
-#       comparison of the old and new mets code and looking at the data, the old
-#       mets were miscalculated; by not subsetting the transect spacing values by
-#       LINE, both DISTANCE at LINE=1 and ACTRANSP at LINE=NA were included in the
-#       ACTRANSP determination, causing it to be roughly double what it should be.
-#                SITE TRANSECT LINE ACTRANSP   DISTANCE
-#           4217 12200        A    1     <NA> 59.5904966
-#           4218 12200        A <NA>       60       <NA>
-#           4219 12200        B    1     <NA>         60
-#           4220 12200        B <NA>       60       <NA>
-#           4221 12200        C    1     <NA>         60
-#           4222 12200        C <NA>       60       <NA>
-#           ...
-#       New values are correct.
-# 12990 is wadeable and has 18 differences, with another large difference in rp100 (14 down to 5.4).    # FIXED by limiting wadeable station counts to those with DEPTH parameters.
-#       This seems due to the difference in how the thalweg depths are provided to 
-#       nWadeableStationsPerTransect().  Currently only PARAMETER=='DEPTH' rows
-#       are provided, but in the past the entire table was.  This means that
-#       instead of each transect having 10 stations, now A has 4, B has 8, I has 5
-#       and J has 0.
-# 13398 is wadeable and has 19 differences.  There is some difference due to A              # FIXED by limiting wadeable station counts to those with DEPTH parameters.
-#       now having 10 instead of 15 stations
-#  1417 is parbyboat and has 6 differences, all off by a factor of 100, indicating          # EXPLAINED as processing wadeable depths as boatable ones.
-#       that this site was processed as boatable but the data was recorded as 
-#       wadeable. New mets values are correct.
-# 14269 is wadeable and has 21 differences, all now having NA values. This may              # FIXED by limiting wadeable station counts to those with DEPTH parameters.
-#       also be due to the data absence of PARAMETER=='DEPTH' rows at A0-9, 
-#       B0-9, C0 and J1-J9.  See 14655 for another reason for this.
-# 14655 is wadeable and has 21 differences, all now having NA values. This is               # FIXED by limiting wadeable station counts to those with DEPTH parameters.
-#       because the value of INCREMNT is lost during the re-assembly of the 
-#       thalweg dataframe: the merge of transectSpacing (which has VALUE=46 for
-#       transects A-J) and nWadeableStationsPerTransect(thalwegDepths), which has
-#       nsta=10 for transects B-J but not A, results in the calculated INCREMNT
-#       value to be NA at A.  Since .dataOrganization uses the INCREMNT value
-#       at the start of the reach for the entire reach, the value is set to NA
-#       and the calcualtions go awry.  This might be fixed by eliminating transects
-#       with no DEPTH values from the transectSpacing argument, i.e. by including
-#       only DEPTH rows in the call to nWadeableStationsPerTransect().
-# 14894 is wadeable and has 21 differences, all now having NA values.  It has no            # FIXED by limiting wadeable station counts to those with DEPTH parameters.
-#       rows for A1-9, B1-9, C1-9 and D1-9, but has nonmissing DEPTHs E0-J9. This
-#       may be addressed as in 14655.
-# 15508 is recorded as OTHER_NSP and was processed as wadeable, and has 13                  # PARTLY FIXED if using currentMets slopes, remaining 5 are explained as a units issue.
-#       differences.  The XSLOPE for this site has changed from 0.23366, as used
-#       in the classical recalculation, to 0.0127324 in the new calculations.
-#       Using the value of XSLOPE in currentMets reduces the difference count to 5
-#       values that are 100x the 'classically recalculated' values: rpgt05x, 
-#       rpgt10x, rpmxdep, rpvdep, rpxdep.  This is because the code assumes all
-#       sites that are not WADEABLE use BOATABLE protocol, and thus earlier
-#       calculations did not multiply by 100 to convert the units back to CM.
-#       That assumption will be accurate in the new code if the wDepths and bDepths
-#       arguments are correct.
-#
+# ddRecalcNew <- dfCompare(rpClassic %>% dplyr::rename(SITE=UID, VALUE=RESULT)
+#                         ,rp  
+#                         ,c('SITE','METRIC')
+#                         ,zeroFudge = 1e-10
+#                         )
+# # Results in 45 differences
+# # 12195 is boatable and has 17 (was 21) differences due to the ACTRANSP/DISTANCE values not being included      # EXPLAINED by correcting how DISTANCE was included in transectSpacing
+# #       because they occur on LINE=1,2.  To fix this, DISTANCE in this argument
+# #       needs to be the sum of DISTANCE values at each TRANSECT. New values are
+# #       correct.
+# # 12200 is boatable and has 9 differences, all within 1e-3 except rp100, which is over 2x the previous value.   # EXPLAINED by correcting how DISTANCE was included in transectSpacing
+# #       Since areasum is very close, this means that the reachlen value (calculated as the
+# #       sum of the incremnt values) is now less than half what it was.  After some
+# #       comparison of the old and new mets code and looking at the data, the old
+# #       mets were miscalculated; by not subsetting the transect spacing values by
+# #       LINE, both DISTANCE at LINE=1 and ACTRANSP at LINE=NA were included in the
+# #       ACTRANSP determination, causing it to be roughly double what it should be.
+# #                SITE TRANSECT LINE ACTRANSP   DISTANCE
+# #           4217 12200        A    1     <NA> 59.5904966
+# #           4218 12200        A <NA>       60       <NA>
+# #           4219 12200        B    1     <NA>         60
+# #           4220 12200        B <NA>       60       <NA>
+# #           4221 12200        C    1     <NA>         60
+# #           4222 12200        C <NA>       60       <NA>
+# #           ...
+# #       New values are correct.
+# # 12990 is wadeable and has 18 differences, with another large difference in rp100 (14 down to 5.4).    # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+# #       This seems due to the difference in how the thalweg depths are provided to 
+# #       nWadeableStationsPerTransect().  Currently only PARAMETER=='DEPTH' rows
+# #       are provided, but in the past the entire table was.  This means that
+# #       instead of each transect having 10 stations, now A has 4, B has 8, I has 5
+# #       and J has 0.
+# # 13398 is wadeable and has 19 differences.  There is some difference due to A              # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+# #       now having 10 instead of 15 stations
+# #  1417 is parbyboat and has 6 differences, all off by a factor of 100, indicating          # EXPLAINED as processing wadeable depths as boatable ones.
+# #       that this site was processed as boatable but the data was recorded as 
+# #       wadeable. New mets values are correct.
+# # 14269 is wadeable and has 21 differences, all now having NA values. This may              # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+# #       also be due to the data absence of PARAMETER=='DEPTH' rows at A0-9, 
+# #       B0-9, C0 and J1-J9.  See 14655 for another reason for this.
+# # 14655 is wadeable and has 21 differences, all now having NA values. This is               # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+# #       because the value of INCREMNT is lost during the re-assembly of the 
+# #       thalweg dataframe: the merge of transectSpacing (which has VALUE=46 for
+# #       transects A-J) and nWadeableStationsPerTransect(thalwegDepths), which has
+# #       nsta=10 for transects B-J but not A, results in the calculated INCREMNT
+# #       value to be NA at A.  Since .dataOrganization uses the INCREMNT value
+# #       at the start of the reach for the entire reach, the value is set to NA
+# #       and the calcualtions go awry.  This might be fixed by eliminating transects
+# #       with no DEPTH values from the transectSpacing argument, i.e. by including
+# #       only DEPTH rows in the call to nWadeableStationsPerTransect().
+# # 14894 is wadeable and has 21 differences, all now having NA values.  It has no            # FIXED by limiting wadeable station counts to those with DEPTH parameters.
+# #       rows for A1-9, B1-9, C1-9 and D1-9, but has nonmissing DEPTHs E0-J9. This
+# #       may be addressed as in 14655.
+# # 15508 is recorded as OTHER_NSP and was processed as wadeable, and has 13                  # PARTLY FIXED if using currentMets slopes, remaining 5 are explained as a units issue.
+# #       differences.  The XSLOPE for this site has changed from 0.23366, as used
+# #       in the classical recalculation, to 0.0127324 in the new calculations.
+# #       Using the value of XSLOPE in currentMets reduces the difference count to 5
+# #       values that are 100x the 'classically recalculated' values: rpgt05x, 
+# #       rpgt10x, rpmxdep, rpvdep, rpxdep.  This is because the code assumes all
+# #       sites that are not WADEABLE use BOATABLE protocol, and thus earlier
+# #       calculations did not multiply by 100 to convert the units back to CM.
+# #       That assumption will be accurate in the new code if the wDepths and bDepths
+# #       arguments are correct.
+# #
 
 ##################################################
 # General metrics

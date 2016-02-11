@@ -2,6 +2,9 @@
 # 
 # 12/10/15 cws Updated for new calling interface. Fixed cut & paste errors that
 #          would not have detected errors in single-protocol calculations.
+#  2/11/15 cws Modifying calling interface based on local feedback. Condensing
+#          class count arguments from 48 separate args to 2 data args plus 2
+#          class code definition arguments, similar to nrsaChannelHabitat().
 #         
 # TODO: Add test for NULL reachlength and meanBankfullWidth args
 
@@ -22,55 +25,10 @@ nrsaLargeWoodyTest <- function ()
     protocols <- nrsaLargeWoodyTest.protocol()
   
     # Test with both protocols
-    actual <- nrsaLargeWoody(bDryExtralargeDiamLongLength = subset(boatableLWD, PARAMETER=='DXDLL')
-                            ,bDryLargeDiamLongLength = subset(boatableLWD, PARAMETER=='DLDLL')
-                            ,bDryMediumDiamLongLength = subset(boatableLWD, PARAMETER=='DMDLL')
-                            ,bDrySmallDiamLongLength = subset(boatableLWD, PARAMETER=='DSDLL')
-                            ,bDryExtralargeDiamMediumLength = subset(boatableLWD, PARAMETER=='DXDML')
-                            ,bDryLargeDiamMediumLength = subset(boatableLWD, PARAMETER=='DLDML')
-                            ,bDryMediumDiamMediumLength = subset(boatableLWD, PARAMETER=='DMDML')
-                            ,bDrySmallDiamMediumLength = subset(boatableLWD, PARAMETER=='DSDML')
-                            ,bDryExtralargeDiamShortLength = subset(boatableLWD, PARAMETER=='DXDSL')
-                            ,bDryLargeDiamShortLength = subset(boatableLWD, PARAMETER=='DLDSL')
-                            ,bDryMediumDiamShortLength = subset(boatableLWD, PARAMETER=='DMDSL')
-                            ,bDrySmallDiamShortLength = subset(boatableLWD, PARAMETER=='DSDSL')
-                            ,bWetExtralargeDiamLongLength = subset(boatableLWD, PARAMETER=='WXDLL')
-                            ,bWetLargeDiamLongLength = subset(boatableLWD, PARAMETER=='WLDLL')
-                            ,bWetMediumDiamLongLength = subset(boatableLWD, PARAMETER=='WMDLL')
-                            ,bWetSmallDiamLongLength = subset(boatableLWD, PARAMETER=='WSDLL')
-                            ,bWetExtralargeDiamMediumLength = subset(boatableLWD, PARAMETER=='WXDML')
-                            ,bWetLargeDiamMediumLength = subset(boatableLWD, PARAMETER=='WLDML')
-                            ,bWetMediumDiamMediumLength = subset(boatableLWD, PARAMETER=='WMDML')
-                            ,bWetSmallDiamMediumLength = subset(boatableLWD, PARAMETER=='WSDML')
-                            ,bWetExtralargeDiamShortLength = subset(boatableLWD, PARAMETER=='WXDSL')
-                            ,bWetLargeDiamShortLength = subset(boatableLWD, PARAMETER=='WLDSL')
-                            ,bWetMediumDiamShortLength = subset(boatableLWD, PARAMETER=='WMDSL')
-                            ,bWetSmallDiamShortLength = subset(boatableLWD, PARAMETER=='WSDSL')
-                            ,wDryExtralargeDiamLongLength = subset(wadeableLWD, PARAMETER=='DXDLL')
-                            ,wDryLargeDiamLongLength = subset(wadeableLWD, PARAMETER=='DLDLL')
-                            ,wDryMediumDiamLongLength = subset(wadeableLWD, PARAMETER=='DMDLL')
-                            ,wDrySmallDiamLongLength = subset(wadeableLWD, PARAMETER=='DSDLL')
-                            ,wDryExtralargeDiamMediumLength = subset(wadeableLWD, PARAMETER=='DXDML')
-                            ,wDryLargeDiamMediumLength = subset(wadeableLWD, PARAMETER=='DLDML')
-                            ,wDryMediumDiamMediumLength = subset(wadeableLWD, PARAMETER=='DMDML')
-                            ,wDrySmallDiamMediumLength = subset(wadeableLWD, PARAMETER=='DSDML')
-                            ,wDryExtralargeDiamShortLength = subset(wadeableLWD, PARAMETER=='DXDSL')
-                            ,wDryLargeDiamShortLength = subset(wadeableLWD, PARAMETER=='DLDSL')
-                            ,wDryMediumDiamShortLength = subset(wadeableLWD, PARAMETER=='DMDSL')
-                            ,wDrySmallDiamShortLength = subset(wadeableLWD, PARAMETER=='DSDSL')
-                            ,wWetExtralargeDiamLongLength = subset(wadeableLWD, PARAMETER=='WXDLL')
-                            ,wWetLargeDiamLongLength = subset(wadeableLWD, PARAMETER=='WLDLL')
-                            ,wWetMediumDiamLongLength = subset(wadeableLWD, PARAMETER=='WMDLL')
-                            ,wWetSmallDiamLongLength = subset(wadeableLWD, PARAMETER=='WSDLL')
-                            ,wWetExtralargeDiamMediumLength = subset(wadeableLWD, PARAMETER=='WXDML')
-                            ,wWetLargeDiamMediumLength = subset(wadeableLWD, PARAMETER=='WLDML')
-                            ,wWetMediumDiamMediumLength = subset(wadeableLWD, PARAMETER=='WMDML')
-                            ,wWetSmallDiamMediumLength = subset(wadeableLWD, PARAMETER=='WSDML')
-                            ,wWetExtralargeDiamShortLength = subset(wadeableLWD, PARAMETER=='WXDSL')
-                            ,wWetLargeDiamShortLength = subset(wadeableLWD, PARAMETER=='WLDSL')
-                            ,wWetMediumDiamShortLength = subset(wadeableLWD, PARAMETER=='WMDSL')
-                            ,wWetSmallDiamShortLength = subset(wadeableLWD, PARAMETER=='WSDSL')
-                            ,reachlength=reachlenValues, meanBankfullWidth=meanBankWidthValues
+    actual <- nrsaLargeWoody(bCounts = boatableLWD %>% dplyr::rename(CLASS=PARAMETER)
+                            ,wCounts = wadeableLWD %>% dplyr::rename(CLASS=PARAMETER)
+                            ,reachlength=reachlenValues
+                            ,meanBankfullWidth=meanBankWidthValues
                             )
 
     # Calculated values should be within 10E-7 of expected values, should
@@ -84,6 +42,60 @@ nrsaLargeWoodyTest <- function ()
                )
 
     
+    # Test with both protocols and using different nonstandard CLASS values for
+    # both wadeable and boatable.
+    baseClassInfo <- data.frame(diam=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
+                               ,len=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
+                               ,loc=rep(c('DRY','WET'), each=12)
+                               ,stringsAsFactors=FALSE
+                               )
+    boatableClassInfo <- baseClassInfo %>%
+                         mutate(currentClass = sprintf("%s%sD%sL"
+                                               ,substr(loc,1,1)
+                                               ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
+                                               ,substr(len,1,1)
+                                               )
+                               ,CLASS = LETTERS[1:24]
+                               )
+    wadeableClassInfo <- baseClassInfo %>%
+                         mutate(currentClass = sprintf("%s%sD%sL"
+                                               ,substr(loc,1,1)
+                                               ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
+                                               ,substr(len,1,1)
+                                               )
+                               ,CLASS = letters[1:24]
+                               )
+
+    actual <- nrsaLargeWoody(bCounts = boatableLWD %>% 
+                                       merge(boatableClassInfo
+                                            ,by.x='PARAMETER', by.y='currentClass'
+                                            ,all.x=TRUE
+                                            ) %>%
+                                       select(SITE,TRANSECT,CLASS,VALUE)
+                            ,bClassInfo = boatableClassInfo %>%
+                                          select(-currentClass)
+                                          
+                            ,wCounts = wadeableLWD %>% 
+                                       merge(wadeableClassInfo
+                                            ,by.x='PARAMETER', by.y='currentClass'
+                                            ,all.x=TRUE
+                                            ) %>%
+                                       select(SITE,TRANSECT,CLASS,VALUE)
+                            ,wClassInfo = wadeableClassInfo %>%
+                                          select(-currentClass)
+                            ,reachlength=reachlenValues, meanBankfullWidth=meanBankWidthValues
+                            )
+
+    # Calculated values should be within 10E-7 of expected values, should
+    # only be missing where they are supposed to be missing and nonmissing where
+    # they are supposed to be nonmissing.
+    # Note: the errs dataframe can be printed to show where the errors occur when
+    # debugging.
+    errs <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-7)
+    checkTrue(is.null(errs) & nrow(expected) == nrow(actual)
+               ,"Error: Large woody metrics with both protocols and nonstandard CLASS values is broken"
+               )
+
     # Testing only wadeable sites. Send some boatable arguments as NULL, others
     # as zero-row dataframes
     bothLWD.w <- subset(bothLWD, SITE %in% c('WWAP99-0713','WWAP99-0714','WWAP99-0716',
@@ -97,62 +109,15 @@ nrsaLargeWoodyTest <- function ()
     protocols.w <- subset(protocols, SITE %in% c('WWAP99-0713','WWAP99-0714','WWAP99-0716',
                                                  'WSDP04-R052','WSDP04-R048','WORP99-0891','WORP99-0871')) 
  
-    actual <- nrsaLargeWoody(bDryExtralargeDiamLongLength = subset(boatableLWD, FALSE)
-                            ,bDryLargeDiamLongLength = subset(boatableLWD, FALSE)
-                            ,bDryMediumDiamLongLength = subset(boatableLWD, FALSE)
-                            ,bDrySmallDiamLongLength = NULL
-                            ,bDryExtralargeDiamMediumLength = NULL
-                            ,bDryLargeDiamMediumLength = NULL
-                            ,bDryMediumDiamMediumLength = NULL
-                            ,bDrySmallDiamMediumLength = NULL
-                            ,bDryExtralargeDiamShortLength = NULL
-                            ,bDryLargeDiamShortLength = NULL
-                            ,bDryMediumDiamShortLength = NULL
-                            ,bDrySmallDiamShortLength = NULL
-                            ,bWetExtralargeDiamLongLength = NULL
-                            ,bWetLargeDiamLongLength = NULL
-                            ,bWetMediumDiamLongLength = NULL
-                            ,bWetSmallDiamLongLength = NULL
-                            ,bWetExtralargeDiamMediumLength = NULL
-                            ,bWetLargeDiamMediumLength = NULL
-                            ,bWetMediumDiamMediumLength = NULL
-                            ,bWetSmallDiamMediumLength = NULL
-                            ,bWetExtralargeDiamShortLength = NULL
-                            ,bWetLargeDiamShortLength = NULL
-                            ,bWetMediumDiamShortLength = NULL
-                            ,bWetSmallDiamShortLength = NULL
-                            ,wDryExtralargeDiamLongLength = subset(wadeableLWD, PARAMETER=='DXDLL')
-                            ,wDryLargeDiamLongLength = subset(wadeableLWD, PARAMETER=='DLDLL')
-                            ,wDryMediumDiamLongLength = subset(wadeableLWD, PARAMETER=='DMDLL')
-                            ,wDrySmallDiamLongLength = subset(wadeableLWD, PARAMETER=='DSDLL')
-                            ,wDryExtralargeDiamMediumLength = subset(wadeableLWD, PARAMETER=='DXDML')
-                            ,wDryLargeDiamMediumLength = subset(wadeableLWD, PARAMETER=='DLDML')
-                            ,wDryMediumDiamMediumLength = subset(wadeableLWD, PARAMETER=='DMDML')
-                            ,wDrySmallDiamMediumLength = subset(wadeableLWD, PARAMETER=='DSDML')
-                            ,wDryExtralargeDiamShortLength = subset(wadeableLWD, PARAMETER=='DXDSL')
-                            ,wDryLargeDiamShortLength = subset(wadeableLWD, PARAMETER=='DLDSL')
-                            ,wDryMediumDiamShortLength = subset(wadeableLWD, PARAMETER=='DMDSL')
-                            ,wDrySmallDiamShortLength = subset(wadeableLWD, PARAMETER=='DSDSL')
-                            ,wWetExtralargeDiamLongLength = subset(wadeableLWD, PARAMETER=='WXDLL')
-                            ,wWetLargeDiamLongLength = subset(wadeableLWD, PARAMETER=='WLDLL')
-                            ,wWetMediumDiamLongLength = subset(wadeableLWD, PARAMETER=='WMDLL')
-                            ,wWetSmallDiamLongLength = subset(wadeableLWD, PARAMETER=='WSDLL')
-                            ,wWetExtralargeDiamMediumLength = subset(wadeableLWD, PARAMETER=='WXDML')
-                            ,wWetLargeDiamMediumLength = subset(wadeableLWD, PARAMETER=='WLDML')
-                            ,wWetMediumDiamMediumLength = subset(wadeableLWD, PARAMETER=='WMDML')
-                            ,wWetSmallDiamMediumLength = subset(wadeableLWD, PARAMETER=='WSDML')
-                            ,wWetExtralargeDiamShortLength = subset(wadeableLWD, PARAMETER=='WXDSL')
-                            ,wWetLargeDiamShortLength = subset(wadeableLWD, PARAMETER=='WLDSL')
-                            ,wWetMediumDiamShortLength = subset(wadeableLWD, PARAMETER=='WMDSL')
-                            ,wWetSmallDiamShortLength = subset(wadeableLWD, PARAMETER=='WSDSL')
-                            ,reachlength=reachlenValues.w, meanBankfullWidth=meanBankWidthValues.w
+    actual <- nrsaLargeWoody(wCounts = wadeableLWD %>% dplyr::rename(CLASS=PARAMETER)
+                            ,reachlength=reachlenValues.w
+                            ,meanBankfullWidth=meanBankWidthValues.w
                             )
 #return(list(e=expected.w, a=actual))
     errs <- dfCompare(expected.w, actual, c('SITE','METRIC'), zeroFudge=1e-7)
         checkTrue(is.null(errs) & nrow(expected.w) == nrow(actual)
                  ,"Error: Large woody metrics (streams only) are broken"
                  )
-  
     
     #  Testing only boatable sites 
     bothLWD.b <- subset(bothLWD, SITE %in% c('WWAP99-0711','WWAP99-0537','WSDP99-0595',
@@ -166,54 +131,7 @@ nrsaLargeWoodyTest <- function ()
     protocols.b <- subset(protocols, SITE %in% c('WWAP99-0711','WWAP99-0537','WSDP99-0595',
                                                  'WSDP99-0661','WORP99-0731')) 
  
-    actual <- nrsaLargeWoody(bDryExtralargeDiamLongLength = subset(boatableLWD, PARAMETER=='DXDLL')
-                            ,bDryLargeDiamLongLength = subset(boatableLWD, PARAMETER=='DLDLL')
-                            ,bDryMediumDiamLongLength = subset(boatableLWD, PARAMETER=='DMDLL')
-                            ,bDrySmallDiamLongLength = subset(boatableLWD, PARAMETER=='DSDLL')
-                            ,bDryExtralargeDiamMediumLength = subset(boatableLWD, PARAMETER=='DXDML')
-                            ,bDryLargeDiamMediumLength = subset(boatableLWD, PARAMETER=='DLDML')
-                            ,bDryMediumDiamMediumLength = subset(boatableLWD, PARAMETER=='DMDML')
-                            ,bDrySmallDiamMediumLength = subset(boatableLWD, PARAMETER=='DSDML')
-                            ,bDryExtralargeDiamShortLength = subset(boatableLWD, PARAMETER=='DXDSL')
-                            ,bDryLargeDiamShortLength = subset(boatableLWD, PARAMETER=='DLDSL')
-                            ,bDryMediumDiamShortLength = subset(boatableLWD, PARAMETER=='DMDSL')
-                            ,bDrySmallDiamShortLength = subset(boatableLWD, PARAMETER=='DSDSL')
-                            ,bWetExtralargeDiamLongLength = subset(boatableLWD, PARAMETER=='WXDLL')
-                            ,bWetLargeDiamLongLength = subset(boatableLWD, PARAMETER=='WLDLL')
-                            ,bWetMediumDiamLongLength = subset(boatableLWD, PARAMETER=='WMDLL')
-                            ,bWetSmallDiamLongLength = subset(boatableLWD, PARAMETER=='WSDLL')
-                            ,bWetExtralargeDiamMediumLength = subset(boatableLWD, PARAMETER=='WXDML')
-                            ,bWetLargeDiamMediumLength = subset(boatableLWD, PARAMETER=='WLDML')
-                            ,bWetMediumDiamMediumLength = subset(boatableLWD, PARAMETER=='WMDML')
-                            ,bWetSmallDiamMediumLength = subset(boatableLWD, PARAMETER=='WSDML')
-                            ,bWetExtralargeDiamShortLength = subset(boatableLWD, PARAMETER=='WXDSL')
-                            ,bWetLargeDiamShortLength = subset(boatableLWD, PARAMETER=='WLDSL')
-                            ,bWetMediumDiamShortLength = subset(boatableLWD, PARAMETER=='WMDSL')
-                            ,bWetSmallDiamShortLength = subset(boatableLWD, PARAMETER=='WSDSL')
-                            ,wDryExtralargeDiamLongLength = subset(wadeableLWD, FALSE)
-                            ,wDryLargeDiamLongLength = subset(wadeableLWD, FALSE)
-                            ,wDryMediumDiamLongLength = NULL
-                            ,wDrySmallDiamLongLength = NULL
-                            ,wDryExtralargeDiamMediumLength = NULL
-                            ,wDryLargeDiamMediumLength = NULL
-                            ,wDryMediumDiamMediumLength = NULL
-                            ,wDrySmallDiamMediumLength = NULL
-                            ,wDryExtralargeDiamShortLength = NULL
-                            ,wDryLargeDiamShortLength = NULL
-                            ,wDryMediumDiamShortLength = NULL
-                            ,wDrySmallDiamShortLength = NULL
-                            ,wWetExtralargeDiamLongLength = NULL
-                            ,wWetLargeDiamLongLength = NULL
-                            ,wWetMediumDiamLongLength = NULL
-                            ,wWetSmallDiamLongLength = NULL
-                            ,wWetExtralargeDiamMediumLength = NULL
-                            ,wWetLargeDiamMediumLength = NULL
-                            ,wWetMediumDiamMediumLength = NULL
-                            ,wWetSmallDiamMediumLength = NULL
-                            ,wWetExtralargeDiamShortLength = NULL
-                            ,wWetLargeDiamShortLength = NULL
-                            ,wWetMediumDiamShortLength = NULL
-                            ,wWetSmallDiamShortLength = NULL
+    actual <- nrsaLargeWoody(bCounts = boatableLWD %>% dplyr::rename(CLASS=PARAMETER)
                             ,reachlength=reachlenValues.b, meanBankfullWidth=meanBankWidthValues.b
                             )
 

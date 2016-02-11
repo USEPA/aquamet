@@ -2,54 +2,78 @@
 #
 
 #nrsaLargeWoody <- function(thalweg, channelgeometry, bankgeometry, wood, visits) {
-nrsaLargeWoody <- function(bDryExtralargeDiamLongLength = NULL
-                          ,bDryLargeDiamLongLength = NULL
-                          ,bDryMediumDiamLongLength = NULL
-                          ,bDrySmallDiamLongLength = NULL
-                          ,bDryExtralargeDiamMediumLength = NULL
-                          ,bDryLargeDiamMediumLength = NULL
-                          ,bDryMediumDiamMediumLength = NULL
-                          ,bDrySmallDiamMediumLength = NULL
-                          ,bDryExtralargeDiamShortLength = NULL
-                          ,bDryLargeDiamShortLength = NULL
-                          ,bDryMediumDiamShortLength = NULL
-                          ,bDrySmallDiamShortLength = NULL
-                          ,bWetExtralargeDiamLongLength = NULL
-                          ,bWetLargeDiamLongLength = NULL
-                          ,bWetMediumDiamLongLength = NULL
-                          ,bWetSmallDiamLongLength = NULL
-                          ,bWetExtralargeDiamMediumLength = NULL
-                          ,bWetLargeDiamMediumLength = NULL
-                          ,bWetMediumDiamMediumLength = NULL
-                          ,bWetSmallDiamMediumLength = NULL
-                          ,bWetExtralargeDiamShortLength = NULL
-                          ,bWetLargeDiamShortLength = NULL
-                          ,bWetMediumDiamShortLength = NULL
-                          ,bWetSmallDiamShortLength = NULL
-                          ,wDryExtralargeDiamLongLength = NULL
-                          ,wDryLargeDiamLongLength = NULL
-                          ,wDryMediumDiamLongLength = NULL
-                          ,wDrySmallDiamLongLength = NULL
-                          ,wDryExtralargeDiamMediumLength = NULL
-                          ,wDryLargeDiamMediumLength = NULL
-                          ,wDryMediumDiamMediumLength = NULL
-                          ,wDrySmallDiamMediumLength = NULL
-                          ,wDryExtralargeDiamShortLength = NULL
-                          ,wDryLargeDiamShortLength = NULL
-                          ,wDryMediumDiamShortLength = NULL
-                          ,wDrySmallDiamShortLength = NULL
-                          ,wWetExtralargeDiamLongLength = NULL
-                          ,wWetLargeDiamLongLength = NULL
-                          ,wWetMediumDiamLongLength = NULL
-                          ,wWetSmallDiamLongLength = NULL
-                          ,wWetExtralargeDiamMediumLength = NULL
-                          ,wWetLargeDiamMediumLength = NULL
-                          ,wWetMediumDiamMediumLength = NULL
-                          ,wWetSmallDiamMediumLength = NULL
-                          ,wWetExtralargeDiamShortLength = NULL
-                          ,wWetLargeDiamShortLength = NULL
-                          ,wWetMediumDiamShortLength = NULL
-                          ,wWetSmallDiamShortLength = NULL
+nrsaLargeWoody <- function(bCounts=NULL
+                          ,bClassInfo=data.frame(diam=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
+                                                ,len=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
+                                                ,loc=rep(c('DRY','WET'), each=12)
+                                                ,stringsAsFactors=FALSE
+                                                ) %>% 
+                                      mutate(CLASS = sprintf("%s%sD%sL"
+                                                            ,substr(loc,1,1)
+                                                            ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
+                                                            ,substr(len,1,1)
+                                                            )
+                                            )
+                          ,wCounts=NULL
+                          ,wClassInfo=data.frame(diam=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
+                                                ,len=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
+                                                ,loc=rep(c('DRY','WET'), each=12)
+                                                ,stringsAsFactors=FALSE
+                                                ) %>% 
+                                      mutate(CLASS = sprintf("%s%sD%sL"
+                                                            ,substr(loc,1,1)
+                                                            ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
+                                                            ,substr(len,1,1)
+                                                            )
+                                            )
+#                           ,bDryExtralargeDiamLongLength = NULL
+#                           ,bDryLargeDiamLongLength = NULL
+#                           ,bDryMediumDiamLongLength = NULL
+#                           ,bDrySmallDiamLongLength = NULL
+#                           ,bDryExtralargeDiamMediumLength = NULL
+#                           ,bDryLargeDiamMediumLength = NULL
+#                           ,bDryMediumDiamMediumLength = NULL
+#                           ,bDrySmallDiamMediumLength = NULL
+#                           ,bDryExtralargeDiamShortLength = NULL
+#                           ,bDryLargeDiamShortLength = NULL
+#                           ,bDryMediumDiamShortLength = NULL
+#                           ,bDrySmallDiamShortLength = NULL
+#                           ,bWetExtralargeDiamLongLength = NULL
+#                           ,bWetLargeDiamLongLength = NULL
+#                           ,bWetMediumDiamLongLength = NULL
+#                           ,bWetSmallDiamLongLength = NULL
+#                           ,bWetExtralargeDiamMediumLength = NULL
+#                           ,bWetLargeDiamMediumLength = NULL
+#                           ,bWetMediumDiamMediumLength = NULL
+#                           ,bWetSmallDiamMediumLength = NULL
+#                           ,bWetExtralargeDiamShortLength = NULL
+#                           ,bWetLargeDiamShortLength = NULL
+#                           ,bWetMediumDiamShortLength = NULL
+#                           ,bWetSmallDiamShortLength = NULL
+#                           ,wDryExtralargeDiamLongLength = NULL
+#                           ,wDryLargeDiamLongLength = NULL
+#                           ,wDryMediumDiamLongLength = NULL
+#                           ,wDrySmallDiamLongLength = NULL
+#                           ,wDryExtralargeDiamMediumLength = NULL
+#                           ,wDryLargeDiamMediumLength = NULL
+#                           ,wDryMediumDiamMediumLength = NULL
+#                           ,wDrySmallDiamMediumLength = NULL
+#                           ,wDryExtralargeDiamShortLength = NULL
+#                           ,wDryLargeDiamShortLength = NULL
+#                           ,wDryMediumDiamShortLength = NULL
+#                           ,wDrySmallDiamShortLength = NULL
+#                           ,wWetExtralargeDiamLongLength = NULL
+#                           ,wWetLargeDiamLongLength = NULL
+#                           ,wWetMediumDiamLongLength = NULL
+#                           ,wWetSmallDiamLongLength = NULL
+#                           ,wWetExtralargeDiamMediumLength = NULL
+#                           ,wWetLargeDiamMediumLength = NULL
+#                           ,wWetMediumDiamMediumLength = NULL
+#                           ,wWetSmallDiamMediumLength = NULL
+#                           ,wWetExtralargeDiamShortLength = NULL
+#                           ,wWetLargeDiamShortLength = NULL
+#                           ,wWetMediumDiamShortLength = NULL
+#                           ,wWetSmallDiamShortLength = NULL
                           ,reachlength = NULL
                           ,meanBankfullWidth = NULL
                           ) {
@@ -140,60 +164,13 @@ nrsaLargeWoody <- function(bDryExtralargeDiamLongLength = NULL
 #            character variables.
 #   12/10/15 cws Updated calling interface with new args, and then temporarily
 #            munging those args back into old dataframes to avoid wading into this code.
+#    2/11/15 cws Modifying calling interface based on local feedback. Condensing
+#            class count arguments from 48 separate args to 2 data args plus 2
+#            class code definition arguments, similar to nrsaChannelHabitat().
+#            May expand those code definition arguments to include size information.
 #
 # Arguments:
-#   thalweg = a data frame containing the thalweg data file.  The data frame
-#     must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       STATION - station number along thalweg between transects
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   channelgeometry = a data frame containing the channel geometry data file.
-#     The data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANLINE - location (mid-channel or bank)along transect
-#       BANK - bank (left or right) along transect
-#       LINE - way point (1,2, etc.) between transects
-#       METHOD - method used to measure slope
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   bankgeometry = a data frame containing the bank geometry data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANSDIR - transverse location along transect
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   wood = a data frame containing the large woody debris data file.  The data
-#     frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   visits = a data frame containing the stream verification form data file.
-#     The data frame contains a protocol value for each UID value.  It also
-#     should include columns that relate UID to values meaningfull to the user,
-#     e.g., site ID, date collected, and visit number.  The data frame must
-#     include columns that are named as follows:
-#       UID - universal ID value
-#       VALXSITE - protocol used during a site visit (BOATABLE, PARBYBOAT,
-#         ALTERED, INTWADE, PARBYWADE, WADEABLE)
-#   Note that possible values for variables in the input data frames are
-#   provided in the document named "NRSA Documentation.pdf" included in the help
-#   directory for the package.
+
 # Output:
 #   Either NULL when metric calculation is successful or a character string
 #   containing an error message when metric calculation is not successful.  For
@@ -202,71 +179,7 @@ nrsaLargeWoody <- function(bDryExtralargeDiamLongLength = NULL
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
-#   metsGeneral - calculate general metrics
-#   metsChannelMorphology - calculate channel morphology metrics
-#   siteProtocol - determine sampling protocol values
-#   metsLargeWoody.1 - calculate metrics
 ################################################################################
-
-# # Print an initial message
-#   cat('Large Woody Debris calculations:\n')
-# 
-# # Convert factors to character variables in the input data frames
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   thalweg <- convert_to_char(thalweg)
-#   channelgeometry <- convert_to_char(channelgeometry)
-#   bankgeometry <- convert_to_char(bankgeometry)
-#   wood <- convert_to_char(wood)
-#   visits <- convert_to_char(visits)
-# 
-# # Call the metsGeneral function
-#   intermediateMessage('.2 Call the metsGeneral function.', loc='end')
-#   df2 <- metsGeneral(thalweg, channelgeometry)
-# 
-# # Call the metsChannelMorphology function
-#   intermediateMessage('.3 Call the metsChannelMorphology function.', loc='end')
-#   df3 <- metsChannelMorphology(bankgeometry, thalweg, visits)
-# 
-# # Determine protocol used for each site
-#   intermediateMessage('.4 Set protocols.', loc='end')
-#   protocols <- siteProtocol(unique(wood$UID), visits)
-# 
-# # Calculate the metrics
-#   intermediateMessage('.5 Call function metsLgWoody.1.', loc='end')
-#   mets <- metsLgWoody.1(wood, df2, df3, protocols)
-#   row.names(mets) <- 1:nrow(mets)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(mets)
-# }
-# 
-# 
-# 
-# metsLgWoody.1 <- function (df1, df2, df3, protocols) {
-# 
-# #Returns a dataframe of calculations if successful or a character string describing the problem if one was encountered.
-# #
-# # ARGUMENTS:
-# # df1  dataframe of the lgwoody data.
-# # df2 dataframe with reachlen values.
-# # df3 dataframe with channel morphology metric xbkf_w
-# # protocols   dataframe relating UID to the sampling protocol used at that site
-# 
-#  #most of the mets are the same for each protocol, but there are a few differences.
-#  
-#  #do the calculations
-# #
-# # ARGUMENTS:
-# #   None
-# # 
-# # Calculates the LargeWoody metrics
-# 
-# 
-# # ASSUMPTIONS:
-# # 
 
     intermediateMessage('Large woody debris mets', loc='start')
 
@@ -288,57 +201,84 @@ nrsaLargeWoody <- function(bDryExtralargeDiamLongLength = NULL
               mutate(PARAMETER=pName, VALUE=as.numeric(VALUE))
         return(rc)
     }
+    ifdfRecode <- function(df, ...) {
+        if(is.null(...)) return(NULL)
+        else if(all(is.na(...))) return(NULL)
 
-    boats  <- rbind(absentAsNULL(bDryExtralargeDiamLongLength, ifdf, 'DXDLL')
-                   ,absentAsNULL(bDryLargeDiamLongLength, ifdf, 'DLDLL')
-                   ,absentAsNULL(bDryMediumDiamLongLength, ifdf, 'DMDLL')
-                   ,absentAsNULL(bDrySmallDiamLongLength, ifdf, 'DSDLL')
-                   ,absentAsNULL(bDryExtralargeDiamMediumLength, ifdf, 'DXDML')
-                   ,absentAsNULL(bDryLargeDiamMediumLength, ifdf, 'DLDML')
-                   ,absentAsNULL(bDryMediumDiamMediumLength, ifdf, 'DMDML')
-                   ,absentAsNULL(bDrySmallDiamMediumLength, ifdf, 'DSDML')
-                   ,absentAsNULL(bDryExtralargeDiamShortLength, ifdf, 'DXDSL')
-                   ,absentAsNULL(bDryLargeDiamShortLength, ifdf, 'DLDSL')
-                   ,absentAsNULL(bDryMediumDiamShortLength, ifdf, 'DMDSL')
-                   ,absentAsNULL(bDrySmallDiamShortLength, ifdf, 'DSDSL')
-                   ,absentAsNULL(bWetExtralargeDiamLongLength, ifdf, 'WXDLL')
-                   ,absentAsNULL(bWetLargeDiamLongLength, ifdf, 'WLDLL')
-                   ,absentAsNULL(bWetMediumDiamLongLength, ifdf, 'WMDLL')
-                   ,absentAsNULL(bWetSmallDiamLongLength, ifdf, 'WSDLL')
-                   ,absentAsNULL(bWetExtralargeDiamMediumLength, ifdf, 'WXDML')
-                   ,absentAsNULL(bWetLargeDiamMediumLength, ifdf, 'WLDML')
-                   ,absentAsNULL(bWetMediumDiamMediumLength, ifdf, 'WMDML')
-                   ,absentAsNULL(bWetSmallDiamMediumLength, ifdf, 'WSDML')
-                   ,absentAsNULL(bWetExtralargeDiamShortLength, ifdf, 'WXDSL')
-                   ,absentAsNULL(bWetLargeDiamShortLength, ifdf, 'WLDSL')
-                   ,absentAsNULL(bWetMediumDiamShortLength, ifdf, 'WMDSL')
-                   ,absentAsNULL(bWetSmallDiamShortLength, ifdf, 'WSDSL')
-                   )
-    wades  <- rbind(absentAsNULL(wDryExtralargeDiamLongLength, ifdf, 'DXDLL')
-                   ,absentAsNULL(wDryLargeDiamLongLength, ifdf, 'DLDLL')
-                   ,absentAsNULL(wDryMediumDiamLongLength, ifdf, 'DMDLL')
-                   ,absentAsNULL(wDrySmallDiamLongLength, ifdf, 'DSDLL')
-                   ,absentAsNULL(wDryExtralargeDiamMediumLength, ifdf, 'DXDML')
-                   ,absentAsNULL(wDryLargeDiamMediumLength, ifdf, 'DLDML')
-                   ,absentAsNULL(wDryMediumDiamMediumLength, ifdf, 'DMDML')
-                   ,absentAsNULL(wDrySmallDiamMediumLength, ifdf, 'DSDML')
-                   ,absentAsNULL(wDryExtralargeDiamShortLength, ifdf, 'DXDSL')
-                   ,absentAsNULL(wDryLargeDiamShortLength, ifdf, 'DLDSL')
-                   ,absentAsNULL(wDryMediumDiamShortLength, ifdf, 'DMDSL')
-                   ,absentAsNULL(wDrySmallDiamShortLength, ifdf, 'DSDSL')
-                   ,absentAsNULL(wWetExtralargeDiamLongLength, ifdf, 'WXDLL')
-                   ,absentAsNULL(wWetLargeDiamLongLength, ifdf, 'WLDLL')
-                   ,absentAsNULL(wWetMediumDiamLongLength, ifdf, 'WMDLL')
-                   ,absentAsNULL(wWetSmallDiamLongLength, ifdf, 'WSDLL')
-                   ,absentAsNULL(wWetExtralargeDiamMediumLength, ifdf, 'WXDML')
-                   ,absentAsNULL(wWetLargeDiamMediumLength, ifdf, 'WLDML')
-                   ,absentAsNULL(wWetMediumDiamMediumLength, ifdf, 'WMDML')
-                   ,absentAsNULL(wWetSmallDiamMediumLength, ifdf, 'WSDML')
-                   ,absentAsNULL(wWetExtralargeDiamShortLength, ifdf, 'WXDSL')
-                   ,absentAsNULL(wWetLargeDiamShortLength, ifdf, 'WLDSL')
-                   ,absentAsNULL(wWetMediumDiamShortLength, ifdf, 'WMDSL')
-                   ,absentAsNULL(wWetSmallDiamShortLength, ifdf, 'WSDSL')
-                   )
+        # Change user CLASS names into our classic PARAMETER names, after
+        # deriving those PARAMETER names from the diameter, length and location
+        # column values.
+        args <- list(...)
+        classInfo <- args[[1]]
+        rc <- df %>% 
+              select(SITE,TRANSECT,CLASS,VALUE) %>%
+              merge(classInfo %>% 
+                    mutate(PARAMETER = sprintf("%s%sD%sL"
+                                              ,substr(loc,1,1)
+                                              ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
+                                              ,substr(len,1,1)
+                                              )
+                          )
+                   ,by='CLASS', all.x=TRUE
+                   ) %>%
+              select(SITE,TRANSECT,PARAMETER,VALUE)  
+        return(rc)
+    }
+
+    boats <- absentAsNULL(bCounts, ifdfRecode, bClassInfo)
+    wades <- absentAsNULL(wCounts, ifdfRecode, wClassInfo)
+
+#     boats  <- rbind(absentAsNULL(bDryExtralargeDiamLongLength, ifdf, 'DXDLL')
+#                    ,absentAsNULL(bDryLargeDiamLongLength, ifdf, 'DLDLL')
+#                    ,absentAsNULL(bDryMediumDiamLongLength, ifdf, 'DMDLL')
+#                    ,absentAsNULL(bDrySmallDiamLongLength, ifdf, 'DSDLL')
+#                    ,absentAsNULL(bDryExtralargeDiamMediumLength, ifdf, 'DXDML')
+#                    ,absentAsNULL(bDryLargeDiamMediumLength, ifdf, 'DLDML')
+#                    ,absentAsNULL(bDryMediumDiamMediumLength, ifdf, 'DMDML')
+#                    ,absentAsNULL(bDrySmallDiamMediumLength, ifdf, 'DSDML')
+#                    ,absentAsNULL(bDryExtralargeDiamShortLength, ifdf, 'DXDSL')
+#                    ,absentAsNULL(bDryLargeDiamShortLength, ifdf, 'DLDSL')
+#                    ,absentAsNULL(bDryMediumDiamShortLength, ifdf, 'DMDSL')
+#                    ,absentAsNULL(bDrySmallDiamShortLength, ifdf, 'DSDSL')
+#                    ,absentAsNULL(bWetExtralargeDiamLongLength, ifdf, 'WXDLL')
+#                    ,absentAsNULL(bWetLargeDiamLongLength, ifdf, 'WLDLL')
+#                    ,absentAsNULL(bWetMediumDiamLongLength, ifdf, 'WMDLL')
+#                    ,absentAsNULL(bWetSmallDiamLongLength, ifdf, 'WSDLL')
+#                    ,absentAsNULL(bWetExtralargeDiamMediumLength, ifdf, 'WXDML')
+#                    ,absentAsNULL(bWetLargeDiamMediumLength, ifdf, 'WLDML')
+#                    ,absentAsNULL(bWetMediumDiamMediumLength, ifdf, 'WMDML')
+#                    ,absentAsNULL(bWetSmallDiamMediumLength, ifdf, 'WSDML')
+#                    ,absentAsNULL(bWetExtralargeDiamShortLength, ifdf, 'WXDSL')
+#                    ,absentAsNULL(bWetLargeDiamShortLength, ifdf, 'WLDSL')
+#                    ,absentAsNULL(bWetMediumDiamShortLength, ifdf, 'WMDSL')
+#                    ,absentAsNULL(bWetSmallDiamShortLength, ifdf, 'WSDSL')
+#                    )
+#     wades  <- rbind(absentAsNULL(wDryExtralargeDiamLongLength, ifdf, 'DXDLL')
+#                    ,absentAsNULL(wDryLargeDiamLongLength, ifdf, 'DLDLL')
+#                    ,absentAsNULL(wDryMediumDiamLongLength, ifdf, 'DMDLL')
+#                    ,absentAsNULL(wDrySmallDiamLongLength, ifdf, 'DSDLL')
+#                    ,absentAsNULL(wDryExtralargeDiamMediumLength, ifdf, 'DXDML')
+#                    ,absentAsNULL(wDryLargeDiamMediumLength, ifdf, 'DLDML')
+#                    ,absentAsNULL(wDryMediumDiamMediumLength, ifdf, 'DMDML')
+#                    ,absentAsNULL(wDrySmallDiamMediumLength, ifdf, 'DSDML')
+#                    ,absentAsNULL(wDryExtralargeDiamShortLength, ifdf, 'DXDSL')
+#                    ,absentAsNULL(wDryLargeDiamShortLength, ifdf, 'DLDSL')
+#                    ,absentAsNULL(wDryMediumDiamShortLength, ifdf, 'DMDSL')
+#                    ,absentAsNULL(wDrySmallDiamShortLength, ifdf, 'DSDSL')
+#                    ,absentAsNULL(wWetExtralargeDiamLongLength, ifdf, 'WXDLL')
+#                    ,absentAsNULL(wWetLargeDiamLongLength, ifdf, 'WLDLL')
+#                    ,absentAsNULL(wWetMediumDiamLongLength, ifdf, 'WMDLL')
+#                    ,absentAsNULL(wWetSmallDiamLongLength, ifdf, 'WSDLL')
+#                    ,absentAsNULL(wWetExtralargeDiamMediumLength, ifdf, 'WXDML')
+#                    ,absentAsNULL(wWetLargeDiamMediumLength, ifdf, 'WLDML')
+#                    ,absentAsNULL(wWetMediumDiamMediumLength, ifdf, 'WMDML')
+#                    ,absentAsNULL(wWetSmallDiamMediumLength, ifdf, 'WSDML')
+#                    ,absentAsNULL(wWetExtralargeDiamShortLength, ifdf, 'WXDSL')
+#                    ,absentAsNULL(wWetLargeDiamShortLength, ifdf, 'WLDSL')
+#                    ,absentAsNULL(wWetMediumDiamShortLength, ifdf, 'WMDSL')
+#                    ,absentAsNULL(wWetSmallDiamShortLength, ifdf, 'WSDSL')
+#                    )
+
     df1 <- rbind(boats, wades)
     if(is.null(df1)) return (NULL)
     df2 <- reachlength %>% select(SITE, VALUE) %>% mutate(VALUE = as.numeric(VALUE))
