@@ -1,8 +1,8 @@
-invertMet <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+nrsaInvertMet <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
    ct="TOTAL", taxlevel="WSA") {
 
 ################################################################################
-# Function: invertMet
+# Function: nrsaInvertMet
 # Title: Calculate NRSA Invertebrate Metrics
 # Programmers: Karen Blocksom
 #              Tom Kincaid
@@ -27,6 +27,8 @@ invertMet <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #   05/19/14 kab: Added in code to make sure all metrics are calculated even if 
 #            no individuals with trait are in samples. Changed input data frame
 #            name from inAll to inCts
+#   02/22/16 cws: standardized function name, was invertMet.r
+#
 # Arguments:
 #   inCts = a data frame with a variable containing counts (with data already
 #     summed by taxon and sample) and with a variable indicating distinctness of

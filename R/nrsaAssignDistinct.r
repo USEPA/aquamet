@@ -1,7 +1,7 @@
-assignDistinct <- function(cc) {
+nrsaAssignDistinct <- function(cc) {
 
 ################################################################################
-# Function: assignDistinct
+# Function: nrsaAssignDistinct
 # Title: Assign Distinct Taxa Name to Samples
 # Programmer: Karen Blocksom
 # Date: January 27, 2012
@@ -26,6 +26,8 @@ assignDistinct <- function(cc) {
 #                 taxa, assuming the use of TARGET_TAXON as the taxa name.
 #   08/09/13 kab: Modified to change SAMP_ID to SAMPID to match other metric
 #                 code.
+#    2/22/16 cws: standardized function name
+#
 # Arguments:
 #   cc = a data frame containing taxonomic fields for PHYLUM, CLASS, ORDER,
 #     FAMILY, and GENUS in addition to TAXA_ID and TARGET_TAXON.

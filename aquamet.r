@@ -32,4 +32,4 @@ for(path in aquametPathList) {
     for(src in srcList) 
         source(sprintf("%s/%s", path, src))
 }
-source('C:/Users/cseelige/local/aquamet/R/sharedSupport.r') # overwrite defs on L:drive
+source(sprintf('%s/R/sharedSupport.r',mainPath)) # overwrite defs on L:drive

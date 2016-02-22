@@ -1,8 +1,8 @@
-fishMet <- function(inCts, inTaxa=NULL, sampID="UID", keepHerps=FALSE,
+nrsaFishMet <- function(inCts, inTaxa=NULL, sampID="UID", keepHerps=FALSE,
    dist="IS_DISTINCT", ct="TOTAL") {
 
 ################################################################################
-# Function: fishMet
+# Function: nrsaFishMet
 # Title: Calculate NRSA Fish Metrics
 # Programmers: Karen Blocksom
 #              Tom Kincaid
@@ -30,6 +30,8 @@ fishMet <- function(inCts, inTaxa=NULL, sampID="UID", keepHerps=FALSE,
 #            name from inAll to inCts
 #   11/13/14 kab: Modified to determine whether variable ANOM_CT exists among
 #            the input counts and, if not, set ANOMPIND equal to missing
+#    2/22/16 cws: Standardized function name, was fishMet.R
+#
 # Arguments:
 #   inCts = a data frame with a variable containing counts (with data already
 #     summed by taxon and sample) and with a variable indicating distinctness of
