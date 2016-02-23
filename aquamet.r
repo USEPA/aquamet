@@ -22,10 +22,10 @@ if(substr(getwd(),1,1) == 'C') {
 }
 
 aquametPathList <- c(sprintf("%s/%s", mainPath, 'R')
-             ,sprintf("%s/%s", mainPath, 'UnitTests/NLA Physical Habitat')
-             ,sprintf("%s/%s", mainPath, 'UnitTests/NRSA Physical Habitat')
-             ,sprintf("%s/%s", mainPath, 'UnitTests/SharedCode')
-             )
+                    ,sprintf("%s/%s", mainPath, 'UnitTests/NLA Physical Habitat')
+                    ,sprintf("%s/%s", mainPath, 'UnitTests/NRSA Physical Habitat')
+                    ,sprintf("%s/%s", mainPath, 'UnitTests/SharedCode')
+                    )
 for(path in aquametPathList) {
     allsrcList <- grep('^.+\\.[rR]$', list.files(path), value=TRUE)
     srcList <- grep('^mets.+$', allsrcList, value = TRUE, invert = TRUE)

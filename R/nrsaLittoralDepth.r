@@ -1,7 +1,7 @@
-metsLittoralDepth <- function(chandepth) {
+nrsaLittoralDepth <- function(bLittoralDepth=NULL) {
 
 ################################################################################
-# Function: metsLittoralDepth
+# Function: nrsaLittoralDepth
 # Title: Calculate NRSA Littoral Depth Metrics
 # Programmers: Randy Hjort
 #              Curt Seeliger
@@ -35,6 +35,9 @@ metsLittoralDepth <- function(chandepth) {
 #            rather than a csv file.  Removed RUnit functions.
 #   01/11/13 tmk: Inserted code to convert factors in the input data frame to
 #            character variables.
+#    2/22/16 cws: Rewritten with new calling interface.  Removed use of summaryby
+#            function
+#
 # Arguments:
 #   chandepth = a data frame containing the channel depth data file.  The
 #     data frame must include columns that are named as follows:
@@ -61,63 +64,85 @@ metsLittoralDepth <- function(chandepth) {
 #      functions
 #   metsLittoralDepth.1 - calculate metrics
 ################################################################################
-
-# Print an initial message
-  intermediateMessage('Littoral Depth calculations', loc='start')
-  cat('Littoral Depth calculations:\n')
-
-# Convert factors to character variables in the chandepth data frame
-  intermediateMessage('.1 Convert factors to character variables.', loc='end')
-  chandepth <- convert_to_char(chandepth)
-
-# Calculate the metrics
-  intermediateMessage('.1 Call function metsLittoralDepth.1.', loc='end')
-  mets <- metsLittoralDepth.1(chandepth)
-  row.names(mets) <- 1:nrow(mets)
-
-# Print an exit message
-  intermediateMessage('Done.', loc='end')
-
-# Return results
-  return(mets)
-}
-
-
-
-metsLittoralDepth.1 <- function(indat) {
-
-# Does all the real work for metsLittoralDepth.
-# Returns a dataframe of calculations if successful
-# or a character string describing the problem if
-# one was encountered.
-#
-# ARGUMENTS:
-# indat		dataframe of littoral data.
-# protocols	dataframe relating UID to the
-#			  sampling protocol used at the site.
-#
+# 
+# # Print an initial message
+#   intermediateMessage('Littoral Depth calculations', loc='start')
+#   cat('Littoral Depth calculations:\n')
+# 
+# # Convert factors to character variables in the chandepth data frame
+#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
+#   chandepth <- convert_to_char(chandepth)
+# 
+# # Calculate the metrics
+#   intermediateMessage('.1 Call function metsLittoralDepth.1.', loc='end')
+#   mets <- metsLittoralDepth.1(chandepth)
+#   row.names(mets) <- 1:nrow(mets)
+# 
+# # Print an exit message
+#   intermediateMessage('Done.', loc='end')
+# 
+# # Return results
+#   return(mets)
+# }
+# 
+# 
+# 
+# metsLittoralDepth.1 <- function(indat) {
+# 
+# # Does all the real work for metsLittoralDepth.
+# # Returns a dataframe of calculations if successful
+# # or a character string describing the problem if
+# # one was encountered.
+# #
+# # ARGUMENTS:
+# # indat		dataframe of littoral data.
+# # protocols	dataframe relating UID to the
+# #			  sampling protocol used at the site.
+# #
 
   intermediateMessage('Littoral Depth mets', loc='start')
 
-  cdData <- subset(indat,PARAMETER %in% c('SONAR','POLE'))
-  #cdData <- merge(cdData, protocols, by='UID', all.x=TRUE, all.y=FALSE)
-  if(nrow(cdData)==0) return("There is no littoral depth data")
-  intermediateMessage('.1')
+    absentAsNULL <- function(df, ifdf, ...) {
+        if(is.null(df)) return(NULL)
+        else if(!is.data.frame(df)) return(NULL)
+        else if(nrow(df) == 0) return (NULL)
+        else if(is.function(ifdf)) return(ifdf(df, ...))
+        else return(df)
+    }
+    ifdf <- function(df, ...) {
+        rc <- df %>% 
+              select(SITE, VALUE) %>%
+              mutate(VALUE = as.numeric(VALUE))
+        return(rc)
+    }
 
-  mdx <- summaryby(cdData,'mean',"xlit")
-  mds <- summaryby(cdData,'sd',"vlit")
-  mdm <- summaryby(cdData,'max',"mxlit")
-  mdn <- summaryby(cdData,'min',"mnlit")
+    depths <- absentAsNULL(bLittoralDepth, ifdf)
+    if(is.null(depths)) return (NULL)
 
-  intermediateMessage('.2')
-  mets <- rbind(mdx,mds,mdm,mdn)
+    intermediateMessage('.1')
 
-  intermediateMessage('. Done.', loc='end')
+#     mdx <- summaryby(depths, 'mean', "xlit")
+#     mds <- summaryby(depths, 'sd', "vlit")
+#     mdm <- summaryby(depths, 'max', "mxlit")
+#     mdn <- summaryby(depths, 'min', "mnlit")
+# 
+#     intermediateMessage('.2')
+#     mets <- rbind(mdx,mds,mdm,mdn)
+    mets <- depths %>%
+            group_by(SITE) %>%
+            dplyr::summarise(xlit = protectedMean(VALUE, na.rm=TRUE)
+                            ,vlit = sd(VALUE, na.rm=TRUE)
+                            ,mxlit = max(VALUE, na.rm=TRUE)
+                            ,mnlit = min(VALUE, na.rm=TRUE)
+                            ) %>%
+            melt('SITE', variable.name='METRIC', value.name='VALUE')
+    
+    intermediateMessage('.2')
 
-  return(mets)
+    intermediateMessage('. Done.', loc='end')
+
+    return(mets)
  
 }
-
-
 
 # end of file
