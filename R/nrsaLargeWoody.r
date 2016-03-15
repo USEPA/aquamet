@@ -26,54 +26,7 @@ nrsaLargeWoody <- function(bCounts=NULL
                                                             ,substr(len,1,1)
                                                             )
                                             )
-#                           ,bDryExtralargeDiamLongLength = NULL
-#                           ,bDryLargeDiamLongLength = NULL
-#                           ,bDryMediumDiamLongLength = NULL
-#                           ,bDrySmallDiamLongLength = NULL
-#                           ,bDryExtralargeDiamMediumLength = NULL
-#                           ,bDryLargeDiamMediumLength = NULL
-#                           ,bDryMediumDiamMediumLength = NULL
-#                           ,bDrySmallDiamMediumLength = NULL
-#                           ,bDryExtralargeDiamShortLength = NULL
-#                           ,bDryLargeDiamShortLength = NULL
-#                           ,bDryMediumDiamShortLength = NULL
-#                           ,bDrySmallDiamShortLength = NULL
-#                           ,bWetExtralargeDiamLongLength = NULL
-#                           ,bWetLargeDiamLongLength = NULL
-#                           ,bWetMediumDiamLongLength = NULL
-#                           ,bWetSmallDiamLongLength = NULL
-#                           ,bWetExtralargeDiamMediumLength = NULL
-#                           ,bWetLargeDiamMediumLength = NULL
-#                           ,bWetMediumDiamMediumLength = NULL
-#                           ,bWetSmallDiamMediumLength = NULL
-#                           ,bWetExtralargeDiamShortLength = NULL
-#                           ,bWetLargeDiamShortLength = NULL
-#                           ,bWetMediumDiamShortLength = NULL
-#                           ,bWetSmallDiamShortLength = NULL
-#                           ,wDryExtralargeDiamLongLength = NULL
-#                           ,wDryLargeDiamLongLength = NULL
-#                           ,wDryMediumDiamLongLength = NULL
-#                           ,wDrySmallDiamLongLength = NULL
-#                           ,wDryExtralargeDiamMediumLength = NULL
-#                           ,wDryLargeDiamMediumLength = NULL
-#                           ,wDryMediumDiamMediumLength = NULL
-#                           ,wDrySmallDiamMediumLength = NULL
-#                           ,wDryExtralargeDiamShortLength = NULL
-#                           ,wDryLargeDiamShortLength = NULL
-#                           ,wDryMediumDiamShortLength = NULL
-#                           ,wDrySmallDiamShortLength = NULL
-#                           ,wWetExtralargeDiamLongLength = NULL
-#                           ,wWetLargeDiamLongLength = NULL
-#                           ,wWetMediumDiamLongLength = NULL
-#                           ,wWetSmallDiamLongLength = NULL
-#                           ,wWetExtralargeDiamMediumLength = NULL
-#                           ,wWetLargeDiamMediumLength = NULL
-#                           ,wWetMediumDiamMediumLength = NULL
-#                           ,wWetSmallDiamMediumLength = NULL
-#                           ,wWetExtralargeDiamShortLength = NULL
-#                           ,wWetLargeDiamShortLength = NULL
-#                           ,wWetMediumDiamShortLength = NULL
-#                           ,wWetSmallDiamShortLength = NULL
+
                           ,reachlength = NULL
                           ,meanBankfullWidth = NULL
                           ) {
@@ -163,19 +116,91 @@ nrsaLargeWoody <- function(bCounts=NULL
 #   01/11/13 tmk: Inserted code to convert factors in the input data frames to
 #            character variables.
 #   12/10/15 cws Updated calling interface with new args, and then temporarily
-#            munging those args back into old dataframes to avoid wading into this code.
+#            munging those args back into old dataframes to avoid wading into this 
+#            code.
 #    2/11/15 cws Modifying calling interface based on local feedback. Condensing
 #            class count arguments from 48 separate args to 2 data args plus 2
 #            class code definition arguments, similar to nrsaChannelHabitat().
-#            May expand those code definition arguments to include size information.
+#            May expand those code definition arguments to include size 
+#            information.
+#    3/01/16 cws Documenting arguments in comments at top.  Removed old code.
 #
 # Arguments:
-
+# bCounts       dataframe containing large woody debris class counts at each 
+#               transect for boatable reaches , with the following columns:
+#                   SITE        integer or character specifying the site visit
+#                   TRANSECT    character value specifying the transect
+#                               for which the value was recorded.
+#                   CLASS       character value specifying the class name
+#                               (one of 4 diameter classes, 3 length classes,
+#                               and 2 location classes).  These class names are
+#                               expected to be defined in the bClassInfo
+#                               argument
+#                   VALUE       character values specifying the influence 
+#                               class
+#
+# bClassInfo    dataframe relating the class names used in bCounts::CLASS to
+#               each combination of size and location classes.  Expected to have
+#               the following columns and values in 24 rows:
+#                   diam    character value specifying diameter class: SMALL
+#                           MEDIUM, LARGE, EXTRALARGE, as defined in the NRSA
+#                           field protocol manual
+#                   len     character value specifying length class: SMALL
+#                           MEDIUM, LARGE, as defined in the NRSA field protocol
+#                           manual
+#                   loc     character value specifying location class: DRY, WET
+#                           as defined in the NRSA field protocol manual
+#                   CLASS   character value associated with each combination of
+#                           diameter, length and channel location, as it occurs
+#                           in the bCounts argument.
+#               Default value is for EPA NARS processing.
+#
+# wCounts       dataframe containing large woody debris class counts at each 
+#               transect for wadeable reaches , with the following columns:
+#                   SITE        integer or character specifying the site visit
+#                   TRANSECT    character value specifying the transect
+#                               for which the value was recorded.
+#                   CLASS       character value specifying the class name
+#                               (one of 4 diameter classes, 3 length classes,
+#                               and 2 location classes).  These class names are
+#                               expected to be defined in the wClassInfo
+#                               argument
+#                   VALUE       character values specifying the influence 
+#                               class
+#
+# wClassInfo    dataframe relating the class names used in wCounts::CLASS to
+#               each combination of size and location classes.  Expected to have
+#               the following columns and values in 24 rows:
+#                   diam    character value specifying diameter class: SMALL
+#                           MEDIUM, LARGE, EXTRALARGE, as defined in the NRSA
+#                           field protocol manual
+#                   len     character value specifying length class: SMALL
+#                           MEDIUM, LARGE, as defined in the NRSA field protocol
+#                           manual
+#                   loc     character value specifying location class: DRY, WET
+#                           as defined in the NRSA field protocol manual
+#                   CLASS   character value associated with each combination of
+#                           diameter, length and channel location, as it occurs
+#                           in the wCounts argument.
+#               Default value is for EPA NARS processing.
+#
+# reachlength   dataframe containing reach lengths in meters for each site.
+#               Expected to contain the following columns:
+#                   SITE        integer or character specifying the site visit
+#                   VALUE       numeric values
+#
+# meanBankfullWidth dataframe containing mean bank-full widths in meters for each
+#                   site.  Expected to contain the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       numeric values
+#
 # Output:
-#   Either NULL when metric calculation is successful or a character string
-#   containing an error message when metric calculation is not successful.  For
-#   the successful case, a csv file named ".csv" containing
-#   the calculated metrics is written.
+#   Either a data frame when metric calculation is successful or a character
+#   string containing an error message when metric calculation is not
+#   successful.  The data frame contains the following columns:
+#     SITE - universal ID value
+#     METRIC - metric name
+#     VALUE - metric value
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
@@ -227,57 +252,6 @@ nrsaLargeWoody <- function(bCounts=NULL
 
     boats <- absentAsNULL(bCounts, ifdfRecode, bClassInfo)
     wades <- absentAsNULL(wCounts, ifdfRecode, wClassInfo)
-
-#     boats  <- rbind(absentAsNULL(bDryExtralargeDiamLongLength, ifdf, 'DXDLL')
-#                    ,absentAsNULL(bDryLargeDiamLongLength, ifdf, 'DLDLL')
-#                    ,absentAsNULL(bDryMediumDiamLongLength, ifdf, 'DMDLL')
-#                    ,absentAsNULL(bDrySmallDiamLongLength, ifdf, 'DSDLL')
-#                    ,absentAsNULL(bDryExtralargeDiamMediumLength, ifdf, 'DXDML')
-#                    ,absentAsNULL(bDryLargeDiamMediumLength, ifdf, 'DLDML')
-#                    ,absentAsNULL(bDryMediumDiamMediumLength, ifdf, 'DMDML')
-#                    ,absentAsNULL(bDrySmallDiamMediumLength, ifdf, 'DSDML')
-#                    ,absentAsNULL(bDryExtralargeDiamShortLength, ifdf, 'DXDSL')
-#                    ,absentAsNULL(bDryLargeDiamShortLength, ifdf, 'DLDSL')
-#                    ,absentAsNULL(bDryMediumDiamShortLength, ifdf, 'DMDSL')
-#                    ,absentAsNULL(bDrySmallDiamShortLength, ifdf, 'DSDSL')
-#                    ,absentAsNULL(bWetExtralargeDiamLongLength, ifdf, 'WXDLL')
-#                    ,absentAsNULL(bWetLargeDiamLongLength, ifdf, 'WLDLL')
-#                    ,absentAsNULL(bWetMediumDiamLongLength, ifdf, 'WMDLL')
-#                    ,absentAsNULL(bWetSmallDiamLongLength, ifdf, 'WSDLL')
-#                    ,absentAsNULL(bWetExtralargeDiamMediumLength, ifdf, 'WXDML')
-#                    ,absentAsNULL(bWetLargeDiamMediumLength, ifdf, 'WLDML')
-#                    ,absentAsNULL(bWetMediumDiamMediumLength, ifdf, 'WMDML')
-#                    ,absentAsNULL(bWetSmallDiamMediumLength, ifdf, 'WSDML')
-#                    ,absentAsNULL(bWetExtralargeDiamShortLength, ifdf, 'WXDSL')
-#                    ,absentAsNULL(bWetLargeDiamShortLength, ifdf, 'WLDSL')
-#                    ,absentAsNULL(bWetMediumDiamShortLength, ifdf, 'WMDSL')
-#                    ,absentAsNULL(bWetSmallDiamShortLength, ifdf, 'WSDSL')
-#                    )
-#     wades  <- rbind(absentAsNULL(wDryExtralargeDiamLongLength, ifdf, 'DXDLL')
-#                    ,absentAsNULL(wDryLargeDiamLongLength, ifdf, 'DLDLL')
-#                    ,absentAsNULL(wDryMediumDiamLongLength, ifdf, 'DMDLL')
-#                    ,absentAsNULL(wDrySmallDiamLongLength, ifdf, 'DSDLL')
-#                    ,absentAsNULL(wDryExtralargeDiamMediumLength, ifdf, 'DXDML')
-#                    ,absentAsNULL(wDryLargeDiamMediumLength, ifdf, 'DLDML')
-#                    ,absentAsNULL(wDryMediumDiamMediumLength, ifdf, 'DMDML')
-#                    ,absentAsNULL(wDrySmallDiamMediumLength, ifdf, 'DSDML')
-#                    ,absentAsNULL(wDryExtralargeDiamShortLength, ifdf, 'DXDSL')
-#                    ,absentAsNULL(wDryLargeDiamShortLength, ifdf, 'DLDSL')
-#                    ,absentAsNULL(wDryMediumDiamShortLength, ifdf, 'DMDSL')
-#                    ,absentAsNULL(wDrySmallDiamShortLength, ifdf, 'DSDSL')
-#                    ,absentAsNULL(wWetExtralargeDiamLongLength, ifdf, 'WXDLL')
-#                    ,absentAsNULL(wWetLargeDiamLongLength, ifdf, 'WLDLL')
-#                    ,absentAsNULL(wWetMediumDiamLongLength, ifdf, 'WMDLL')
-#                    ,absentAsNULL(wWetSmallDiamLongLength, ifdf, 'WSDLL')
-#                    ,absentAsNULL(wWetExtralargeDiamMediumLength, ifdf, 'WXDML')
-#                    ,absentAsNULL(wWetLargeDiamMediumLength, ifdf, 'WLDML')
-#                    ,absentAsNULL(wWetMediumDiamMediumLength, ifdf, 'WMDML')
-#                    ,absentAsNULL(wWetSmallDiamMediumLength, ifdf, 'WSDML')
-#                    ,absentAsNULL(wWetExtralargeDiamShortLength, ifdf, 'WXDSL')
-#                    ,absentAsNULL(wWetLargeDiamShortLength, ifdf, 'WLDSL')
-#                    ,absentAsNULL(wWetMediumDiamShortLength, ifdf, 'WMDSL')
-#                    ,absentAsNULL(wWetSmallDiamShortLength, ifdf, 'WSDSL')
-#                    )
 
     df1 <- rbind(boats, wades)
     if(is.null(df1)) return (NULL)

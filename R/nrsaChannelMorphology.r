@@ -78,52 +78,125 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 #   06/03/14 cws: Handling NA UNITS values gracefully by translating NA to ""
 #            so that the units conversion of cm and ft to m doesn't set RESULT 
 #            to NA.
-#   11/20/15 cws Created with new calling interface, and updated unit test. This code made my eyes bleed.
+#   11/20/15 cws Created with new calling interface, and updated unit test. This 
+#            code made my eyes bleed.
+#    2/25/16 cws Updated argument descriptions, and cleaned up comments a tad.
 #            
-# Arguments:
-#   bankgeometry = a data frame containing the bank geometry data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANSDIR - transverse location along transect
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   thalweg = a data frame containing the thalweg data file.  The data frame
-#     must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       STATION - station number along thalweg between transects
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   visits = a data frame containing the stream verification form data file.
-#     The data frame contains a protocol value for each UID value.  It also
-#     should include columns that relate UID to values meaningfull to the user,
-#     e.g., site ID, date collected, and visit number.  The data frame must
-#     include columns that are named as follows:
-#       UID - universal ID value
-#       VALXSITE - protocol used during a site visit (BOATABLE, PARBYBOAT,
-#         ALTERED, INTWADE, PARBYWADE, WADEABLE)
-#   Note that possible values for variables in the input data frames are
-#   provided in the document named "NRSA Documentation.pdf" included in the help
-#   directory for the package.
+# ARGUMENTS:
+# bBankHeight       dataframe containing bank height at each transect for
+#                   boatable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# bBankWidth        dataframe containing bank height at each transect for
+#                   boatable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# bDepth            dataframe containing thalweg depth at each transect for
+#                   boatable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       STATION     numeric value specifying the station between
+#                                   the transects at which the depth was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# bIncisedHeight    dataframe containing incised height at each transect for
+#                   boatable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# bWettedWidth      dataframe containing wetted width at each transect for
+#                   boatable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# wBankHeight       dataframe containing bank height at each transect for
+#                   wadeable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# wBankWidth        dataframe containing bank height at each transect for
+#                   wadeable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# wDepth            dataframe containing thalweg depth at each transect for
+#                   wadeable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       STATION     numeric value specifying the station between
+#                                   the transects at which the depth was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# wIncisedHeight    dataframe containing incised height at each transect for
+#                   wadeable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
+# wWettedWidth      dataframe containing wetted width at each transect for
+#                   wadeable reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       numeric or character values
+#                       UNITS       character value specifying the units that
+#                                   the value is recorded in, expected to be
+#                                   either CM, M or FT.
+#
 # Output:
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
 #   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#     SITE - universal ID value
 #     METRIC - metric name
-#     RESULT - metric value
+#     VALUE - metric value
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
-#   siteProtocol determine sampling protocol values
-#   metsChannelMorphology.1 - calculate metrics
 ################################################################################
 
 # # Print an initial message

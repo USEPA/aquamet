@@ -129,7 +129,8 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
 #
 # oldeMethods - logical value; if TRUE, uses deprecated SAS method of starting
 #           initial pool dimensions in metsResidualPools.dimensions(), otherwise
-#           uses current method.  Set to TRUE only for unit testing.
+#           uses current method.  Set to TRUE only for unit testing.  IT IS
+#           PROBABLY BEST TO NOT INCLUDE THIS IN THE USER DOCUMENTATION.
 #
     intermediateMessage('Residual Pools calculations', loc='start')
 

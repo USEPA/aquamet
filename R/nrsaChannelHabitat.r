@@ -75,69 +75,97 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
 #            are isFast != TRUE, to include codes that are isFast = FALSE.  Dry
 #            sections are neither fast nor slow.  No change to unit test as it 
 #            passes.  Deleted section of old code at the bottom.
+#    2/23/16 cws Updated argument descriptions, and cleaned up comments a tad.
 #
 # TODO: Update unit test to see whether DR is handled properly
 #
-# Arguments:
-#   thalweg = a data frame containing the thalweg data file.  The data frame
-#     must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       STATION - station number along thalweg between transects
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   Note that possible values for variables in the input data frame are
-#   provided in the document named "NRSA Documentation.pdf" included in the help
-#   directory for the package.
+# ARGUMENTS:
+# bChannelUnit          dataframe containing channel unit codes from boatable
+#                       reaches, with the following columns:
+#                           SITE    integer or character specifying the site 
+#                                   visit
+#                           VALUE   character values, expected to be as specified
+#                                   in the bChannelUnitCodeList argument column 
+#                                   'code'. Only values which occur in the code
+#                                   column will be included in the calculations.
+#
+# bChannelUnitCodeList  dataframe specifying the boatable channel unit codes, 
+#                       meanings and class memberships.  The default value of 
+#                       this argument is for the EPA NARS processing.  It should 
+#                       have the following columns:
+#                           code        character values for the channel units
+#                                       as they occur in the VALUE column of
+#                                       bChannelUnit
+#                           metsSuffix  character values which are used as the
+#                                       suffix for resulting metric names, e.g.
+#                                       a value of 'falls' results in 'pct_falls'
+#                                       as the resulting metric name.
+#                           category    character values that are used soley to
+#                                       help the human reader organize things.
+#                                       This column is not used by the code.
+#                           isFast      logical values for each habitat code
+#                                       specifying whether it is considered fast
+#                                       or not.  Used to calculate pct_fast and
+#                                       pct_slow; if this column does not exist,
+#                                       neither of those metrics will be 
+#                                       calculated. Codes for which this value
+#                                       is NA will not be considered as either
+#                                       fast nor slow.
+#                           isPool      logical values for each habitat code
+#                                       specifying whether it is considered a
+#                                       pool habitat or not.  Used to calculate
+#                                       pct_pool; if this column does not exist,
+#                                       this metric will not be calculated.
+#
+# wChannelUnit          dataframe containing channel unit codes from wadeable
+#                       reaches, with the following columns:
+#                           SITE    integer or character specifying the site 
+#                                   visit
+#                           VALUE   character values, expected to be as specified
+#                                   in the wChannelUnitCodeList argument column 
+#                                   'code'. Only values which occur in the code
+#                                   column will be included in the calculations.
+#
+# wChannelUnitCodeList  dataframe specifying the wadeable channel unit codes, 
+#                       meanings and class memberships.  The default value of 
+#                       this argument is for the EPA NARS processing.  It should 
+#                       have the following columns:
+#                           code        character values for the channel units
+#                                       as they occur in the VALUE column of
+#                                       bChannelUnit
+#                           metsSuffix  character values which are used as the
+#                                       suffix for resulting metric names, e.g.
+#                                       a value of 'falls' results in 'pct_falls'
+#                                       as the resulting metric name.
+#                           category    character values that are used soley to
+#                                       help the human reader organize things.
+#                                       This column is not used by the code.
+#                           isFast      logical values for each habitat code
+#                                       specifying whether it is considered fast
+#                                       or not.  Used to calculate pct_fast and
+#                                       pct_slow; if this column does not exist,
+#                                       neither of those metrics will be 
+#                                       calculated. Codes for which this value
+#                                       is NA will not be considered as either
+#                                       fast nor slow.
+#                           isPool      logical values for each habitat code
+#                                       specifying whether it is considered a
+#                                       pool habitat or not.  Used to calculate
+#                                       pct_pool; if this column does not exist,
+#                                       this metric will not be calculated.
+#
 # Output:
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
 #   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#     SITE - universal ID value
 #     METRIC - metric name
-#     RESULT - metric value
+#     VALUE - metric value
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
 #   metsChannelHabitat.1 - calculate metrics
 ################################################################################
-
-# # Print an initial message
-#   cat('Channel Habitat calculations:\n')
-# 
-# # Convert factors to character variables in the thalweg data frame
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   thalweg <- convert_to_char(thalweg)
-# 
-# # Calculate the metrics
-#   intermediateMessage('.2 Call function metsChannelHabitat.1.', loc='end')
-#   mets <- metsChannelHabitat.1(thalweg)
-#   row.names(mets) <- 1:nrow(mets)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(mets)
-# }
-# 
-# 
-# 
-# metsChannelHabitat.1 <- function(indat) {
-# 
-# # Does all the real work for metsChannelHabitat.
-# # Returns a dataframe of calculations if successful
-# # or a character string describing the problem if
-# # one was encountered.
-# #
-# # ARGUMENTS:
-# # indat		dataframe of channel data.
-# # protocols	dataframe relating UID to the
-# #			  sampling protocol used at the site.
-# #
 
     intermediateMessage('Channel Habitat mets', loc='start')
 

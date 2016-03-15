@@ -60,94 +60,110 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 #            character variables.
 #   12/07/15 cws Modified calling interface. Still need to refactor interior.
 #            to handle NULL argument values.
+#    2/25/16 cws Documenting arguments in comments at top.
 #
-# Arguments:
-#   fishcover = a data frame containing the fish cover data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   visits = a data frame containing the stream verification form data file.
-#     The data frame contains a protocol value for each UID value.  It also
-#     should include columns that relate UID to values meaningfull to the user,
-#     e.g., site ID, date collected, and visit number.  The data frame must
-#     include columns that are named as follows:
-#       UID - universal ID value
-#       VALXSITE - protocol used during a site visit (BOATABLE, PARBYBOAT,
-#         ALTERED, INTWADE, PARBYWADE, WADEABLE)
-#   Note that possible values for variables in the input data frames are
-#   provided in the document named "NRSA Documentation.pdf" included in the help
-#   directory for the package.
+# ARGUMENTS:
+# algae       dataframe containing algae cover class data at each transect for
+#             all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# boulder     dataframe containing boulder cover class data at each transect for
+#             all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# brush       dataframe containing brush cover class data at each transect for
+#             all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# liveTree    dataframe containing livetree cover class data at each transect for
+#             all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# macrophytes dataframe containing plant cover class data at each transect for
+#             all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# overhang    dataframe containing overhang cover class data at each transect for
+#             all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# structures  dataframe containing structural cover class data at each transect 
+#             for all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# undercut    dataframe containing undercut cover class data at each transect 
+#             for all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# woodyDebris dataframe containing woody debris cover class data at each transect
+#             for all reaches, with the following columns:
+#               SITE        integer or character specifying the site visit
+#               TRANSECT    character value specifying the transect
+#                           for which the value was recorded.
+#               VALUE       numeric or character values
+#
+# coverClassTypes   dataframe containing group membership information for each
+#                   type of fish cover.  The default value for this argument
+#                   reproduces EPA NARS calculations.  Expected to have the 
+#                   following columns:
+#                       coverType   character values 'algae', 'boulder', 'brush',
+#                                   'liveTree', 'macrophytes', 'overhang',
+#                                   'structures', 'undercut', 'woodyDebris'
+#                       isBig       logical values specifying whether the class
+#                                   is considered as large for analysis
+#                       isNatural   logical values specifying whether the class
+#                                   is considered as natural for analysis
+#
+# coverCalculationValues    dataframe specifying how cover class values are
+#                           mapped to presence/absence and to characteristic 
+#                           cover fractions for analysis.  The default value for
+#                           this argument reproduces EPA NARS calculations.
+#                           Expected to have the following columns:
+#                               field       character value specifying the codes
+#                                           used to record cover values
+#                               presence    numeric value specifying whether the
+#                                           cover value is present (1) or absent 
+#                                           (0) or missing (NA), used for mean
+#                                           presence calculations.
+#                               characteristicCover numeric value specifying the
+#                                                   value used for mean cover
+#                                                   calculations.
+#
 # Output:
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
 #   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#     SITE - universal ID value
 #     METRIC - metric name
-#     RESULT - metric value
+#     VALUE - metric value
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
-#   siteProtocol determine sampling protocol values
-#   metsFishCover.1 - calculate metrics
 ################################################################################
-# 
-# 
-# # Print an initial message
-#   cat('Fish Cover calculations:\n')
-#   
-# # Convert factors to character variables in the input data frames
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   fishcover <- convert_to_char(fishcover)
-#   visits <- convert_to_char(visits)
-# 
-# # Determine protocol used for each site
-#   intermediateMessage('.2 Set protocols.', loc='end')
-#   protocols <- siteProtocol(unique(fishcover$UID), visits)
-# 
-# # Calculate the metrics
-#   intermediateMessage('.3 Call function metsFishCover.1.', loc='end')
-#   mets <- metsFishCover.1(fishcover, protocols)
-#   row.names(mets) <- 1:nrow(mets)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(mets)
-# }
-# 
-# 
-# 
-# metsFishCover.1 <- function(fishcover, protocols) {
-#  
-#  #Returns a dataframe of calculations if successful or a character string describing the problem if one was encountered.
-#  
-#  #ARGUMENTS:
-#  #fishcover   dataframe of the fishcover data.
-#  #protocols   dataframe relating UID to the sampling protocol used at that site
-#  
-#  
-#  #Did the protocols for fun, but the mets for WADEABLE and BOATABLE are the same for fish cover
-#  
-#  #do the calculations
-#   
-# #fcMets <- function (df)
-# # Calculate metrics based on Fish Cover data
-# #
-# # ARGUMENTS:
-# #   None
-# # 
-# # Calculates the FishCover metrics
-# 
-# 
-# # ASSUMPTIONS:
-# # The parameter vector has the following values: ALGAE, BOULDR,
-# # BRUSH, LVTREE, MACPHY, OVRHNG, STRUCT, UNDCUT (Wadeable), UNDERCUT (Boatable), WOODY
-# # change the value of UNDCUT to UNDERCUT to make them compatible
 
     intermediateMessage('Fish Cover mets', loc='start')
 

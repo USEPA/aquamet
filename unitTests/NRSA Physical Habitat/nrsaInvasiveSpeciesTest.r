@@ -6,8 +6,9 @@
 #          were previously returned, and still are).  Corrected test case where
 #          NO_INVASIVE values were removed from the input data to no longer 
 #          expect f_none values in response.
+#  2/26/16 cws moved nrsaInvasiveSpecies.singleSpeciesTest and 
+#          nrsaInvasiveSpecies.ip_scoreTest here from nrsaInvasiveSpecies.r.
 #
-
 
 nrsaInvasiveSpeciesTest <- function()
 {
@@ -70,7 +71,6 @@ nrsaInvasiveSpeciesTest <- function()
                )
 
 }
-
 
 
 nrsaInvasiveSpecies.createData <- function()
@@ -599,5 +599,120 @@ nrsaInvasiveSpecies.createMetrics <- function()
 }
 
 
+nrsaInvasiveSpecies.ip_scoreTest <- function()
+# unit test for nrsaInvasiveSpecies.ip_score
+{
+    tc <- textConnection("SITE METRIC VALUE
+                          1    f_a    .0    # site with f_none present = 0
+                          1    f_b    .1
+                          1    f_c    .2
+                          1    f_d    .3
+                          1    f_none .0
+                          2    f_a    .1    # site with f_none absent
+                          2    f_b    .2
+                          2    f_c    .3
+                          2    f_d    .4
+                          3    f_a    .0    # site with f_none present = 1
+                          3    f_b    .1
+                          3    f_c    .2
+                          3    f_d    .3
+                          3    f_none  1
+                          4    f_a    .0    # site with f_none present = NA
+                          4    f_b    .1
+                          4    f_c    .2
+                          4    f_d    .3
+                          4    f_none NA
+                          5    f_a    .0    # site with NA value in data and f_none present = .7
+                          5    f_b    .1
+                          5    f_c    NA
+                          5    f_d    .3
+                          5    f_none .7
+                          6    f_none  0    # site with only f_none, value is 0
+                          7    f_none  1    # site with only f_none, value is 1
+                          8    f_none NA    # site with only f_none, value is NA
+                         ")
+    testData <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    rm(tc)
+    
+    expected <- data.frame(SITE=1:8
+                          ,VALUE=c(0.6, 1, 0.6, 0.6, 0.4, 0, 0, 0)
+                          ,METRIC='ip_score'
+                          ,stringsAsFactors=FALSE
+                          )
+    actual <- nrsaInvasiveSpecies.ip_score(testData)
+    checkEquals(expected, actual, "Incorrect ip_score results")
+}
+
+
+nrsaInvasiveSpecies.singleSpeciesTest <- function()
+# unit test for nrsaInvasiveSpecies.singleSpecies
+{
+    tc <- textConnection("SITE TRANSECT VALUE
+                          a    A        0       # Site with 0/1 data
+                          a    B        1
+                          a    C        1
+                          a    D        1
+                          a    E        0
+                          a    F        0
+                          a    G        0
+                          a    H        1
+                          a    I        0
+                          a    J        1
+                          a    K        0
+                          b    A        0       # Site with character data
+                          b    B        X
+                          b    C        X
+                          b    D        Y
+                          b    E        ''
+                          b    F        ''
+                          b    G        ''
+                          b    H        X
+                          b    I        ''
+                          b    J        Y
+                          b    K        ''
+                          c    A        0       # Site with 0/1/NA/'' data
+                          c    B        NA
+                          c    C        1
+                          c    D        1
+                          c    E        0
+                          c    F        ''
+                          c    G        0
+                          c    H        1
+                          c    I        0
+                          c    J        1
+                          c    K        0
+                          d    A        0       # Site with character and NA data
+                          d    B        NA
+                          d    C        X
+                          d    D        Y
+                          d    E        ''
+                          d    F        NA
+                          d    G        ''
+                          d    H        X
+                          d    I        ''
+                          d    J        Y
+                          d    K        ''
+                          e    A        0       # Site with fractional and NA data
+                          e    B        NA      # just to see if it works.
+                          e    C        .3
+                          e    D        .5
+                          e    E        0
+                          e    F        NA
+                          e    G        .1
+                          e    H        .1
+                          e    I        0
+                          e    J        .2
+                          e    K        .7
+                         ")
+    testData <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    rm(tc)
+
+    expected <- data.frame(SITE=c('a', 'b', 'c', 'd','e')
+                          ,VALUE=c(5/11, 5/11, 4/10, 4/9, 1.9/9)
+                          ,stringsAsFactors=FALSE
+                          )
+    actual <- nrsaInvasiveSpecies.singleSpecies(testData)
+    checkEquals(expected, actual, "Incorrect ip_score results")
+}
 
 # end of file

@@ -80,190 +80,86 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
 #            frame rather than a csv file.  Removed RUnit functions.
 #   01/11/13 tmk: Inserted code to convert factors in the input data frames to
 #            character variables.
-# Arguments:
-#   bankgeometry = a data frame containing the bank geometry data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANSDIR - transverse location along transect
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   thalweg = a data frame containing the thalweg data file.  The data frame
-#     must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       STATION - station number along thalweg between transects
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   visits = a data frame containing the stream verification form data file.
-#     The data frame contains a protocol value for each UID value.  It also
-#     should include columns that relate UID to values meaningfull to the user,
-#     e.g., site ID, date collected, and visit number.  The data frame must
-#     include columns that are named as follows:
-#       UID - universal ID value
-#       VALXSITE - protocol used during a site visit (BOATABLE, PARBYBOAT,
-#         ALTERED, INTWADE, PARBYWADE, WADEABLE)
-#   channelgeometry = a data frame containing the channel geometry data file.
-#     The data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANLINE - location (mid-channel or bank)along transect
-#       BANK - bank (left or right) along transect
-#       LINE - way point (1,2, etc.) between transects
-#       METHOD - method used to measure slope
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#       FLAG - flag
-#   channelcrosssection = a data frame containing the channel crosssection data
-#     file.  The data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANSDIR - transverse location along transect
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#   littoral = a data frame containing the littoral data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   wood = a data frame containing the large woody debris data file.  The data
-#     frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   fishcover = a data frame containing the fish cover data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   gisCalcs = a data frame containing metric values that were determined using
-#     GPS based calculations.  The default value for this argument is NULL.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       METRIC - metric name
-#       RESULT - metric value
-#   Note that possible values for variables in the input data frames are
-#   provided in the document named "NRSA Documentation.pdf" included in the help
-#   directory for the package.
+#    2/23/16 cws Updated argument descriptions
+#
+# ARGUMENTS:
+# bXdepth       dataframe containing depth means (units are m) for boatable 
+#               reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values
+#
+# bSddepth      dataframe containing depth standard deviations (units are m) for
+#                boatable reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values
+#
+# wXdepth       dataframe containing mean depths (units are cm) for wadetable 
+#               reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values
+#
+# wSddepth      dataframe containing depth standard deviations (units are cm) for 
+#               wadeable reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values
+#
+# lsub_dmm      dataframe containing log10 of the mean substrate diameter (units 
+#               are mm) using the old one-boulder-class system for all reaches, 
+#               with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
+# lsub2dmm      dataframe containing log10 of the mean substrate diameter (units 
+#               are mm) using the two-boulder-class system for all reaches, 
+#               with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
+# rp100         dataframe containing rp100 values (linear density of residual 
+#               pools) for all reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
+# v1w_msq       dataframe containing v1w_msq values (areal density of LWD volume 
+#               in the channel) for all reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
+# xbkf_h        dataframe containing xbkf_h values (mean bank full height) for 
+#               all reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
+# xbkf_w        dataframe containing xbkf_w values (mean bank full width) for 
+#               all reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
+# xfc_lwd       dataframe containing xfc_lwd values (mean fish cover provided by 
+#               large woody debris) for 
+#               all reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
+# xslope        dataframe containing xslope values (mean channel slope at site,
+#               in percent) for all reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
+# xwidth        dataframe containing xwidth values (mean channel width) for 
+#               all reaches, with the following columns:
+#                   SITE     integer or character specifying the site visit
+#                   VALUE    numeric values 
+#
 # Output:
-#   Either a data frame when metric calculation is successful or a character
-#   string containing an error message when metric calculation is not
-#   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#   Either a data frame when metric calculation is successful or a NULL
+#   when metric calculation is not successful.  The data frame contains the 
+#   following columns:
+#     SITE - universal ID value
 #     METRIC - metric name
-#     RESULT - metric value
-# Other Functions Required:
-#   intermediateMessage - print messages generated by the metric calculation
-#      functions
-#   metsChannelMorphology - calculate channel morphology metrics
-#   metsSlopeBearing - calculate slope and bearing metrics
-#   metsSubstrateCharacterization - calculate substrate characterization metrics
-#   metsResidualPools - calculate residual pools metrics
-#   metsLargeWoody - calculate large woody debris metrics
-#   metsFishCover - calculate fish cover metrics
-#   siteProtocol determine sampling protocol values
-#   nrsaBedStability.1 - calculate metrics
-# ################################################################################
-# 
-# # Print an initial message
-#   cat('Bed Stability calculations:\n')
-# 
-# # Convert factors to character variables in the input data frames
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   bankgeometry <- convert_to_char(bankgeometry)
-#   thalweg <- convert_to_char(thalweg)
-#   visits <- convert_to_char(visits)
-#   channelgeometry <- convert_to_char(channelgeometry)
-#   channelcrosssection <- convert_to_char(channelcrosssection)
-#   littoral <- convert_to_char(littoral)
-#   wood <- convert_to_char(wood)
-#   fishcover <- convert_to_char(fishcover)
-#   if(!is.null(gisCalcs))
-#     gisCalcs <- convert_to_char(gisCalcs)
-# 
-# # Call the metsChannelMorphology function
-#   intermediateMessage('.2 Call the metsChannelMorphology function.', loc='end')
-#   cm <- metsChannelMorphology(bankgeometry, thalweg, visits)
-# 
-# # Call the metsSlopeBearing function
-#   intermediateMessage('.3 Call the metsSlopeBearing function.', loc='end')
-#   sb <- metsSlopeBearing(thalweg, channelgeometry, visits, gisCalcs)
-# 
-# # Call the metsSubstrateCharacterization function
-#   intermediateMessage('.4 Call the metsSubstrateCharacterization function.',
-#     loc='end')
-#   sc <- metsSubstrateCharacterization(channelcrosssection, thalweg, littoral)
-# 
-# # Call the metsResidualPools function
-#   intermediateMessage('.5 Call the metsResidualPools function.',
-#     loc='end')
-#   rp <- metsResidualPools(thalweg, channelgeometry, visits, gisCalcs)
-# 
-# # Call the metsLargeWoody function
-#   intermediateMessage('.6 Call the metsLargeWoody function.',
-#     loc='end')
-#   lwd <- metsLargeWoody(thalweg, channelgeometry, bankgeometry, wood, visits)
-# 
-# # Call the metsFishCover function
-#   intermediateMessage('.7 Call the metsFishCover function.',
-#     loc='end')
-#   fc <- metsFishCover(fishcover, visits)
-# 
-# # Combine metrics data frames
-#   intermediateMessage('.8 Combine metrics data frames.', loc='end')
-#   mets <- rbind(subset(cm, METRIC %in% c('xdepth', 'sddepth', 'xbkf_h',
-#                                          'xbkf_w', 'xwidth')),
-#                 subset(sb, METRIC %in% c('xslope')),
-#                 subset(sc, METRIC %in% c('lsub_dmm', 'lsub2dmm')),
-#                 subset(rp, METRIC %in% c('rp100', 's_rp100')),
-#                 subset(lwd, METRIC %in% c('v1w_msq')),
-#                 subset(fc, METRIC %in% c('xfc_lwd'))
-#                 )
-#   mets$VALUE <- with(mets, ifelse(VALUE == 'NA', NA, VALUE))       
-# 
-# # Determine protocol used for each site
-#   intermediateMessage('.9 Set protocols.', loc='end')
-#   protocols <- siteProtocol(unique(mets$SITE), visits)
-# 
-# # Calculate the metrics
-#   intermediateMessage('.10 Call function nrsaBedStability.1.', loc='end')
-#   bs <- nrsaBedStability.1(mets, protocols)
-#   bs$VALUE <- as.numeric(bs$VALUE)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(bs)
-# }
-# 
-# 
-# 
-# nrsaBedStability.1 <- function(mets, protocols) {
-# # Does the work for for nrsaBedStability
-# #
-# # ARGUMENTS:
-# # mets      dataframe of relevant metrics: xdepth, sddepth, xbkf_h, xbkf_w,
-# #             xwidth, xslope, lsub_dmm, rp100, v1w_msq, xfc_lwd
-# # protocols dataframe specifying the protocol each SITE was sampled with.
+#     VALUE - metric value
+#
+
 
   intermediateMessage('Bed stability calculations', loc='start')
     absentAsNULL <- function(df, ifdf, ...) {
@@ -316,7 +212,7 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
                       ,absentAsNULL(wSddepth, ifdfProtocol, 'WADEABLE')
                       ) %>%
                  unique()
-    if(is.null(protocols)) return(NULL)
+    if(is.null(protocols) | is.null(mets)) return(NULL)
 
     # The following code is unchanged
 

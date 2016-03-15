@@ -51,76 +51,85 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
 #            character variables.
 #   11/18/15 cws Modified calling interface; Using SITE and VALUE instead of
 #            UID and RESULT.
+#    2/23/16 cws Updated argument descriptions, and cleaned up comments a tad.
 #
-# Arguments:
-#   bankgeometry = a data frame containing the bank geometry data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANSDIR - transverse location along transect
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   channelchar = a data frame containing the channel characteristics data file.
-#     The data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   Note that possible values for variables in the input data frames are
-#   provided in the document named "NRSA Documentation.pdf" included in the help
-#   directory for the package.
+# ARGUMENTS:
+# bankfullWidth     dataframe containing bankfull width from channel constraint  
+#                   form for allreaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       numeric or character values
+#                   Note: This value is simply copied to the output without change
+#
+# channelPattern    dataframe containing pattern type from channel constraint 
+#                   form for allreaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       character values
+#                   Note: This value is simply copied to the output without change
+#
+# constraintFeatures dataframe containing constraint features from channel  
+#                    constraint form for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       character values
+#                   Note: This value is simply copied to the output without change
+#
+# constraintMultiple dataframe containing constraining features from channel 
+#                    riparian forms for boatable reaches, with the following 
+#                    columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       character values expected to be one of 'B',
+#                                   'C','N','U' or NA
+#
+# constraintSingle  dataframe containing canopy densiometer from channel  
+#                   constraint form for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       numeric values
+#                   Note: This value is simply copied to the output without change
+#
+# constraintPercent dataframe containing percent constraint estimates from channel 
+#                   constraint form for allreaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       character or numeric values
+#                   Note: This value is simply copied to the output without change
+#
+# seeOverBank       dataframe containing canopy densiometer from channel 
+#                   riparian forms for boatable reaches, with the following 
+#                   columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       character values = 'YES' if true, other value
+#                                   if not true
+#
+# shoreToVegDistance dataframe containing distance (in meters) from shore to 
+#                    vegetation from channel riparian forms for boatable reaches,
+#                    with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       numeric values
+#
+# valleyConstraintUnseen dataframe containing canopy densiometer from channel 
+#                        constraint form for all reaches, with the following
+#                        columns:
+#                           SITE    integer or character specifying the site visit 
+#                           VALUE   character values
+#                   Note: This value is simply copied to the output without change
+#
+# valleyWidth       dataframe containing canopy densiometer from channel 
+#                   constraint form for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       VALUE       character or numeric values 
+#                   Note: This value is simply copied to the output without change
+#
 # Output:
-#   Either a data frame when metric calculation is successful or a character
-#   string containing an error message when metric calculation is not
-#   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#   Either a data frame when metric calculation is successful or a NULL
+#   when metric calculation is not successful.  The data frame contains the 
+#   following columns:
+#     SITE - universal ID value
 #     METRIC - metric name
-#     RESULT - metric value
+#     VALUE - metric value
+#
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
-#   nrsaChannelChar.1 - calculate metrics
 ################################################################################
 
-
-# # Print an initial message
-#   cat('Channel Characteristic calculations:\n')
-# 
-# # Convert factors to character variables in the input data frames
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   bankgeometry <- convert_to_char(bankgeometry)
-#   channelchar <- convert_to_char(channelchar)
-# 
-# # Calculate the metrics
-#   intermediateMessage('.2 Call function nrsaChannelChar.1.', loc='end')
-#   mets <- nrsaChannelChar.1(bankgeometry, channelchar)
-#   row.names(mets) <- 1:nrow(mets)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(mets)
-# }
-# 
-# 
-# 
-# nrsaChannelChar.1 <- function(indat, chanCon) {
-# # Does all the real work for nrsaChannelChar.
-# # Returns a dataframe of calculations if successful
-# # or a character string describing the problem if
-# # one was encountered.
-# #
-# # ARGUMENTS:
-# # indat		dataframe of bank geometry data taken at each transect.
-# # cc        dataframe with channel characteristics data taken for entire site.
-# # protocols	dataframe relating SITE to the
-# #			  sampling protocol used at the site.
-# #
 
     intermediateMessage('Channel Characteristic mets', loc='start')
 
@@ -149,96 +158,85 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
     valleyWidth <- absentAsNULL(valleyWidth, ifdf)
 
     intermediateMessage('.2')
-  #cdData <- subset(indat,PARAMETER %in% c('CONSTRT','SHOR2RIP','SEEOVRBK'))
-  # cdData <- merge(cdData, protocols, by='UID', all.x=TRUE, all.y=FALSE)
 
-#   # Create datasets needed for the calculations
-#   cdata <- subset(indat,SAMPLE_TYPE =='PHAB_CHANB' & PARAMETER =='CONSTRT' )
-#   rdata <- subset(indat,SAMPLE_TYPE =='PHAB_CHANB' & PARAMETER =='SHOR2RIP' )
-#   rdata$VALUE<-as.numeric(rdata$VALUE)
-#   odata <- subset(indat,SAMPLE_TYPE =='PHAB_CHANB' & PARAMETER =='SEEOVRBK' )
-
-  mets <- NULL   # Assemble calculations here.
-  if(!is.null(shoreToVegDistance)) {
-      #Use summaryby for the three metrics of shor2rip distance (boatable only)
-      shoreToVegDistance <- shoreToVegDistance %>% mutate(VALUE=as.numeric(VALUE))
-      xsh <- summaryby(shoreToVegDistance,'mean',"xshor2vg")
-      mxs <- summaryby(shoreToVegDistance,'max',"mxshor")
-      mns <- summaryby(shoreToVegDistance,'min',"mnshor")
-      mets <- rbind(xsh, mxs, mns)
-      intermediateMessage('.3')
-  }
+    mets <- NULL   # Assemble calculations here.
+    if(!is.null(shoreToVegDistance)) {
+        #Use summaryby for the three metrics of shor2rip distance (boatable only)
+        shoreToVegDistance <- shoreToVegDistance %>% mutate(VALUE=as.numeric(VALUE))
+        xsh <- summaryby(shoreToVegDistance,'mean',"xshor2vg")
+        mxs <- summaryby(shoreToVegDistance,'max',"mxshor")
+        mns <- summaryby(shoreToVegDistance,'min',"mnshor")
+        mets <- rbind(xsh, mxs, mns)
+        intermediateMessage('.3')
+    }
   
-  if(!is.null(seeOverBank)) {
-      #Calculate percentages for each of the pct_* metrics and format the results (boatable only)
+    if(!is.null(seeOverBank)) {
+        #Calculate percentages for each of the pct_* metrics and format the results (boatable only)
  
-      tco <- summaryby(seeOverBank,'count',"pct_ovrb")
-      tyout<-aggregate( list(yessum=seeOverBank$VALUE),list(SITE=seeOverBank$SITE),function(x){sum(x=='YES',na.rm=TRUE)})
-      tco<-merge(tco,tyout,by='SITE',all.x=TRUE)
-      tco$yessum<- ifelse( is.na(tco$yessum),0,tco$yessum)
-      tco$VALUE <- (tco$yessum/tco$VALUE)*100
-      tco<-tco[c('SITE','METRIC','VALUE')]
-      mets <- rbind(mets, tco)
-      intermediateMessage('.4')
-  }
+        tco <- summaryby(seeOverBank,'count',"pct_ovrb")
+        tyout<-aggregate( list(yessum=seeOverBank$VALUE),list(SITE=seeOverBank$SITE),function(x){sum(x=='YES',na.rm=TRUE)})
+        tco<-merge(tco,tyout,by='SITE',all.x=TRUE)
+        tco$yessum<- ifelse( is.na(tco$yessum),0,tco$yessum)
+        tco$VALUE <- (tco$yessum/tco$VALUE)*100
+        tco<-tco[c('SITE','METRIC','VALUE')]
+        mets <- rbind(mets, tco)
+        intermediateMessage('.4')
+    }
   
-    if(!is.null(constraintMultiple)) {
-        tbb <- summaryby(constraintMultiple,'count',"pctch_b")
-        bb<-aggregate(list(letsum=constraintMultiple$VALUE),list(SITE=constraintMultiple$SITE),function(x){sum(x=='B',na.rm=TRUE)})
-        tbb<-merge(tbb,bb,by='SITE',all.x=TRUE)
-        tbb$VALUE <- (tbb$letsum/tbb$VALUE)*100
-        tbb<-tbb[c('SITE','METRIC','VALUE')]
+      if(!is.null(constraintMultiple)) {
+          tbb <- summaryby(constraintMultiple,'count',"pctch_b")
+          bb<-aggregate(list(letsum=constraintMultiple$VALUE),list(SITE=constraintMultiple$SITE),function(x){sum(x=='B',na.rm=TRUE)})
+          tbb<-merge(tbb,bb,by='SITE',all.x=TRUE)
+          tbb$VALUE <- (tbb$letsum/tbb$VALUE)*100
+          tbb<-tbb[c('SITE','METRIC','VALUE')]
 
-        tcc <- summaryby(constraintMultiple,'count',"pctch_c")
-        cc<-aggregate(list(letsum=constraintMultiple$VALUE),list(SITE=constraintMultiple$SITE),function(x){sum(x=='C',na.rm=TRUE)})
-        tcc<-merge(tcc,cc,by='SITE',all.x=TRUE)
-        tcc$VALUE <- (tcc$letsum/tcc$VALUE)*100
-        tcc<-tcc[c('SITE','METRIC','VALUE')]
+          tcc <- summaryby(constraintMultiple,'count',"pctch_c")
+          cc<-aggregate(list(letsum=constraintMultiple$VALUE),list(SITE=constraintMultiple$SITE),function(x){sum(x=='C',na.rm=TRUE)})
+          tcc<-merge(tcc,cc,by='SITE',all.x=TRUE)
+          tcc$VALUE <- (tcc$letsum/tcc$VALUE)*100
+          tcc<-tcc[c('SITE','METRIC','VALUE')]
 
-        tnn <- summaryby(constraintMultiple,'count',"pctch_n")
-        nn<-aggregate(list(letsum=constraintMultiple$VALUE),list(SITE=constraintMultiple$SITE),function(x){sum(x=='N',na.rm=TRUE)})
-        tnn<-merge(tnn,nn,by='SITE',all.x=TRUE)
-        tnn$VALUE <- (tnn$letsum/tnn$VALUE)*100
-        tnn<-tnn[c('SITE','METRIC','VALUE')]
+          tnn <- summaryby(constraintMultiple,'count',"pctch_n")
+          nn<-aggregate(list(letsum=constraintMultiple$VALUE),list(SITE=constraintMultiple$SITE),function(x){sum(x=='N',na.rm=TRUE)})
+          tnn<-merge(tnn,nn,by='SITE',all.x=TRUE)
+          tnn$VALUE <- (tnn$letsum/tnn$VALUE)*100
+          tnn<-tnn[c('SITE','METRIC','VALUE')]
 
-        tuu <- summaryby(constraintMultiple,'count',"pctch_u")
-        uu<-aggregate(list(letsum=constraintMultiple$VALUE),list(SITE=constraintMultiple$SITE),function(x){sum(x=='U',na.rm=TRUE)})
-        tuu<-merge(tuu,uu,by='SITE',all.x=TRUE)
-        tuu$VALUE <- (tuu$letsum/tuu$VALUE)*100
-        tuu<-tuu[c('SITE','METRIC','VALUE')]
-        mets <- rbind(mets, tbb, tcc, tnn, tuu)
+          tuu <- summaryby(constraintMultiple,'count',"pctch_u")
+          uu<-aggregate(list(letsum=constraintMultiple$VALUE),list(SITE=constraintMultiple$SITE),function(x){sum(x=='U',na.rm=TRUE)})
+          tuu<-merge(tuu,uu,by='SITE',all.x=TRUE)
+          tuu$VALUE <- (tuu$letsum/tuu$VALUE)*100
+          tuu<-tuu[c('SITE','METRIC','VALUE')]
+          mets <- rbind(mets, tbb, tcc, tnn, tuu)
 
-        intermediateMessage('.5')
-    }
+          intermediateMessage('.5')
+      }
 
-    # Metrics using data from Constraint form is just the recorded values.
-    intermediateMessage('.6')
-    justAddMetricColumn <- function(df, metric) {
-        if(is.null(df)) rc <- NULL
-        else rc <- mutate(df, METRIC=metric)
-        return(rc)
-    }
-    ccMets <- rbind(justAddMetricColumn(bankfullWidth, 'conbankfull')
-                   ,justAddMetricColumn(constraintSingle, 'constraint')
-                   ,justAddMetricColumn(constraintFeatures, 'confeatures')
-                   ,justAddMetricColumn(channelPattern, 'conpattern')
-                   ,justAddMetricColumn(constraintPercent, 'conpercent')
-                   ,justAddMetricColumn(valleyWidth, 'convalley')
-                   ,justAddMetricColumn(valleyConstraintUnseen, 'convalleybox')
-                   )
+      # Metrics using data from Constraint form is just the recorded values.
+      intermediateMessage('.6')
+      justAddMetricColumn <- function(df, metric) {
+          if(is.null(df)) rc <- NULL
+          else rc <- mutate(df, METRIC=metric)
+          return(rc)
+      }
+      ccMets <- rbind(justAddMetricColumn(bankfullWidth, 'conbankfull')
+                     ,justAddMetricColumn(constraintSingle, 'constraint')
+                     ,justAddMetricColumn(constraintFeatures, 'confeatures')
+                     ,justAddMetricColumn(channelPattern, 'conpattern')
+                     ,justAddMetricColumn(constraintPercent, 'conpercent')
+                     ,justAddMetricColumn(valleyWidth, 'convalley')
+                     ,justAddMetricColumn(valleyConstraintUnseen, 'convalleybox')
+                     )
 
-    # Build final collection of mets
-    mets <- rbind(mets, ccMets)
-    if(is.null(mets)) {
-        mets <- subset(data.frame(SITE='a',METRIC='a',VALUE='a', stringsAsFactors=FALSE), FALSE)
-        intermediateMessage('.7')
-    }
-    intermediateMessage('.  Done.', loc='end')
+      # Build final collection of mets
+      mets <- rbind(mets, ccMets)
+      if(is.null(mets)) {
+          mets <- subset(data.frame(SITE='a',METRIC='a',VALUE='a', stringsAsFactors=FALSE), FALSE)
+          intermediateMessage('.7')
+      }
+      intermediateMessage('.  Done.', loc='end')
 
-    return(mets)
-
+      return(mets)
 }
-
-
 
 # end of file

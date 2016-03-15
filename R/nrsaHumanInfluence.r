@@ -87,30 +87,115 @@ nrsaHumanInfluence <- function(buildings = NULL
 #  TODO: rewrite interior. Add use of influenceWeights and test it.  Make PARAMETER
 #        values less cryptic.
 #
-# Arguments:
-#   visrip = a data frame containing the visible riparian damage data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANSDIR - transverse location along transect
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   Note that possible values for variables in the input data frame are
-#   provided in the document named "NRSA Documentation.pdf" included in the help
-#   directory for the package.
+# ARGUMENTS:
+# buildings         dataframe containing building influence data at each transect 
+#                   for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# landfillTrash     dataframe containing landfill/trash influence data at each 
+#                   transect for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+# logging           dataframe containing logging influence data at each transect 
+#                   for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# mining            dataframe containing mining influence data at each transect 
+#                   for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# parkLawn          dataframe containing park and lawn influence data at each  
+#                   transect for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# pastureRangeHay   dataframe containing pasture, range or hay production 
+#                   influence data at each transect for all reaches, with the 
+#                   following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# pavementClearedlot    dataframe containing pavement influence data at each  
+#                       transect for all reaches, with the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           VALUE       character values specifying the influence 
+#                                       class
+#
+# pipesInOut        dataframe containing irrigation piping influence data at each 
+#                   transect for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# roadsRailroads    dataframe containing roads and rails influence data at each 
+#                   transect for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# rowcrops          dataframe containing row crop influence data at each transect 
+#                   for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# wallRevetment     dataframe containing bank revetment influence data at each 
+#                   transect for all reaches, with the following columns:
+#                       SITE        integer or character specifying the site visit
+#                       TRANSECT    character value specifying the transect
+#                                   for which the value was recorded.
+#                       VALUE       character values specifying the influence 
+#                                   class
+#
+# influenceWeights  dataframe containing weighting values for each influence
+#                   class.  The default value for this argument reproduces EPA
+#                   NARS calculations.  Expected to have the following columns:
+#                       VALUE   character codes used to specify each influence 
+#                               class
+#                       weights numeric value used to weight each influence class
+#                               in combined calculations
+#
+#
 # Output:
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
 #   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#     SITE - universal ID value
 #     METRIC - metric name
-#     RESULT - metric value
+#     VALUE - metric value
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
-#   metsHumanInfluence.1 - calculate metrics
 ################################################################################
 
     # Print an initial message
