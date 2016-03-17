@@ -6,6 +6,9 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
                                          ,wSizeClass=NULL
                                          ,wMezzoSizeClass=NULL) {
 
+# TODO: add arguments bSizeClassInfo and wSizeClassInfo to specify size class
+#       codes, characteristic diameters, and related information.
+    
 ################################################################################
 # Function: nrsaSubstrateCharacterization
 # Title: Calculate NRSA Substrate Characterization Metrics
@@ -95,34 +98,68 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #    1/28/16 cws Removed useless PARAMETER column from boatable substrate count
 #            section.  Updated absentAsNULL and using ifdf* functions to enforce
 #            data standards.
+#    3/16/16 cws Documenting arguments in comments at top. Removing old commented-out
+#            code throughout.
 #
 # Arguments:
-#   channelcrosssection = a data frame containing the channel crosssection data
-#     file.  The data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANSDIR - transverse location along transect
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
-#   thalweg = a data frame containing the thalweg data file.  The data frame
-#     must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       STATION - station number along thalweg between transects
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       UNITS - units of the RESULT measurement
-#   littoral = a data frame containing the littoral data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
+# bBottomDom    dataframe containing size class data for the dominant 
+#               substrate class in the channel bottom, with the following 
+#               columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           VALUE       character values
+#
+# bBottomSec    dataframe containing size class data for the secondary 
+#               substrate class in the channel bottom, with the following 
+#               columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           VALUE       numeric or character values
+#
+# bShoreDom     dataframe containing size class data for the dominant 
+#               substrate class at the channel shore, with the following 
+#               columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           VALUE       numeric or character values
+#
+# bShoreSec     dataframe containing size class data for the secondary 
+#               substrate class at the channel show, with the following 
+#               columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           VALUE       numeric or character values
+#
+# bSizeClass    dataframe containing size class data collected in the thalweg
+#               of boatable channels with the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           VALUE       numeric or character values
+#
+# wSizeClass    dataframe containing size class data collected at transects
+#               of wadeable channels with the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           VALUE       numeric or character values
+#
+# wMezzoSizeClass   dataframe containing size class data collected at 
+#                   mezzo-transects of wadeable channels with the following 
+#                   columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           VALUE       numeric or character values
+#
+#
 #   Note that possible values for variables in the input data frame are
 #   provided in the document named "NRSA Documentation.pdf" included in the help
 #   directory for the package.
@@ -130,71 +167,17 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
 #   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#     SITE - universal ID value
 #     METRIC - metric name
 #     RESULT - metric value
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
-#   nrsaSubstrateCharacterization.1 - calculate metrics
 ################################################################################
-
-# # Print an initial message
-#   cat('Substrate Characterization calculations:\n')
-# 
-# # Convert factors to character variables in the input data frames
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   channelcrosssection <- convert_to_char(channelcrosssection)
-#   thalweg <- convert_to_char(thalweg)
-#   littoral <- convert_to_char(littoral)
-# 
-# # Subset the channelcrosssection, thalweg, and littoral data frames to retain
-# # desired values in the column named PARAMETER
-#   intermediateMessage('.2 Subset the data frame.', loc='end')
-#   df1 <- subset(channelcrosssection, PARAMETER %in% c('SIZE_CLS', 'XSIZE_CLS'))
-#   df2 <- subset (thalweg, PARAMETER == 'SIZE_CLS')
-#   df3 <- subset (littoral, PARAMETER %in% c('SHOREDOM', 'BOTTOMSEC', 'SHORESEC',
-#     'BOTTOMDOM'))
-
-# Calculate the metrics
-  intermediateMessage('.3 Call function nrsaSubstrateCharacterization.1.', loc='end')
-  mets <- nrsaSubstrateCharacterization.1 (bBottomDom, bBottomSec, bShoreDom, bShoreSec, bSizeClass, wSizeClass, wMezzoSizeClass)
-  row.names(mets) <- 1:nrow(mets)
-
-# Print an exit message
-  intermediateMessage('Done.', loc='end')
-
-# Return results
-  return(mets)
-}
-
-
-
-nrsaSubstrateCharacterization.1 <- function(bBottomDom, bBottomSec, bShoreDom, bShoreSec, bSizeClass, wSizeClass, wMezzoSizeClass) {
-
-#Returns a dataframe of calculations if successful or a character string describing the problem if one was encountered.
-#
-# ARGUMENTS:
-# df1   dataframe of the channel cross section data.
-# df2   dataframe of the thalweg data.
-# df3   dataframe of the littoral data.
     
     intermediateMessage ('Substrate Characterization', loc='start')
     
     # Standardize data arguments with no data as NULL
-#     absentAsNULL <- function(df) {
-#         if(is.null(df)) return(NULL)
-#         else if(!is.data.frame(df)) return(NULL)
-#         else if(nrow(df) == 0) return (NULL)
-#         else return(df)
-#     }
-#     bBottomDom <- absentAsNULL(bBottomDom)
-#     bBottomSec <- absentAsNULL(bBottomSec)
-#     bShoreDom <- absentAsNULL(bShoreDom)
-#     bShoreSec <- absentAsNULL(bShoreSec)
-#     bSizeClass <- absentAsNULL(bSizeClass)
-#     wSizeClass <- absentAsNULL(wSizeClass)
-#     wMezzoSizeClass <- absentAsNULL(wMezzoSizeClass)
     absentAsNULL <- function(df, ifdf, ...) {
         if(is.null(df)) return(NULL)
         else if(!is.data.frame(df)) return(NULL)
@@ -364,7 +347,6 @@ nrsaSubstrateCharacterization.1 <- function(bBottomDom, bBottomSec, bShoreDom, b
                             ,list('SITE'=ldBugtt$SITE)
                             ,mean, na.rm=TRUE
                             )
-#    ldBug12tt$METRIC <- 'lsub2dmm_nor'
       intermediateMessage('.3')
     
       # special extra calculation for DGM
@@ -421,9 +403,6 @@ nrsaSubstrateCharacterization.1 <- function(bBottomDom, bBottomSec, bShoreDom, b
       c16$d16 <- 10^(c16$lsub2d16inor)
       c50$d50 <- 10^(c50$lsub2d50inor)
       c84$d84 <- 10^(c84$lsub2d84inor)
-
-#    c16 <- aquamet::rename(c16, 'lsub2d16InoR', 'RESULT')
-#    c16$METRIC <- 'lsub2d16inor'
 
       calcs <- merge(c16
                     ,merge(c50, c84, by='SITE', all=TRUE)
@@ -582,135 +561,9 @@ intermediateMessage('d')
       empty.df <- expand.grid(SITE=unique(wadeableSubstrate$SITE),METRIC=c('nBL','nCB','nFN','nGC','nGF','nHP','nOT','nOM','nRC','nRR','nRS','nSA','nSB','nWD','nXB'))
       allSZ.comb.1 <- merge(empty.df,allSZ.comb,by=c('SITE','METRIC'),all.x=TRUE)
       allSZ.comb.1 <- mutate(allSZ.comb.1,VALUE=ifelse(is.na(VALUE),0,VALUE))
-intermediateMessage('e')
+
+      intermediateMessage('e')
   
-#       allSZBL <- subset (realallsize, realallsize$RESULT %in% c('XB', 'SB'))
-#       allSZBL <- ddply(allSZBL,c('SITE'),summarise,METRIC='nBL',)
-#       allSZBL<-aggregate(allSZBL$RESULT
-#                         ,list('UID'=allSZBL$UID)
-#                         ,count
-#                         )
-#       allSZBL <- rename(allSZBL, 'x', 'nBL')
-# 
-#       allSZCB <- subset (realallsize, realallsize$RESULT=='CB')
-#       allSZCB<-aggregate(allSZCB$RESULT
-#                         ,list('UID'=allSZCB$UID)
-#                         ,count
-#                         )
-#       allSZCB <- rename(allSZCB, 'x', 'nCB')
-#       allSZFN <- subset (realallsize, realallsize$RESULT=='FN')
-# 
-#       allSZFN<-aggregate(allSZFN$RESULT
-#                         ,list('UID'=allSZFN$UID)
-#                         ,count
-#                         )
-#       allSZFN <- rename(allSZFN, 'x', 'nFN')
-# 
-#       allSZGC <- subset (realallsize, realallsize$RESULT=='GC')
-#       allSZGC<-aggregate(allSZGC$RESULT
-#                         ,list('UID'=allSZGC$UID)
-#                         ,count
-#                         )
-#       allSZGC <- rename(allSZGC, 'x', 'nGC')
-# 
-#       allSZGF <- subset (realallsize, realallsize$RESULT=='GF')
-#       allSZGF<-aggregate(allSZGF$RESULT
-#                         ,list('UID'=allSZGF$UID)
-#                         ,count
-#                         )
-#       allSZGF <- rename(allSZGF, 'x', 'nGF')
-# 
-#       allSZHP <- subset (realallsize, realallsize$RESULT=='HP')
-#       if (nrow (allSZHP) == 0 ) {
-#           allSZHP <- data.frame ('UID'=unique(realallsize$UID)
-#                                 ,nHP=0
-#                                 ,stringsAsFactors=FALSE
-#                                 )
-# 
-#       } else {
-#           allSZHP<-aggregate(allSZHP$RESULT
-#                             ,list('UID'=allSZHP$UID)
-#                             ,count
-#                             )
-#           allSZHP <- rename(allSZHP, 'x', 'nHP')
-#       }
-# 
-#       allSZOT <- subset (realallsize, realallsize$RESULT=='OT')
-#       allSZOT<-aggregate(allSZOT$RESULT
-#                         ,list('UID'=allSZOT$UID)
-#                         ,count
-#                         )
-#       allSZOT <- rename(allSZOT, 'x', 'nOT')
-# 
-#       allSZOM <- subset (realallsize, realallsize$RESULT=='OM')
-#       if (nrow (allSZOM) == 0 ) {
-#           allSZOM <- data.frame ('UID'=unique(realallsize$UID)
-#                                 ,nOM=0
-#                                 ,stringsAsFactors=FALSE
-#                                 )
-#       } else {
-#           allSZOM<-aggregate(allSZOM$RESULT
-#                             ,list('UID'=allSZOM$UID)
-#                             ,count
-#                             )
-#           allSZOM <- rename(allSZOM, 'x', 'nOM')
-#       }
-# 
-#       allSZRC <- subset (realallsize, realallsize$RESULT=='RC')
-#       if (nrow (allSZRC) == 0 ) {
-#           allSZRC <- data.frame ('UID'=unique(realallsize$UID)
-#                                 ,nRC=0
-#                                 ,stringsAsFactors=FALSE
-#                                 )
-#       } else {
-#           allSZRC<-aggregate(allSZRC$RESULT
-#                             ,list('UID'=allSZRC$UID)
-#                             ,count
-#                             )
-#           allSZRC <- rename(allSZRC, 'x', 'nRC')
-#       }
-# 
-#       allSZRR <- subset (realallsize, realallsize$RESULT=='RR')
-#       allSZRR<-aggregate(allSZRR$RESULT
-#                         ,list('UID'=allSZRR$UID)
-#                         ,count
-#                         )
-#       allSZRR <- rename(allSZRR, 'x', 'nRR')
-# 
-#       allSZRS <- subset (realallsize, realallsize$RESULT=='RS')
-#       allSZRS<-aggregate(allSZRS$RESULT
-#                         ,list('UID'=allSZRS$UID)
-#                         ,count
-#                         )
-#       allSZRS <- rename(allSZRS, 'x', 'nRS')
-# 
-#       allSZSA <- subset (realallsize, realallsize$RESULT=='SA')
-#       allSZSA<-aggregate(allSZSA$RESULT
-#                         ,list('UID'=allSZSA$UID)
-#                         ,count
-#                         )
-#       allSZSA <- rename(allSZSA, 'x', 'nSA')
-# 
-#       allSZSB <- subset (realallsize, realallsize$RESULT=='SB')
-#       allSZSB<-aggregate(allSZSB$RESULT
-#                         ,list('UID'=allSZSB$UID)
-#                         ,count
-#                         )
-#       allSZSB <- rename(allSZSB, 'x', 'nSB')
-# 
-#       allSZWD <- subset (realallsize, realallsize$RESULT=='WD')
-#       allSZWD<-aggregate(allSZWD$RESULT
-#                         ,list('UID'=allSZWD$UID)
-#                         ,count
-#                         )
-#       allSZWD <- rename(allSZWD, 'x', 'nWD')
-# 
-#       allSZXB <- subset (realallsize, realallsize$RESULT=='XB')
-#       allSZXB<-aggregate(allSZXB$RESULT
-#                         ,list('UID'=allSZXB$UID)
-#                         ,count
-#                         )
-#       allSZXB <- rename(allSZXB, 'x', 'nXB')
 
       one <-   dplyr::rename(allNOR, n_nor = VALUE)
       one$METRIC <- NULL
@@ -721,8 +574,6 @@ intermediateMessage('e')
 
       intermediateMessage('.8')
 
-#      pct <- merge(one, two, by='UID', all.x=TRUE, all.y=FALSE)
-#      pct0 <- merge (pct, three, by='UID', all.x=TRUE, all.y=FALSE)
       pct0 <- within(merge(merge(one, two, by='SITE', all.x=TRUE, all.y=TRUE)
                           ,three, by='SITE', all.x=TRUE, all.y=TRUE
                           )
@@ -734,39 +585,6 @@ intermediateMessage('e')
       pct1 <- merge(allSZ.comb.1,pct0,by='SITE') 
       pct2 <- mutate(pct1,METRIC=paste('pct_',tolower(substring(METRIC,2,3)),sep=''),VALUE=(VALUE/n2)*100)
 
-#       pct1 <- merge(pct0, allSZBL, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct2 <- merge(pct1, allSZCB, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct3 <- merge(pct2, allSZFN, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct4 <- merge(pct3, allSZGC, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct5 <- merge(pct4, allSZGF, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct6 <- merge(pct5, allSZHP, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct7 <- merge(pct6, allSZOT, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct7b<- merge(pct7, allSZOM, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct8 <- merge(pct7b, allSZRC, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct9 <- merge(pct8, allSZRR, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct10 <- merge(pct9, allSZRS, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct11 <- merge(pct10, allSZSA, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct12 <- merge(pct11, allSZSB, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct13 <- merge(pct12, allSZWD, by='UID', all.x=TRUE, all.y=FALSE)
-#       pct14 <- merge(pct13, allSZXB, by='UID', all.x=TRUE, all.y=FALSE)
-# 
-#       pct14$pct_bl <- ifelse (is.na(pct14$nBL), 0, (pct14$nBL/pct14$n2)*100)
-#       pct14$pct_cb <- ifelse (is.na(pct14$nCB), 0, (pct14$nCB/pct14$n2)*100)
-#       pct14$pct_fn <- ifelse (is.na(pct14$nFN), 0, (pct14$nFN/pct14$n2)*100)
-#       pct14$pct_gc <- ifelse (is.na(pct14$nGC), 0, (pct14$nGC/pct14$n2)*100)
-#       pct14$pct_gf <- ifelse (is.na(pct14$nGF), 0, (pct14$nGF/pct14$n2)*100)
-#       pct14$pct_hp <- ifelse (is.na(pct14$nHP), 0, (pct14$nHP/pct14$n2)*100)
-#       pct14$pct_om <- ifelse (is.na(pct14$nOM), 0, (pct14$nOM/pct14$n2)*100)
-#       pct14$pct_ot <- ifelse (is.na(pct14$nOT), 0, (pct14$nOT/pct14$n2)*100)
-#       pct14$pct_rc <- ifelse (is.na(pct14$nRC), 0, (pct14$nRC/pct14$n2)*100)
-#       pct14$pct_rr <- ifelse (is.na(pct14$nRR), 0, (pct14$nRR/pct14$n2)*100)
-#       pct14$pct_rs <- ifelse (is.na(pct14$nRS), 0, (pct14$nRS/pct14$n2)*100)
-#       pct14$pct_sa <- ifelse (is.na(pct14$nSA), 0, (pct14$nSA/pct14$n2)*100)
-#       pct14$pct_sb <- ifelse (is.na(pct14$nSB), 0, (pct14$nSB/pct14$n2)*100)
-#       pct14$pct_wd <- ifelse (is.na(pct14$nWD), 0, (pct14$nWD/pct14$n2)*100)
-#       pct14$pct_xb <- ifelse (is.na(pct14$nXB), 0, (pct14$nXB/pct14$n2)*100)
-
-    
       #some groupings
       pct_bigr <- ddply(subset(pct2,METRIC %in% c('pct_rr','pct_rs','pct_rc','pct_bl','pct_cb','pct_gc'))
                         ,c('SITE'),summarise,METRIC='pct_bigr',VALUE=sum(VALUE))
@@ -779,35 +597,6 @@ intermediateMessage('e')
       pct_org <- ddply(subset(pct2,METRIC %in% c('pct_om','pct_wd')),c('SITE'),summarise
                        ,METRIC='pct_org',VALUE=sum(VALUE))
 
-#       pct14$pct_bigr <- (pct14$pct_rr+pct14$pct_rs+pct14$pct_rc+pct14$pct_bl+pct14$pct_cb+pct14$pct_gc)
-#       pct14$pct_bdrk <- (pct14$pct_rr+pct14$pct_rs)
-#       pct14$pct_safn <- (pct14$pct_sa+pct14$pct_fn)
-#       pct14$pct_sfgf <- (pct14$pct_sa+ pct14$pct_fn+ pct14$pct_gf)
-#       pct14$pct_org  <- pct14$pct_om + pct14$pct_wd
-
-      #reshape to bind with earlier metrics
-#       pct14$n2 <- NULL
-#       pct14$nBL <- NULL
-#       pct14$nCB <- NULL
-#       pct14$nFN <- NULL
-#       pct14$nGC <- NULL
-#       pct14$nGF <- NULL
-#       pct14$nHP <- NULL
-#       pct14$nOM <- NULL
-#       pct14$nOT <- NULL
-#       pct14$nRS <- NULL
-#       pct14$nRC <- NULL
-#       pct14$nRR <- NULL
-#       pct14$nSA <- NULL
-#       pct14$nSB <- NULL
-#       pct14$nWD <- NULL
-#       pct14$nXB <- NULL
-#       pct15 <- reshape(pct14, idvar=c('UID'), direction='long'
-#                       ,varying=names(pct14)[names(pct14) != 'UID']
-#                       ,times=names(pct14)[names(pct14) != 'UID']
-#                       ,v.names='RESULT', timevar='METRIC'
-#                       )
-#       row.names(pct15)<-NULL
       alln <- melt(subset(pct0,select=-n2),id.vars='SITE',variable.name='METRIC',value.name='VALUE')
       pct3 <- rbind(subset(pct2,select=c('SITE','METRIC','VALUE')),pct_bigr,pct_bdrk,pct_safn,pct_sfgf,pct_org,alln)
       # Completed size classes percentages for streams
@@ -838,12 +627,6 @@ intermediateMessage('e')
                       ,all.x=TRUE)
 
       ldRivCt <- ddply(bSizeClass, c('SITE'), summarise, METRIC='n', VALUE=length(na.omit(VALUE)))
-#       ldRivCt <- aggregate(df2$RESULT
-#                           ,list('UID'=df2$UID)
-#                           ,count
-#                           )
-#       ldRivCt <- rename(ldRivCt, 'x', 'RESULT')
-#       ldRivCt$METRIC <- 'n'
 
       ldRiv1mm <- ddply(ldRivmm,c('SITE'),summarise,lsub_d16=quantile(lDiam,probs=0.16,names=FALSE,type=2,na.rm=TRUE)
                         ,lsub_d25=quantile(lDiam,probs=0.25,names=FALSE,type=2,na.rm=TRUE)
@@ -854,66 +637,7 @@ intermediateMessage('e')
                         ,lsub_iqr=lsub_d75-lsub_d25)
       ldRiv1mm.1 <- melt(ldRiv1mm,id.vars='SITE',variable.name='METRIC',value.name='VALUE',na.rm=FALSE)
 
-#       ldRiv1mm <- aggregate(ldRivmm$lDiam
-#                            ,list('UID'=ldRivmm$UID)
-#                            ,quantile, 0.16, na.rm=TRUE, names=FALSE, type=2
-#                            )
-#       ldRiv2mm <- rename(ldRiv1mm, 'x', 'RESULT')
-#       ldRiv2mm$METRIC <- 'lsub_d16'
-
-#       ldRiv3mm <- aggregate(ldRivmm$lDiam
-#                            ,list('UID'=ldRivmm$UID)
-#                            ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
-#                            )
-#       ldRiv4mm <- rename(ldRiv3mm, 'x', 'RESULT')
-#       ldRiv4mm$METRIC <- 'lsub_d25'
-# 
-#       ldRiv5mm <- aggregate(ldRivmm$lDiam
-#                            ,list('UID'=ldRivmm$UID)
-#                            ,quantile, 0.50, na.rm=TRUE, names=FALSE, type=2
-#                            )
-#       ldRiv6mm <- rename(ldRiv5mm, 'x', 'RESULT')
-#       ldRiv6mm$METRIC <- 'lsub_d50'
-# 
-#       ldRiv7mm <- aggregate(ldRivmm$lDiam
-#                            ,list('UID'=ldRivmm$UID)
-#                            ,quantile, 0.75, na.rm=TRUE, names=FALSE, type=2
-#                            )
-#       ldRiv8mm <- rename(ldRiv7mm, 'x', 'RESULT')
-#       ldRiv8mm$METRIC <- 'lsub_d75'
-# 
-#       ldRiv9mm <- aggregate(ldRivmm$lDiam
-#                            ,list('UID'=ldRivmm$UID)
-#                            ,quantile, 0.84, na.rm=TRUE, names=FALSE, type=2
-#                            )
-#       ldRiv10mm <- rename(ldRiv9mm, 'x', 'RESULT')
-#       ldRiv10mm$METRIC <- 'lsub_d84'
-# 
       intermediateMessage('.11')
-
-      # additional summaries
-#       ldRiv11mm <- aggregate(ldRivmm$lDiam
-#                             ,list('UID'=ldRivmm$UID)
-#                             ,mean, na.rm=TRUE
-#                             )
-#       ldRiv12mm <- rename(ldRiv11mm, 'x', 'RESULT')
-#       ldRiv12mm$METRIC <- 'lsub_dmm'
-# 
-#       ldRiv13mm <- aggregate(ldRivmm$lDiam
-#                             ,list('UID'=ldRivmm$UID)
-#                             ,sd, na.rm=TRUE
-#                             )
-#       ldRiv14mm  <- rename(ldRiv13mm, 'x', 'RESULT')
-#       ldRiv14mm$METRIC <- 'lsubd_sd'
-# 
-#       ldRiv15mm <- aggregate(ldRivmm$lDiam
-#                             ,list('UID'=ldRivmm$UID)
-#                             ,iqr
-#                             )
-#       ldRiv16mm <- rename(ldRiv15mm, 'x', 'RESULT')
-#       ldRiv16mm$METRIC <- 'lsub_iqr'
-
-      intermediateMessage('.12')
 
       # put together this summaries
       riv1 <- rbind(ldRivCt, ldRiv1mm.1)
@@ -923,15 +647,7 @@ intermediateMessage('e')
       # Initial summaries for rivers.  Get counts for each size class from the
       # back of the thalweg form
       indivcl <- ddply(bSizeClass, c('SITE','VALUE'), summarise, n=length(na.omit(VALUE)))
-#       indivcl <- aggregate (list('n'=df2$RESULT)
-#                            ,list('UID'=df2$UID, 'PARAMETER'=df2$PARAMETER, 'RESULT'=df2$RESULT)
-#                            ,count
-#                            )
       allct <- ddply(bSizeClass, c('SITE'), summarise, nAll=length(na.omit(VALUE)))
-#       allct <- aggregate (list('nAll'=df2$RESULT)
-#                          ,list ('UID'=df2$UID, 'PARAMETER'=df2$PARAMETER)
-#                          ,count
-#                          )
       scCTS <- merge(indivcl, allct, by=c('SITE'))
 
       sc <- expand.grid (SITE=unique(scCTS$SITE)
@@ -1001,16 +717,9 @@ intermediateMessage('e')
       intermediateMessage('.  Boatable littoral substrate begun')      
       
       indiv <- ddply(littoralSubstrate, c('SITE','PARAMETER','VALUE'), summarise, n=length(na.omit(VALUE)))
-#       indiv <- aggregate (list('n'=df3$RESULT)
-#                          ,list('UID'=df3$UID, 'PARAMETER'=df3$PARAMETER, 'RESULT'=df3$RESULT)
-#                          ,count
-#                          )
 
       big4 <- ddply(littoralSubstrate,c('SITE','PARAMETER'),summarise,n4=length(na.omit(VALUE)))
-#       big4 <- aggregate (list('n4'=df3$RESULT)
-#                         ,list ('UID'=df3$UID, 'PARAMETER'=df3$PARAMETER)
-#                         ,count
-#                         )
+
       ss4m <- merge(indiv, big4, by=c('SITE', 'PARAMETER'))
 
       ss <- expand.grid (SITE=unique(ss4m$SITE)

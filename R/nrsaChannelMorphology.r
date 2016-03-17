@@ -81,6 +81,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 #   11/20/15 cws Created with new calling interface, and updated unit test. This 
 #            code made my eyes bleed.
 #    2/25/16 cws Updated argument descriptions, and cleaned up comments a tad.
+#    3/17/16 cws Removed old commented out code
 #            
 # ARGUMENTS:
 # bBankHeight       dataframe containing bank height at each transect for
@@ -199,42 +200,6 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 #      functions
 ################################################################################
 
-# # Print an initial message
-#   cat('Channel Morphology calculations:\n')
-# 
-# # Convert factors to character variables in the input data frames
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   bankgeometry <- convert_to_char(bankgeometry)
-#   thalweg <- convert_to_char(thalweg)
-#   visits <- convert_to_char(visits)
-# 
-# # Determine protocol used for each site
-#   intermediateMessage('.2 Set protocols.', loc='end')
-#   protocols <- siteProtocol(unique(bankgeometry$SITE), visits)
-# 
-# # Calculate the metrics
-#   intermediateMessage('.3 Call function metsChannelMorphology.1.', loc='end')
-#   mets <- nrsaChannelMorphology.1(bankgeometry, thalweg, protocols)
-#   row.names(mets) <- 1:nrow(mets)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(mets)
-# }
-# 
-# 
-# 
-# nrsaChannelMorphology.1 <- function(df1, df2, protocols) {
-# # Returns a dataframe of calculations if successful or a character string
-# # describing the problem if one was encountered.
-# #
-# # ARGUMENTS:
-# # df1   dataframe of the bank geometry data.
-# # df2   dataframe of the thalweg data.
-# # protocols   dataframe relating SITE to the sampling protocol used at that site
-
     intermediateMessage ('metsChannelMorphology started', loc='start')
     absentAsNULL <- function(df, ifdf, ...) {
         if(is.null(df)) return(NULL)
@@ -301,86 +266,6 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 
     intermediateMessage ('.2')
       
-# 
-#   # Narrow down data to the neccessities.
-#   df1 <- subset(df1
-#                ,PARAMETER %in% c('BANKHGT', 'INCISHGT', 'BANKHT'
-#                                 ,'INCISED', 'BANKWID'
-#                                 )
-#                 |
-#                 (PARAMETER == 'WETWID' &
-#                  SITE %in% subset(protocols, PROTOCOL == 'BOATABLE')$SITE
-#                 )
-#                )
-#   df2 <- subset (df2
-#                 ,PARAMETER %in% c('DEPTH', 'WETWIDTH', 'DEP_SONR', 'DEP_POLE')
-#                 )
-# 
-#   # Make dang sure UNITS is never NA
-#   df1 <- within(df1, UNITS <- ifelse(is.na(UNITS), '', UNITS))
-#   df2 <- within(df2, UNITS <- ifelse(is.na(UNITS), '', UNITS))
-# 
-#   #do the calculations
-#  
-#   # many counts required, here we don't care about TRANSDIR, and for these, only keep
-#   #the thalweg depths at STATION =0
-#   #these summaries EXCLUDE sidechannels
-#   #get all the units right...... meters for all!
-#  
-#   #right from the get go figure out the stream/river and units.
-#  
-#   #for streams need the bankhgt, bankwid, incishgt from bankgeo, need the wetwid, depth from thal
-#  
-#   df1$STATION <- 'NONE'
-#   df3 <- rbind (subset(df1, select=-c(SAMPLE_TYPE,FLAG,TRANSDIR))
-#                ,subset(df2, select=-c(SAMPLE_TYPE,FLAG))
-#                )
-#   df4 <- merge(df3, protocols, by='SITE', all.x=TRUE, all.y=FALSE)
-#   df4$VALUE <- as.numeric(df4$VALUE)
-# 
-#   #change all the units to m
-# #  mm2 <- subset (df4, UNITS %in% c('NONE', 'M'))
-# #  testo <- subset (df4, UNITS=='CM')
-# #  if(nrow(testo) == 0) {
-# #      testo <- NULL
-# #  } else {
-# #      testo$RESULT <- testo$RESULT/100
-# #      testo$UNITS <- 'M'
-# #  }
-# #  
-# #  testo1 <- subset (df4, df4$UNITS=='FT')
-# #  if (nrow (testo1) == 0 ) {
-# #      testo1 <- NULL
-# #  } else {
-# #      testo1$RESULT <- ifelse(testo1$PROTOCOL=='BOATABLE' &
-# #                            testo1$PARAMETER=='DEP_SONR' &
-# #                            testo1$UNITS=='FT'
-# #                           ,testo1$RESULT*0.3048
-# #                           ,testo1$RESULT
-# #                           )
-# #      testo1$UNITS <- 'M'
-# #  }
-# # 
-# #  df5 <- rbind (mm2, testo, testo1)
-#   df5 <- within(df4, VALUE <- ifelse(UNITS=='CM', VALUE/100
-#                               ,ifelse(UNITS=='FT', VALUE*0.3048, VALUE 
-#                                ))
-#                )
-#  
-#   # Standardize column and parameter names
-#   df5 <- rename (df5, 'protocol', 'PROTOCOL')
-#   df5$PARAMETER <- ifelse (df5$PARAMETER =='BANKHT', 'BANKHGT', df5$PARAMETER)
-#   df5$PARAMETER <- ifelse (df5$PARAMETER =='INCISED', 'INCISHGT', df5$PARAMETER)
-#   df5$PARAMETER <- ifelse (df5$PARAMETER =='WETWIDTH', 'WETWID', df5$PARAMETER)
-#   df5$PARAMETER <- ifelse (df5$PARAMETER =='DEP_POLE', 'DEPTH', df5$PARAMETER)
-#   df5$PARAMETER <- ifelse (df5$PARAMETER =='DEP_SONR', 'DEPTH', df5$PARAMETER)
-# 
-#   intermediateMessage ( '.1. Get the input data in.', loc='end')
-# 
-#   #spilt up by protocol
-#   wade <- subset (df5, df5$PROTOCOL=='WADEABLE')
-#   wade <- subset (wade, !(wade$PARAMETER=='WETWID' & wade$UNITS=='NONE'))#, select=-c(FLAG,SAMPLE_TYPE))
-#   boat <- subset (df5, df5$PROTOCOL=='BOATABLE')#, select=-c(FLAG,SAMPLE_TYPE))
  
   # these summaries do use the sidechannels, but is odd an different ways.
   # for all of these, keep the side channels and then either pick the mean, max, or sum
@@ -632,20 +517,17 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       #for wetwid, we use the SUM of the sidechannel pair
       wwidnox1s$PARAMETER <- 'WETWID'
       wwidnox1s$UNITS <- 'M'
-#      wwidnox1s$PROTOCOL <- 'WADEABLE'
 
       #for bankhgt, we use the MEAN of the sidechannel pair
       bhgtnox1x$PARAMETER <- 'BANKHGT'
       bhgtnox1x$STATION <- 'NONE'
       bhgtnox1x$UNITS <- 'NONE'
-#      bhgtnox1x$PROTOCOL <- 'WADEABLE'
 
       #for bankwid, we ust the SUM of the sidechannel pair.
 
       bwidnox1$PARAMETER <- 'BANKWID'
       bwidnox1$STATION <- 'NONE'
       bwidnox1$UNITS <- 'NONE'
-#      bwidnox1$PROTOCOL <- 'WADEABLE'
 
       wadezero <- subset (wade, wade$STATION %in% c('0', 'NONE'))
   
@@ -670,28 +552,9 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 
       intermediateMessage ('.5')
 
-      ###########start the experiment here
-      #wadebwminus <- subset (wadebw, wadebw$PARAMETER!='DEP_SONR')
-      #wadebwminus$STATION <- 0
- 
-      #  rs1wminus<- reshape (subset(wadebwminus), idvar=c('UID','TRANSECT', 'PROTOCOL', 'STATION'), direction='wide', timevar='PARAMETER')
-      #  names(wadebwminus) <- gsub('RESULT\\.', '', names(wadebwminus))
- 
-      #put depth back in
- 
-      # wadebwdepth <- subset (wadebw, wadebw$PARAMETER=='DEP_SONR' & STATION=='1', select=-STATION)
-  
-  
-      #rs1w <-  merge (rs1wminus, wadebwdepth, by= c('UID', 'TRANSECT', 'PROTOCOL'), all=TRUE)
-
-      #rs1w <- rename(rs1w, 'RESULT', 'RESULT.DEP_SONR')
-
-      ###########end the experiment here
-#      rs1w0 <- reshape(subset (wadezerobw, select= - STATION), idvar=c('SITE','TRANSECT', 'PROTOCOL'), direction='wide', timevar='PARAMETER')
       rs1w0 <- reshape(subset (wadezerobw, select= - STATION), idvar=c('SITE','TRANSECT'), direction='wide', timevar='PARAMETER')
       names(wadezerobw) <- gsub('VALUE\\.', '', names(wadezerobw))
   
-#      rs1w <- reshape(wadebw, idvar=c('SITE','TRANSECT', 'PROTOCOL','STATION'), direction='wide', timevar='PARAMETER')
       rs1w <- reshape(wadebw, idvar=c('SITE','TRANSECT','STATION'), direction='wide', timevar='PARAMETER')
       names(wadebw) <- gsub('VALUE\\.', '', names(wadebw))
  
@@ -783,19 +646,16 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       wwidnoxb1s$PARAMETER <- 'WETWID'
       wwidnoxb1s$STATION <- '0'
       wwidnoxb1s$UNITS <- 'M'
-#      wwidnoxb1s$PROTOCOL <- 'BOATABLE'
 
       # for bankhgt, we use the MEAN of the sidechannel pair
       bhgtnoxb1x$PARAMETER <- 'BANKHGT'
       bhgtnoxb1x$STATION <- 'NONE'
       bhgtnoxb1x$UNITS <- 'NONE'
-#      bhgtnoxb1x$PROTOCOL <- 'BOATABLE'
 
       # for bankwid, we ust the SUM of the sidechannel pair.
       bwidnoxb1$PARAMETER <- 'BANKWID'
       bwidnoxb1$STATION <- 'NONE'
       bwidnoxb1$UNITS <- 'NONE'
-#      bwidnoxb1$PROTOCOL <- 'BOATABLE'
  
       boatw1 <- subset (boat, PARAMETER!='WETWID')
       boatww <- rbind (boatw1, wwidnoxb1s)
@@ -809,7 +669,6 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       boatbwminus <- subset (boatbw, boatbw$PARAMETER!='DEPTH')
       boatbwminus$STATION <- 0
  
-#      rs1bminus<- reshape (subset(boatbwminus), idvar=c('SITE','TRANSECT', 'PROTOCOL', 'STATION'), direction='wide', timevar='PARAMETER')
       rs1bminus<- reshape (subset(boatbwminus), idvar=c('SITE','TRANSECT', 'STATION'), direction='wide', timevar='PARAMETER')
       names(boatbwminus) <- gsub('VALUE\\.', '', names(boatbwminus))
  
@@ -818,7 +677,6 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
   
       intermediateMessage ('.8')
   
-#      rs1b <-  merge (rs1bminus, boatbwdepth, by= c('SITE', 'TRANSECT', 'PROTOCOL'), all=TRUE)
       rs1b <-  merge (rs1bminus, boatbwdepth, by= c('SITE', 'TRANSECT'), all=TRUE)
 
       rs1b <- rename(rs1b, 'VALUE', 'VALUE.DEPTH')
@@ -905,9 +763,6 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
   # whats left are the thalweg depth summaries.... these are computed at
   # ALL stations.  Convert xdepth and sddepth from m to cm, to be
   # backward-compatible with interpretations of EMAP data.
-#  thal <- subset (df5, PARAMETER=='DEPTH')
-#  thal$VALUE <- as.numeric(thal$VALUE)
-#  thal$VALUE <- ifelse(thal$PROTOCOL=='WADEABLE', thal$VALUE*100, thal$VALUE)
   if(is.null(wade))
       wadeThal <- NULL
   else

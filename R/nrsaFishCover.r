@@ -61,6 +61,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 #   12/07/15 cws Modified calling interface. Still need to refactor interior.
 #            to handle NULL argument values.
 #    2/25/16 cws Documenting arguments in comments at top.
+#    3/17/16 cws Deleting old commented out code.
 #
 # ARGUMENTS:
 # algae       dataframe containing algae cover class data at each transect for
@@ -167,15 +168,6 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 
     intermediateMessage('Fish Cover mets', loc='start')
 
-#     fcData <- subset(fishcover
-#                     ,PARAMETER %in% c('ALGAE', 'BOULDR'
-#                                       ,'BRUSH', 'LVTREE'
-#                                       ,'MACPHY', 'OVRHNG'
-#                                       ,'STRUCT', 'UNDCUT'
-#                                       ,'UNDERCUT', 'WOODY'
-#                                      )
-#                     )
-#     fcData$PARAMETER <- ifelse(fcData$PARAMETER == 'UNDCUT', 'UNDERCUT' , fcData$PARAMETER)   
     absentAsNULL <- function(df, ifdf, ...) {
         if(is.null(df)) return(NULL)
         else if(!is.data.frame(df)) return(NULL)
@@ -205,34 +197,12 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                    )
 
     # Create tables for converting field values to calculation values
-#     cover04<-data.frame(field=c(NA,'0','1','2','3','4')
-#                        ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-#                        ,stringsAsFactors=FALSE
-#                        )
     cover04 <- dplyr::rename(coverCalculationValues, calc = characteristicCover) %>%
                select(field, calc)
 
-#     presence04<-data.frame(field=c(NA,'0','1','2','3','4')
-#                           ,calc=c(NA,0,1,1,1,1)
-#                           ,stringsAsFactors=FALSE
-#                           )
     presence04 <- dplyr::rename(coverCalculationValues, calc = presence) %>%
                   select(field, calc)
 
-#     fcTypes<-data.frame(PARAMETER=c('ALGAE', 'BOULDR', 'BRUSH'
-#                                    ,'LVTREE', 'MACPHY', 'OVRHNG'
-#                                    ,'STRUCT', 'UNDERCUT', 'WOODY'
-#                                    )
-#                        ,isBig=c(FALSE, TRUE, FALSE
-#                                ,FALSE, FALSE, FALSE
-#                                ,TRUE, TRUE,TRUE
-#                                )
-#                        ,isNatural=c(FALSE, TRUE, TRUE
-#                                    ,TRUE, FALSE, TRUE
-#                                    ,FALSE ,TRUE, TRUE
-#                                    )
-#        
-#                        )
     fcTypes <- mutate(coverClassTypes
                      ,PARAMETER = ifelse(coverType == 'algae', 'ALGAE'
                                  ,ifelse(coverType ==  'boulder', 'BOULDR'
@@ -336,7 +306,6 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
     
     fciPAll$METRIC <- 'pfc_all'
     fciPAll  <- rename(fciPAll, 'fciPAll','VALUE')  
-#    fciPAll  <- rename(fciPAll, 'SITE','SITE')     
     
     ttPBig <- subset(fcPMeans, isBig)
     fciPBig <- aggregate(list('fciPBig'=ttPBig$x)
@@ -345,7 +314,6 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                        )
     fciPBig$METRIC <- 'pfc_big'
     fciPBig  <- rename(fciPBig,'fciPBig','VALUE')                    
-#    fciPBig <- rename(fciPBig, 'uid','UID')                        
 
     ttPNatural <- subset(fcPMeans, isNatural)
     fciPNatural <- aggregate(list('fciPNatural'=ttPNatural$x)
@@ -354,11 +322,6 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                            )
     fciPNatural$METRIC <- 'pfc_nat'
     fciPNatural  <- rename(fciPNatural, 'fciPNatural','VALUE') 
-#    fciPNatural  <- rename(fciPNatural,'uid','UID')                      
-                       
-  
- #   fciP <- merge(fciPAll, fciPBig,  by='uid', all=TRUE, sort=FALSE)
- #   fciP <- merge(fciP, fciPNatural, by='uid', all=TRUE, sort=FALSE)
   
     # Calculate cover indices: total, large, and natural vegetation
     # grouped cover
@@ -371,7 +334,6 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
     
     fciCAll$METRIC <- 'xfc_all'
     fciCAll  <- rename(fciCAll, 'fciCAll','VALUE')  
-#    fciCAll  <- rename(fciCAll, 'uid','UID')
       
     ttCBig <- subset(fcCMeans, isBig)
     fciCBig <- aggregate(list('fciCBig'=ttCBig$x)
@@ -380,7 +342,6 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                        )
     fciCBig$METRIC <- 'xfc_big'
     fciCBig  <- rename(fciCBig, 'fciCBig','VALUE')                    
-#    fciCBig  <- rename(fciCBig, 'uid','UID')                 
 
     ttCNatural <- subset(fcCMeans, isNatural)
     fciCNatural <- aggregate(list('fciCNatural'=ttCNatural$x)
@@ -389,9 +350,8 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                            )
     fciCNatural$METRIC <- 'xfc_nat'
     fciCNatural  <- rename(fciCNatural, 'fciCNatural','VALUE')
-#    fciCNatural  <- rename(fciCNatural, 'uid','UID')                 
                        
-  intermediateMessage('.5')
+    intermediateMessage('.5')
 
     # Calculate cover standard deviation of OHV and UCB
     
@@ -408,9 +368,8 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
     
   sd1$parameter <- ifelse(sd1$parameter == 'UNDERCUT', 'sdfc_ucb' , sd1$parameter) 
   sd1$parameter <- ifelse(sd1$parameter == 'OVRHNG', 'sdfc_ohv' , sd1$parameter) 
-#  sd1  <- rename(sd1, 'uid','UID')
-  sd1  <- rename(sd1, 'x','VALUE') 
-  sd1  <- rename(sd1, 'parameter','METRIC') 
+  sd1  <- rename(sd1, 'x', 'VALUE') 
+  sd1  <- rename(sd1, 'parameter', 'METRIC') 
      
 
     intermediateMessage('.6')
@@ -429,7 +388,6 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
   
   idr1$parameter <- ifelse(idr1$parameter == 'UNDERCUT', 'idrucb' , idr1$parameter) 
   idr1$parameter <- ifelse(idr1$parameter == 'OVRHNG', 'idrohv' , idr1$parameter) 
-#  idr1  <- rename(idr1, 'uid','UID')
   idr1  <- rename(idr1, 'x','VALUE') 
   idr1  <- rename(idr1, 'parameter','METRIC') 
   
@@ -446,9 +404,8 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
   
   iqr1$parameter <- ifelse(iqr1$parameter == 'UNDERCUT', 'iqrucb' , iqr1$parameter) 
   iqr1$parameter <- ifelse(iqr1$parameter == 'OVRHNG', 'iqrohv' , iqr1$parameter) 
-#  iqr1  <- rename(iqr1, 'uid','UID')
-  iqr1  <- rename(iqr1, 'x','VALUE') 
-  iqr1  <- rename(iqr1, 'parameter','METRIC') 
+  iqr1  <- rename(iqr1, 'x', 'VALUE') 
+  iqr1  <- rename(iqr1, 'parameter', 'METRIC') 
   
   
   

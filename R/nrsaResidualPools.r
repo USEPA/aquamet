@@ -1,8 +1,7 @@
 nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transectSpacing=NULL, writeIntermediateFiles=FALSE, oldeMethods=FALSE) {
-# nrsaResidualPools <- function(thalweg, actransp, slopes, protocols, writeIntermediateFiles=FALSE, oldeMethods=FALSE) {
 
 ################################################################################
-# Function: metsResidualPools
+# Function: nrsaResidualPools
 # Title: Calculate NRSA Residual Pools Metrics
 # Programmers: Curt Seeliger
 #              Tom Kincaid

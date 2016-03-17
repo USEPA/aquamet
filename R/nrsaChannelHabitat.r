@@ -33,7 +33,7 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
                               ) {
 
 ################################################################################
-# Function: metsChannelHabitat
+# Function: nrsaChannelHabitat
 # Title: Calculate NRSA Channel Habitat Metrics
 # Programmers: Randy Hjort
 #              Curt Seeliger

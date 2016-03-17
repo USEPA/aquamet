@@ -14,7 +14,7 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                   ) {
 
 ################################################################################
-# Function: metsRiparianVegetation
+# Function: nrsaRiparianVegetation
 # Title: Calculate NRSA Riparian Vegetation Metrics
 # Programmers: Curt Seeliger
 #              Tom Kincaid
@@ -43,16 +43,124 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
 #            rather than a csv file.  Removed RUnit functions.
 #   01/11/13 tmk: Inserted code to convert factors in the input data frame to
 #            character variables.
+#    3/16/16 cws Documenting arguments in comments at top.
+#
 # Arguments:
-#   visrip = a data frame containing the visible riparian damage data file.  The
-#     data frame must include columns that are named as follows:
-#       UID - universal ID value
-#       SAMPLE_TYPE - sample type
-#       TRANSECT - transect label
-#       TRANSDIR - transverse location along transect
-#       PARAMETER - identifier for each measurement, assessment, score, etc.
-#       RESULT - measurement associated with PARAMETER column
-#       FLAG - flag
+# canopyCoverLargeDiameter  dataframe containing cover class values for large 
+#                           diameter canopy trees at each transect for all 
+#                           reaches, with the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# canopyCoverSmallDiameter  dataframe containing cover class values for small 
+#                           diameter canopy trees at each transect for all 
+#                           reaches, with the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# canopyVegetationType      dataframe containing canopy cover type data at each 
+#                           transect for all reaches, with the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# groundCoverBare           dataframe containing cover class data for bare ground
+#                           cover at each transect for all reaches, with the 
+#                           following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# groundCoverNonwoody       dataframe containing cover class data for nonwoody
+#                           ground cover at each transect for all reaches, with 
+#                           the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# groundCoverWoody          dataframe containing cover class data for woody
+#                           ground cover at each transect for all reaches, with 
+#                           the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# understoryCoverNonwoody   dataframe containing cover class data for nonwoody
+#                           understory cover at each transect for all reaches, 
+#                           with the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# understoryCoverWoody      dataframe containing cover class data for woody
+#                           understory cover at each transect for all reaches, 
+#                           with the following columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# understoryVegetationType  dataframe containing understory cover type data at 
+#                           each transect for all reaches, with the following 
+#                           columns:
+#                           SITE        integer or character specifying the site 
+#                                       visit
+#                           TRANSECT    character value specifying the transect
+#                                       for which the value was recorded.
+#                           BANK        character value specifying the channel
+#                                       bank (left or right) at the transect
+#                                       at which the values were recorded.
+#                           VALUE       numeric or character values
+#
+# coverCalculationValues =  dataframe used to convert between cover class codes
+#                           to characteristic cover values. Expected to contain
+#                           the following columns:
+#                           field   character values containing all expected 
+#                                   values
+#                           calc    numeric values used to calculate numeric 
+#                                   metrics.
+# 
 #   Note that possible values for variables in the input data frame are
 #   provided in the document named "NRSA Documentation.pdf" included in the help
 #   directory for the package.
@@ -60,51 +168,13 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
 #   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#     SITE - universal ID value
 #     METRIC - metric name
 #     RESULT - metric value
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
-#   metsRiparianVegetation.1 - calculate metrics
 ################################################################################
-
-# # Print an initial message
-#   cat('Riparian Vegetation calculations:\n')
-# 
-# # Convert factors to character variables in the visrip data frame
-#   intermediateMessage('.1 Convert factors to character variables.', loc='end')
-#   visrip <- convert_to_char(visrip)
-# 
-# # Subset the visrip data frame to retain desired values in the column named
-# # PARAMETER
-#   intermediateMessage('.2 Subset the data frame.', loc='end')
-#   df <- subset(visrip ,PARAMETER %in% c('CANBTRE', 'CANSTRE', 'CANVEG',
-#     'UNDWDY', 'UNDNWDY', 'UNDERVEG','GCWDY', 'GCNWDY', 'BARE'))
-# 
-# # Calculate the metrics
-#   intermediateMessage('.3 Call function metsRiparianVegetation.1.', loc='end')
-#   mets <- metsRiparianVegetation.1(df)
-#   row.names(mets) <- 1:nrow(mets)
-# 
-# # Print an exit message
-#   intermediateMessage('Done.', loc='end')
-# 
-# # Return results
-#   return(mets)
-# }
-# 
-# 
-# 
-# metsRiparianVegetation.1 <- function(visrip) {
-# 
-# # Calculates visible riparian vegetation metrics.
-# # Returns a dataframe of the metrics upon completion, or a character string
-# # describing the problem if one occurs.
-# #
-# # ARGUMENTS:
-# # visrip    dataframe with visible riparian vegetation data
-# #
 
     intermediateMessage('Starting riparian vegetation metrics', loc='start')
     absentAsNULL <- function(df, ifdf, ...) {

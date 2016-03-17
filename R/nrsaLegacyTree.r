@@ -1,7 +1,5 @@
 # nrsaLegacyTree.r
 #
-# 12/11/15 cws created from metsLegacyTree.r with updated calling interface.
-#
 
 
 nrsaLegacyTree <- function(dbhClass = NULL
@@ -12,7 +10,7 @@ nrsaLegacyTree <- function(dbhClass = NULL
                           ) {
 
 ################################################################################
-# Function: metsLegacyTree
+# Function: nrsaLegacyTree
 # Title: Calculate NRSA Legacy Riparian Trees Metrics
 # Programmers: Suzanne San Romani
 #              Curt Seeliger
@@ -73,10 +71,11 @@ nrsaLegacyTree <- function(dbhClass = NULL
 #   01/24/13 cws: Changed use of reshape::cast to reshape2::dcast.  Requiring
 #            reshape2 instead of reshape and calling dcast instead of cast; no
 #            other changes made.
-#   12/11/15 cws Updated for new calling interface
+#   12/11/15 cws created from metsLegacyTree.r with updated calling interface.
 #    3/01/16 cws Documenting arguments in comments at top.  Removed old code.
 #            Fixed stupid code documentation error that confused DBH with HEIGHT
 #            class values.
+#    3/16/16 cws removed old UID name from comments
 #
 # ARGUMENTS:
 # dbhClass      dataframe containing dbh class values at each transect of all 
@@ -124,7 +123,7 @@ nrsaLegacyTree <- function(dbhClass = NULL
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
 #   successful.  The data frame contains the following columns:
-#     UID - universal ID value
+#     SITE - universal ID value
 #     METRIC - metric name
 #     RESULT - metric value
 # Other Functions Required:

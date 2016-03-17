@@ -98,6 +98,7 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #    1/21/16 cws Changed to no longer convert LINE=999 to LINE=0 (indicating
 #            at-transect location in boatable reaches). Updated argument 
 #            descriptions.
+#    3/16/16 cws Removed old UID column name from documentation
 #
 # Arguments:
 # bBearing          dataframe containing bearing values recorded in the field 
@@ -689,20 +690,9 @@ if(16155 %in% slopeData$SITE) intermediateMessage('[16155]')
 
   mets$VALUE <- ifelse(is.nan(as.numeric(mets$VALUE)), NA, mets$VALUE)
 
-  # Normally, filter out metrics with too small of a sample size to be reliable,
-  # but instead skip this step because they decided to estimate slope using GPS
-  # coordinates so we only have one slope per site.
-#  badSlopeUIDs <- unique(nslp[as.numeric(nslp$RESULT)<=2,]$UID)
-#  if(length(badSlopeUIDs)>0) {
-#      mets$RESULT <- ifelse(mets$METRIC=='xslope' & mets$UID %in% badSlopeUIDs
-#                           ,NA
-#                           ,mets$RESULT
-#                           )
-#      mets$RESULT <- ifelse(mets$METRIC=='vslope' & mets$UID %in% badSlopeUIDs
-#                           ,NA
-#                           ,mets$RESULT
-#                           )
-#  }
+  # We used to filter out metrics with too small of a sample size (N<=2) to be 
+  # reliable, but instead skip this step because they decided to estimate slope 
+  # using GPS coordinates so we only have one slope per site.
 
   intermediateMessage('.  Done.', loc='end')
   return(mets)
@@ -725,7 +715,7 @@ nrsaSlopeBearing.adjustElevations <- function(df) {
 #
 # ARGUMENTS:
 # df        dataframe with slope & bearing information, one row per subsighting,
-#           with columns UID, TRANSECT, LINE, SLOPE, UNITS.SLOPE, PROPORTION,
+#           with columns SITE, TRANSECT, LINE, SLOPE, UNITS.SLOPE, PROPORTION,
 #           UNITS.PROPORTION, BEARING, UNITS.BEARING, TRANSPC.
 #
 # ASSUMPTIONS:
@@ -743,7 +733,7 @@ nrsaSlopeBearing.adjustElevations <- function(df) {
   #
   #   (this assumes that the slope value is recorded at the start of each group)
   #
-  # As an example (leaving out the UID column and a few others):
+  # As an example (leaving out the SITE column and a few others):
   #
   #   Tran  Line  Slope  Units  Prop 'Group' groupSlope groupUnits
   #   A     0     2      CM      100  1      2          CM
