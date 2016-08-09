@@ -1,4 +1,4 @@
-assignDistinct <- function(cc) {
+assignDistinct <- function(cc, sampleID='UID') {
 
 ################################################################################
 # Function: assignDistinct
@@ -9,7 +9,7 @@ assignDistinct <- function(cc) {
 #   This function evaluates taxonomic distinctness within samples and assigns an 
 # indicator of distinctness (IS_DISTINCT) to each taxon (0 or 1) in each sample,
 # based on distinctness within that sample.  Input data is expected to be count
-# data and is assumed to include a single variable named SAMPID that uniquely 
+# data and is assumed to include a single variable named SAMP_ID that uniquely 
 # identifies samples. The input data frame also needs to include TARGET_TAXON
 # as the field containing the taxon name, TAXA_ID as the taxonomic
 # identification number, and the following taxonomic fields fully populated (as
@@ -26,30 +26,41 @@ assignDistinct <- function(cc) {
 #                 taxa, assuming the use of TARGET_TAXON as the taxa name.
 #   08/09/13 kab: Modified to change SAMP_ID to SAMPID to match other metric
 #                 code.
+#   7/21/2016 kab: Modified arguments to include sampID field so that it's 
+#                 easier to call this function with any dataset, changed
+#                 SAMPID back to SAMP_ID to distinguish it from outside the
+#                 function.
 # Arguments:
 #   cc = a data frame containing taxonomic fields for PHYLUM, CLASS, ORDER,
 #     FAMILY, and GENUS in addition to TAXA_ID and TARGET_TAXON.
+#   sampID = vector of key variable names identifying samples, with default
+#           of 'UID'
 # Output:
 #   A data frame containing distinct taxa names.
+#
 ################################################################################
-
+    for(i in 1:length(sampleID)){
+      if(i==1) cc$SAMP_ID <- cc[,sampleID[i]]
+      else cc$SAMP_ID <- paste(cc$SAMP_ID,cc[,sampleID[i]],sep='.')
+    }      
+    
 		cc$IS_DISTINCT<-NA
-		freqFam<-as.data.frame(table(SAMPID=cc$SAMPID, FAMILY=cc$FAMILY),
+		freqFam<-as.data.frame(table(SAMP_ID=cc$SAMP_ID, FAMILY=cc$FAMILY),
 		   responseName="nFam", stringsAsFactors=FALSE)
 		freqFam<-subset(freqFam,nFam>0)
-		cc<-merge(cc,freqFam,by=c('SAMPID','FAMILY'),all.x=TRUE)
-		freqOrd<-as.data.frame(table(SAMPID=cc$SAMPID, ORDER=cc$ORDER),
+		cc<-merge(cc,freqFam,by=c('SAMP_ID','FAMILY'),all.x=TRUE)
+		freqOrd<-as.data.frame(table(SAMP_ID=cc$SAMP_ID, ORDER=cc$ORDER),
 		   responseName="nOrd", stringsAsFactors=FALSE)
 		freqOrd<-subset(freqOrd,nOrd>0)
-		cc<-merge(cc,freqOrd,by=c('SAMPID','ORDER'),all.x=TRUE)
-		freqCls<-as.data.frame(table(SAMPID=cc$SAMPID,CLASS=cc$CLASS),
+		cc<-merge(cc,freqOrd,by=c('SAMP_ID','ORDER'),all.x=TRUE)
+		freqCls<-as.data.frame(table(SAMP_ID=cc$SAMP_ID,CLASS=cc$CLASS),
 		   responseName="nCls", stringsAsFactors=FALSE)
 		freqCls<-subset(freqCls,nCls>0)
-		cc<-merge(cc,freqCls,by=c('SAMPID','CLASS'),all.x=TRUE)
-		freqPhy<-as.data.frame(table(SAMPID=cc$SAMPID, PHYLUM=cc$PHYLUM),
+		cc<-merge(cc,freqCls,by=c('SAMP_ID','CLASS'),all.x=TRUE)
+		freqPhy<-as.data.frame(table(SAMP_ID=cc$SAMP_ID, PHYLUM=cc$PHYLUM),
 		   responseName="nPhy", stringsAsFactors=FALSE)
 		freqPhy<-subset(freqPhy,nPhy>0)
-		cc<-merge(cc,freqPhy,by=c('SAMPID','PHYLUM'),all.x=TRUE)
+		cc<-merge(cc,freqPhy,by=c('SAMP_ID','PHYLUM'),all.x=TRUE)
 
 		whichGen<-with(cc,which(TARGET_TAXON==GENUS|TARGET_TAXON %in%
 		   c('THIENEMANNIMYIA GENUS GR.', 'CERATOPOGONINAE',
@@ -72,7 +83,7 @@ assignDistinct <- function(cc) {
 		whichPhy1<-with(cc,which(TARGET_TAXON==PHYLUM & nPhy>1))
 		cc$IS_DISTINCT[whichPhy1]<-0
 		
-		outdata<-subset(cc,select=names(cc) %nin% c('nFam','nOrd','nCls','nPhy'))
+		outdata<-subset(cc,select=names(cc) %nin% c('SAMP_ID','nFam','nOrd','nCls','nPhy'))
 
 	return(outdata)
 }

@@ -255,7 +255,7 @@ if(taxlevel=='WSA'){
 	
 	agg1 <- ddply(toFix1,c(sampID,'SAMPID','TAXA_ID'),summarise,FINAL_CT=sum(FINAL_CT))
 	agg2<-merge(agg1,inTaxa,by='TAXA_ID')
-	agg2<-assignDistinct(agg2)
+	agg2<-assignDistinct(agg2,c('SAMPID',sampID))
 	agg2$IS_DISTINCT[is.na(agg2$IS_DISTINCT)]<-0
 	
 	indata<-subset(agg2,select=c(sampID,'SAMPID','TAXA_ID','FINAL_CT','IS_DISTINCT'))

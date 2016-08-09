@@ -38,8 +38,9 @@ if(getRversion() >= "2.15.1")
 # topN <-- number specifying the top number of species to include in calculation
 
 Dominance<-function(df, topN=1){
-	rr <- subset(df,IS_DISTINCT==1)
-	rr <- ddply(rr,"SAMPID",mutate,TOTSUM=sum(FINAL_CT))
+ rr <- subset(df,IS_DISTINCT==1)
+ rr <- ddply(rr,"SAMPID",mutate,TOTSUM=sum(FINAL_CT))
+  
 	
 	tt <- aggregate(list(domN=rr$FINAL_CT)
 			,list(SAMPID=rr$SAMPID)
@@ -85,11 +86,11 @@ ShanDiversity <- function(indata){
 # taxalist <-- taxalist with TAXA_ID and tolerance values (TVs) as RESULT and PARAMETER as either PTV or TOL_VAL
 
 tolindex<-function(indata, taxalist){
-	tv_taxa <- taxalist[taxalist$PARAMETER %in% c('PTV','TOL_VAL'),]
+	tv_taxa <- taxalist[taxalist$TRAIT %in% c('PTV','TOL_VAL'),]
 	indata1 <- ddply(indata,"SAMPID",mutate,SUMCT=sum(FINAL_CT))
 	#This allows us to sum across only those taxa with TVs
 	tv_cts <- merge(indata1,tv_taxa,by="TAXA_ID")
-	outTV <- ddply(tv_cts,"SAMPID",summarise,WTD_TV=round(sum(FINAL_CT*as.numeric(RESULT))/unique(SUMCT),2))
+	outTV <- ddply(tv_cts,"SAMPID",summarise,WTD_TV=round(sum(FINAL_CT*as.numeric(value))/unique(SUMCT),2))
 	return(outTV)
 }
 
