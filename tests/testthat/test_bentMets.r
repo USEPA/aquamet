@@ -103,3 +103,16 @@ test_that("Benthic dominance and diversity metric values correct",
   expect_true(nrow(compOut)==70)
   expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001)
   })
+
+test_that("All benthic metric values correct",
+          {
+            testOut <- calcAllBentMets(indf=inTest,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                       ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
+                                       ,habit='HABIT_WSA',ptv='PTV_WSA')
+            testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                           ,variable.name='PARAMETER',value.name='RESULT') %>%
+              plyr::mutate(PARAMETER=as.character(PARAMETER))
+            compOut <- merge(bentMet_test,testOut.long,by=c('UID','SAMPLE_TYPE','SAMPLE_CAT','PARAMETER'))
+            expect_true(nrow(compOut)==1230)
+            expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001)
+          })

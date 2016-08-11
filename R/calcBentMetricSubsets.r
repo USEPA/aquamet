@@ -1,4 +1,42 @@
 #' @export
+#' @title Calculate taxonomy metrics for benthic macroinvertebrates 
+#' 
+#' @description This function calculates all taxonomy related 
+#' benthic metrics.
+#' 
+#' @param inCts A data frame containing, at minimum, the variables 
+#' specified in the arguments for sampID, dist, ct, and taxa_id
+#' @param inTaxa a data frame containing taxonomic information, 
+#' including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
+#' and TRIBE, as well as autecology traits with names that match those 
+#' in the arguments ffg, habit, and ptv. In addition, there
+#' should be a variable with the name in argument taxa_id that matches 
+#' with all of those in the indf data frame
+#' @param sampID A character vector containing the names of all 
+#' variables in indf that specify a unique sample. If not specified, 
+#' the default is \emph{UID}
+#' @param dist A string with the name of the distinctness variable, 
+#' which is assumed to have only values of 0 or 1. If not specified, 
+#' the default is \emph{IS_DISTINCT}.
+#' @param ct A string with the name of the count variable. If not 
+#' specified, the default is \emph{TOTAL}.
+#' @param taxa_id A string with the name of the taxon ID variable 
+#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' @return A data frame containing the variables in sampID and 
+#' the benthic macroinvertebrate metrics as additional variables.
+#'  These metrics are named  AMPHNTAX, AMPHPIND, AMPHPTAX, CHIRNTAX, 
+#'  CHIRPIND, CHIRPTAX, CRUSNTAX, CRUSPIND, CRUSPTAX, DIPTNTAX,
+#'  DIPTPIND, DIPTPTAX, EPHENTAX, EPHEPIND, EPHEPTAX, EPOTNTAX, 
+#'  EPOTPIND, EPOTPTAX, EPT_NTAX, EPT_PIND, EPT_PTAX, HEMINTAX, 
+#'  HEMIPIND, HEMIPTAX, MITENTAX, MITEPIND, MITEPTAX, MOLLNTAX, 
+#'  MOLLPIND, MOLLPTAX, NOINNTAX, NOINPIND, NOINPTAX, ODONNTAX, 
+#'  ODONPIND, ODONPTAX, OLLENTAX, OLLEPIND, OLLEPTAX, ORTHNTAX, 
+#'  ORTHPIND, ORTHPTAX, PLECNTAX, PLECPIND, PLECPTAX, TANYNTAX, 
+#'  TANYPIND, TANYPTAX, TRICNTAX, TRICPIND, TRICPTAX, TUBINAIDNTAX, 
+#'  TUBINAIDPIND, TUBINAIDPTAX, and ORTHCHIRPIND. 
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
+
+
 calcTaxonomyMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                              ct="TOTAL",taxa_id='TAXA_ID'){
 
@@ -156,6 +194,44 @@ calcTaxonomyMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT
 
 
 #' @export
+#' @title Calculate functional feeding group benthic metrics 
+#' 
+#' @description This function calculates 
+#' all functional feeding group benthic metrics using trait 
+#' information supplied.
+#' 
+#' @param inCts A data frame containing, at minimum, the variables 
+#' specified in the arguments for sampID, dist, ct, and taxa_id
+#' @param inTaxa a data frame containing taxonomic information, 
+#' including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
+#' and TRIBE, as well as autecology traits with names that match those 
+#' in the arguments ffg, habit, and ptv. In addition, there
+#' should be a variable with the name in argument taxa_id that matches 
+#' with all of those in the indf data frame
+#' @param sampID A character vector containing the names of all 
+#' variables in indf that specify a unique sample. If not specified, 
+#' the default is \emph{UID}
+#' @param dist A string with the name of the distinctness variable, 
+#' which is assumed to have only values of 0 or 1. If not specified, 
+#' the default is \emph{IS_DISTINCT}.
+#' @param ct A string with the name of the count variable. If not 
+#' specified, the default is \emph{TOTAL}.
+#' @param taxa_id A string with the name of the taxon ID variable 
+#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' @param ffg A string with the name of the functional feeding group 
+#' variable in inTaxa. The default value is \emph{FFG}. Values used
+#' in calculations include CF, CG, PR, SH, Sc, representing 
+#' collector-filterer, collector-gatherer, predator, shredder, and
+#' scraper, respectively. Each taxon may have more than 
+#' one ffg value.
+#' @return A data frame containing the variables in sampID and 
+#' the benthic macroinvertebrate metrics as additional variables. 
+#' Metrics included are named COFINTAX, COFIPIND, COFIPTAX,
+#' COFITRICNTAX, COFITRICPIND, COFITRICPTAX, COGANTAX, COGAPIND,
+#' COGAPTAX, PREDNTAX, PREDPIND, PREDPTAX, SCRPNTAX, SCRPPIND,
+#' SCRPPTAX, SHRDNTAX, SHRDPIND, and SHRDPTAX.
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
+
 calcFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                         ct="TOTAL",taxa_id='TAXA_ID',ffg='FFG'){
   ctVars <- c(sampID,dist,ct,taxa_id)
@@ -277,6 +353,41 @@ calcFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 }
 
 #' @export
+#' @title Calculate habit benthic metrics 
+#' 
+#' @description This function calculates habit 
+#' benthic metrics.
+#' 
+#' @param inCts A data frame containing, at minimum, the variables 
+#' specified in the arguments for sampID, dist, ct, and taxa_id
+#' @param inTaxa a data frame containing taxonomic information, 
+#' including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
+#' and TRIBE, as well as autecology traits with names that match those 
+#' in the arguments ffg, habit, and ptv. In addition, there
+#' should be a variable with the name in argument taxa_id that matches 
+#' with all of those in the indf data frame
+#' @param sampID A character vector containing the names of all 
+#' variables in indf that specify a unique sample. If not specified, 
+#' the default is \emph{UID}
+#' @param dist A string with the name of the distinctness variable, 
+#' which is assumed to have only values of 0 or 1. If not specified, 
+#' the default is \emph{IS_DISTINCT}.
+#' @param ct A string with the name of the count variable. If not 
+#' specified, the default is \emph{TOTAL}.
+#' @param taxa_id A string with the name of the taxon ID variable 
+#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' @param habit A string with the name of the habit variable in inTaxa. 
+#' The default value is \emph{HABIT}. Values for habit that are used in
+#' calculations include BU, CB, CN, SP, SW, representing burrower, 
+#' climber, clinger, sprawler, and swimmer, respectively. Each taxon 
+#' may have more than one value for habit. 
+#' @return A data frame containing the variables in sampID and 
+#' the benthic macroinvertebrate metrics as additional variables.
+#'  The metric names include  BURRNTAX, BURRPIND, BURRPTAX, CLMBNTAX, 
+#'  CLMBPIND, CLMBPTAX, CLNGNTAX, CLNGPIND, CLNGPTAX, SPWLNTAX, 
+#'  SPWLPIND, SPWLPTAX, SWIMNTAX, SWIMPIND, and SWIMPTAX. 
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
+
 calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id='TAXA_ID',habit='HABIT'){
 
@@ -389,6 +500,41 @@ calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 }
 
 #' @export
+#' #' @title Calculate tolerance benthic metrics 
+#' 
+#' @description This function calculates tolerance 
+#' benthic metrics.
+#' 
+#' @param inCts A data frame containing, at minimum, the variables 
+#' specified in the arguments for sampID, dist, ct, and taxa_id
+#' @param inTaxa a data frame containing taxonomic information, 
+#' including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
+#' and TRIBE, as well as autecology traits with names that match those 
+#' in the arguments ffg, habit, and ptv. In addition, there
+#' should be a variable with the name in argument taxa_id that matches 
+#' with all of those in the indf data frame
+#' @param sampID A character vector containing the names of all 
+#' variables in indf that specify a unique sample. If not specified, 
+#' the default is \emph{UID}
+#' @param dist A string with the name of the distinctness variable, 
+#' which is assumed to have only values of 0 or 1. If not specified, 
+#' the default is \emph{IS_DISTINCT}.
+#' @param ct A string with the name of the count variable. If not 
+#' specified, the default is \emph{TOTAL}.
+#' @param taxa_id A string with the name of the taxon ID variable 
+#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' @param ptv A string with the name of the pollution tolerance value
+#' variable in inTaxa. The default value is \emph{PTV}. Valid values
+#' for ptv range from 0 to 10. 
+#' @return A data frame containing the variables in sampID and  
+#' the benthic macroinvertebrate metrics as additional variables. 
+#'  The names of metrics are  FACLNTAX, FACLPIND, FACLPTAX, INTLNTAX, 
+#'  INTLPIND, INTLPTAX, NTOLNTAX, NTOLPIND, NTOLPTAX, STOLNTAX, 
+#'  STOLPIND, STOLPTAX, TL01NTAX, TL01PIND, TL01PTAX, TL23NTAX, 
+#'  TL23PIND, TL23PTAX, TL45NTAX, TL45PIND, TL45PTAX, TL67NTAX, 
+#'  TL67PIND, TL67PTAX, TOLRNTAX, TOLRPIND, TOLRPTAX, and WTD_TV.  
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
+
 calcTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id='TAXA_ID',ptv='PTV'){
   ctVars <- c(sampID,dist,ct,taxa_id)
@@ -523,7 +669,37 @@ calcTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 }
 
 
-#' @export 
+#' @export
+#' #' @title Calculate dominance and diversity benthic metrics 
+#' 
+#' @description This function calculates overall dominance, 
+#' chironomid dominance, and Shannon diversity 
+#' benthic metrics.
+#' 
+#' @param inCts A data frame containing, at minimum, the variables 
+#' specified in the arguments for sampID, dist, ct, and taxa_id
+#' @param inTaxa a data frame containing taxonomic information, 
+#' including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
+#' and TRIBE, as well as autecology traits with names that match those 
+#' in the arguments ffg, habit, and ptv. In addition, there
+#' should be a variable with the name in argument taxa_id that matches 
+#' with all of those in the indf data frame
+#' @param sampID A character vector containing the names of all 
+#' variables in indf that specify a unique sample. If not specified, 
+#' the default is \emph{UID}
+#' @param dist A string with the name of the distinctness variable, 
+#' which is assumed to have only values of 0 or 1. If not specified, 
+#' the default is \emph{IS_DISTINCT}.
+#' @param ct A string with the name of the count variable. If not 
+#' specified, the default is \emph{TOTAL}.
+#' @param taxa_id A string with the name of the taxon ID variable 
+#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' @return A data frame containing the variables in sampID and  
+#' the benthic macroinvertebrate metrics as additional variables.
+#' The names of metrics include HPRIME, DOM1PIND, DOM3PIND, 
+#' DOM5PIND, CHIRDOM1PIND, CHIRDOM3PIND, and CHIRDOM5PIND.
+#' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
+
 calcDominMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id="TAXA_ID"){
 
@@ -599,10 +775,6 @@ calcDominMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
     outMet <- merge(outMet,plyr::rename(Dominance(chiroIn, topN=5),
                                         c("DOM5PIND"="CHIRDOM5PIND")), by="SAMPID", all.x=TRUE)
     
-#     outMet <- plyr::mutate(outMet, CHIRDOM1PIND=ifelse(is.na(CHIRDOM1PIND),0,CHIRDOM1PIND)
-#                            ,CHIRDOM3PIND=ifelse(is.na(CHIRDOM3PIND) & !is.nan(CHIRDOM1PIND)
-#                               ,100,ifelse(is.na(CHIRDOM3PIND) & is.na(CHIRDOM1PIND),0,CHIRDOM3PIND))
-#                            ,CHIRDOM5PIND=ifelse(is.na(CHIRDOM5PIND), 100, CHIRDOM5PIND))
 
     outMet <- plyr::mutate(outMet, CHIRDOM1PIND=ifelse(is.na(CHIRDOM1PIND),0,CHIRDOM1PIND)
                            ,CHIRDOM3PIND=ifelse(is.na(CHIRDOM3PIND) & CHIRDOM1PIND>0
