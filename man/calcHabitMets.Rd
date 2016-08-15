@@ -30,7 +30,8 @@ the default is \emph{IS_DISTINCT}.}
 specified, the default is \emph{TOTAL}.}
 
 \item{taxa_id}{A string with the name of the taxon ID variable 
-that matches that in inTaxa. The default value is \emph{TAXA_ID}.}
+in \emph{inCts} that matches that in \emph{inTaxa}. The default 
+value is \emph{TAXA_ID}.}
 
 \item{habit}{A string with the name of the habit variable in inTaxa. 
 The default value is \emph{HABIT}. Values for habit that are used in

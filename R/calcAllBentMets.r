@@ -23,7 +23,8 @@
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{TOTAL}.
 #' @param taxa_id A string with the name of the taxon ID variable 
-#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' in \emph{indf} that matches that in \emph{inTaxa}. The default 
+#' value is \emph{TAXA_ID}.
 #' @param ffg A string with the name of the functional feeding group 
 #' variable in inTaxa. The default value is \emph{FFG}. Values used
 #' in calculations include CF, CG, PR, SH, Sc, representing 
@@ -46,7 +47,7 @@
 #'   head(bentEx)
 #'   head(bentTaxa)
 #'   # Calculate metrics for bentIn, using the taxonomy in the count file as is
-#'   bentMetrics <- invertMet(inCts=bentEx, inTaxa=bentTaxa,
+#'   bentMetrics <- invertMet(indf=bentEx, inTaxa=bentTaxa,
 #'                      sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT'), 
 #'                      dist='IS_DISTINCT',
 #'                      ct='TOTAL',taxa_id='TAXA_ID',
@@ -61,27 +62,38 @@ calcAllBentMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
   }
   
-  ctVars <- c(sampID,dist,ct,taxa_id,ffg,habit,ptv)
-  if(any(ctVars %nin% names(inCts))){
-    msgTraits <- which(ctVars %nin% names(inCts))
-    print(paste("Missing variables in input data frame:",paste(names(inCts)[msgTraits],collapse=',')))
+  ctVars <- c(sampID,dist,ct,taxa_id)
+  if(any(ctVars %nin% names(indf))){
+    msgTraits <- which(ctVars %nin% names(indf))
+    print(paste("Missing variables in input count data frame:",paste(names(indf)[msgTraits],collapse=',')))
     return(NULL)
   }
   
-  tax <- calcTaxonomyMets(indf,inTaxa,sampID,dist,ct,taxa_id)
-  tax.1 <- reshape2::melt(tax,id.vars=sampID)
+  # Taxonomy and traits checks
+  necTraits <- c('PHYLUM','CLASS','ORDER','FAMILY','TRIBE','SUBFAMILY','GENUS'
+                 ,ffg,habit,ptv)
+  if(any(necTraits %nin% names(inTaxa))){
+    msgTraits <- which(necTraits %nin% names(inTaxa))
+    return(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:\n", necTraits[msgTraits], "\n"))
+  }
   
-  ffg <- calcFFGmets(indf,inTaxa,sampID,dist,ct,taxa_id,ffg)
-  ffg.1 <- reshape2::melt(ffg,id.vars=sampID)
+  inTaxa <- subset(inTaxa,select=names(inTaxa) %in% c('TAXA_ID','PHYLUM','CLASS','ORDER','FAMILY'
+                                                      ,'TRIBE','SUBFAMILY','GENUS',ffg,habit,ptv)) 
   
-  habit <- calcHabitMets(indf,inTaxa,sampID,dist,ct,taxa_id,habit)
-  habit.1 <- reshape2::melt(habit,id.vars=sampID)
+  taxMet <- calcTaxonomyMets(indf,inTaxa,sampID,dist,ct,taxa_id)
+  tax.1 <- reshape2::melt(taxMet,id.vars=sampID)
   
-  tol <- calcTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,ptv)
-  tol.1 <- reshape2::melt(tol,id.vars=sampID)
+  ffgMet <- calcFFGmets(indf,inTaxa,sampID,dist,ct,taxa_id,ffg)
+  ffg.1 <- reshape2::melt(ffgMet,id.vars=sampID)
   
-  dom <- calcDominMets(indf,inTaxa,sampID,dist,ct,taxa_id)
-  dom.1 <- reshape2::melt(dom,id.vars=sampID)
+  habitMet <- calcHabitMets(indf,inTaxa,sampID,dist,ct,taxa_id,habit)
+  habit.1 <- reshape2::melt(habitMet,id.vars=sampID)
+  
+  tolMet <- calcTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,ptv)
+  tol.1 <- reshape2::melt(tolMet,id.vars=sampID)
+  
+  domMet <- calcDominMets(indf,inTaxa,sampID,dist,ct,taxa_id)
+  dom.1 <- reshape2::melt(domMet,id.vars=sampID)
   
   mets <- rbind(tax.1, ffg.1, habit.1, tol.1, dom.1)
   

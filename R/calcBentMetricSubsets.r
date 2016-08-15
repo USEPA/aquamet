@@ -21,7 +21,8 @@
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{TOTAL}.
 #' @param taxa_id A string with the name of the taxon ID variable 
-#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' in \emph{inCts} that matches that in \emph{inTaxa}. The default 
+#' value is \emph{TAXA_ID}.
 #' @return A data frame containing the variables in sampID and 
 #' the benthic macroinvertebrate metrics as additional variables.
 #'  These metrics are named  AMPHNTAX, AMPHPIND, AMPHPTAX, CHIRNTAX, 
@@ -217,7 +218,8 @@ calcTaxonomyMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{TOTAL}.
 #' @param taxa_id A string with the name of the taxon ID variable 
-#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' in \emph{inCts} that matches that in \emph{inTaxa}. The default 
+#' value is \emph{TAXA_ID}.
 #' @param ffg A string with the name of the functional feeding group 
 #' variable in inTaxa. The default value is \emph{FFG}. Values used
 #' in calculations include CF, CG, PR, SH, Sc, representing 
@@ -375,7 +377,8 @@ calcFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{TOTAL}.
 #' @param taxa_id A string with the name of the taxon ID variable 
-#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' in \emph{inCts} that matches that in \emph{inTaxa}. The default 
+#' value is \emph{TAXA_ID}.
 #' @param habit A string with the name of the habit variable in inTaxa. 
 #' The default value is \emph{HABIT}. Values for habit that are used in
 #' calculations include BU, CB, CN, SP, SW, representing burrower, 
@@ -430,11 +433,11 @@ calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
     subset(!is.na(FINAL_CT) & FINAL_CT>0)
   
   inTaxa.1 <- mutate(inTaxa
-                     ,BURR=ifelse(str_detect(HABIT,'BU'), 1, NA)
-                     ,CLMB=ifelse(str_detect(HABIT,'CB'), 1, NA)
-                     ,CLNG=ifelse(str_detect(HABIT,'CN'), 1, NA)
-                     ,SPWL=ifelse(str_detect(HABIT,'SP'), 1, NA)
-                     ,SWIM=ifelse(str_detect(HABIT,'SW'), 1, NA))
+                     ,BURR=ifelse(stringr::str_detect(HABIT,'BU'), 1, NA)
+                     ,CLMB=ifelse(stringr::str_detect(HABIT,'CB'), 1, NA)
+                     ,CLNG=ifelse(stringr::str_detect(HABIT,'CN'), 1, NA)
+                     ,SPWL=ifelse(stringr::str_detect(HABIT,'SP'), 1, NA)
+                     ,SWIM=ifelse(stringr::str_detect(HABIT,'SW'), 1, NA))
   
   # Drop non-target taxa if included in taxalist
   if(length(grep('NON_TARGET',names(inTaxa.1)))>0) {
@@ -500,7 +503,7 @@ calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 }
 
 #' @export
-#' #' @title Calculate tolerance benthic metrics 
+#' @title Calculate tolerance benthic metrics 
 #' 
 #' @description This function calculates tolerance 
 #' benthic metrics.
@@ -522,7 +525,8 @@ calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{TOTAL}.
 #' @param taxa_id A string with the name of the taxon ID variable 
-#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' in \emph{inCts} that matches that in \emph{inTaxa}. The default 
+#' value is \emph{TAXA_ID}.
 #' @param ptv A string with the name of the pollution tolerance value
 #' variable in inTaxa. The default value is \emph{PTV}. Valid values
 #' for ptv range from 0 to 10. 
@@ -670,7 +674,7 @@ calcTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 
 
 #' @export
-#' #' @title Calculate dominance and diversity benthic metrics 
+#' @title Calculate dominance and diversity benthic metrics 
 #' 
 #' @description This function calculates overall dominance, 
 #' chironomid dominance, and Shannon diversity 
@@ -693,7 +697,8 @@ calcTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{TOTAL}.
 #' @param taxa_id A string with the name of the taxon ID variable 
-#' that matches that in inTaxa. The default value is \emph{TAXA_ID}.
+#' in \emph{inCts} that matches that in \emph{inTaxa}. The default 
+#' value is \emph{TAXA_ID}.
 #' @return A data frame containing the variables in sampID and  
 #' the benthic macroinvertebrate metrics as additional variables.
 #' The names of metrics include HPRIME, DOM1PIND, DOM3PIND, 

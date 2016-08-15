@@ -2,6 +2,7 @@
 % Please edit documentation in R/calcBentMetricSubsets.r
 \name{calcTolMets}
 \alias{calcTolMets}
+\title{Calculate tolerance benthic metrics}
 \usage{
 calcTolMets(inCts, inTaxa = NULL, sampID = "UID", dist = "IS_DISTINCT",
   ct = "TOTAL", taxa_id = "TAXA_ID", ptv = "PTV")
@@ -29,7 +30,8 @@ the default is \emph{IS_DISTINCT}.}
 specified, the default is \emph{TOTAL}.}
 
 \item{taxa_id}{A string with the name of the taxon ID variable 
-that matches that in inTaxa. The default value is \emph{TAXA_ID}.}
+in \emph{inCts} that matches that in \emph{inTaxa}. The default 
+value is \emph{TAXA_ID}.}
 
 \item{ptv}{A string with the name of the pollution tolerance value
 variable in inTaxa. The default value is \emph{PTV}. Valid values
