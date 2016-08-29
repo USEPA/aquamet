@@ -98,10 +98,11 @@ tolindex<-function(indata, taxalist){
 # Original version: Only taxa with TVs are included in the proportion
 # calculations.
 tolindexFish<-function(indata, taxalist){
-	tv_taxa <- taxalist[taxalist$PARAMETER %in% c('PTV','TOL_VAL'),]
+	tv_taxa <- taxalist[,c('TAXA_ID','TOL_VAL')]
 	# This allows us to sum across only those taxa with TVs
 	tv_cts <- merge(indata,tv_taxa,by="TAXA_ID")
-	outTV <- ddply(tv_cts, "SAMPID", summarise,
-	   WTD_TV=round(sum(FINAL_CT*as.numeric(RESULT))/sum(FINAL_CT),2))
+	outTV <- filter(tv_cts,!is.na(FINAL_CT) & !is.na(TOL_VAL)) %>%
+    ddply("SAMPID", summarise,
+	   WTD_TV=round(sum(FINAL_CT*as.numeric(TOL_VAL,na.rm=T))/sum(FINAL_CT),2))
 	return(outTV)
 }
