@@ -46,7 +46,9 @@
 #' non-native and 'N' for native. The default name 
 #' is \emph{NONNATIVE}.
 #' @return A data frame containing the variables in sampID and 
-#' the fish tolerance metrics as additional variables. The names of
+#' the fish metrics as additional variables. Metric 
+#' descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package. The names of
 #' metrics include  RHEONTAX, RHEOPIND, RHEOPTAX, LOTNTAX, LOTPIND, 
 #' LOTPTAX,  MIGRNTAX, MIGRPIND, MIGRPTAX,  LITHNTAX, LITHPIND, 
 #' LITHPTAX,  COLDNTAX, COLDPIND, COLDPTAX, TOTLNIND,
@@ -269,7 +271,6 @@ calcFishOtherMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTIN
     }else{
       inNative <- subset(inCts.2,NONNATIVE=='N') 
       if(length(inNative)>0){
-        print("About to run native metrics.")
         inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(FINAL_CT),
                                     NAT_TOTLNTAX=sum(IS_DISTINCT))
         totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])

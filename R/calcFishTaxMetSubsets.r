@@ -37,7 +37,9 @@
 #' \emph{inTaxa} taxalist containing the common name. The 
 #' default value is \emph{NAME}.
 #' @return A data frame containing the variables in sampID and 
-#' the fish tolerance metrics as additional variables. The names of
+#' the fish tolerance metrics as additional variables. Metric 
+#' descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package. The names of
 #' metrics include  SALMPIND, SALMNTAX, SALMPTAX, ICTAPIND, ICTANTAX, 
 #' ICTAPTAX, CATOPIND, CATONTAX, CATOPTAX, RBCATOPIND, RBCATONTAX, 
 #' RBCATOPTAX, CENTPIND, CENTNTAX, CENTPTAX, CYPRPIND, CYPRNTAX, CYPRPTAX,
@@ -85,7 +87,7 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   necTraits <- c(family, genus, comname)
   if(any(necTraits %nin% names(inTaxa))){
     msgTraits <- which(necTraits %nin% names(inTaxa))
-    return(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:\n", necTraits[msgTraits], "\n"))
+    return(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:", necTraits[msgTraits]))
   }
   
   inTaxa <- subset(inTaxa,select=names(inTaxa) %in% c(taxa_id,family,genus,comname))  
@@ -204,7 +206,6 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
     }else{
       inNative <- subset(inCts.2,NONNATIVE=='N') 
       if(length(inNative)>0){
-        print("About to run native metrics.")
         inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(FINAL_CT),
                                              NAT_TOTLNTAX=sum(IS_DISTINCT))
         totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])

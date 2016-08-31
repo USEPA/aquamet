@@ -77,7 +77,9 @@ is \emph{NONNATIVE}.}
 }
 \value{
 A data frame containing the variables in sampID and 
-the fish tolerance metrics as additional variables. The names of
+the fish tolerance metrics as additional variables. Metric 
+descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+included in this package. The names of
 metrics include INTLNIND, INTLNTAX, INTLPIND, INTLPTAX, MTOLNIND, 
 MTOLNTAX, MTOLPIND, MTOLPTAX, NTOLNIND, NTOLNTAX, NTOLPIND, 
 NTOLPTAX, TOLRNIND, TOLRNTAX, TOLRPIND, TOLRPTAX, WTD_TV, TOTLNIND,

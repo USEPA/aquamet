@@ -2,8 +2,11 @@
 
 export(assignDistinct)
 export(calcAllBentMets)
+export(calcAllFishMets)
 export(calcDominMets)
 export(calcFFGmets)
+export(calcFishAnomMets)
+export(calcFishNativeMets)
 export(calcFishOtherMets)
 export(calcFishTaxMets)
 export(calcFishTolMets)

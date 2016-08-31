@@ -20,7 +20,9 @@
 #' non-native and 'N' for native. The default name 
 #' is \emph{NONNATIVE}.
 #' @return A data frame containing the variables in sampID and 
-#' the fish tolerance metrics as additional variables. The names of
+#' the fish native status metrics as additional variables. Metric 
+#' descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package. The names of
 #' metrics include  NAT_TOTLNTAX, NAT_PTAX, NAT_PIND, ALIENNTAX, 
 #' ALIENPTAX, ALIENPIND.
 #' 
@@ -61,42 +63,39 @@ calcFishNativeMets <- function(indata, sampID='UID', dist='IS_DISTINCT'
   if(any(unique(inCts$NON_NATIVE) %nin% c('Y','N'))){
     return(print("No native and alien datasets were created because NON_NATIVE must only be 'Y' or 'N' values"))     
   }
-  
-  inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),TOTLNTAX=sum(IS_DISTINCT)) %>%
+    
+  inCts.1 <- plyr::ddply(inCts, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),TOTLNTAX=sum(IS_DISTINCT)) %>%
     mutate(ALIEN=ifelse(NONNATIVE=='Y',1,NA),NAT=ifelse(NONNATIVE=='N',1,NA))
+  
+  totals <- unique(inCts.1[,c('SAMPID','TOTLNTAX','TOTLNIND')])
   
   empty_base <- data.frame(t(rep(NA,7)),stringsAsFactors=F)
   names(empty_base) <- c('NAT_TOTLNIND','NAT_TOTLNTAX','NAT_PIND','NAT_PTAX','ALIENPIND','ALIENNTAX','ALIENPTAX')
   
   outMet <- plyr::ddply(inCts.1, c("SAMPID"), summarise,
-                        ALIENNTAX=sum(IS_DISTINCT*ALIEN),
-                        ALIENPIND=round(sum(FINAL_CT*ALIEN/TOTLNIND)*100,2),
-                        ALIENPTAX=round(sum(IS_DISTINCT*ALIEN/TOTLNTAX)*100,2),
-                        NAT_TOTLNTAX=sum(IS_DISTINCT*NAT),
-                        NAT_TOTLNIND=sum(FINAL_CT*NAT),
-                        NAT_PIND=round(sum(FINAL_CT*NAT)/TOTLNIND*100,2),
-                        NAT_PTAX=round(sum(IS_DISTINCT*NAT)/TOTLNTAX*100,2),.progress='tk') 
+                        ALIENNTAX=sum(IS_DISTINCT*ALIEN,na.rm=T),
+                        ALIENPIND=round(sum(FINAL_CT*ALIEN/TOTLNIND,na.rm=T)*100,2),
+                        ALIENPTAX=round(sum(IS_DISTINCT*ALIEN/TOTLNTAX,na.rm=T)*100,2),
+                        NAT_TOTLNTAX=sum(IS_DISTINCT*NAT,na.rm=T),
+                        NAT_TOTLNIND=sum(FINAL_CT*NAT,na.rm=T),
+                        NAT_PIND=round(sum(FINAL_CT*NAT/TOTLNIND,na.rm=T)*100,2),
+                        NAT_PTAX=round(sum(IS_DISTINCT*NAT/TOTLNTAX,na.rm=T)*100,2),.progress='tk') 
       
-        
- ## START HERE!!! Do we even need the empty_base data frame? All sites should be represented in outMet with at least some value for all 
- # samples - may be missing though
-  outMet.1 <- gtools::smartbind(outMet,select(empty_base,-SAMPID)) %>% 
-    filter(!is.na(SAMPID)) %>%
+  outMet.1 <- gtools::smartbind(outMet,empty_base) %>% 
+    dplyr::filter(!is.na(SAMPID)) %>%
     merge(samples,by='SAMPID',all.y=T)
   
   # If we re-melt df now, we have missing values where the metric should be a
   # zero, so we can set NAs to 0 now
-  outLong.1 <- reshape2::melt(outWide.all,id.vars=c(sampID,'SAMPID')) %>%
-    plyr::mutate(value=ifelse(is.na(value) & variable %nin% c('WTD_TV','NAT_WTD_TV'),0,value))
+  outLong.1 <- reshape2::melt(outMet.1,id.vars=c(sampID,'SAMPID')) %>%
+    plyr::mutate(value=ifelse(is.na(value),0,value))
   
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',sep='+')
   formula <- paste(lside,'~variable',sep='')
-  outWide.2 <- reshape2::dcast(outLong.1,eval(formula),value.var='value') 
+  outWide <- reshape2::dcast(outLong.1,eval(formula),value.var='value') 
   
-  # Merge metrics with the original indata so that those without metrics because
-  # no sample was collected are still output with missing values
-  outAll <- merge(outWide.2,totals,by='SAMPID',all.x=T) %>%
+  outAll <- merge(outWide,totals,by='SAMPID',all.x=T) %>%
     dplyr::select(-SAMPID)
   
   return(outAll)

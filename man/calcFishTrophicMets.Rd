@@ -2,7 +2,7 @@
 % Please edit documentation in R/calcFishTrophicMets.r
 \name{calcFishTrophicMets}
 \alias{calcFishTrophicMets}
-\title{Calculate all tolerance-related metrics}
+\title{Calculate all trophic-related metrics}
 \usage{
 calcFishTrophicMets(indata, inTaxa = NULL, sampID = "UID",
   dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
@@ -11,17 +11,14 @@ calcFishTrophicMets(indata, inTaxa = NULL, sampID = "UID",
 \arguments{
 \item{indata}{Input data frame containing variables as identified
 in the arguments for \emph{sampID}, \emph{dist}, \emph{ct}, 
-\emph{taxa_id}. If a variable for anomaly counts, as specified in 
-the argument \emph{anom}, is included, additional metrics are 
-calculated.}
+\emph{taxa_id}.}
 
 \item{inTaxa}{Data frame containing fish taxalist, along with autecology
 traits. At a minimum, this taxalist must contain variables matching 
-the argument for \emph{tol}. If additional traits are included, as 
-specified by the arguments \emph{habitat}, \emph{trophic}, \emph{migr},
-additional metrics that combine tolerance and other traits are also 
-calculated. The variable specified in the argument \emph{taxa_id} 
-must match that in \emph{indata}.}
+the argument for \emph{trophic}. If habitat values are included, as 
+specified by the argument \emph{habitat} additional metrics that combine 
+trophic status and habitat are also calculated. The variable specified 
+in the argument \emph{taxa_id} must match that in \emph{indata}.}
 
 \item{sampID}{sampID A character vector containing the names of all 
 variables in indf that specify a unique sample. If not specified, 
@@ -56,7 +53,9 @@ is \emph{NONNATIVE}.}
 }
 \value{
 A data frame containing the variables in sampID and 
-the fish tolerance metrics as additional variables. The names of
+the fish trophic metrics as additional variables. Metric 
+descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+included in this package. The names of
 metrics include  INVNTAX, INVPIND, INVPTAX, CARNNTAX, CARNPIND, 
 CARNPTAX, OMNINTAX, OMNIPIND, OMNIPTAX, HERBNTAX, HERBPIND, 
 HERBPTAX, TOTLNIND, and TOTLNTAX.
@@ -75,9 +74,9 @@ If a non-native status variable is included, these additional metrics
 are also calculated: NAT_BENTINVNIND, NAT_BENTINVNTAX, NAT_BENTINVPIND.
 }
 \description{
-This function calculates all of the tolerance metrics,
-and if additional trait values are included in the taxalist (habitat,
-trophic, migr).
+This function calculates all of the trophic metrics,
+and if habitat values are included in the taxalist, additional 
+metrics are calculated.
 }
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}

@@ -55,7 +55,9 @@
 #' non-native and 'N' for native. The default name 
 #' is \emph{NONNATIVE}.
 #' @return A data frame containing the variables in sampID and 
-#' the fish tolerance metrics as additional variables. The names of
+#' the fish tolerance metrics as additional variables. Metric 
+#' descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package. The names of
 #' metrics include INTLNIND, INTLNTAX, INTLPIND, INTLPTAX, MTOLNIND, 
 #' MTOLNTAX, MTOLPIND, MTOLPTAX, NTOLNIND, NTOLNTAX, NTOLPIND, 
 #' NTOLPTAX, TOLRNIND, TOLRNTAX, TOLRPIND, TOLRPTAX, WTD_TV, TOTLNIND,
@@ -123,13 +125,13 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   necTraits <- c(tol,tolval)
   if(any(necTraits %nin% names(inTaxa))){
     msgTraits <- which(necTraits %nin% names(inTaxa))
-    return(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:\n", necTraits[msgTraits], "\n"))
+    return(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:", necTraits[msgTraits]))
   }
   optTraits <- c(habitat,trophic,migr,vel)
   if(any(optTraits %nin% names(inTaxa))){
     msgTraits <- which(optTraits %nin% names(inTaxa))
-    print(paste("Optional traits are missing from the taxa list. Any tolerance metrics also using these traits will not be calculated:\n",
-                 optTraits[msgTraits],"\n"))
+    print(paste("Optional traits are missing from the taxa list. Any tolerance metrics also using these traits will not be calculated:",
+                 optTraits[msgTraits]))
   }
 
   
@@ -332,7 +334,6 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
     }else{
       inNative <- subset(inCts.2,NONNATIVE=='N') 
       if(length(inNative)>0){
-        print("About to run native metrics.")
         inNative.tot <- plyr::ddply(inNative,c('SAMPID'),mutate,NAT_TOTLNIND=sum(FINAL_CT),
                                              NAT_TOTLNTAX=sum(IS_DISTINCT))
         totals.nat <- unique(inNative.tot[,c('SAMPID','NAT_TOTLNIND','NAT_TOTLNTAX')])

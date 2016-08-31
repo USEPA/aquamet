@@ -2,7 +2,7 @@
 % Please edit documentation in R/calcFishOthrMets.r
 \name{calcFishOtherMets}
 \alias{calcFishOtherMets}
-\title{Calculate all tolerance-related metrics}
+\title{Calculate other subsets of fish metrics}
 \usage{
 calcFishOtherMets(indata, inTaxa = NULL, sampID = "UID",
   dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
@@ -12,16 +12,12 @@ calcFishOtherMets(indata, inTaxa = NULL, sampID = "UID",
 \arguments{
 \item{indata}{Input data frame containing variables as identified
 in the arguments for \emph{sampID}, \emph{dist}, \emph{ct}, 
-\emph{taxa_id}. If a variable for anomaly counts, as specified in 
-the argument \emph{anom}, is included, additional metrics are 
-calculated.}
+\emph{taxa_id}.}
 
 \item{inTaxa}{Data frame containing fish taxalist, along with autecology
-traits. At a minimum, this taxalist must contain variables matching 
-the argument for \emph{tol}. If additional traits are included, as 
-specified by the arguments \emph{habitat}, \emph{trophic}, \emph{migr},
-additional metrics that combine tolerance and other traits are also 
-calculated. The variable specified in the argument \emph{taxa_id} 
+traits. At a minimum, this taxalist must contain at least one of the
+variables matching \emph{migr}, \emph{vel}, \emph{reprod}, \emph{temp}. 
+The variable specified in the argument \emph{taxa_id} 
 must match that in \emph{indata}.}
 
 \item{sampID}{sampID A character vector containing the names of all 
@@ -57,7 +53,7 @@ value is \emph{REPROD}.}
 
 \item{temp}{A string with the name of the variable in 
 \emph{inTaxa} containing the temperature preference values.
-Valid values include W (warm), CD (cold water), CL (cool water), 
+Valid values include WM (warm), CD (cold water), CL (cool water), 
 or blank if unknow. The default value is \emph{TEMP}.}
 
 \item{nonnat}{A string with the name of the optional variable in 
@@ -67,7 +63,9 @@ is \emph{NONNATIVE}.}
 }
 \value{
 A data frame containing the variables in sampID and 
-the fish tolerance metrics as additional variables. The names of
+the fish metrics as additional variables. Metric 
+descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+included in this package. The names of
 metrics include  RHEONTAX, RHEOPIND, RHEOPTAX, LOTNTAX, LOTPIND, 
 LOTPTAX,  MIGRNTAX, MIGRPIND, MIGRPTAX,  LITHNTAX, LITHPIND, 
 LITHPTAX,  COLDNTAX, COLDPIND, COLDPTAX, TOTLNIND,
@@ -81,9 +79,11 @@ NAT_ LITHNTAX, NAT_LITHPIND, NAT_LITHPTAX, NAT_ COLDNTAX, NAT_COLDPIND,
 NAT_COLDPTAX, NAT_NAT_TOTLNTAX, NAT_NAT_TOTLNIND, NAT_PIND, NAT_PTAX.
 }
 \description{
-This function calculates all of the tolerance metrics,
-and if additional trait values are included in the taxalist (habitat,
-trophic, migr).
+This function calculates other metrics using the
+traits for velocity preference, migratory tendency, reproductive habits,
+and temperature preference, depending on what traits are included
+in the input taxalist. Native status versions of metrics are calculated
+if a non-native status variable is included in the input count data.
 }
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}
