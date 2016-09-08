@@ -27,7 +27,7 @@ test_that("Data prep correct",
 {
   testOut <- prepBentCts_WSA(inCts=bentCts_test,inTaxa=bentTaxa
                              ,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
-                             ,ct='TOTAL300',dist='IS_DISTINCT300'
+                             ,ct='TOTAL300'
                              ,taxa_id='TAXA_ID')
   expect_equal(nrow(testOut),nrow(indf_test))
   expect_equal(names(testOut),names(indf_test))
@@ -113,7 +113,7 @@ test_that("All benthic metric values correct",
                                            ,variable.name='PARAMETER',value.name='RESULT') %>%
               plyr::mutate(PARAMETER=as.character(PARAMETER))
             compOut <- merge(bentMet_test,testOut.long,by=c('UID','SAMPLE_TYPE','SAMPLE_CAT','PARAMETER'))
-            expect_true(nrow(compOut)==1230)
+            expect_true(nrow(compOut)==1250)
             expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001)
           })
 

@@ -125,13 +125,13 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
   necTraits <- c(tol,tolval)
   if(any(necTraits %nin% names(inTaxa))){
     msgTraits <- which(necTraits %nin% names(inTaxa))
-    return(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:", necTraits[msgTraits]))
+    return(paste("Some of the traits are missing from the taxa list. The following are required for metric calculations to run:", necTraits[msgTraits]))
   }
   optTraits <- c(habitat,trophic,migr,vel)
   if(any(optTraits %nin% names(inTaxa))){
     msgTraits <- which(optTraits %nin% names(inTaxa))
     print(paste("Optional traits are missing from the taxa list. Any tolerance metrics also using these traits will not be calculated:",
-                 optTraits[msgTraits]))
+                 paste(optTraits[msgTraits],collapse=',')))
   }
 
   

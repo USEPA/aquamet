@@ -6,11 +6,11 @@
 with WSA and NRSA benthic metrics and MMIs}
 \usage{
 prepBentCts_WSA(inCts, inTaxa = bentTaxa, sampID = "UID", ct = "TOTAL",
-  dist = "IS_DISTINCT", taxa_id = "TAXA_ID")
+  taxa_id = "TAXA_ID")
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 
-specified in the arguments for sampID, dist, ct, and taxa_id}
+specified in the arguments for sampID, ct, and taxa_id}
 
 \item{inTaxa}{a data frame containing taxonomic information, 
 including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
@@ -25,10 +25,6 @@ the default is \emph{UID}}
 
 \item{ct}{A string with the name of the count variable. If not 
 specified, the default is \emph{TOTAL}.}
-
-\item{dist}{A string with the name of the distinctness variable, 
-which is assumed to have only values of 0 or 1. If not specified, 
-the default is \emph{IS_DISTINCT}.}
 
 \item{taxa_id}{A string with the name of the taxon ID variable 
 in \emph{inCts} that matches that in \emph{inTaxa}. The default 

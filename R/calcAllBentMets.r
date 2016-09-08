@@ -13,7 +13,7 @@
 #' and TRIBE, as well as autecology traits with names that match those 
 #' in the arguments ffg, habit, and ptv. In addition, there
 #' should be a variable with the name in argument taxa_id that matches 
-#' with all of those in the indf data frame
+#' with all of those in the indf data frame. 
 #' @param sampID A character vector containing the names of all 
 #' variables in indf that specify a unique sample. If not specified, 
 #' the default is \emph{UID}
@@ -59,7 +59,9 @@ calcAllBentMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   
   if(is.null(inTaxa)) {
     inTaxa <- bentTaxa
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+    if('NON_TARGET' %in% names(inTaxa)){
+      inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+    }
   }
   
   ctVars <- c(sampID,dist,ct,taxa_id)
@@ -80,6 +82,10 @@ calcAllBentMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   inTaxa <- subset(inTaxa,select=names(inTaxa) %in% c('TAXA_ID','PHYLUM','CLASS','ORDER','FAMILY'
                                                       ,'TRIBE','SUBFAMILY','GENUS',ffg,habit,ptv)) 
   
+  indf[,c(ct,taxa_id,dist)] <- lapply(indf[,c(ct,taxa_id,dist)],as.numeric)
+  inTaxa[,c(ptv,taxa_id)] <- lapply(inTaxa[,c(ptv,taxa_id)],as.numeric)
+
+  
   taxMet <- calcTaxonomyMets(indf,inTaxa,sampID,dist,ct,taxa_id)
   tax.1 <- reshape2::melt(taxMet,id.vars=sampID)
   
@@ -95,7 +101,14 @@ calcAllBentMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   domMet <- calcDominMets(indf,inTaxa,sampID,dist,ct,taxa_id)
   dom.1 <- reshape2::melt(domMet,id.vars=sampID)
   
-  mets <- rbind(tax.1, ffg.1, habit.1, tol.1, dom.1)
+  names(indf)[names(indf)==ct] <- 'FINAL_CT'
+  names(indf)[names(indf)==dist] <- 'IS_DISTINCT'
+  
+  totals <- plyr::ddply(indf, sampID, summarise, TOTLNIND=sum(FINAL_CT),
+                                   TOTLNTAX=sum(IS_DISTINCT)) %>%
+    melt(id.vars=sampID)
+  
+  mets <- rbind(tax.1, ffg.1, habit.1, tol.1, dom.1,totals)
   
   # Finally, we can recast the metrics df into wide format for output
   lside <- paste(paste(sampID,collapse='+'),sep='+')

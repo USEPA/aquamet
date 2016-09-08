@@ -64,7 +64,7 @@ calcTaxonomyMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT
   # them from our calculations.
   if(is.null(inTaxa)) {
     inTaxa <- bentTaxa
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
   }
 
   ## This code assumes that the following are columns in the taxa file: PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, TRIBE, HABIT, FFG, PTV, 

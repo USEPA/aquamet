@@ -1,6 +1,7 @@
 library(reshape2)
 library(plyr)
 library(dplyr)
+library(RODBC)
 
 ## BENTHIC MACROINVERTEBRATES
 
@@ -41,6 +42,12 @@ bentMMI_test <- bentMMI
 
 save(bentMMI_test,file="C:/users/kblockso/my documents/temp/aquamet Update Files/aquametAlt/tests/bentMMI_test.rda")
 
+# Now pull NRSA 13/14 version of taxalist
+bentTaxa <- read.delim("X:/data/im/nrsa1314/data/tabfiles/bentTaxa.tab",sep='\t',stringsAsFactors=F) %>%
+  filter(NON_TARGET!='Y') 
+save(bentTaxa,file="C:/users/kblockso/my documents/temp/aquamet Update Files/aquametAlt/data/bentTaxa.rda")
+
+
 ## FISH
 fishMet <- read.delim("L:/priv/CORfiles/IM-TH007/data/im/nrsa/data/tabfiles/fishMet.tab",sep='\t',stringsAsFactors=F)
 fishMet.1 <- filter(fishMet,!is.na(TOTLNIND) & TOTLNIND!=0 & INDEXVIS_FISH=='YES') %>%
@@ -70,3 +77,6 @@ fishCts_test <- fishCts.1
 save(fishMet_test,file="C:/users/kblockso/my documents/temp/aquamet Update Files/aquametAlt/tests/fishMet_test.rda")
 save(fishCts_test,file="C:/users/kblockso/my documents/temp/aquamet Update Files/aquametAlt/tests/fishCts_test.rda")
 
+# Update fish taxalist with NRSA 13/14 version
+fishTaxa <- read.delim("X:/data/im/nrsa1314/data/tabfiles/fishTaxa.tab",sep='\t',stringsAsFactors=F)
+save(fishTaxa,file="C:/users/kblockso/my documents/temp/aquamet Update Files/aquametAlt/data/fishTaxa.rda")

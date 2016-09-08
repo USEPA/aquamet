@@ -6,7 +6,7 @@
 #' those taxonomic levels used in WSA and in the NRSA MMI 
 #' 
 #' @param inCts A data frame containing, at minimum, the variables 
-#' specified in the arguments for sampID, dist, ct, and taxa_id
+#' specified in the arguments for sampID, ct, and taxa_id
 #' @param inTaxa a data frame containing taxonomic information, 
 #' including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
 #' and TRIBE, as well as autecology traits with names that match those 
@@ -16,9 +16,6 @@
 #' @param sampID A character vector containing the names of all 
 #' variables in indf that specify a unique sample. If not specified, 
 #' the default is \emph{UID}
-#' @param dist A string with the name of the distinctness variable, 
-#' which is assumed to have only values of 0 or 1. If not specified, 
-#' the default is \emph{IS_DISTINCT}.
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{TOTAL}.
 #' @param taxa_id A string with the name of the taxon ID variable 
@@ -31,16 +28,16 @@
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' 
 prepBentCts_WSA <- function(inCts,inTaxa=bentTaxa,sampID='UID',ct='TOTAL'
-                            ,dist='IS_DISTINCT',taxa_id='TAXA_ID'){
+                            ,taxa_id='TAXA_ID'){
   
-  ctVars <- c(sampID,dist,ct,taxa_id)
+  ctVars <- c(sampID,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
     msgTraits <- which(ctVars %nin% names(inCts))
     print(paste("Missing variables in input data frame:",paste(names(inCts)[msgTraits],collapse=',')))
     return(NULL)
   }
   
-  inCts <- subset(inCts,select=c(sampID,ct,dist,taxa_id))
+  inCts <- subset(inCts,select=c(sampID,ct,taxa_id))
   
 #   for(i in 1:length(sampID)){
 #     if(i==1) inCts$SAMPID <- inCts[,sampID[i]]
@@ -64,16 +61,17 @@ prepBentCts_WSA <- function(inCts,inTaxa=bentTaxa,sampID='UID',ct='TOTAL'
     return(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:\n", necTraits[msgTraits], "\n"))
   }
   
-  # Rename ct and dist to FINAL_CT and IS_DISTINCT
+  # Rename ct and taxa_id 
   names(inCts)[names(inCts)==ct] <- 'TOTAL'
-  names(inCts)[names(inCts)==dist] <- 'IS_DISTINCT'
   names(inCts)[names(inCts)==taxa_id] <- 'TAXA_ID'
   names(inTaxa)[names(inTaxa)==taxa_id] <- 'TAXA_ID'
   
   inTaxa.1 <- dplyr::select(inTaxa,TAXA_ID,TARGET_TAXON,PHYLUM,CLASS,ORDER,FAMILY,GENUS)
   
   # Must first create input dataset using WSA taxonomy and traits
-  inCts.1 <- merge(inCts,inTaxa.1,by=c('TAXA_ID'))
+  inCts.1 <- merge(inCts,inTaxa.1,by=c('TAXA_ID')) %>%
+    plyr::mutate(TOTAL=as.numeric(TOTAL)) %>%
+    filter(TOTAL>0)
   ## Roll mites, oligochaetes, and polychaetes up to family level
   fixTaxa <- with(inCts.1,which(CLASS %in% c('ARACHNIDA','POLYCHAETA','OLIGOCHAETA') & !is.na(FAMILY) & FAMILY!=''))
 
