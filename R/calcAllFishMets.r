@@ -117,31 +117,38 @@ calcAllFishMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                  reprod, temp, family, genus, comname)
   if(any(necTraits %nin% names(inTaxa))){
     msgTraits <- which(necTraits %nin% names(inTaxa))
-    return(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:", necTraits[msgTraits]))
+    print(paste("Some of the traits are missing from the taxa list. The following are \nrequired for metric calculations to run:", necTraits[msgTraits]))
+    return(NULL)
   }
   
   inTaxa <- subset(inTaxa,select=names(inTaxa) %in% necTraits) 
   
   taxMet <- calcFishTaxMets(indf,inTaxa,sampID,dist,ct,taxa_id,nonnat,family,genus,comname)
   tax.1 <- reshape2::melt(taxMet,id.vars=sampID) 
+  print("Done calculating taxonomic metrics.")
   
   tolMet <- calcFishTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,tol,tolval,
                             vel,habitat,trophic,migr,nonnat)
   tol.1 <- reshape2::melt(tolMet,id.vars=sampID) 
+  print("Done calculating tolerance metrics.")
   
   tropMet <- calcFishTrophicMets(indf,inTaxa,sampID,dist,ct,taxa_id,habitat
                                  ,trophic,nonnat)
   trop.1 <- reshape2::melt(tropMet,id.vars=sampID) 
+  print("Done calculating trophic metrics.")
   
   othMet <- calcFishOtherMets(indf,inTaxa,sampID,dist,ct,taxa_id,vel,migr
                               ,reprod,temp,nonnat)
   oth.1 <- reshape2::melt(othMet,id.vars=sampID) 
+  print("Done calculating other metrics.")
   
   natMet <- calcFishNativeMets(indf,sampID,dist,ct,taxa_id,nonnat)
   nat.1 <- reshape2::melt(natMet,id.vars=sampID)
-
+  print("Done calculating native metrics.")
+  
   anomMet <- calcFishAnomMets(indf,sampID,ct,anomct)
   anom.1 <- reshape2::melt(anomMet,id.vars=sampID)
+  print("Done calculating anomaly metrics.")
   
   mets <- rbind(tax.1, tol.1, trop.1, oth.1, nat.1, anom.1) %>%
     unique()

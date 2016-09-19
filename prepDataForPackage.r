@@ -79,4 +79,5 @@ save(fishCts_test,file="C:/users/kblockso/my documents/temp/aquamet Update Files
 
 # Update fish taxalist with NRSA 13/14 version
 fishTaxa <- read.delim("X:/data/im/nrsa1314/data/tabfiles/fishTaxa.tab",sep='\t',stringsAsFactors=F)
+fishTaxa <- filter(fishTaxa,TAXA_ID!=99999)
 save(fishTaxa,file="C:/users/kblockso/my documents/temp/aquamet Update Files/aquametAlt/data/fishTaxa.rda")

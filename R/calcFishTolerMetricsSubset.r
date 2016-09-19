@@ -163,6 +163,10 @@ calcFishTolMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
     names(inTaxa)[names(inTaxa)==migr] <- 'MIGRATORY'
   }
   
+  indata[,c('FINAL_CT','IS_DISTINCT')] <- lapply(indata[,c('FINAL_CT','IS_DISTINCT')],as.numeric)
+  indata$TAXA_ID <- as.character(indata$TAXA_ID)
+  inTaxa$TAXA_ID <- as.character(inTaxa$TAXA_ID)
+  inTaxa$TOL_VAL <- as.numeric(inTaxa$TOL_VAL)
   
   ## for inCts1, keep only observations without missing or zero FINAL_CT values or TAXA_ID and TAXA_ID!=99999
   indata.1 <- subset(indata,!is.na(TAXA_ID) & !is.na(FINAL_CT) & FINAL_CT!=0)
