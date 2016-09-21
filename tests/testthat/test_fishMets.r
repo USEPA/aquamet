@@ -120,3 +120,48 @@ test_that("All fish metric values correct",
   expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001) 
 })
 
+
+ecoTest <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
+                      ,AGGR_ECO9_2015=c('UMW','CPL','CPL','CPL','CPL','SAP','TPL','XER','XER','WMT'),stringsAsFactors=F)
+fishCts.eco <- merge(fishCts_test,ecoTest,by='UID')
+
+test_that("MMI fish metric values correct",
+{
+  testOut <- calcNRSA_FishMMImets(fishCts.eco,fishTaxa,sampID=c('UID'),dist='IS_DISTINCT',
+                             ct='FINAL_CT',anomct='ANOM_CT',taxa_id='TAXA_ID',
+                             tol='TOLERANCE_NRSA',vel='VEL_NRSA',
+                             habitat='HABITAT_NRSA',trophic='TROPHIC_NRSA',
+                             migr='MIGR_NRSA',nonnat='NON_NATIVE',
+                             reprod='REPROD_NRSA', temp='TEMP_NRSA',
+                             family='FAMILY',genus='GENUS',comname='FINAL_NAME',
+                             ecoreg='AGGR_ECO9_2015')
+  testOut.long <- reshape2::melt(testOut,id.vars=c('UID','AGGR_ECO9_2015')
+                                 ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
+    plyr::mutate(PARAMETER=as.character(PARAMETER))
+  compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
+  expect_true(nrow(compOut)==80)
+  expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001) 
+})
+
+# Create data frame of log10(watershed area) values
+
+lwsarea <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
+                      ,LWSAREA=c(3.88120,6.37310,6.37530,3.81080,0.55011,4.41280,2.80430,2.28930,2.45630,2.02670))
+fishws_test <- merge(fishMet_test,lwsarea,by='UID') %>% merge(ecoTest,by='UID')
+# Put fish metrics in wide format
+fishws_test.1 <- reshape2::dcast(fishws_test,UID+SAMPLE_TYPE+LWSAREA+AGGR_ECO9_2015~PARAMETER,value.var='RESULT')
+
+test_that("Fish MMI scores correct",
+          {
+            testOut <- calcFishMMI(fishws_test.1,sampID=c('UID','SAMPLE_TYPE'),ecoreg='AGGR_ECO9_2015'
+                                   ,lwsarea='LWSAREA')
+            testOut.long <- reshape2::melt(testOut,id.vars=c('UID','AGGR_ECO9_2015','SAMPLE_TYPE')
+                                           ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
+              plyr::mutate(PARAMETER=as.character(PARAMETER))
+            fishMMI_test.long <- reshape2::melt(fishMMI_test,id.vars=c('UID'),measure.vars='MMI_FISH'
+                                                ,variable.name='PARAMETER',value.name='RESULT')
+            compOut <- merge(fishMMI_test.long,testOut.long,by=c('UID','PARAMETER'))
+            expect_true(nrow(compOut)==10)
+            expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001) 
+            
+          })

@@ -10,7 +10,7 @@ calcFishNativeMets(indata, sampID = "UID", dist = "IS_DISTINCT",
 \arguments{
 \item{indata}{Input data frame containing variables as identified
 in the arguments for \emph{sampID}, \emph{dist}, \emph{ct}, 
-\emph{taxa_id}.}
+\emph{taxa_id}, and \emph{nonnat}.}
 
 \item{sampID}{sampID A character vector containing the names of all 
 variables in indf that specify a unique sample. If not specified, 

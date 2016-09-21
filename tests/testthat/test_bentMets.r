@@ -135,3 +135,22 @@ test_that("MMI metrics correct",
             expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001)
             
           })
+
+
+testIn <- merge(bentMet_test,ecoTest,by='UID') %>%
+  reshape2::dcast(UID+SAMPLE_TYPE+SAMPLE_CAT+AGGR_ECO9_2015~PARAMETER,value.var='RESULT')
+
+test_that("NRSA Benthic MMI scores correct",
+{
+  testOut <- calcNRSA_BenthicMMI(testIn,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                 ,ecoreg='AGGR_ECO9_2015',totlnind='TOTLNIND')
+  testOut.long <- reshape2::melt(testOut,id.vars=c('UID','AGGR_ECO9_2015','SAMPLE_TYPE','SAMPLE_CAT')
+                                 ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
+    plyr::mutate(PARAMETER=as.character(PARAMETER))
+  bentMMI_test.long <- reshape2::melt(bentMMI_test,id.vars=c('UID')
+                                      ,variable.name='PARAMETER',value.name='RESULT')
+  compOut <- merge(bentMMI_test.long,testOut.long,by=c('UID','PARAMETER'))
+  expect_true(nrow(compOut)==80)
+  expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001) 
+  
+})

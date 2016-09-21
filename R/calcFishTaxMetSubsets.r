@@ -6,7 +6,8 @@
 #' if a non-native status variable is included in the input count data. 
 #' @param indata Input data frame containing variables as identified  
 #' in the arguments for \emph{sampID}, \emph{dist}, \emph{ct}, 
-#' \emph{taxa_id}. 
+#' \emph{taxa_id}, as well as the optional variable 
+#' for non-native status in \emph{nonnat}. 
 #' @param inTaxa Data frame containing fish taxalist, along with autecology
 #' traits. At a minimum, this taxalist must contain variables matching 
 #' the argument for \emph{family}, \emph{genus}, and \emph{comname}. 

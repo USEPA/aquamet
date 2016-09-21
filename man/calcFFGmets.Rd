@@ -47,6 +47,9 @@ Metrics included are named COFINTAX, COFIPIND, COFIPTAX,
 COFITRICNTAX, COFITRICPIND, COFITRICPTAX, COGANTAX, COGAPIND,
 COGAPTAX, PREDNTAX, PREDPIND, PREDPTAX, SCRPNTAX, SCRPPIND,
 SCRPPTAX, SHRDNTAX, SHRDPIND, and SHRDPTAX.
+
+Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+included in this package.
 }
 \description{
 This function calculates 

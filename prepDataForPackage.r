@@ -81,3 +81,12 @@ save(fishCts_test,file="C:/users/kblockso/my documents/temp/aquamet Update Files
 fishTaxa <- read.delim("X:/data/im/nrsa1314/data/tabfiles/fishTaxa.tab",sep='\t',stringsAsFactors=F)
 fishTaxa <- filter(fishTaxa,TAXA_ID!=99999)
 save(fishTaxa,file="C:/users/kblockso/my documents/temp/aquamet Update Files/aquametAlt/data/fishTaxa.rda")
+
+# Now bring in MMI scores and condition class
+fishMMI <- read.delim("L:/priv/CORFiles/IM-TH007/data/im/nrsa/data/tabfiles/fishCond.tab",sep='\t',stringsAsFactors=F) %>%
+  select(UID,AGGR_ECO9_2015,SAMPLE_TYPE,FISH_MMI_COND,MMI_FISH) %>%
+  merge(sampUIDs.fish,by='UID')
+
+fishMMI_test <- fishMMI
+
+save(fishMMI_test,file="C:/users/kblockso/my documents/temp/aquamet Update Files/aquametAlt/tests/fishMMI_test.rda")

@@ -44,7 +44,10 @@ A data frame containing the variables in sampID and
 the benthic macroinvertebrate metrics as additional variables.
  The metric names include  BURRNTAX, BURRPIND, BURRPTAX, CLMBNTAX, 
  CLMBPIND, CLMBPTAX, CLNGNTAX, CLNGPIND, CLNGPTAX, SPWLNTAX, 
- SPWLPIND, SPWLPTAX, SWIMNTAX, SWIMPIND, and SWIMPTAX.
+ SPWLPIND, SPWLPTAX, SWIMNTAX, SWIMPIND, and SWIMPTAX. 
+ 
+Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+included in this package.
 }
 \description{
 This function calculates habit 

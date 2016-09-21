@@ -45,7 +45,29 @@
 #' @param ptv A string with the name of the pollution tolerance value 
 #' variable in inTaxa. The default is \emph{PTV}.
 #' @return A data frame containing the variables in sampID and all of 
-#' the benthic macroinvertebrate metrics as additional variables.
+#' the benthic macroinvertebrate metrics used in the MMI as additional variables.
+#' The metrics generated, by aggregated ecoregion, are:
+#' 
+#'  CPL: NOINPIND, HPRIME, SHRDNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
+#'      
+#'  NAP: EPT_PTAX, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, NTOLPTAX
+#'      
+#'  NPL: EPT_PTAX, HPRIME, SCRPNTAX, BURRPTAX, EPHENTAX, NTOLNTAX 
+#'      
+#'  SAP: EPHEPTAX, HPRIME, SCRPNTAX, BURRPTAX, EPT_NTAX, TOLRPTAX
+#'      
+#'  SPL: EPT_PIND, HPRIME, SCRPNTAX, BURRPTAX, EPT_NTAX, INTLNTAX
+#'  
+#'  TPL: EPT_PIND, HPRIME, SCRPNTAX, CLNGNTAX, EPHENTAX, STOLPTAX
+#'      
+#'  UMW: CHIRPTAX, HPRIME, SHRDNTAX, BURRPTAX, EPT_NTAX, STOLPTAX
+#'      
+#'  WMT: EPT_PTAX, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
+#'      
+#'  XER: NOINPIND, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
+#'
+#' Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
 calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
@@ -173,7 +195,7 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
   outLong.1 <- reshape2::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg),) %>%
   merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC'))
   
-  ckMetnum <- as.data.frame(table(UID=outLong.1$UID)) %>% 
+  ckMetnum <- as.data.frame(table(SAMPID=outLong.1$SAMPID)) %>% 
     dplyr::filter(Freq!=6)
   if(nrow(ckMetnum)>0){
     print("Error in output! Wrong number of metrics per site!")

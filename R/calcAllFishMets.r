@@ -86,10 +86,10 @@
 #'   fishMetrics <- calcAllFishMets(indf=fishEx, inTaxa=fishTaxa,
 #'                      sampID='UID',dist='IS_DISTINCT',
 #'                      ct='FINAL_CT',anomct='ANOM_CT',taxa_id='TAXA_ID',
-#'                      tol='TOLERANCE_NRSA',tolval='TOL_VAL',vel='VEL_GLEC',
-#'                      habitat='HABITAT_GLEC',trophic='TROPHIC_GLEC',
-#'                      migr='MIGR_GLEC',nonnat='NON_NATIVE',reprod='REPROD_GLEC',
-#'                      temp='TEMP_GLEC',family='FAM_OR_CLS',genus='GENUS',
+#'                      tol='TOLERANCE_NRSA',tolval='TOL_VAL_EMAPW',vel='VEL_NRSA',
+#'                      habitat='HABITAT_NRSA',trophic='TROPHIC_NRSA',
+#'                      migr='MIGR_NRSA',nonnat='NON_NATIVE',reprod='REPROD_NRSA',
+#'                      temp='TEMP_NRSA',family='FAMILY',genus='GENUS',
 #'                      comname='FINAL_NAME')
 #'                      head(fishMetrics)}
 #' @keywords survey

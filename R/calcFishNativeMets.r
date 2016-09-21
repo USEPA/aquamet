@@ -4,7 +4,7 @@
 #' only on native status, including alien metrics.
 #' @param indata Input data frame containing variables as identified  
 #' in the arguments for \emph{sampID}, \emph{dist}, \emph{ct}, 
-#' \emph{taxa_id}. 
+#' \emph{taxa_id}, and \emph{nonnat}. 
 #' @param sampID sampID A character vector containing the names of all 
 #' variables in indf that specify a unique sample. If not specified, 
 #' the default is \emph{UID}.

@@ -45,7 +45,10 @@ the benthic macroinvertebrate metrics as additional variables.
  ODONPIND, ODONPTAX, OLLENTAX, OLLEPIND, OLLEPTAX, ORTHNTAX, 
  ORTHPIND, ORTHPTAX, PLECNTAX, PLECPIND, PLECPTAX, TANYNTAX, 
  TANYPIND, TANYPTAX, TRICNTAX, TRICPIND, TRICPTAX, TUBINAIDNTAX, 
- TUBINAIDPIND, TUBINAIDPTAX, and ORTHCHIRPIND.
+ TUBINAIDPIND, TUBINAIDPTAX, and ORTHCHIRPIND. 
+
+Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+included in this package.
 }
 \description{
 This function calculates all taxonomy related 

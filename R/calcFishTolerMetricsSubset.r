@@ -7,7 +7,8 @@
 #' in the arguments for \emph{sampID}, \emph{dist}, \emph{ct}, 
 #' \emph{taxa_id}. If a variable for anomaly counts, as specified in 
 #' the argument \emph{anom}, is included, additional metrics are 
-#' calculated.
+#' calculated. The variable for the optional argument \emph{nonnat}
+#' should also be included in this data frame.
 #' @param inTaxa Data frame containing fish taxalist, along with autecology
 #' traits. At a minimum, this taxalist must contain variables matching 
 #' the argument for \emph{tol}. If additional traits are included, as 

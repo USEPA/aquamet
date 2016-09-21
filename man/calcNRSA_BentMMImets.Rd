@@ -59,7 +59,29 @@ be done using the function \emph{calcNRSA_BentMMImets()}.}
 }
 \value{
 A data frame containing the variables in sampID and all of 
-the benthic macroinvertebrate metrics as additional variables.
+the benthic macroinvertebrate metrics used in the MMI as additional variables.
+The metrics generated, by aggregated ecoregion, are:
+
+ CPL: NOINPIND, HPRIME, SHRDNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
+     
+ NAP: EPT_PTAX, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, NTOLPTAX
+     
+ NPL: EPT_PTAX, HPRIME, SCRPNTAX, BURRPTAX, EPHENTAX, NTOLNTAX 
+     
+ SAP: EPHEPTAX, HPRIME, SCRPNTAX, BURRPTAX, EPT_NTAX, TOLRPTAX
+     
+ SPL: EPT_PIND, HPRIME, SCRPNTAX, BURRPTAX, EPT_NTAX, INTLNTAX
+ 
+ TPL: EPT_PIND, HPRIME, SCRPNTAX, CLNGNTAX, EPHENTAX, STOLPTAX
+     
+ UMW: CHIRPTAX, HPRIME, SHRDNTAX, BURRPTAX, EPT_NTAX, STOLPTAX
+     
+ WMT: EPT_PTAX, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
+     
+ XER: NOINPIND, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
+
+Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+included in this package.
 }
 \description{
 This function calculates only the benthic

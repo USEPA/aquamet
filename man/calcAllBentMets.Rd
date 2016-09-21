@@ -17,7 +17,7 @@ including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY,
 and TRIBE, as well as autecology traits with names that match those 
 in the arguments ffg, habit, and ptv. In addition, there
 should be a variable with the name in argument taxa_id that matches 
-with all of those in the indf data frame}
+with all of those in the indf data frame.}
 
 \item{sampID}{A character vector containing the names of all 
 variables in indf that specify a unique sample. If not specified, 

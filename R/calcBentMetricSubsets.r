@@ -35,6 +35,9 @@
 #'  ORTHPIND, ORTHPTAX, PLECNTAX, PLECPIND, PLECPTAX, TANYNTAX, 
 #'  TANYPIND, TANYPTAX, TRICNTAX, TRICPIND, TRICPTAX, TUBINAIDNTAX, 
 #'  TUBINAIDPIND, TUBINAIDPTAX, and ORTHCHIRPIND. 
+#' 
+#' Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 
@@ -232,6 +235,9 @@ calcTaxonomyMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT
 #' COFITRICNTAX, COFITRICPIND, COFITRICPTAX, COGANTAX, COGAPIND,
 #' COGAPTAX, PREDNTAX, PREDPIND, PREDPTAX, SCRPNTAX, SCRPPIND,
 #' SCRPPTAX, SHRDNTAX, SHRDPIND, and SHRDPTAX.
+#' 
+#' Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 calcFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
@@ -389,6 +395,9 @@ calcFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #'  The metric names include  BURRNTAX, BURRPIND, BURRPTAX, CLMBNTAX, 
 #'  CLMBPIND, CLMBPTAX, CLNGNTAX, CLNGPIND, CLNGPTAX, SPWLNTAX, 
 #'  SPWLPIND, SPWLPTAX, SWIMNTAX, SWIMPIND, and SWIMPTAX. 
+#'  
+#' Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
@@ -536,7 +545,10 @@ calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #'  INTLPIND, INTLPTAX, NTOLNTAX, NTOLPIND, NTOLPTAX, STOLNTAX, 
 #'  STOLPIND, STOLPTAX, TL01NTAX, TL01PIND, TL01PTAX, TL23NTAX, 
 #'  TL23PIND, TL23PTAX, TL45NTAX, TL45PIND, TL45PTAX, TL67NTAX, 
-#'  TL67PIND, TL67PTAX, TOLRNTAX, TOLRPIND, TOLRPTAX, and WTD_TV.  
+#'  TL67PIND, TL67PTAX, TOLRNTAX, TOLRPIND, TOLRPTAX, and WTD_TV.
+#'  
+#' Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package.  
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 calcTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
@@ -703,6 +715,9 @@ calcTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #' the benthic macroinvertebrate metrics as additional variables.
 #' The names of metrics include HPRIME, DOM1PIND, DOM3PIND, 
 #' DOM5PIND, CHIRDOM1PIND, CHIRDOM3PIND, and CHIRDOM5PIND.
+#' 
+#' Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+#' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 calcDominMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
