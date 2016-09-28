@@ -1,0 +1,14 @@
+citHeader("To cite the aquamet package in publications use:")
+
+citEntry(
+   entry="Manual",
+   title="aquamet: Aquatic Metrics Calculation",
+   author="Curt W. Seeliger, Karen A. Blocksom, and Thomas M. Kincaid",
+   year=2015,
+   note="R package version 2.3",
+   url="http://www.epa.gov/nheerl/arm/",
+   textVersion=paste("Seeliger, C. W., Blocksom, K. A., and Kincaid, T. M. (2014).",
+                      "aquamet: Aquatic Metrics Calculation.",
+                      "R package version 2.3.",
+                      "URL: http://www.epa.gov/nheerl/arm/.")
+)

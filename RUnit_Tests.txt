@@ -1,0 +1,30 @@
+Mon Oct 19 13:46:42 2015 
+
+Session Information:
+
+[1] "RUnit_Tests.R"
+ [1] "metsAquaticMacrophytes.r"    "metsBankFeatures.r"          "metsBottomSubstrate.r"       "metsFishCoverNLA.r"          "metsHumanImpact.r"          
+ [6] "metsLittoralMacrohabitat.r"  "metsLittoralZone.r"          "metsRiparianVegetationNLA.r" "metsShorelineSubstrate.r"    "metsStationInformation.r"   
+[11] "RUnit_Tests.R"               "testSuiteNLAMetrics.R"      
+[1] "C:/Users/cseelige/local/aquamet/R"                               "C:/Users/cseelige/local/aquamet/UnitTests/NLA Physical Habitat" 
+[3] "C:/Users/cseelige/local/aquamet/UnitTests/NRSA Physical Habitat" "C:/Users/cseelige/local/aquamet/UnitTests/SharedCode"           
+  Bank Morphology calculations both protocols  Bank Morphology calculations both protocolsfunction (x, replace, warn_missing = TRUE, warn_duplicated = TRUE) 
+NULL
+function (.data, ...) 
+NULL
+function(df, old, new) {
+  # This method assumes that names in old & new are listed in the same
+  # order as the names in df 
+  # names(df)[names(df) %in% old] <- new
+  if(length(old) != length(new)) {
+      print("ERROR: rename() used with different lengths for old and new names")
+      return(NULL)
+  }
+
+  for(i in 1:length(old)) {
+      names(df)[names(df)==old[i]] <- new[i]
+  }
+
+  return(df)
+}
+[1] "foo"

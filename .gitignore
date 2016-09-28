@@ -1,3 +1,11 @@
 .Rproj.user
 .Rhistory
 .RData
+<<<<<<< HEAD
+=======
+.Rbuildignore.gz
+.Rhistory.gz
+.gitignore.gz
+aquamet.Rproj
+testResults_aquamet.html
+>>>>>>> remoteAquamet/master
