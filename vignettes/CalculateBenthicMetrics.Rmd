@@ -1,0 +1,110 @@
+---
+title: "Calculating Macroinvertebrare Metrics"
+author: "Karen Blocksom "
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Calculating Macroinvertebrate Metrics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# 1 Preliminaries
+
+One of the primary goals of this package is to calculate benthic macroinvertebrate metrics as used in both the National Rivers and Streams Assessment (NRSA) conducted in 2008-9 and 2013-14 and the National Lakes Assessment (NLA) conducted in 2007 and 2012 by EPA's Office of Water. Benthic macroinvertebrates were collected at all sites, and samples were processed in the laboratory to obtain the taxon name, number of individuals, and  were recorded in the field. Non-native status was then determined for all taxa on a site-specific basis. For the purposes of calculations, the metrics were broken down into several subsets, depending on which autecology traits were required to calculate them. There are also separate functions to calculate just the metrics used in the regional multimetric indices (MMIs) and the MMI scores themselves based on metric inputs. This vignette will describe how to use the various functions along with the example datasets provided and the included taxa lists, to obtain the full set of metrics, a subset of metrics based on metric type, and the benthic multimetric index used in assigning biological condition.
+
+The functions in this package allow for a great deal of flexibility in terms of input variable names and the taxalist used in calculating metrics. However, the actual values of various traits are assumed to match those used in NRSA and NLA. This means that some metrics will not calculate correctly if the taxalist used in the function does not use the same trait values. In addition, the functions assume that data have already been summarized to the level of sample and taxon, and a within-sample distinctness (0/1) already assigned to each taxon, so any steps required to get to this point must be done prior to use of the functions. All taxa in the count data must be included in the taxa list in order to be included in the calculations. Functions will look for specific types of inconsistencies, like missing variables, and either provide a warning or will fail to run, depending on the issue.  
+
+In NRSA, a different level of aggregation of taxonomy is used to match that used in the development of the MMI from the Wadeable Streams Assessment (WSA). In order to prepare data to match this taxonomic level, users are encouraged to use the function `prepBentCts_WSA()`, which aggregates to the appropriate levels and provides data in the appropriate format for input into the metric functions.  
+
+********
+# 2 Calculating macroinvertebrate metrics
+
+There are two main approaches to calculating the benthic macroinvertebrate metrics. One may either calculate all metrics at once, which may take a long time with larger datasets, or one may calculate various subsets of metrics. The latter approach may be helpful if only certain metrics are of interest or only certain traits are available. In the first approach, the function `calcAllBentMets` serves as a wrapper function for a number of metric subset functions. The other approach involves using individual funcions, including `calcBentTaxMets`, `calcBentTolMets`, `calcBentFFGmets`, `calcBentHabitMets`, and/or `calcBentDominMets`.
+
+## 2.1 All metrics at once
+
+Calculate all metrics using the example macroinvertebrate count data included in the package, `bentEx`, along with the included taxalist, `bentTaxa`.
+
+```{r allBent.1}
+library(aquametAlt)
+
+head(bentEx)
+```
+This example dataset contains all of the necessary variables required to calculate all of the macroinvertebrates metrics. For this dataset, the combination of `UID`, `SAMPLE_TYPE`, and `SAMPLE_CAT` identifies individual samples, `TAXA_ID` identifies the taxon and links to same field in the taxalist, `TOTAL` is the count for the taxon, and `IS_DISTINCT` is the distinctness, which 0 indicating non-distinct within the sample and 1 distinct.
+
+```{r allBent.2}
+head(bentTaxa)
+```
+This is the desired format of the taxalist. All of the necessary traits are included in the taxalist for metric calculation. The variable `FAM_OR_CLS` is the same as `FAMILY` and is an artifact from the NRSA 2008-9 study.
+```{r allFish.3}
+outdf <- calcAllBentMets(bentEx,bentTaxa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                       ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
+                                       ,habit='HABIT_WSA',ptv='PTV_WSA')
+
+names(outdf)
+```
+The definitions of all metrics can be found in **NRSA_Invertebrate_Metric_Descriptions.pdf** found in this package.
+
+## 2.2 Subsets of metrics
+
+Suppose only tolerance-related and taxonomic metrics are of interest. Then we need only to run the `calcBentTolMets()` and `calcBentTaxMets()` functions. 
+
+### Taxonomy metrics
+
+```{r subMets.1}
+outTax <- calcBentTaxMets(bentEx,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                        ,dist='IS_DISTINCT',ct='TOTAL')
+names(outTax)
+head(outTax)
+```
+
+### Tolerance metrics
+
+```{r subMets.2}
+outTol <- calcBentTolMets(bentEx,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                           ,dist='IS_DISTINCT',ct='TOTAL',ptv='PTV_WSA')
+names(outTol)
+head(outTol)
+
+```
+**************************
+# 3 Calculate only benthic MMI metrics and MMI
+
+First, we will need to create a data frame containing the three-letter code for the 9 aggregated ecoregions and add that to the input data frame (`inCts`). Then run the function `calcNRSA_BentMMImets()`, followed by `calcNRSA_BentMMI()`.
+
+
+## 3.1 Calculate only benthic MMI metrics
+
+This function calculates metrics for only the MMI for the ecoregion of each site. In order to match the taxonomy used in the NRSA MMI, the function `prepBentCts_WSA()` must be run.
+
+```{r mmiMets.1}
+bentWSA <- prepBentCts_WSA(bentEx,bentTaxa
+                             ,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                             ,ct='TOTAL',taxa_id='TAXA_ID')
+
+eco9 <- data.frame(UID=c(10000,10001), ECO9=c('CPL','WMT'),stringsAsFactors=F)
+
+bentEx.1 <- merge(bentWSA, eco9, by='UID')
+
+outMets <- calcNRSA_BentMMImets(inCts=bentEx.1,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                       ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
+                                       ,habit='HABIT_WSA',ptv='PTV_WSA',ecoreg='ECO9')
+
+head(outMets)
+
+```
+Note that there are missing values for metrics that are not included in the MMI for a given ecoregion. Any given UID should only have values for 6 metrics, which is the case in our example. 
+
+## 3.2 Calculate NRSA benthic MMI
+
+Now use the output of the function above to calculate the benthic MMI. The output data frame should have the ecoregion still included, and that will be used in calculating the NRSA MMI and assigning a condition class.
+
+```{r mmiMets.3}
+
+outMMI <- calcNRSA_BenthicMMI(outMets, sampID='UID', ecoreg='ECO9')
+
+head(outMMI)
+
+```
+Again, note that there are missing values for the metrics and metric scores not included in the MMI for a given site. If there is a mix of ecoregions in the input dataset, there will be these missing values for some metrics and metric scores.

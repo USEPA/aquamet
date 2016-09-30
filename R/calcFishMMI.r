@@ -62,7 +62,7 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='WSAREA')
   necTraits <- c(sampID,ecoreg,lwsarea)
   if(any(necTraits %nin% names(inMets))){
     msgTraits <- which(necTraits %nin% names(inMets))
-    print(paste("Some of the traits are missing from the taxa list. The following are required for metric calculations to run:"
+    print(paste("Some of the traits are missing from the input data frame. The following are required for metric calculations to run:"
                 , necTraits[msgTraits]))
     return(NULL)
   }
@@ -118,9 +118,10 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='WSAREA')
    mutate(PARAMETER=as.character(PARAMETER))
  
  # Run a check to make sure there are exactly 8 rows per sites in the matched dataset
- numMets <- as.data.frame(table(SAMPID=table(matchMets$SAMPID))) %>% subset(Freq<8)
+ numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>% subset(Freq<8)
  if(nrow(numMets)>0){
-   return(print(paste("Missing metrics values for these samples: ",numMets$SAMPID,". Check input data frame against required metric list.",sep='')))
+   return(print(paste("Missing metrics values for these samples: ",paste(numMets$SAMPID,collapse=','),
+                      ". Check input data frame against required metric list.",sep='')))
  }
  
  

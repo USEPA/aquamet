@@ -18,11 +18,11 @@ The functions in this package allow for a great deal of flexibility in terms of 
 ********
 # 2 Calculating NRSA fish metrics
 
-There are two main approaches to calculating the fish metrics. One may either calculate all fish metrics at once, which may take a long time with larger datasets, or one may calculate various subsets of metrics. The latter approach may be helpful if only certain metrics are of interest or only certain traits are available. In the first approach, the function `calcAllFishMets` serves as a wrapper function for a number of metric subset functions. The other approach involves using individual funcions, including `calcFishTaxMets`, `calcFishTolMets`, `calcFishTrophicMets`, `calcFishOtherMets`, `calcFishNativeMets`, and/or `calcFishAnomMets`.
+There are two main approaches to calculating the fish metrics. One may either calculate all fish metrics at once, which may take a long time with larger datasets, or one may calculate various subsets of metrics. The latter approach may be helpful if only certain metrics are of interest or only certain traits are available. In the first approach, the function `calcAllFishMets` serves as a wrapper function for a number of metric subset functions. The other approach involves using individual funcions, including `calcFishTaxMets`, `calcFishTolMets`, `calcFishTrophicMets`, `calcFishOtherMets`, `calcFishNativeMets`, and/or `calcFishAnomMets`. The metrics used in regional fish MMIs and the MMIs themselves, can be calculated using the functions `calcNRSA_FishMMImets()` and `calcFishMMI()`, respectively.
 
 ## 2.1 All metrics at once
 
-Using the example plant data included in the package, `fishEx`, along with the included taxalist, `fishTaxa`.
+Calculate all metrics using the example fish count data included in the package, `fishEx`, along with the included taxalist, `fishTaxa`.
 
 ```{r allFish.1}
 library(aquametAlt)
@@ -45,34 +45,75 @@ outdf <- calcAllFishMets(fishEx,fishTaxa,sampID=c("UID"), dist="IS_DISTINCT",
 
 names(outdf)
 ```
-The definitions of all variables can be found in **NRSA_Fish_Metric_Descriptions.pdf** found in this package.
+The definitions of all metrics can be found in **NRSA_Fish_Metric_Descriptions.pdf** found in this package.
 
 ## 2.2 Subsets of metrics
 
+Suppose only tolerance-related and taxonomic metrics are of interest. Then we need only to run the `calcFishTolMets()` and `calcFishTaxMets()` functions. For each of these functions, if we include a variable for `nonnat` in the input data frame, native status versions of metrics will also be calculated. For the purposes of demonstration, we will included this non-native status variable for the tolerance metrics but not the taxonomy metrics.
 
+### Taxonomy metrics
 
-```{r, fig.show='hold'}
-plot(1:10)
-plot(10:1)
+```{r subMets.1}
+outTax <- calcFishTaxMets(fishEx, fishTaxa, sampID='UID', dist='IS_DISTINCT',
+                          ct='FINAL_CT', taxa_id='TAXA_ID', family='FAMILY', genus='GENUS',
+                          comname='FINAL_NAME')
+names(outTax)
+head(outTax)
 ```
 
-You can enable figure captions by `fig_caption: yes` in YAML:
+### Tolerance metrics
 
-    output:
-      rmarkdown::html_vignette:
-        fig_caption: yes
+For the tolerance metrics, we will suppose we only have trait information for or care about tolerance and habitat, so only metrics based on tolerance alone and tolerance in combination with habitat will be calculated. Since we will also specify the name of the non-native status variable in the input dataset, native versions of metrics will also be calculated.
 
-Then you can use the chunk option `fig.cap = "Your figure caption."` in **knitr**.
+```{r subMets.2}
+outTol <- calcFishTolMets(fishEx, fishTaxa, sampID='UID', dist='IS_DISTINCT',
+                          ct='FINAL_CT', taxa_id='TAXA_ID', tol='TOLERANCE_NRSA',
+                          tolval='TOL_VAL_EMAPW', nonnat='NON_NATIVE', 
+                          habitat='HABITAT_NRSA')
+names(outTol)
+head(outTol)
 
-## More Examples
+```
+**************************
+# 3 Calculate only fish MMI metrics and MMI
 
-You can write math expressions, e.g. $Y = X\beta + \epsilon$, footnotes^[A footnote here.], and tables, e.g. using `knitr::kable()`.
+First, we will need to create a data frame containing the three-letter code for the 9 aggregated ecoregions and add that to the input data frame (`indata`). Then run the function `calcNRSA_FishMMImets()`, followed by `calcFishMMI()`.
 
-```{r, echo=FALSE, results='asis'}
-knitr::kable(head(mtcars, 10))
+```{r mmiMets.1}
+eco9 <- data.frame(UID=c(10000,10001), ECO9=c('CPL','WMT'),stringsAsFactors=F)
+
+fishEx.1 <- merge(fishEx, eco9, by='UID')
 ```
 
-Also a quote using `>`:
+## 3.1 Calculate fish MMI metrics
 
-> "He who gives up [code] safety for [code] speed deserves neither."
-([via](https://twitter.com/hadleywickham/status/504368538874703872))
+This function calculates metrics for only the MMI for the ecoregion of each site.
+```{r mmiMets.2}
+outMets <- calcNRSA_FishMMImets(fishEx.1,fishTaxa, "UID", ecoreg='ECO9'
+                                 ,dist="IS_DISTINCT",ct="FINAL_CT"
+                                 ,taxa_id='TAXA_ID',tol='TOLERANCE_NRSA'
+                                 ,vel='VEL_NRSA', habitat='HABITAT_NRSA'
+                                 ,trophic='TROPHIC_NRSA', migr='MIGR_NRSA', nonnat='NON_NATIVE'
+                                 ,reprod='REPROD_NRSA', family='FAMILY', genus='GENUS'
+                                 ,comname='FINAL_NAME')
+
+head(outMets)
+
+```
+Note that there are missing values for metrics that are not included in the MMI for a given ecoregion. Any given UID should only have values for 8 metrics, which is the case in our example. 
+
+## 3.2 Calculate NRSA fish MMI
+
+Now use the output of the function above to calculate the fish MMI. To calculate the fish MMI, we have to supply the log10 of watershed area because some metrics in each MMI are adjusted for watershed size. Using the approach above, we create a data frame with this information and merge it with the `outMets` data frame.
+
+```{r mmiMets.3}
+wsarea <- data.frame(UID=c(10000,10001), LWSAREA=c(2.1, 3.5), stringsAsFactors=F)
+
+outMets.1 <- merge(outMets, wsarea, by='UID')
+
+outMMI <- calcFishMMI(outMets.1, sampID='UID', ecoreg='ECO9', lwsarea='LWSAREA')
+
+head(outMMI)
+
+```
+Again, note that there are missing values for the metrics and metric scores not included in the MMI for a given site. If there is a mix of ecoregions in the input dataset, there will be these missing values for some metrics and metric scores.
