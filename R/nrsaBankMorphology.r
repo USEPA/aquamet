@@ -1,3 +1,73 @@
+#' @export
+#' @title Calculate NRSA Bank Morphology Metrics
+#' @description This function calculates the bank morphology portion 
+#' of the physical habitat metrics for National Rivers and Streams 
+#' Assessment (NRSA) data.  The function requires data frames containing 
+#' the bank geometry and stream verification form data files.
+#' @param bAngle A data frame containing bank angle class values for sites 
+#' sampled using the boatable protocol, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item VALUE a character value containing the bank angle class.
+#' }
+#' If this data frame is either not specified or has no data, these metrics 
+#' are not calculated.
+#' @param wAngle A data frame containing bank angle class value for sites sampled
+#' using the boatable protocol, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site visit.
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, containing the bank angle.
+#' }
+#' If this data frame is either not specified or has no data, these metrics 
+#' are not calculated.
+#' @param wUndercut A data frame containing bank angle class value for sites 
+#' sampled using wadeable protocols, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site visit.
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, containing the bank angle.
+#' }
+#' If this data frame is either not specified or has no data, these metrics 
+#' are not calculated.
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation 
+#' is not successful. The data frame contains the following columns:
+#' \itemize{ 
+#'     \item SITE - unique site visit identifier
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#'       }
+#' The output metrics for boatable sites include:
+#' n_ba, bap_stp, bap_med, bap_vst, bap_low, bangmode 
+#'  
+#' The output metrics for wadeable sites include:
+#' n_ba, xbka, sdbk_a, bka_q3, medbk_a, bka_q1, intqbka, n_un, xun, sdun,
+#' bkun_q3, medbkun, bkun_q1, intqbkun
+#' 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples{
+#' \dontrun{
+#'   data(bankgeomEx)
+#'   head(bankgeomEx)
+#'   bankgeomEx <- plyr::rename(bankgeomEx,c('UID'='SITE','RESULT'='VALUE'))
+#'   
+#'   bangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='ANGLE')
+#'   wangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='ANGLE')
+#'   wund <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='UNDERCUT')
+#'   
+#'   testBankMorph <- metsBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
+#'   head(testBankMorph)
+#'    }
+#'   }
+#' @keywords survey
+
 nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL) {
 
 ################################################################################

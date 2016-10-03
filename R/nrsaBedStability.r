@@ -1,3 +1,113 @@
+#' @export
+#' @title Calculate NRSA Bed Stability Metrics
+#' @description This function calculates the bed stability portion 
+#' of the physical habitat metrics for National Rivers and Streams 
+#' Assessment (NRSA) data.  The function requires numerous inputs
+#' of different types of physical habitat measures.
+#' @param bXdepth A data frame containing depth means (units are m) 
+#' for boatable reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param bSddepth A data frame containing depth standard deviations 
+#' (units are m) for boatable reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param wXdepth A data frame containing mean depths (units 
+#' are cm) for wadetable reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param wSddepth dataframe containing depth standard 
+#' deviations (units are cm) for wadeable reaches, with the 
+#' following columns: 
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param lsub_dmm 
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param lsub2dmm A data frame containing log10 of the mean 
+#' substrate diameter (units are mm) using the old one-boulder
+#' -class system for all reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param rp100 dataframe containing rp100 values (linear 
+#' density of residual pools) for all reaches, with the 
+#' following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param v1w_msq A data frame containing v1w_msq values 
+#' (areal density of LWD volume in the channel) for all reaches, 
+#' with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param xbkf_h A data frame containing xbkf_h values (mean 
+#' bank full height) for all reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param xbkf_w A data frame containing xbkf_w values (mean 
+#' bank full width) for all reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param xfc_lwd A data frame containing xfc_lwd values (mean 
+#' fish cover provided by large woody debris) for all reaches, 
+#' with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param xslope A data frame containing xslope values (mean 
+#' channel slope at site, in percent) for all reaches, with 
+#' the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @param xwidth A data frame containing xwidth values (mean 
+#' channel width) for all reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric values
+#' }           
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation 
+#' is not successful. The data frame contains the following columns:
+#' \itemize{ 
+#'     \item SITE - unique site visit identifier
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#'       }
+#' The output metrics for all sites include: ltest, lrbs_tst, ldmb_bw5,
+#' s_ldmb_bw5, ldmb_bw4, lrbs_bw4, lrbs_bw5, s_lrbs_bw5, lrbs_bw6,  
+#' s_lrbs_bw6, Dcbf_g08, ldcbf_g08, lrbs_g08, s_rp100, s_Dcbf_g08, 
+#' s_ldcbf_g08, s_lrbs_g08, rb3, ct_rpwd, cp3_mill, cp3ctrpwd_rat, 
+#' rrpw3, reyp3, shld_px3 
+#'  
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+
 nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
                             ,wXdepth = NULL, wSddepth = NULL
                             ,lsub_dmm = NULL, lsub2dmm = NULL

@@ -1,3 +1,46 @@
+#' @export
+#' @title Calculate NRSA Canopy Densiometer Metrics
+#' @description This function calculates the canopy densiometer 
+#' portion of the physical habitat metrics for National Rivers 
+#' and Streams Assessment (NRSA) data.  The function requires a 
+#' data frame containing the channel cover data file.
+#' @param bDensiom A data frame containing canopy densiometer 
+#' counts for boatable reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric counts
+#' }
+#' @param wDensiom A data frame containing canopy densiometer 
+#' counts for wadeable reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item VALUE numeric counts
+#' }
+#' @param wChannelBank Character values listing the values of 
+#' DIRECTION which indicate that the counts were obtained on the 
+#' bank of the channel. Defaults to c('LF','RT').
+#' @param wChannelMid Character values listing the values of DIRECTION 
+#' which indicate that the counts were obtained midstream in the channel. 
+#' Defaults to c('CU','CL','CD','CR').
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation 
+#' is not successful. The data frame contains the following columns:
+#' \itemize{ 
+#'     \item SITE - unique site visit identifier
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#'       }
+#' The output metrics for boatable sites include: xcdenmid, 
+#' vcdenmid, nmid, xcdenbk, vcdenbk, nbnk 
+#'  
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+
+
 nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('LF','RT'), wChannelMid=c('CU','CL','CD','CR')) {
 
 ################################################################################
