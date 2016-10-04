@@ -1,3 +1,37 @@
+#' @export
+#' @title Calculate NRSA Littoral Depth Metrics
+#' @description This function calculates the littoral depth 
+#' portion of the physical habitat metrics for National Rivers 
+#' and Streams Assessment (NRSA) data.  The function requires a 
+#' data frame containing the channel depth data file.
+#' @param bLittoralDepth A data frame containing littoral depth 
+#' data in meters at each transect for all reaches, with the 
+#' following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item VALUE numeric or character values
+#' }
+#' Note that possible values for variables in the input data 
+#' frame are provided in the document named "NRSA Documentation.pdf" 
+#' included in the help directory for the package.
+#' @return Either a data frame when metric calculation is successful 
+#' or a character string containing an error message when metric 
+#' calculation is not successful.  The data frame contains the following 
+#' columns:
+#' \itemize{
+#'    \item SITE - universal ID value
+#'    \item METRIC - metric name
+#'    \item VALUE - metric value
+#' }
+#' Metrics calculated (only for boatable sites) include: xlit, mxlit, 
+#' mnlit, vlit. 
+#' 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+
 nrsaLittoralDepth <- function(bLittoralDepth=NULL) {
 
 ################################################################################

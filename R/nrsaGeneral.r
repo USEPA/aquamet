@@ -1,3 +1,56 @@
+#' @export
+#' @title Calculate NRSA General Metrics
+#' @description This function calculates the general portion of 
+#' the physical habitat metrics for National Rivers and Streams 
+#' Assessment (NRSA) data.  The function requires data frames containing 
+#' the thalweg and channel geometry data files.
+#' @param sampledTransects  dataframe containing only the list of 
+#' transects sampled for each site, one transect per row. Expected to 
+#' contain the following columns:
+#'  \itemize{
+#'        \item SITE integer or character specifying the site 
+#'                   visit
+#'        \item TRANSECT character value specifying the transect
+#'                       for which values were recorded.
+#' }                       
+#' @param sideChannels dataframe containing side channel presence data at each 
+#' station, with the following columns:
+#' \itemize{
+#'          \item SITE integer or character specifying the site visit
+#'          \item VALUE character values, expected to be 'Y', 'N' or NA
+#' }
+#' @param transectSpacing dataframe containing distances (in meters) between 
+#' transects with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE numeric values
+#' }
+#' @param sideChannelTransects character vector containing values of 
+#' TRANSECT that are used to specify whether a transect is located on a 
+#' side channel.  Default value is for EPA NARS use (XA, XB, etc.)
+#' which occur parallel to main channel transects A, B, etc.
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation is 
+#' not successful.  The data frame contains the following columns:
+#' \itemize{
+#' \item SITE - universal ID value
+#' \item METRIC - metric name
+#' \item VALUE - metric value
+#' }
+#' 
+#' Metrics calculated include: pct_side, reachlen, xtranspc, sidecnt
+#' 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+
+
+
+
 nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSpacing = NULL
                        ,sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')
                        ) {

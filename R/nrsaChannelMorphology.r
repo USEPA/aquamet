@@ -1,3 +1,152 @@
+#' @export
+#' @title Calculate NRSA Channel Morphology Metrics
+#' @description  This function calculates the channel morphology 
+#' portion of the physical habitat metrics for National Rivers 
+#' and Streams Assessment (NRSA) data.  The function requires data 
+#' frames containing the bank geometry, thalweg, and stream 
+#' verification form data files.
+#' @param bBankHeight A data frame containing bank height at each transect for
+#'   boatable reaches, with the following columns:
+#'  \itemize{
+#'  \item SITE        integer or character specifying the site visit
+#'  \item TRANSECT    character value specifying the transect
+#'                         for which the value was recorded.
+#'  \item VALUE       numeric or character values
+#'  \item UNITS       character value specifying the units that
+#'                              the value is recorded in, expected to be
+#'                              either CM, M or FT.
+#' }
+#' @param bBankWidth A data frame containing bank height at each transect for
+#' boatable reaches, with the following columns:
+#' \itemize{
+#'  \item SITE        integer or character specifying the site visit
+#'  \item TRANSECT    character value specifying the transect
+#'             for which the value was recorded.
+#'  \item VALUE       numeric or character values
+#'  \item UNITS       character value specifying the units that
+#'                       the value is recorded in, expected to be
+#'                       either CM, M or FT.
+#' }
+#' @param bDepth A data frame containing thalweg depth at each transect for
+#' boatable reaches, with the following columns:
+#' \itemize{
+#'      \item SITE        integer or character specifying the site visit
+#'      \item TRANSECT    character value specifying the transect
+#'                       for which the value was recorded.
+#'      \item STATION     numeric value specifying the station between
+#'                      the transects at which the depth was recorded.
+#'      \item VALUE       numeric or character values
+#'      \item UNITS       character value specifying the units that
+#'                       the value is recorded in, expected to be
+#'                       either CM, M or FT.
+#' }
+#' @param bIncisedHeight A data frame containing incised height at each transect for
+#' boatable reaches, with the following columns:
+#' \itemize{
+#'      \item SITE        integer or character specifying the site visit
+#'      \item TRANSECT    character value specifying the transect
+#'                       for which the value was recorded.
+#'      \item VALUE       numeric or character values
+#'      \item UNITS       character value specifying the units that
+#'                       the value is recorded in, expected to be
+#'                       either CM, M or FT.
+#' }
+#' @param bWettedWidth A data frame containing wetted width at each transect for
+#' boatable reaches, with the following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item TRANSECT    character value specifying the transect
+#'                   for which the value was recorded.
+#'  \item VALUE numeric or character values
+#'  \item UNITS character value specifying the units that
+#'              the value is recorded in, expected to be
+#'              either CM, M or FT.
+#' }
+#' @param wBankHeight A data frame containing bank height at each transect for
+#'  wadeable reaches, with the following columns:
+#'  \itemize{
+#'           \item SITE integer or character specifying the site visit
+#'           \item TRANSECT character value specifying the transect
+#'                          for which the value was recorded.
+#'           \item VALUE numeric or character values
+#'           \item UNITS character value specifying the units that
+#'                       the value is recorded in, expected to be
+#'                       either CM, M or FT.
+#' }
+#' @param wBankWidth A data frame containing bank height at each transect for
+#' wadeable reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                       for which the value was recorded.
+#'      \item VALUE numeric or character values
+#'      \item UNITS character value specifying the units that
+#'                  the value is recorded in, expected to be
+#'                  either CM, M or FT.
+#' }
+#' @param wDepth A data frame containing thalweg depth at each transect for
+#' wadeable reaches, with the following columns:
+#' \itemize{
+#'    \item SITE        integer or character specifying the site visit
+#'    \item TRANSECT    character value specifying the transect
+#'                     for which the value was recorded.
+#'    \item STATION     numeric value specifying the station between
+#'                     the transects at which the depth was recorded.
+#'    \item VALUE       numeric or character values
+#'    \item UNITS       character value specifying the units that
+#'                     the value is recorded in, expected to be
+#'                     either CM, M or FT.
+#' }
+#' @param wIncisedHeight A data frame containing incised height at each 
+#' transect for wadeable reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                      for which the value was recorded.
+#'      \item VALUE numeric or character values
+#'      \item UNITS character value specifying the units that
+#'                  the value is recorded in, expected to be
+#'                  either CM, M or FT.
+#' }
+#' @param wWettedWidth A data frame containing wetted width at each transect 
+#' for wadeable reaches, with the following columns:
+#' \itemize{
+#'          \item SITE integer or character specifying the site visit
+#'          \item TRANSECT character value specifying the transect
+#'                         for which the value was recorded.
+#'          \item VALUE numeric or character values
+#'          \item UNITS character value specifying the units that
+#'                      the value is recorded in, expected to be
+#'                      either CM, M or FT.
+#'
+#' }
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation is 
+#' not successful.  The data frame contains the following columns:
+#' \itemize{
+#'     \item SITE - universal ID value
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#' }
+#' 
+#' Wadeable stream metrics calculated include: bfwd_rat, n_bfrat, n_bh, 
+#' n_bw, n_d, n_incis, n_w, n_wd,n_wdr, sdbkf_h, sdbkf_w, sddepth, 
+#' sdinc_h, sdwd_rat, sdwidth, sdwxd,xbkf_h, xbkf_w, xdepth, 
+#' xinc_h, xwd_rat, xwidth, xwxd
+#' 
+#' Boatable river metrics calculated include:  bfwd_rat, n_bfrat, n_bh, 
+#' n_bw, n_d, n_incis,  n_wd,n_wdr,sdbkf_h, sdbkf_w, sddepth, sdinc_h, 
+#' sdwd_rat, sdwidth, sdwxd,xbkf_h, xbkf_w, xdepth, xinc_h, 
+#' xwd_rat, xwidth, xwxd
+
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+
+
 nrsaChannelMorphology <- function(bBankHeight = NULL
                                  ,bBankWidth = NULL
                                  ,bDepth = NULL

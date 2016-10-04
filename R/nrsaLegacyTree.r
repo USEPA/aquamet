@@ -1,7 +1,93 @@
 # nrsaLegacyTree.r
 #
 
+#' @export
+#' @title Calculate NRSA Legacy Riparian Trees Metrics
+#' @description This function calculates the legacy riparian trees 
+#' portion of the physical habitat metrics for National Rivers and 
+#' Streams Assessment (NRSA) data.  The function requires a data 
+#' frame containing the invasive species/legacy riparian trees data file.
+#' @param dbhClass A data frame containing dbh class values at each 
+#' transect of all sites.  Expected to contain the columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE character values specifying the dbh class,
+#'                  expected to be one of '0-0.1', '.1-.3',
+#'                  '.3-.75', '.75-2' or '>2'
+#' }
+#' @param distance A dataframe containing distance to largest legacy tree 
+#' at each transect of all sites.  Expected to contain the columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE numeric values specifying the distance value
+#' }
+#' @param heightClass A data frame containing height class values at 
+#' each transect of all sites.  Expected to contain the columns:
+#' \itemize{
+#'    \item SITE integer or character specifying the site visit
+#'    \item TRANSECT character value specifying the transect
+#'                   for which the value was recorded.
+#'    \item VALUE character values specifying the dbh class,
+#'                expected to be one of '<5', '5-15', '15-30'
+#'                or '>30'
+#' }
+#' @param species A data frame containing names of largest legacy tree 
+#' taxa at each transect of all sites.  Expected to contain the columns:
+#' \itemize{
+#'        \item SITE integer or character specifying the site visit
+#'        \item TRANSECT character value specifying the transect
+#'                       for which the value was recorded.
+#'        \item VALUE character values specifying the dbh class,
+#'                    expected to be one of '0-0.1', '.1-.3',
+#'                    '.3-.75', '.75-2' or '>2'
+#' }
+#' @param type dataframe containing types of largest legacy tree at each
+#' transect of all sites.  Expected to contain the columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE character values, either Coniferous or Deciduous.
+#' }
+#' @return Either a data frame when metric calculation is successful 
+#' or a character string containing an error message when metric 
+#' calculation is not successful.  The data frame contains the following 
+#' columns:
+#' \itemize{
+#'    \item SITE - universal ID value
+#'    \item METRIC - metric name
+#'    \item VALUE - metric value
+#' }
+#' Metrics calculated for wadeable sites include:
+#' \itemize{
+#'   \item ltmxcnt - Legacy number of largest trees
+#'   \item ltmxdbh - Legacy largest tree dbh
+#'   \item ltmxdist - Legacy largest tree distance
+#'   \item ltmxht - Legacy largest tree height
+#'   \item ltmxsize - Legacy largest tree size class (SMLX)
+#'   \item ltmxspp - Legacy largest tree species
+#'   \item ltsplist - Legacy tree species list comma delim.
+#'   \item ltfracs - Legacy fraction of reach trees >= small
+#'   \item ltfracm - Legacy fraction of reach trees >= medium
+#'   \item ltfracl - Legacy fraction of reach trees >= large
+#'   \item ltfracx - Legacy fraction of reach trees >= Xlarge
+#'   \item ltmddist - Legacy mean dist of trees >= median size
+#'   \item ltmddom - Legacy dominant sp.
+#'   \item ltmddomn - Legacy dominant sp. Count
+#'   \item ltmdsub - Legacy subdominant sp. >= median size
+#'   \item ltmdsubn - Legacy subdominant sp. count
+#'  } 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 
+#' 
 nrsaLegacyTree <- function(dbhClass = NULL
                           ,distance = NULL
                           ,heightClass = NULL

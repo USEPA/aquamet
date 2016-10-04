@@ -1,3 +1,127 @@
+#' @export
+#' @title Calculate NRSA Slope and Bearing Metrics
+#' @description This function calculates the slope and bearing 
+#' portion of the physical habitat metrics for National Rivers and 
+#' Streams Assessment (NRSA) data.  The function requires data 
+#' frames containing the thalweg, channel geometry, and stream 
+#' verification form data files.
+#' @param bBearing A data frame containing bearing values recorded 
+#' in the field for boatable reaches.  Expected to include columns:
+#' \itemize{
+#'    \item SITE integer or character type identifying the 
+#'               site.
+#'    \item TRANSECT character identifying the transect the value
+#'                   is for.
+#'    \item LINE integer specifying the within-transect 
+#'               segment the value is for.  Values begin at 0
+#'    \item VALUE numeric value of data
+#' }
+#' @param bDistance A data frame containing segment distance values 
+#' recorded in the field for boatable reaches.  Expected to include columns:
+#' \itemize{
+#'        \item SITE integer or character type identifying the 
+#'                   site.
+#'        \item TRANSECT character identifying the transect the value
+#'                       is for.
+#'        \item LINE integer specifying the within-transect 
+#'                   segment the value is for.  Values begin at 0
+#'        \item VALUE numeric value of data
+#' }
+#' @param bSlope A data frame containing slope values recorded in the 
+#' field for boatable reaches.  Expected to include columns:
+#' \itemize{
+#'      \item SITE integer or character type identifying the 
+#'                 site.
+#'      \item TRANSECT character identifying the transect the value
+#'                     is for.
+#'      \item LINE integer specifying the within-transect 
+#'                 segment the value is for.  Values begin at 0
+#'      \item VALUE numeric value of data
+#'      \item METHOD Method used to determine the value
+#'      \item UNITS Units the value is recorded in.  Expected to
+#'                  be PERCENT (slope) or CM (elevation change).
+#' }
+#' @param wBearing A data frame containing bearing values recorded 
+#' in the field for wadeable reaches.  Expected to include columns:
+#' \itemize{
+#'    \item SITE integer or character type identifying the 
+#'               site.
+#'    \item TRANSECT character identifying the transect the value
+#'                   is for.
+#'    \item LINE integer specifying the within-transect 
+#'               segment the value is for.  Values begin at 0
+#'    \item VALUE numeric value of data
+#' }
+#' @param wTransectSpacing  A data frame containing transect spacing 
+#' values recorded in the field for wadeable reaches.  Expected to 
+#' include columns: 
+#' \itemize{
+#'      \item SITE integer or character type identifying the 
+#'                 site.
+#'      \item TRANSECT character identifying the transect the value
+#'                     is for.
+#'      \item VALUE numeric value of data
+#' } 
+#' @param wProportion A data frame containing segment proportion 
+#' values recorded in the field for wadeable reaches .  Expected 
+#' to include columns:
+#' \itemize{
+#'      \item SITE integer or character type identifying the 
+#'                 site.
+#'      \item TRANSECT character identifying the transect the value
+#'                     is for.
+#'      \item LINE integer specifying the within-transect 
+#'                 segment the value is for.  Values begin at 0
+#'      \item VALUE numeric value of data. Expected to run 0-100
+#' }
+#' @param wSlope A data frame containing slope values recorded in 
+#' the field for wadeable reaches  .  Expected to include columns:
+#' \itemize{
+#'      \item SITE integer or character type identifying the 
+#'                 site.
+#'      \item TRANSECT character identifying the transect the value
+#'                     is for.
+#'      \item LINE integer specifying the within-transect 
+#'                 segment the value is for.  Values begin at 0
+#'      \item VALUE numeric value of data
+#'      \item METHOD Method used to determine the value
+#'      \item UNITS Units the value is recorded in.  Expected to
+#'                  be PERCENT (slope) or CM (elevation change).
+#' }
+#' @param gisSinuosity A data frame containing calculated sinuosity 
+#' values for any reach.  Expected to include columns:
+#' \itemize{
+#'        \item SITE integer or character type identifying the 
+#'                   site.
+#'        \item VALUE numeric value of data. Value is unitless.
+#' }
+#' @param gisSlope A data frame containing calculated mean slope 
+#' values for any reach.  Expected to include columns:
+#' \itemize{
+#'        \item SITE integer or character type identifying the 
+#'                   site.
+#'        \item VALUE numeric value of data. Expected to be 
+#'                    expressed in percent slope.
+#' }
+#' @return Either a data frame when metric calculation is successful 
+#' or a character string containing an error message when metric 
+#' calculation is not successful.  The data frame contains the following 
+#' columns:
+#' \itemize{
+#'    \item SITE - universal ID value
+#'    \item METRIC - metric name
+#'    \item VALUE - metric value
+#' }
+#' Metrics calculated (only for boatable sites) include: xslope_field,
+#' xslope, vslope, nslp, transpc, xbearing, sinu, pctClinometer, xslope_map 
+#' 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' 
+
 nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
                             ,wBearing = NULL, wTransectSpacing = NULL, wProportion = NULL
                             ,wSlope = NULL, gisSinuosity=NULL, gisSlope=NULL
