@@ -64,20 +64,15 @@ Assessment (NRSA) data.  The function requires data frames containing
 the bank geometry and stream verification form data files.
 }
 \examples{
-{
-\dontrun{
-  data(bankgeomEx)
   head(bankgeomEx)
-  bankgeomEx <- plyr::rename(bankgeomEx,c('UID'='SITE','RESULT'='VALUE'))
   
   bangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='ANGLE')
   wangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='ANGLE')
   wund <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='UNDERCUT')
   
-  testBankMorph <- metsBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
-  head(testBankMorph)
-   }
-  }
+  exBankMorph <- nrsaBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
+  head(exBankMorph)
+ 
 }
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr

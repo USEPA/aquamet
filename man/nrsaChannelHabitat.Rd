@@ -116,6 +116,15 @@ portion of the physical habitat metrics for National Rivers
 and Streams Assessment (NRSA) data.  The function requires a 
 data frame containing the thalweg data file.
 }
+\examples{
+head(thalwegEx) 
+
+bChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THAL')
+wChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THALW')
+
+chanHabOut <- nrsaChannelHabitat(bChannelUnit=bChan, wChannelUnit=wChan)
+head(chanHabOut)
+}
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}

@@ -22,7 +22,7 @@ nrsaChannelMorphology(bBankHeight = NULL, bBankWidth = NULL,
                              either CM, M or FT.
 }}
 
-\item{bBankWidth}{A data frame containing bank height at each transect for
+\item{bBankWidth}{A data frame containing bank width at each transect for
 boatable reaches, with the following columns:
 \itemize{
  \item SITE        integer or character specifying the site visit
@@ -64,8 +64,8 @@ boatable reaches, with the following columns:
 boatable reaches, with the following columns:
 \itemize{
  \item SITE integer or character specifying the site visit
- \item TRANSECT    character value specifying the transect
-                  for which the value was recorded.
+ \item TRANSECT character value specifying the transect
+               for which the value was recorded.
  \item VALUE numeric or character values
  \item UNITS character value specifying the units that
              the value is recorded in, expected to be
@@ -84,7 +84,7 @@ boatable reaches, with the following columns:
                       either CM, M or FT.
 }}
 
-\item{wBankWidth}{A data frame containing bank height at each transect for
+\item{wBankWidth}{A data frame containing bank width at each transect for
 wadeable reaches, with the following columns:
 \itemize{
      \item SITE integer or character specifying the site visit
@@ -128,6 +128,8 @@ for wadeable reaches, with the following columns:
          \item SITE integer or character specifying the site visit
          \item TRANSECT character value specifying the transect
                         for which the value was recorded.
+         \item STATION numeric value specifying the station between
+                    the transects at which the depth was recorded.
          \item VALUE numeric or character values
          \item UNITS character value specifying the units that
                      the value is recorded in, expected to be
@@ -164,6 +166,27 @@ portion of the physical habitat metrics for National Rivers
 and Streams Assessment (NRSA) data.  The function requires data 
 frames containing the bank geometry, thalweg, and stream 
 verification form data files.
+}
+\examples{
+head(bankgeomEx)
+head(thalwegEx)
+
+bBH <- subset(bankgeomEx,PARAMETER=='BANKHGT' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+bBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+bD <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_TYPE=='PHAB_THAL')
+bInc <- subset(bankgeomEx,PARAMETER=='INCISED' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+bWW <- subset(bankgeomEx,PARAMETER=='WETWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+wBH <- subset(bankgeomEx,PARAMETER=='BANKHGT' & SAMPLE_TYPE=='PHAB_CHANW')
+wBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANW')
+wD <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW')
+wInc <- subset(bankgeomEx,PARAMETER=='INCISHT' & SAMPLE_TYPE=='PHAB_CHANW')
+wWW <- subset(thalwegEx,PARAMETER=='WETWIDTH')
+
+chanmorphOut <- nrsaChannelMorphology(bBankHeight=bBH, bBankWidth=bBW,
+bDepth=bD, bIncisedHeight=bInc, bWettedWidth=bWW, wBankHeight=wBH,
+wBankWidth=wBW, wDepth=wD, wIncisedHeight=wInc, wWettedWidth=wWW)
+
+head(chanmorphOut)
 }
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr

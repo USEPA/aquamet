@@ -167,6 +167,22 @@
 #' documentation.
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples
+#' head(visripEx)
+#' 
+#' huminflOut <- nrsaHumanInfluence(buildings=subset(visripEx,PARAMETER=='BUILD'),
+#' landfillTrash=subset(visripEx,PARAMETER=='LANDFL'),
+#' logging=subset(visripEx,PARAMETER=='LOG'),
+#' mining=subset(visripEx,PARAMETER=='MINE'),
+#' parkLawn=subset(visripEx,PARAMETER=='PARK'),
+#' pastureRangeHay=subset(visripEx,PARAMETER=='PAST'),
+#' pavementClearedlot=subset(visripEx,PARAMETER=='PAVE'),
+#' pipesInOut=subset(visripEx,PARAMETER=='PIPES'),
+#' roadsRailroads=subset(visripEx,PARAMETER=='ROAD'),
+#' rowcrops=subset(visripEx,PARAMETER=='ROW'),
+#' wallRevetment=subset(visripEx,PARAMETER=='WALL'))
+#' 
+#' head(huminflOut)
 
 
 nrsaHumanInfluence <- function(buildings = NULL

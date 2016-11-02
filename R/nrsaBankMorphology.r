@@ -52,21 +52,18 @@
 #' 
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
-#' @examples{
-#' \dontrun{
-#'   data(bankgeomEx)
+#' @examples
 #'   head(bankgeomEx)
-#'   bankgeomEx <- plyr::rename(bankgeomEx,c('UID'='SITE','RESULT'='VALUE'))
 #'   
 #'   bangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='ANGLE')
 #'   wangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='ANGLE')
 #'   wund <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='UNDERCUT')
 #'   
-#'   testBankMorph <- metsBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
-#'   head(testBankMorph)
-#'    }
-#'   }
+#'   exBankMorph <- nrsaBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
+#'   head(exBankMorph)
+#'  
 #' @keywords survey
+#' 
 
 nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL) {
 

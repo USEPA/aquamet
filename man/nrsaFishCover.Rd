@@ -153,6 +153,21 @@ Rivers and Streams Assessment (NRSA) data.  The function
 requires data frames containing the channel cover and stream
 verification form data files.
 }
+\examples{
+head(fishcoverEx)
+
+fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE'),
+boulder=subset(fishcoverEx,PARAMETER=='BOULDR'),
+brush=subset(fishcoverEx,PARAMETER=='BRUSH'),
+liveTree=subset(fishcoverEx,PARAMETER=='LVTREE'),
+macrophytes=subset(fishcoverEx,PARAMETER=='MACPHY'),
+overhang=subset(fishcoverEx,PARAMETER=='OVRHNG'),
+structures=subset(fishcoverEx,PARAMETER=='STRUCT'),
+undercut=subset(fishcoverEx,PARAMETER=='UNDCUT'),
+woodyDebris=subset(fishcoverEx,PARAMETER=='WOODY'))
+
+head(fishCvrOut)
+}
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}

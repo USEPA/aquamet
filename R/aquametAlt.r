@@ -1,7 +1,7 @@
 #' aquametAlt: Calculate metrics used in NRSA and NLA
 #' 
 #' @docType package
-#' @name aquametAlt
+#' @name aquamet
 #' 
 #' @importFrom Hmisc "%nin%"
 #' @importFrom gtools smartbind

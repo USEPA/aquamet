@@ -62,6 +62,22 @@ the physical habitat metrics for National Rivers and Streams
 Assessment (NRSA) data.  The function requires data frames containing 
 the thalweg and channel geometry data files.
 }
+\examples{
+head(thalwegEx)
+head(changeomEx)
+
+sampTr <- unique(thalwegEx[,c('SITE','TRANSECT')])
+sideCh <- subset(thalwegEx,PARAMETER \%in\% c('SIDCHN','OFF_CHAN'))
+wTr <- subset(thalwegEx,PARAMETER=='INCREMNT',select=c('SITE','TRANSECT','VALUE'))
+bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
+trDist <- rbind(wTr,bTr) \%>\% plyr::mutate(VALUE=as.numeric(VALUE))
+
+generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,
+transectSpacing=trDist,
+sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK'))
+
+head(generalOut)
+}
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}

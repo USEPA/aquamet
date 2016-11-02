@@ -92,6 +92,15 @@
 #' 
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' 
+#' @examples
+#' head(thalwegEx) 
+#' 
+#' bChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THAL')
+#' wChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THALW')
+#' 
+#' chanHabOut <- nrsaChannelHabitat(bChannelUnit=bChan, wChannelUnit=wChan)
+#' head(chanHabOut)
 
 
 nrsaChannelHabitat <- function(bChannelUnit = NULL

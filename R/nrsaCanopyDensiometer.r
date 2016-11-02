@@ -14,6 +14,9 @@
 #' counts for wadeable reaches, with the following columns:
 #' \itemize{
 #' \item SITE integer or character specifying the site visit
+#' \item DIRECTION character value specifying the direction being
+#'  faced.  These values are expected to be the same
+#'  as listed in the arguments wChannelBank and wChannelMid
 #' \item VALUE numeric counts
 #' }
 #' @param wChannelBank Character values listing the values of 
@@ -39,7 +42,17 @@
 #' 
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
-
+#' @examples
+#' head(channelcoverEx)
+#' channelcoverEx <- plyr::mutate(channelcoverEx, VALUE=as.numeric(VALUE))
+#' 
+#' bDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANB' & PARAMETER=='DENSIOM')
+#' 
+#' wDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='DENSIOM')
+#' wDen <- plyr::rename(wDen,c('BANK'='DIRECTION'))
+#' 
+#' canDenOut <- nrsaCanopyDensiometer(bDensiom=bDen, wDensiom=wDen)
+#' head(canDenOut)
 
 nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('LF','RT'), wChannelMid=c('CU','CL','CD','CR')) {
 

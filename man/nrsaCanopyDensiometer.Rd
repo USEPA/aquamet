@@ -19,6 +19,9 @@ counts for boatable reaches, with the following columns:
 counts for wadeable reaches, with the following columns:
 \itemize{
 \item SITE integer or character specifying the site visit
+\item DIRECTION character value specifying the direction being
+ faced.  These values are expected to be the same
+ as listed in the arguments wChannelBank and wChannelMid
 \item VALUE numeric counts
 }}
 
@@ -51,6 +54,18 @@ This function calculates the canopy densiometer
 portion of the physical habitat metrics for National Rivers 
 and Streams Assessment (NRSA) data.  The function requires a 
 data frame containing the channel cover data file.
+}
+\examples{
+head(channelcoverEx)
+channelcoverEx <- plyr::mutate(channelcoverEx, VALUE=as.numeric(VALUE))
+
+bDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANB' & PARAMETER=='DENSIOM')
+
+wDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='DENSIOM')
+wDen <- plyr::rename(wDen,c('BANK'='DIRECTION'))
+
+canDenOut <- nrsaCanopyDensiometer(bDensiom=bDen, wDensiom=wDen)
+head(canDenOut)
 }
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr

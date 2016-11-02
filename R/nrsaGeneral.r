@@ -47,9 +47,21 @@
 #' documentation.
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
-
-
-
+#' @examples
+#' head(thalwegEx)
+#' head(changeomEx)
+#' 
+#' sampTr <- unique(thalwegEx[,c('SITE','TRANSECT')])
+#' sideCh <- subset(thalwegEx,PARAMETER %in% c('SIDCHN','OFF_CHAN'))
+#' wTr <- subset(thalwegEx,PARAMETER=='INCREMNT',select=c('SITE','TRANSECT','VALUE'))
+#' bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
+#' trDist <- rbind(wTr,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
+#' 
+#' generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,
+#' transectSpacing=trDist,
+#' sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK'))
+#' 
+#' head(generalOut)
 
 nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSpacing = NULL
                        ,sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')
@@ -186,7 +198,7 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
     } else {
         sidecnt <- sampledTransects %>%
                    ddply('SITE', summarise
-                        ,VALUE=protectedSum(TRANSECT %in% sideChannelTransects
+                        ,VALUE=aquamet:::protectedSum(TRANSECT %in% sideChannelTransects
                                             ,na.rm=TRUE
                                             )
                         ) %>%

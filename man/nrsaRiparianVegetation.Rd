@@ -176,6 +176,35 @@ portion of the physical habitat metrics for National Rivers and
 Streams Assessment (NRSA) data.  The function requires a data 
 frame containing the visible riparian damage data file.
 }
+\examples{
+head(visripEx)
+
+canCovLD <- dplyr::filter(visripEx,PARAMETER=='CANBTRE') \%>\% select(SITE,TRANSECT,BANK,VALUE)
+canCovSD <- subset(visripEx,PARAMETER=='CANSTRE',select=c('SITE','TRANSECT','BANK','VALUE'))
+canVegT <- subset(visripEx,PARAMETER=='CANVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
+gCovB <- subset(visripEx,PARAMETER=='BARE',select=c('SITE','TRANSECT','BANK','VALUE'))
+gCovNW <- subset(visripEx,PARAMETER=='GCNWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+gCovW <- subset(visripEx,PARAMETER=='GCWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+undCNW <- subset(visripEx,PARAMETER=='UNDNWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+undCW <- subset(visripEx,PARAMETER=='UNDWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+undVT <- subset(visripEx,PARAMETER=='UNDERVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
+
+exRipVegOut <- nrsaRiparianVegetation(
+canopyCoverLargeDiameter = canCovLD,
+canopyCoverSmallDiameter = canCovSD,
+canopyVegetationType = canVegT,
+groundCoverBare = gCovB,
+groundCoverNonwoody = gCovNW,
+groundCoverWoody = gCovW,
+understoryCoverNonwoody = undCNW,
+understoryCoverWoody = undCW,
+understoryVegetationType = undVT,
+coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
+                                  ,calc=c(NA,0,0.05,0.25,0.575,0.875)
+                                  ,stringsAsFactors=FALSE))
+
+head(exRipVegOut)                                   
+}
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}

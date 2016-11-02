@@ -125,6 +125,20 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' 
+#' @examples
+#' head(fishcoverEx)
+#' 
+#' fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE'),
+#' boulder=subset(fishcoverEx,PARAMETER=='BOULDR'),
+#' brush=subset(fishcoverEx,PARAMETER=='BRUSH'),
+#' liveTree=subset(fishcoverEx,PARAMETER=='LVTREE'),
+#' macrophytes=subset(fishcoverEx,PARAMETER=='MACPHY'),
+#' overhang=subset(fishcoverEx,PARAMETER=='OVRHNG'),
+#' structures=subset(fishcoverEx,PARAMETER=='STRUCT'),
+#' undercut=subset(fishcoverEx,PARAMETER=='UNDCUT'),
+#' woodyDebris=subset(fishcoverEx,PARAMETER=='WOODY'))
+#' 
+#' head(fishCvrOut)
 
 nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                          ,liveTree=NULL, macrophytes=NULL, overhang=NULL

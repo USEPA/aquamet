@@ -12,7 +12,7 @@ nrsaChannelChar(bankfullWidth = NULL, channelPattern = NULL,
 }
 \arguments{
 \item{bankfullWidth}{A data frame containing bankfull width from 
-channel constraint form for allreaches, with the following columns:
+channel constraint form for all reaches, with the following columns:
 \itemize{
      \item SITE        integer or character specifying the site visit
      \item VALUE       numeric or character values
@@ -20,7 +20,7 @@ channel constraint form for allreaches, with the following columns:
 Note: This value is simply copied to the output without change}
 
 \item{channelPattern}{A data frame containing pattern type from 
-channel constraint form for allreaches, with the following columns:
+channel constraint form for all reaches, with the following columns:
 \itemize{
      \item SITE        integer or character specifying the site visit
      \item VALUE       character values
@@ -42,7 +42,7 @@ channel riparian forms for boatable reaches, with the following columns:
     \item VALUE       character values expected to be one of 'B',
  }                                 'C','N','U' or NA}
 
-\item{constraintSingle}{A data frame containing canopy densiometer from 
+\item{constraintSingle}{A data frame containing constraint features from 
 channel constraint form for all reaches, with the following columns:
 \itemize{
     \item SITE        integer or character specifying the site visit
@@ -59,7 +59,8 @@ columns:
     }
  Note: This value is simply copied to the output without change}
 
-\item{seeOverBank}{A data frame containing canopy densiometer from channel 
+\item{seeOverBank}{A data frame containing variable indicating
+whether crew could see over the bank (N/Y) from channel 
 riparian forms for boatable reaches, with the following columns:
 \itemize{
     \item SITE        integer or character specifying the site visit
@@ -115,6 +116,30 @@ This function calculates the channel characteristics
 portion of the physical habitat metrics for National Rivers and 
 Streams Assessment (NRSA) data.  The function requires data frames 
 containing the bank geometry and channel characteristics data files.
+}
+\examples{
+head(chancharEx)
+
+bkfW <- subset(chancharEx, PARAMETER=='BANKFULL')
+chanPat <- subset(chancharEx, PARAMETER=='PATTERN')
+conFeat <- subset(chancharEx, PARAMETER=='FEATURES')
+conMult <- subset(bankgeomEx, PARAMETER=='CONSTRT')
+conSing <- subset(chancharEx, PARAMETER=='CONSTRNT')
+conPer <- subset(chancharEx, PARAMETER=='PERCENT')
+seeOver <- subset(bankgeomEx, PARAMETER=='SEEOVRBK')
+shoreToVeg <- subset(chancharEx, PARAMETER=='SHOR2RIP')
+valCon <- subset(chancharEx, PARAMETER=='VALLYBOX')
+valWid <- subset(chancharEx, PARAMETER=='VALLEY')
+
+chanCharOut <- nrsaChannelChar(bankfullWidth=bkfW, 
+channelPattern=chanPat, constraintFeatures=conFeat,
+constraintMultiple=conMult, constraintSingle=conSing,
+constraintPercent=conPer, seeOverBank=seeOver,
+shoreToVegDistance=shoreToVeg, valleyConstraintUnseen=valCon,
+valleyWidth=valWid)
+
+head(chanCharOut)
+
 }
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
