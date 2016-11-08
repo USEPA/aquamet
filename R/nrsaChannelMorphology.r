@@ -82,6 +82,8 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 #            code made my eyes bleed.
 #    2/25/16 cws Updated argument descriptions, and cleaned up comments a tad.
 #    3/17/16 cws Removed old commented out code
+#   11/07/16 cws Added metrics xdepth_cm and sddepth_cm. New code at tail end of
+#            this scabbed-in mess
 #            
 # ARGUMENTS:
 # bBankHeight       dataframe containing bank height at each transect for
@@ -763,15 +765,27 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
   # whats left are the thalweg depth summaries.... these are computed at
   # ALL stations.  Convert xdepth and sddepth from m to cm, to be
   # backward-compatible with interpretations of EMAP data.
-  if(is.null(wade))
+  if(is.null(wade)) {
       wadeThal <- NULL
-  else
+      wadeThal_cm <- NULL
+  } else {
       wadeThal <- subset(wade, PARAMETER=='DEPTH') %>% mutate(VALUE = as.numeric(VALUE)*100) # OH GODS NO! THIS SHOULD HAVE BEEN HANDLED DURING UNIT CONVERSIONS AT THE TOP!!!!
-  if(is.null(boat))
+      wadeThal_cm <- wadeThal %>% 
+                     mutate(PARAMETER = 'DEPTH_CM')                             # Convert CM to CM, which is gosh darned simple
+  }
+  if(is.null(boat)) {
       boatThal <- NULL
-  else
+      boatThal_cm <- NULL
+  } else {
       boatThal <- subset(boat, PARAMETER=='DEPTH')
+      boatThal_cm <- boatThal %>% 
+                     mutate(VALUE = as.numeric(VALUE)*100                       # Convert M to CM
+                           ,PARAMETER = 'DEPTH_CM'
+                           )
+                     
+  }
   thal <- rbind(wadeThal, boatThal)
+  thal_cm <- rbind(wadeThal_cm, boatThal_cm)
 
   if(is.null(thal)) {
       depthx <- NULL
@@ -784,11 +798,20 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
     depthc$METRIC <- 'n_d'
     intermediateMessage('.12')
   }  
+  
+  if(is.null(thal_cm)) {
+      depthx_cm <- NULL
+      depthsd_cm <- NULL
+  } else {
+    depthx_cm <- summaryby(thal_cm,'mean',"xdepth_cm")
+    depthsd_cm <- summaryby(thal_cm,'sd',"sddepth_cm")
+    intermediateMessage('.cm')
+  }  
 
   intermediateMessage('.13')
 
   # things to put together
-  mets <- rbind (intest, wadeableRatios, boatableRatios, depthx, depthsd, depthc)
+  mets <- rbind (intest, wadeableRatios, boatableRatios, depthx, depthsd, depthc, depthx_cm, depthsd_cm)
 
   intermediateMessage('  Done.', loc='end')
 
