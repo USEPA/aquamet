@@ -152,7 +152,7 @@
 #' head(bankgeomEx)
 #' head(thalwegEx)
 #' 
-#' bBH <- subset(bankgeomEx,PARAMETER=='BANKHGT' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+#' bBH <- subset(bankgeomEx,PARAMETER=='BANKHT' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
 #' bBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
 #' bD <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_TYPE=='PHAB_THAL')
 #' bInc <- subset(bankgeomEx,PARAMETER=='INCISED' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
@@ -160,7 +160,7 @@
 #' wBH <- subset(bankgeomEx,PARAMETER=='BANKHGT' & SAMPLE_TYPE=='PHAB_CHANW')
 #' wBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANW')
 #' wD <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW')
-#' wInc <- subset(bankgeomEx,PARAMETER=='INCISHT' & SAMPLE_TYPE=='PHAB_CHANW')
+#' wInc <- subset(bankgeomEx,PARAMETER=='INCISHGT' & SAMPLE_TYPE=='PHAB_CHANW')
 #' wWW <- subset(thalwegEx,PARAMETER=='WETWIDTH')
 #' 
 #' chanmorphOut <- nrsaChannelMorphology(bBankHeight=bBH, bBankWidth=bBW,

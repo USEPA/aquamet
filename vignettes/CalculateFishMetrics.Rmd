@@ -25,7 +25,7 @@ There are two main approaches to calculating the fish metrics. One may either ca
 Calculate all metrics using the example fish count data included in the package, `fishEx`, along with the included taxalist, `fishTaxa`.
 
 ```{r allFish.1}
-library(aquametAlt)
+library(aquamet)
 
 head(fishEx)
 ```

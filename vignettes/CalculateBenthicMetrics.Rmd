@@ -27,7 +27,7 @@ There are two main approaches to calculating the benthic macroinvertebrate metri
 Calculate all metrics using the example macroinvertebrate count data included in the package, `bentEx`, along with the included taxalist, `bentTaxa`.
 
 ```{r allBent.1}
-library(aquametAlt)
+library(aquamet)
 
 head(bentEx)
 ```
