@@ -4,8 +4,8 @@
 \name{aquamet}
 \alias{aquamet}
 \alias{aquamet-package}
-\title{aquametAlt: Calculate metrics used in NRSA and NLA}
+\title{aquamet: Calculate metrics used in NRSA and NLA}
 \description{
-aquametAlt: Calculate metrics used in NRSA and NLA
+aquamet: Calculate metrics used in NRSA and NLA
 }
 

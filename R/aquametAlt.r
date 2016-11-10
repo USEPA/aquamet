@@ -1,4 +1,4 @@
-#' aquametAlt: Calculate metrics used in NRSA and NLA
+#' aquamet: Calculate metrics used in NRSA and NLA
 #' 
 #' @docType package
 #' @name aquamet

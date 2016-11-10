@@ -58,8 +58,7 @@
 #' trDist <- rbind(wTr,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
 #' 
 #' generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,
-#' transectSpacing=trDist,
-#' sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK'))
+#' transectSpacing=trDist)
 #' 
 #' head(generalOut)
 
@@ -198,7 +197,7 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
     } else {
         sidecnt <- sampledTransects %>%
                    ddply('SITE', summarise
-                        ,VALUE=aquamet:::protectedSum(TRANSECT %in% sideChannelTransects
+                        ,VALUE= protectedSum(TRANSECT %in% sideChannelTransects
                                             ,na.rm=TRUE
                                             )
                         ) %>%
