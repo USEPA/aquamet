@@ -82,7 +82,7 @@ reachLen <- nrsaGeneral(sampledTransects=unique(thalwegEx[,c('SITE','TRANSECT')]
                         sideChannelTransects=c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK'))
   
 # Now feed these data frames into the function nrsaLargeWoody()
-lwdOut <- nrsaLargeWoody(bCounts=boatCnt,wCounts=wadeCnt,reachlength=subset(reachLen,METRIC=='reachlen),
+lwdOut <- nrsaLargeWoody(bCounts=boatCnt,wCounts=wadeCnt,reachlength=subset(reachLen,METRIC=='reachlen'),
                          meanBankfullWidth=meanBankfull)
 
 ```

@@ -58,7 +58,8 @@
 #' trDist <- rbind(wTr,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
 #' 
 #' generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,
-#' transectSpacing=trDist)
+#' transectSpacing=trDist,
+#' sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK'))
 #' 
 #' head(generalOut)
 
