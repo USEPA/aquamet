@@ -1,3 +1,190 @@
+#' @export
+#' @title Calculate NRSA Human Influence Metrics
+#' @description This function calculates the human influence 
+#' portion of the physical habitat metrics for National Rivers 
+#' and Streams Assessment (NRSA) data.  The function requires 
+#' a data frame containing the visible riparian damage data file.
+#' @param buildings A data frame containing building influence data 
+#' at each transect for all reaches, with the following columns:
+#' \itemize{
+#' \item SITE integer or character specifying the site visit
+#' \item TRANSECT character value specifying the transect
+#' for which the value was recorded.
+#' \item VALUE character values specifying the influence 
+#' class
+#' }
+#' @param landfillTrash A data frame containing landfill/trash 
+#' influence data at each transect for all reaches, with the 
+#' following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item TRANSECT character value specifying the transect
+#'  for which the value was recorded.
+#'  \item VALUE character values specifying the influence 
+#'  class
+#' }
+#' @param logging A data frame containing logging influence data at 
+#' each transect for all reaches, with the following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item TRANSECT    character value specifying the transect
+#'  for which the value was recorded.
+#'  \item VALUE character values specifying the influence 
+#'  class
+#' }
+#' @param mining A data frame containing mining influence data at 
+#' each transect for all reaches, with the following columns:
+#' \itemize{
+#'    \item SITE integer or character specifying the site visit
+#'    \item TRANSECT character value specifying the transect
+#'                   for which the value was recorded.
+#'    \item VALUE character values specifying the influence 
+#'                class
+#' }
+#' @param parkLawn A data frame containing park and lawn influence 
+#' data at each transect for all reaches, with the following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item TRANSECT character value specifying the transect
+#'                 for which the value was recorded.
+#'  \item VALUE character values specifying the influence 
+#'              class
+#' }
+#' @param pastureRangeHay A data frame containing pasture, range or 
+#' hay production influence data at each transect for all reaches, 
+#' with the following columns:
+#' \itemize{
+#'    \item SITE integer or character specifying the site visit
+#'    \item TRANSECT character value specifying the transect
+#'                   for which the value was recorded.
+#'    \item VALUE character values specifying the influence 
+#'                class
+#' }
+#' @param pavementClearedlot A data frame containing pavement influence 
+#' data at each transect for all reaches, with the following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site 
+#'             visit
+#'  \item TRANSECT character value specifying the transect
+#'                 for which the value was recorded.
+#'  \item VALUE character values specifying the influence 
+#'              class
+#' }
+#' @param pipesInOut A data frame containing irrigation piping influence 
+#' data at each transect for all reaches, with the following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item TRANSECT character value specifying the transect
+#'                 for which the value was recorded.
+#'  \item VALUE character values specifying the influence 
+#'              class
+#' }
+#' @param roadsRailroads A data frame containing roads and rails 
+#' influence data at each transect for all reaches, with the following 
+#' columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item TRANSECT character value specifying the transect
+#'                 for which the value was recorded.
+#'  \item VALUE character values specifying the influence 
+#'              class
+#' }
+#' @param rowcrops A data frame containing row crop influence data at 
+#' each transect for all reaches, with the following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item TRANSECT character value specifying the transect
+#'                 for which the value was recorded.
+#'  \item VALUE character values specifying the influence 
+#'              class
+#' }
+#' @param wallRevetment A data frame containing bank revetment influence 
+#' data at each transect for all reaches, with the following columns:
+#' \itemize{
+#'    \item SITE integer or character specifying the site visit
+#'    \item TRANSECT character value specifying the transect
+#'                   for which the value was recorded.
+#'    \item VALUE character values specifying the influence 
+#'                class
+#' }
+#' @param influenceWeights A data frame containing weighting values for 
+#' each influence class.  The default value for this argument reproduces EPA
+#' NARS calculations.  Expected to have the following columns:
+#' \itemize{
+#'    \item VALUE character codes used to specify each influence 
+#'                class
+#'    \item weights numeric value used to weight each influence class
+#'          in combined calculations
+#'
+#' }
+#' 
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation is 
+#' not successful.  The data frame contains the following columns:
+#' \itemize{
+#' \item SITE - universal ID value
+#' \item METRIC - metric name
+#' \item VALUE - metric value
+#' }
+#' Metrics calculated:
+#' \itemize{
+#'   \item sdb_hall   Std dev human disturbance on bank
+#'   \item sdcb_hall	 Std dev human dist. on bank or channel
+#'   \item sdc_hall	 Std dev human disturbance in channel
+#'   \item sdwcb_hall	 Std dev wted human dist on bank or chan
+#'   \item w1h_bldg	 Rip Dist--Buildings (ProxWt Pres)
+#'   \item w1h_crop	 Rip Dist--Row Crop (ProxWt Pres)
+#'   \item w1h_ldfl	 Rip Dist--Trash/Landfill (ProxWt Pres)
+#'   \item w1h_log	 Rip Dist--Logging Activity (ProxWt Pres)
+#'   \item w1h_mine	 Rip Dist--Mining Activity (ProxWt Pres)
+#'   \item w1h_park	 Rip Dist--Lawn/Park (ProxWt Pres)
+#'   \item w1h_pipe	 Rip Dist--Pipes infl/effl (ProxWt Pres)
+#'   \item w1h_pstr	 Rip Dist--Pasture/Hayfield (ProxWt Pres)
+#'   \item w1h_pvmt	 Rip Dist--Pavement (ProxWt Pres)
+#'   \item w1h_road	 Rip Dist--Road/Railroad (ProxWt Pres)
+#'   \item w1h_wall	 Rip Dist--Wall/Bank Revet. (ProxWt Pres)
+#'   \item w1_hag	 Rip Dist--Sum Agric Types (ProxWt Pres)
+#'   \item w1_hall	 Rip Dist--Sum All Types (ProxWt Pres)
+#'   \item w1_hnoag	 Rip Dist--Sum NonAg Types (ProxWt Pres)
+#'   \item xb_hag	 Rip Dist-Sum Ag Types instrm & in plot
+#'   \item xb_hall	 Rip Dist--Sum All Types instrm & on bank
+#'   \item xb_hnoag	 Rip Dist Sum-Non ag Types instrm & Plot
+#'   \item xcb_hag	 Rip Dist Sum-Ag Types instrm & on Bank
+#'   \item xcb_hall	 Rip Dist--Sum All Types instrm & in plot
+#'   \item xcb_hnag	 Rip Dist Sum-Non Ag Types instrm & Bank
+#'   \item xc_hag	 Rip Dist-Sum of Ag Types in Ripar Plot
+#'   \item xc_hall	 Rip Dist--Sum All Types in Ripar Plots
+#'   \item xc_hnoag	 Rip Dist Sum-Non Ag Types in Ripar Plot
+#'   \item xf_hag	 Rip Dist Sum-Ag Types Beyond Ripar Plot
+#'   \item xf_hall	 Rip Dist--Sum All Types beyond Rip Plots
+#'   \item xf_hnoag	 Rip Dist Sum-Non Ag Types Beyond Rip Plt
+#'   \item x_hag	 Rip Dist Sum-Ag Types rip Plt & Beyond
+#'   \item x_hall	 Rip Dist--Sum All Types str plt & beyond
+#'   \item x_hnoag	 Rip Dist Sum-Non Ag rip Plt & Beyond
+#' } 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples
+#' head(visripEx)
+#' 
+#' huminflOut <- nrsaHumanInfluence(buildings=subset(visripEx,PARAMETER=='BUILD'),
+#' landfillTrash=subset(visripEx,PARAMETER=='LANDFL'),
+#' logging=subset(visripEx,PARAMETER=='LOG'),
+#' mining=subset(visripEx,PARAMETER=='MINE'),
+#' parkLawn=subset(visripEx,PARAMETER=='PARK'),
+#' pastureRangeHay=subset(visripEx,PARAMETER=='PAST'),
+#' pavementClearedlot=subset(visripEx,PARAMETER=='PAVE'),
+#' pipesInOut=subset(visripEx,PARAMETER=='PIPES'),
+#' roadsRailroads=subset(visripEx,PARAMETER=='ROAD'),
+#' rowcrops=subset(visripEx,PARAMETER=='ROW'),
+#' wallRevetment=subset(visripEx,PARAMETER=='WALL'))
+#' 
+#' head(huminflOut)
+
+
 nrsaHumanInfluence <- function(buildings = NULL
                               ,landfillTrash = NULL
                               ,logging = NULL
@@ -90,7 +277,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #        values less cryptic.
 #
 # ARGUMENTS:
-# buildings         dataframe containing building influence data at each transect 
+# buildings         A data frame containing building influence data at each transect 
 #                   for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
@@ -98,14 +285,14 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# landfillTrash     dataframe containing landfill/trash influence data at each 
+# landfillTrash     A data frame containing landfill/trash influence data at each 
 #                   transect for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
 #                                   for which the value was recorded.
 #                       VALUE       character values specifying the influence 
 #                                   class
-# logging           dataframe containing logging influence data at each transect 
+# logging           A data frame containing logging influence data at each transect 
 #                   for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
@@ -113,7 +300,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# mining            dataframe containing mining influence data at each transect 
+# mining            A data frame containing mining influence data at each transect 
 #                   for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
@@ -121,7 +308,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# parkLawn          dataframe containing park and lawn influence data at each  
+# parkLawn          A data frame containing park and lawn influence data at each  
 #                   transect for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
@@ -129,7 +316,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# pastureRangeHay   dataframe containing pasture, range or hay production 
+# pastureRangeHay   A data frame containing pasture, range or hay production 
 #                   influence data at each transect for all reaches, with the 
 #                   following columns:
 #                       SITE        integer or character specifying the site visit
@@ -138,7 +325,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# pavementClearedlot    dataframe containing pavement influence data at each  
+# pavementClearedlot    A data frame containing pavement influence data at each  
 #                       transect for all reaches, with the following columns:
 #                           SITE        integer or character specifying the site 
 #                                       visit
@@ -147,7 +334,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                           VALUE       character values specifying the influence 
 #                                       class
 #
-# pipesInOut        dataframe containing irrigation piping influence data at each 
+# pipesInOut        A data frame containing irrigation piping influence data at each 
 #                   transect for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
@@ -155,7 +342,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# roadsRailroads    dataframe containing roads and rails influence data at each 
+# roadsRailroads    A data frame containing roads and rails influence data at each 
 #                   transect for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
@@ -163,7 +350,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# rowcrops          dataframe containing row crop influence data at each transect 
+# rowcrops          A data frame containing row crop influence data at each transect 
 #                   for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
@@ -171,7 +358,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# wallRevetment     dataframe containing bank revetment influence data at each 
+# wallRevetment     A data frame containing bank revetment influence data at each 
 #                   transect for all reaches, with the following columns:
 #                       SITE        integer or character specifying the site visit
 #                       TRANSECT    character value specifying the transect
@@ -179,7 +366,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       VALUE       character values specifying the influence 
 #                                   class
 #
-# influenceWeights  dataframe containing weighting values for each influence
+# influenceWeights  A data frame containing weighting values for each influence
 #                   class.  The default value for this argument reproduces EPA
 #                   NARS calculations.  Expected to have the following columns:
 #                       VALUE   character codes used to specify each influence 

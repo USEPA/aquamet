@@ -1,3 +1,145 @@
+#' @export
+#' @title Calculate NRSA Fish Cover Metrics
+#' @description This function calculates the fish cover 
+#' portion of the physical habitat metrics for National 
+#' Rivers and Streams Assessment (NRSA) data.  The function 
+#' requires data frames containing the channel cover and stream
+#' verification form data files.
+#' @param algae A data frame containing algae cover class data at each transect for
+#'             all reaches, with the following columns:
+#'  \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                           for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param boulder A data frame containing boulder cover class data at each 
+#' transect for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param brush A data frame containing brush cover class data at each 
+#' transect for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param liveTree A data frame containing livetree cover class data at each 
+#' transect for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param macrophytes A data frame containing plant cover class data at each 
+#' transect for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                    for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param overhang A data frame containing overhang cover class data at each 
+#' transect for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param structures A data frame containing structural cover class data at each 
+#' transect for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param undercut A data frame containing undercut cover class data at each 
+#' transect for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param woodyDebris A data frame containing woody debris cover class data at 
+#' each transect for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site visit
+#'      \item TRANSECT character value specifying the transect
+#'                           for which the value was recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param coverClassTypes A data frame containing group membership information 
+#' for each type of fish cover.  The default value for this argument 
+#' reproduces EPA NARS calculations.  Expected to have the following columns:
+#' \itemize{
+#'        \item coverType character values 'algae', 'boulder', 'brush',
+#'                        'liveTree', 'macrophytes', 'overhang',
+#'                        'structures', 'undercut', 'woodyDebris'
+#'        \item isBig logical values specifying whether the class
+#'                    is considered as large for analysis
+#'        \item isNatural logical values specifying whether the class
+#'                        is considered as natural for analysis
+#' }
+#' @param coverCalculationValues A data frame specifying how cover class values 
+#' are mapped to presence/absence and to characteristic cover fractions for 
+#' analysis.  The default value for this argument reproduces EPA NARS 
+#' calculations. Expected to have the following columns:
+#' \itemize{
+#'        \item field character value specifying the codes
+#'              used to record cover values
+#'        \item presence numeric value specifying whether the
+#'              cover value is present (1) or absent 
+#'              (0) or missing (NA), used for mean
+#'              presence calculations.
+#'        \item characteristicCover numeric value specifying the
+#'              value used for mean cover
+#'              calculations.
+#' }
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation is 
+#' not successful.  The data frame contains the following columns:
+#' \itemize{
+#'  \item SITE - universal ID value
+#'  \item METRIC - metric name
+#'  \item VALUE - metric value
+#' }
+#' 
+#' Metrics calculated include: pfc_alg, pfc_rck, pfc_brs, pfc_lvt, pfc_aqm, 
+#' pfc_ohv, pfc_hum, pfc_ucb, pfc_lwd, xfc_alg, xfc_rck, xfc_brs, xfc_lvt, 
+#' xfc_aqm, xfc_ohv, xfc_hum, xfc_ucb, xfc_lwd, pfc_all, pfc_big, pfc_nat, 
+#' xfc_all, xfc_big, xfc_nat, sdfc_ucb, sdfc_ohv, idrucb, idrohv, iqrucb, 
+#' iqrohv
+#' 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' 
+#' @examples
+#' head(fishcoverEx)
+#' 
+#' fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE'),
+#' boulder=subset(fishcoverEx,PARAMETER=='BOULDR'),
+#' brush=subset(fishcoverEx,PARAMETER=='BRUSH'),
+#' liveTree=subset(fishcoverEx,PARAMETER=='LVTREE'),
+#' macrophytes=subset(fishcoverEx,PARAMETER=='MACPHY'),
+#' overhang=subset(fishcoverEx,PARAMETER=='OVRHNG'),
+#' structures=subset(fishcoverEx,PARAMETER=='STRUCT'),
+#' undercut=subset(fishcoverEx,PARAMETER=='UNDCUT'),
+#' woodyDebris=subset(fishcoverEx,PARAMETER=='WOODY'))
+#' 
+#' head(fishCvrOut)
+
 nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                          ,liveTree=NULL, macrophytes=NULL, overhang=NULL
                          ,structures=NULL, undercut=NULL, woodyDebris=NULL

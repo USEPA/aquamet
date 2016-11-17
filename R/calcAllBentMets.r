@@ -42,17 +42,16 @@
 #' the benthic macroinvertebrate metrics as additional variables.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @examples 
-#'   \dontrun{
 #'   data(bentEx)
 #'   head(bentEx)
 #'   head(bentTaxa)
 #'   # Calculate metrics for bentIn, using the taxonomy in the count file as is
-#'   bentMetrics <- invertMet(indf=bentEx, inTaxa=bentTaxa,
+#'   bentMetrics <- calcAllBentMets(indf=bentEx, inTaxa=bentTaxa,
 #'                      sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT'), 
 #'                      dist='IS_DISTINCT',
 #'                      ct='TOTAL',taxa_id='TAXA_ID',
 #'                      ffg='FFG',habit='HABIT',ptv='PTV')
-#'                      head(bentMetrics)}
+#'   head(bentMetrics)
 #' @keywords survey
 calcAllBentMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                         ct="TOTAL",taxa_id='TAXA_ID',ffg='FFG',habit='HABIT',ptv='PTV'){
@@ -86,19 +85,19 @@ calcAllBentMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
   inTaxa[,c(ptv,taxa_id)] <- lapply(inTaxa[,c(ptv,taxa_id)],as.numeric)
 
   
-  taxMet <- calcTaxonomyMets(indf,inTaxa,sampID,dist,ct,taxa_id)
+  taxMet <- calcBentTaxMets(indf,inTaxa,sampID,dist,ct,taxa_id)
   tax.1 <- reshape2::melt(taxMet,id.vars=sampID)
   
-  ffgMet <- calcFFGmets(indf,inTaxa,sampID,dist,ct,taxa_id,ffg)
+  ffgMet <- calcBentFFGmets(indf,inTaxa,sampID,dist,ct,taxa_id,ffg)
   ffg.1 <- reshape2::melt(ffgMet,id.vars=sampID)
   
-  habitMet <- calcHabitMets(indf,inTaxa,sampID,dist,ct,taxa_id,habit)
+  habitMet <- calcBentHabitMets(indf,inTaxa,sampID,dist,ct,taxa_id,habit)
   habit.1 <- reshape2::melt(habitMet,id.vars=sampID)
   
-  tolMet <- calcTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,ptv)
+  tolMet <- calcBentTolMets(indf,inTaxa,sampID,dist,ct,taxa_id,ptv)
   tol.1 <- reshape2::melt(tolMet,id.vars=sampID)
   
-  domMet <- calcDominMets(indf,inTaxa,sampID,dist,ct,taxa_id)
+  domMet <- calcBentDominMets(indf,inTaxa,sampID,dist,ct,taxa_id)
   dom.1 <- reshape2::melt(domMet,id.vars=sampID)
   
   names(indf)[names(indf)==ct] <- 'FINAL_CT'

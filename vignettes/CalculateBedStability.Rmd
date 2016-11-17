@@ -1,0 +1,173 @@
+---
+title: "Calculating Relative Bed Stability"
+author: "Karen Blocksom "
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Calculating Bed Stability}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# 1 Preliminaries
+
+Bed stability is important to measuring physical habitat condition in streams for the National Rivers and Streams Assessment. The function `nrsaBedStability` uses metrics calculated from other functions in this package, some of which have different names for boatable and wadeable versions, to calculate a number of metrics related to bed stability. The purpose of this vignette is to provide an example of the calculation of bed stability metrics using the outputs of other physical habitat functions. 
+
+********
+# 2 Calculating Bed Stability
+
+First calculate all of the input metrics required as inputs. The following functions calculate the necessary input metrics: 
+`nrsaChannelMorphology()`, `nrsaFishCover()`, `nrsaLargeWoody()`, `nrsaResidualPools()`, `nrsaSlopeBearing()`, `nrsaSubstrateCharacterization()`. In turn, some of those functions use data from other functions. The function `nrsaGeneral()` feeds reach length into `nrsaLargeWoody()`.
+
+## 2.1 Channel morphology metrics
+For this function, all data inputs are required to use the function.
+```{r chanmorph}
+library(aquamet)
+
+head(bankgeomEx)
+head(thalwegEx)
+
+bBH <- subset(bankgeomEx,PARAMETER=='BANKHT' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+bBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+bD <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_TYPE=='PHAB_THAL')
+bWW <- subset(bankgeomEx,PARAMETER=='WETWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+bInc <- subset(bankgeomEx,PARAMETER=='INCISED' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
+wBH <- subset(bankgeomEx,PARAMETER=='BANKHGT' & SAMPLE_TYPE=='PHAB_CHANW')
+wBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANW')
+wD <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW')
+wWW <- subset(thalwegEx,PARAMETER=='WETWIDTH')
+wInc <- subset(bankgeomEx,PARAMETER=='INCISHGT' & SAMPLE_TYPE=='PHAB_CHANW')
+
+chanmorphOut <- nrsaChannelMorphology(bBankHeight=bBH, bBankWidth=bBW,
+bDepth=bD, bIncisedHeight=bInc, bWettedWidth=bWW, wBankHeight=wBH,
+wBankWidth=wBW, wDepth=wD, wIncisedHeight=wInc, wWettedWidth=wWW)
+
+head(chanmorphOut)
+
+```
+
+## 2.2 Fish cover metrics
+
+```{r fishcvr}
+head(fishcoverEx)
+ 
+fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE'),
+  boulder=subset(fishcoverEx,PARAMETER=='BOULDR'),
+  brush=subset(fishcoverEx,PARAMETER=='BRUSH'),
+  liveTree=subset(fishcoverEx,PARAMETER=='LVTREE'),
+  macrophytes=subset(fishcoverEx,PARAMETER=='MACPHY'),
+  overhang=subset(fishcoverEx,PARAMETER=='OVRHNG'),
+  structures=subset(fishcoverEx,PARAMETER=='STRUCT'),
+  undercut=subset(fishcoverEx,PARAMETER=='UNDCUT'),
+  woodyDebris=subset(fishcoverEx,PARAMETER=='WOODY'))
+
+head(fishCvrOut)
+
+```
+## 2.3 Large woody debris metrics
+```{r lwd}
+
+boatCnt <- subset(woodEx,SITE %in% subset(visitsEx,VALXSITE=='BOATABLE',select='UID')$UID)
+wadeCnt <- subset(woodEx,SITE %in% subset(visitsEx,VALXSITE=='WADEABLE',select='UID')$UID) 
+meanBankfull <- subset(chanmorphOut,METRIC=='xbkf_w')
+
+# Run nrsaGeneral() to obtain reach length metric
+wTr <- subset(thalwegEx,PARAMETER=='INCREMNT',select=c('SITE','TRANSECT','VALUE'))
+bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
+tranSpace <- rbind(wTr,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
+
+reachLen <- nrsaGeneral(sampledTransects=unique(thalwegEx[,c('SITE','TRANSECT')]),
+                        sideChannels=subset(thalwegEx,PARAMETER %in% c('SIDCHN','OFF_CHAN')),
+                        transectSpacing=tranSpace, 
+                        sideChannelTransects=c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK'))
+  
+# Now feed these data frames into the function nrsaLargeWoody()
+lwdOut <- nrsaLargeWoody(bCounts=boatCnt,wCounts=wadeCnt,reachlength=subset(reachLen,METRIC=='reachlen'),
+                         meanBankfullWidth=meanBankfull)
+
+```
+
+
+
+```{r allBent.1}
+library(aquametAlt)
+
+head(bentEx)
+```
+This example dataset contains all of the necessary variables required to calculate all of the macroinvertebrates metrics. For this dataset, the combination of `UID`, `SAMPLE_TYPE`, and `SAMPLE_CAT` identifies individual samples, `TAXA_ID` identifies the taxon and links to same field in the taxalist, `TOTAL` is the count for the taxon, and `IS_DISTINCT` is the distinctness, which 0 indicating non-distinct within the sample and 1 distinct.
+
+```{r allBent.2}
+head(bentTaxa)
+```
+This is the desired format of the taxalist. All of the necessary traits are included in the taxalist for metric calculation. The variable `FAM_OR_CLS` is the same as `FAMILY` and is an artifact from the NRSA 2008-9 study.
+```{r allFish.3}
+outdf <- calcAllBentMets(bentEx,bentTaxa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                       ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
+                                       ,habit='HABIT_WSA',ptv='PTV_WSA')
+
+names(outdf)
+```
+The definitions of all metrics can be found in **NRSA_Invertebrate_Metric_Descriptions.pdf** found in this package.
+
+## 2.2 Subsets of metrics
+
+Suppose only tolerance-related and taxonomic metrics are of interest. Then we need only to run the `calcBentTolMets()` and `calcBentTaxMets()` functions. 
+
+### Taxonomy metrics
+
+```{r subMets.1}
+outTax <- calcBentTaxMets(bentEx,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                        ,dist='IS_DISTINCT',ct='TOTAL')
+names(outTax)
+head(outTax)
+```
+
+### Tolerance metrics
+
+```{r subMets.2}
+outTol <- calcBentTolMets(bentEx,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                           ,dist='IS_DISTINCT',ct='TOTAL',ptv='PTV_WSA')
+names(outTol)
+head(outTol)
+
+```
+**************************
+# 3 Calculate only benthic MMI metrics and MMI
+
+First, we will need to create a data frame containing the three-letter code for the 9 aggregated ecoregions and add that to the input data frame (`inCts`). Then run the function `calcNRSA_BentMMImets()`, followed by `calcNRSA_BentMMI()`.
+
+
+## 3.1 Calculate only benthic MMI metrics
+
+This function calculates metrics for only the MMI for the ecoregion of each site. In order to match the taxonomy used in the NRSA MMI, the function `prepBentCts_WSA()` must be run.
+
+```{r mmiMets.1}
+bentWSA <- prepBentCts_WSA(bentEx,bentTaxa
+                             ,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                             ,ct='TOTAL',taxa_id='TAXA_ID')
+
+eco9 <- data.frame(UID=c(10000,10001), ECO9=c('CPL','WMT'),stringsAsFactors=F)
+
+bentEx.1 <- merge(bentWSA, eco9, by='UID')
+
+outMets <- calcNRSA_BentMMImets(inCts=bentEx.1,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+                                       ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
+                                       ,habit='HABIT_WSA',ptv='PTV_WSA',ecoreg='ECO9')
+
+head(outMets)
+
+```
+Note that there are missing values for metrics that are not included in the MMI for a given ecoregion. Any given UID should only have values for 6 metrics, which is the case in our example. 
+
+## 3.2 Calculate NRSA benthic MMI
+
+Now use the output of the function above to calculate the benthic MMI. The output data frame should have the ecoregion still included, and that will be used in calculating the NRSA MMI and assigning a condition class.
+
+```{r mmiMets.3}
+
+outMMI <- calcNRSA_BenthicMMI(outMets, sampID='UID', ecoreg='ECO9')
+
+head(outMMI)
+
+```
+Again, note that there are missing values for the metrics and metric scores not included in the MMI for a given site. If there is a mix of ecoregions in the input dataset, there will be these missing values for some metrics and metric scores.

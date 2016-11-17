@@ -40,7 +40,7 @@ test_that("Data prep correct",
 
 test_that("Benthic Taxonomy metric values correct",
           {
-            testOut <- calcTaxonomyMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+            testOut <- calcBentTaxMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                         ,dist='IS_DISTINCT',ct='TOTAL')
             testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                            ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -53,7 +53,7 @@ test_that("Benthic Taxonomy metric values correct",
 
 test_that("Benthic FFG metric values correct",
 {
-  testOut <- calcFFGmets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+  testOut <- calcBentFFGmets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                               ,dist='IS_DISTINCT',ct='TOTAL',ffg='FFG_WSA')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -67,7 +67,7 @@ test_that("Benthic FFG metric values correct",
 
 test_that("Benthic Habit metric values correct",
 {
-  testOut <- calcHabitMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+  testOut <- calcBentHabitMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                          ,dist='IS_DISTINCT',ct='TOTAL',habit='HABIT_WSA')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -80,7 +80,7 @@ test_that("Benthic Habit metric values correct",
 
 test_that("Benthic tolerance metric values correct",
 {
-  testOut <- calcTolMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+  testOut <- calcBentTolMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                            ,dist='IS_DISTINCT',ct='TOTAL',ptv='PTV_WSA')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -94,7 +94,7 @@ test_that("Benthic tolerance metric values correct",
 
 test_that("Benthic dominance and diversity metric values correct",
 {
-  testOut <- calcDominMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+  testOut <- calcBentDominMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                          ,dist='IS_DISTINCT',ct='TOTAL')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -131,7 +131,7 @@ test_that("MMI metrics correct",
                                            ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
               plyr::mutate(PARAMETER=as.character(PARAMETER))
             compOut <- merge(bentMet_test,testOut.long,by=c('UID','SAMPLE_TYPE','SAMPLE_CAT','PARAMETER'))
-            expect_true(nrow(compOut)==60)
+            expect_true(nrow(compOut)==70)
             expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001)
             
           })

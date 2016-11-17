@@ -1,3 +1,187 @@
+#' @export
+#' @title Calculate NRSA Riparian Vegetation Metrics
+#' @description This function calculates the riparian vegetation 
+#' portion of the physical habitat metrics for National Rivers and 
+#' Streams Assessment (NRSA) data.  The function requires a data 
+#' frame containing the visible riparian damage data file.
+#' @param canopyCoverLargeDiameter A data frame containing cover class 
+#' values for large diameter canopy trees at each transect for all
+#' reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site 
+#'                 visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item BANK character value specifying the channel
+#'                 bank (left or right) at the transect
+#'                 at which the values were recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param canopyCoverSmallDiameter A data frame containing cover 
+#' class values for small diameter canopy trees at each transect 
+#' for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site 
+#'                 visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item BANK character value specifying the channel
+#'                 bank (left or right) at the transect
+#'                 at which the values were recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param canopyVegetationType A data frame containing canopy 
+#' cover type data at each transect for all reaches, with the 
+#' following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site 
+#'                 visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item BANK character value specifying the channel
+#'                 bank (left or right) at the transect
+#'                 at which the values were recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param groundCoverBare A data frame containing cover class data 
+#' for bare ground cover at each transect for all reaches, with the 
+#' following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site 
+#'                 visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item BANK character value specifying the channel
+#'                 bank (left or right) at the transect
+#'                 at which the values were recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param groundCoverNonwoody A data frame containing cover 
+#' class data for nonwoody ground cover at each transect for all 
+#' reaches, with the following columns:
+#' \itemize{
+#'        \item SITE integer or character specifying the site 
+#'                   visit
+#'        \item TRANSECT character value specifying the transect
+#'                       for which the value was recorded.
+#'        \item BANK character value specifying the channel
+#'                   bank (left or right) at the transect
+#'                   at which the values were recorded.
+#'        \item VALUE numeric or character values
+#' }
+#' @param groundCoverWoody A data frame containing cover class 
+#' data for woody ground cover at each transect for all reaches, 
+#' with the following columns:
+#' \itemize{
+#'    \item SITE integer or character specifying the site 
+#'               visit
+#'    \item TRANSECT character value specifying the transect
+#'                   for which the value was recorded.
+#'    \item BANK character value specifying the channel
+#'               bank (left or right) at the transect
+#'               at which the values were recorded.
+#'    \item VALUE numeric or character values
+#' }
+#' @param understoryCoverNonwoody A data frame containing cover 
+#' class data for nonwoody understory cover at each transect for 
+#' all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site 
+#'                 visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item BANK character value specifying the channel
+#'                 bank (left or right) at the transect
+#'                 at which the values were recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param understoryCoverWoody A data frame containing cover class 
+#' data for woody understory cover at each transect for all reaches,
+#' with the following columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site 
+#'                 visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item BANK character value specifying the channel
+#'                 bank (left or right) at the transect
+#'                 at which the values were recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param understoryVegetationType A data frame containing understory 
+#' cover type data at each transect for all reaches, with the following 
+#' columns:
+#' \itemize{
+#'      \item SITE integer or character specifying the site 
+#'                 visit
+#'      \item TRANSECT character value specifying the transect
+#'                     for which the value was recorded.
+#'      \item BANK character value specifying the channel
+#'                 bank (left or right) at the transect
+#'                 at which the values were recorded.
+#'      \item VALUE numeric or character values
+#' }
+#' @param coverCalculationValues A data frame used to convert between 
+#' cover class codes to characteristic cover values. Expected to contain
+#' the following columns:
+#' \itemize{
+#'        \item field character values containing all expected values
+#'        \item calc numeric values used to calculate numeric 
+#'                   metrics.
+#' }
+#' Note that possible values for variables in the input data frame are
+#' provided in the document named "NRSA Documentation.pdf" included in the help
+#' directory for the package.
+#' @return Either a data frame when metric calculation is successful 
+#' or a character string containing an error message when metric 
+#' calculation is not successful.  The data frame contains the following 
+#' columns:
+#' \itemize{
+#'    \item SITE - universal ID value
+#'    \item METRIC - metric name
+#'    \item VALUE - metric value
+#' }
+#' Metrics calculated (only for boatable sites) include: pcan_c, pcan_d, 
+#' pcan_e, pcan_m, pcan_n ,pmid_c, pmid_d, pmid_e, pmid_m, pmid_n, xcl, 
+#' xcs, xmw, xmh, xgw, xgh, xgb, xc, xm, xcmw, xcm, xg, xcmgw, xcmg, 
+#' xpcan, xpmid, xpgveg, xpmgw, xpcm, xpmg, xpcmg
+#' 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples 
+#' head(visripEx)
+#' 
+#' canCovLD <- dplyr::filter(visripEx,PARAMETER=='CANBTRE') %>% select(SITE,TRANSECT,BANK,VALUE)
+#' canCovSD <- subset(visripEx,PARAMETER=='CANSTRE',select=c('SITE','TRANSECT','BANK','VALUE'))
+#' canVegT <- subset(visripEx,PARAMETER=='CANVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
+#' gCovB <- subset(visripEx,PARAMETER=='BARE',select=c('SITE','TRANSECT','BANK','VALUE'))
+#' gCovNW <- subset(visripEx,PARAMETER=='GCNWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+#' gCovW <- subset(visripEx,PARAMETER=='GCWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+#' undCNW <- subset(visripEx,PARAMETER=='UNDNWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+#' undCW <- subset(visripEx,PARAMETER=='UNDWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+#' undVT <- subset(visripEx,PARAMETER=='UNDERVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
+#' 
+#' exRipVegOut <- nrsaRiparianVegetation(
+#' canopyCoverLargeDiameter = canCovLD,
+#' canopyCoverSmallDiameter = canCovSD,
+#' canopyVegetationType = canVegT,
+#' groundCoverBare = gCovB,
+#' groundCoverNonwoody = gCovNW,
+#' groundCoverWoody = gCovW,
+#' understoryCoverNonwoody = undCNW,
+#' understoryCoverWoody = undCW,
+#' understoryVegetationType = undVT,
+#' coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
+#'                                   ,calc=c(NA,0,0.05,0.25,0.575,0.875)
+#'                                   ,stringsAsFactors=FALSE))
+#' 
+#' head(exRipVegOut)                                   
+ 
+
+
 nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                   ,canopyCoverSmallDiameter = NULL
                                   ,canopyVegetationType = NULL

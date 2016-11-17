@@ -1,3 +1,130 @@
+#' @export
+#' @title Calculate NRSA Channel Characteristic Metrics
+#' @description This function calculates the channel characteristics 
+#' portion of the physical habitat metrics for National Rivers and 
+#' Streams Assessment (NRSA) data.  The function requires data frames 
+#' containing the bank geometry and channel characteristics data files.
+#' @param bankfullWidth  A data frame containing bankfull width from 
+#' channel constraint form for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE        integer or character specifying the site visit
+#'      \item VALUE       numeric or character values
+#' }
+#' Note: This value is simply copied to the output without change
+#' @param channelPattern  A data frame containing pattern type from 
+#' channel constraint form for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE        integer or character specifying the site visit
+#'      \item VALUE       character values
+#' }
+#'  Note: This value is simply copied to the output without change
+#' @param constraintFeatures A data frame containing constraint features from 
+#' channel constraint form for all reaches, with the following columns:
+#' \itemize{
+#'      \item SITE        integer or character specifying the site visit
+#'      \item VALUE       character values
+#' }
+#' Note: This value is simply copied to the output without change
+#' @param constraintMultiple A data frame containing constraining features from 
+#' channel riparian forms for boatable reaches, with the following columns:
+#' \itemize{
+#'     \item SITE        integer or character specifying the site visit
+#'     \item VALUE       character values expected to be one of 'B',
+#'  }                                 'C','N','U' or NA
+#'
+#' @param constraintSingle  A data frame containing constraint features from 
+#' channel constraint form for all reaches, with the following columns:
+#' \itemize{
+#'     \item SITE        integer or character specifying the site visit
+#'     \item VALUE       numeric values
+#'     }
+#'  Note: This value is simply copied to the output without change
+#' 
+#' @param constraintPercent A data frame containing percent constraint 
+#' estimates from channel constraint form for allreaches, with the following 
+#' columns:
+#' \itemize{
+#'     \item SITE        integer or character specifying the site visit
+#'     \item VALUE       character or numeric values
+#'     }
+#'  Note: This value is simply copied to the output without change
+#'
+#' @param seeOverBank A data frame containing variable indicating
+#' whether crew could see over the bank (N/Y) from channel 
+#' riparian forms for boatable reaches, with the following columns:
+#' \itemize{
+#'     \item SITE        integer or character specifying the site visit
+#'     \item VALUE       character values = 'YES' if true, other value
+#'                        if not true
+#'  }
+#'
+#' @param shoreToVegDistance A data frame containing distance (in meters) 
+#' from shore to vegetation from channel riparian forms for boatable reaches,
+#' with the following columns:
+#' \itemize{
+#'     \item SITE        integer or character specifying the site visit
+#'     \item VALUE       numeric values
+#'    }
+#'
+#' @param valleyConstraintUnseen A data frame containing canopy densiometer 
+#' from channel constraint form for all reaches, with the following
+#' columns:
+#' \itemize{
+#'     \item SITE    integer or character specifying the site visit 
+#'     \item VALUE   character values
+#'  }
+#'  Note: This value is simply copied to the output without change
+#'
+#' @param valleyWidth A data frame containing canopy densiometer from channel 
+#' constraint form for all reaches, with the following columns:
+#' \itemize{
+#'     \item SITE  integer or character specifying the site visit
+#'     \item VALUE character or numeric values 
+#'  }
+#'  Note: This value is simply copied to the output without change.
+#' @return Either a data frame when metric calculation is successful or a 
+#' NULL when metric calculation is not successful.  The data frame contains 
+#' the following columns:
+#'  \itemize{
+#'  \item SITE universal ID value
+#'  \item METRIC metric name
+#'  \item VALUE metric value
+#'  }
+#'  
+#' Metrics calculated include: xshor2vg, mxshor, mnshor, pct_ovrb, 
+#' pctch_b, pctch_c, pctch_n, pctch_u, conbankfull, confeatures, 
+#' conpattern, conpercent, constraint, convalley, convalleybox
+#'  
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples
+#' head(chancharEx)
+#' 
+#' bkfW <- subset(chancharEx, PARAMETER=='BANKFULL')
+#' chanPat <- subset(chancharEx, PARAMETER=='PATTERN')
+#' conFeat <- subset(chancharEx, PARAMETER=='FEATURES')
+#' conMult <- subset(bankgeomEx, PARAMETER=='CONSTRT')
+#' conSing <- subset(chancharEx, PARAMETER=='CONSTRNT')
+#' conPer <- subset(chancharEx, PARAMETER=='PERCENT')
+#' seeOver <- subset(bankgeomEx, PARAMETER=='SEEOVRBK')
+#' shoreToVeg <- subset(chancharEx, PARAMETER=='SHOR2RIP')
+#' valCon <- subset(chancharEx, PARAMETER=='VALLYBOX')
+#' valWid <- subset(chancharEx, PARAMETER=='VALLEY')
+#' 
+#' chanCharOut <- nrsaChannelChar(bankfullWidth=bkfW, 
+#' channelPattern=chanPat, constraintFeatures=conFeat,
+#' constraintMultiple=conMult, constraintSingle=conSing,
+#' constraintPercent=conPer, seeOverBank=seeOver,
+#' shoreToVegDistance=shoreToVeg, valleyConstraintUnseen=valCon,
+#' valleyWidth=valWid)
+#' 
+#' head(chanCharOut)
+#' 
+
 nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel constraint form
                            ,channelPattern = NULL           # both, on channel constraint form
                            ,constraintFeatures = NULL       # both, on channel constraint form

@@ -100,7 +100,7 @@ calcNRSA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='
     mutate(PARAMETER=as.character(PARAMETER))
   
   # Run a check to make sure there are exactly 8 rows per sites in the matched dataset
-  numMets <- as.data.frame(table(SAMPID=table(matchMets$SAMPID))) %>% subset(Freq<8)
+  numMets <- as.data.frame(table(SAMPID=matchMets$SAMPID)) %>% subset(Freq<6)
   if(nrow(numMets)>0){
     return(print(paste("Missing metrics values for these samples: ",numMets$SAMPID,". Check input data frame against required metric list.",sep='')))
   }
@@ -139,7 +139,7 @@ calcNRSA_BenthicMMI <- function(inMets, sampID='UID', ecoreg='ECOREG',totlnind='
                                          ,'NOINPIND'='COMP_PT','EPHEPTAX'='COMP_PT','CHIRPTAX'='COMP_PT','HPRIME'='DIVS_PT','DOM5PIND'='DIVS_PT'
                                          ,'SCRPNTAX'='FEED_PT','SHRDNTAX'='FEED_PT','BURRPTAX'='HABT_PT','CLNGPTAX'='HABT_PT','CLNGNTAX'='HABT_PT'
                                          ,'EPT_NTAX'='RICH_PT','EPHENTAX'='RICH_PT','INTLNTAX'='TOLR_PT','TOLRPTAX'='TOLR_PT'
-                                         ,'NTOLNTAX'='TOLR_PT','STOLPTAX'='TOLR_PT','NTOLPTAX'='TOLR_PT'))
+                                         ,'NTOLNTAX'='TOLR_PT','STOLPTAX'='TOLR_PT','NTOLPTAX'='TOLR_PT'),warn_missing=F)
   ## Sum metrics scores for each sample and rescale total to 100-point scale
   mmi.scores <- ddply(scored.mets,c('SAMPID','TOTLNIND','ECO9'),summarise,PARAMETER='MMI_BENT'
                       ,RESULT=round((100/60)*sum(RESULT),2))

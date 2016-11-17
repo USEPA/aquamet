@@ -60,17 +60,16 @@ all benthic metrics as used in the National Aquatic
 Resource Surveys.
 }
 \examples{
-  \dontrun{
   data(bentEx)
   head(bentEx)
   head(bentTaxa)
   # Calculate metrics for bentIn, using the taxonomy in the count file as is
-  bentMetrics <- invertMet(indf=bentEx, inTaxa=bentTaxa,
+  bentMetrics <- calcAllBentMets(indf=bentEx, inTaxa=bentTaxa,
                      sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT'), 
                      dist='IS_DISTINCT',
                      ct='TOTAL',taxa_id='TAXA_ID',
                      ffg='FFG',habit='HABIT',ptv='PTV')
-                     head(bentMetrics)}
+  head(bentMetrics)
 }
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}

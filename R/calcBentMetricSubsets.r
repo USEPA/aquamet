@@ -41,7 +41,7 @@
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 
-calcTaxonomyMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentTaxMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                              ct="TOTAL",taxa_id='TAXA_ID'){
 
   ctVars <- c(sampID,dist,ct,taxa_id)
@@ -240,7 +240,7 @@ calcTaxonomyMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT
 #' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
-calcFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                         ct="TOTAL",taxa_id='TAXA_ID',ffg='FFG'){
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
@@ -400,7 +400,7 @@ calcFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
-calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id='TAXA_ID',habit='HABIT'){
 
   ctVars <- c(sampID,dist,ct,taxa_id)
@@ -551,7 +551,7 @@ calcHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #' included in this package.  
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
-calcTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id='TAXA_ID',ptv='PTV'){
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
@@ -720,7 +720,7 @@ calcTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
 #' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
-calcDominMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentDominMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id="TAXA_ID"){
 
   ctVars <- c(sampID,dist,ct,taxa_id)

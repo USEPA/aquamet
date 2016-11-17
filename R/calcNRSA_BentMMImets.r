@@ -169,6 +169,8 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
   inCts.1 <- plyr::ddply(inCts.1, "SAMPID", mutate, TOTLNIND=sum(FINAL_CT),
                          TOTLNTAX=sum(IS_DISTINCT))
   
+  totals <- dplyr::select(inCts.1,SAMPID,TOTLNIND) %>% unique()
+  
   # Merge the count data with the taxalist containing only the traits of
   # interest  
   traitDF <- merge(inCts.1, taxalong, by='TAXA_ID')
@@ -205,6 +207,7 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
   lside <- paste(paste(sampID,collapse='+'),'SAMPID',ecoreg,sep='+')
   formula <- paste(lside,'~variable',sep='')
   outWide.fin <- reshape2::dcast(outLong.1,eval(formula),value.var='value') %>%
+    merge(totals,by='SAMPID') %>%
     dplyr::select(-SAMPID) 
   
   return(outWide.fin)  

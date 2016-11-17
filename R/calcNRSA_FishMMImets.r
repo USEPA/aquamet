@@ -13,8 +13,8 @@
 #' including variables that match the arguments for (\emph{family}), 
 #' (\emph{genus}), and (\emph{comname}), as well as autecology traits 
 #' with names that match those in the arguments \emph{tol}, \emph{vel}, 
-#' \emph{habitat}, \emph{trophic}, \emph{migr}, \emph{reprod}, and 
-#' \emph{temp}. In addition, there should be a variable with the 
+#' \emph{habitat}, \emph{trophic}, \emph{migr}, and \emph{reprod}. 
+#' In addition, there should be a variable with the 
 #' name in argument \emph{taxa_id} that matches 
 #' with all of those in the indf data frame
 #' @param sampID A character vector containing the names of all 
@@ -28,8 +28,6 @@
 #' the default is \emph{IS_DISTINCT}.
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{FINAL_CT}.
-#' @param anomct A string with the name of the count variable. If not 
-#' specified, the default is \emph{ANOM_CT}.
 #' @param taxa_id A string with the name of the taxon ID variable 
 #' in \emph{indf} that matches that in \emph{inTaxa}. The default 
 #' value is \emph{TAXA_ID}.
@@ -63,10 +61,6 @@
 #' values include C (Clean, coarse lithophil), D (Drifter),
 #' G (Guarder), O (Other), or blank if unknown. The default
 #' value is \emph{REPROD}.
-#' @param temp A string with the name of the variable in 
-#' \emph{inTaxa} containing the temperature preference values.
-#' Valid values include WM (warm), CD (cold water), CL (cool water), 
-#' or blank if unknow. The default value is \emph{TEMP}.
 #' @param family A string with the name of the variable in the 
 #' \emph{inTaxa} taxalist containing family name. The default value 
 #' is \emph{FAMILY}.
@@ -115,11 +109,11 @@
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
 calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
-                                 ,dist="IS_DISTINCT",ct="TOTAL",anomct='ANOM_CT'
+                                 ,dist="IS_DISTINCT",ct="TOTAL"
                                  ,taxa_id='TAXA_ID',tol='TOLERANCE'
                                  ,vel='VELOCITY', habitat='HABITAT'
                                  ,trophic='TROPHIC', migr='MIGRATORY', nonnat='NONNATIVE'
-                                 ,reprod='REPROD', temp='TEMP', family='FAMILY', genus='GENUS'
+                                 ,reprod='REPROD', family='FAMILY', genus='GENUS'
                                  ,comname='NAME'){
   
   if(is.null(inTaxa)) {
@@ -127,7 +121,7 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
   }
   
-  ctVars <- c(sampID, dist, ct, taxa_id, anomct, nonnat,ecoreg)
+  ctVars <- c(sampID, dist, ct, taxa_id, nonnat,ecoreg)
   if(any(ctVars %nin% names(indata))){
     msgTraits <- which(ctVars %nin% names(indata))
     print(paste("Missing variables in input count data frame:",paste(ctVars[msgTraits],collapse=',')))
@@ -179,7 +173,7 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   
   # Taxonomy and traits checks
   necTraits <- c(taxa_id,tol, vel, habitat, trophic, migr, 
-                 reprod, temp, family, genus, comname)
+                 reprod, family, genus, comname)
   if(any(necTraits %nin% names(inTaxa))){
     msgTraits <- which(necTraits %nin% names(inTaxa))
     print(paste("Some of the traits are missing from the taxa list. The following are required for metric calculations to run:"
@@ -195,7 +189,6 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   names(indata)[names(indata)==taxa_id] <- 'TAXA_ID'
   names(indata)[names(indata)==nonnat] <- 'NONNATIVE'
   names(inTaxa)[names(inTaxa)==taxa_id] <- 'TAXA_ID'
-  names(indata)[names(indata)==anomct] <- 'ANOM_CT'
   
   names(inTaxa)[names(inTaxa)==tol] <- 'TOLERANCE'
   names(inTaxa)[names(inTaxa)==vel] <- 'VELOCITY'  
@@ -206,7 +199,6 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   names(inTaxa)[names(inTaxa)==genus] <- 'GENUS'
   names(inTaxa)[names(inTaxa)==comname] <- 'NAME'
   names(inTaxa)[names(inTaxa)==reprod] <- 'REPROD'  
-  names(inTaxa)[names(inTaxa)==temp] <- 'TEMP'
   
   indata[,c('FINAL_CT','IS_DISTINCT')] <- lapply(indata[,c('FINAL_CT','IS_DISTINCT')],as.numeric)
   indata$TAXA_ID <- as.character(indata$TAXA_ID)
@@ -215,7 +207,7 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   ## for inCts1, keep only observations without missing or zero FINAL_CT values or TAXA_ID and TAXA_ID!=99999
   indata.1 <- subset(indata,!is.na(TAXA_ID) & !is.na(FINAL_CT) & FINAL_CT!=0)
   
-  indata.2 <- dplyr::select(indata.1,SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT, NONNATIVE, ANOM_CT)
+  indata.2 <- dplyr::select(indata.1,SAMPID, TAXA_ID, FINAL_CT, IS_DISTINCT, NONNATIVE)
   
   inTaxa.1 <- plyr::mutate(inTaxa, BENTINV=ifelse(HABITAT=='B' & TROPHIC=='I',1,NA)
                            ,CARN=ifelse(TROPHIC=='C',1,NA)

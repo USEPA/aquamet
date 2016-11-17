@@ -1,11 +1,11 @@
-Package: aquametAlt
+Package: aquamet
 Type: Package
-Title: What the package does (short line)
-Version: 1.0
-Date: 2016-07-20
+Title: Calculate NRSA and NLA metrics
+Version: 2.4
+Date: 2016-9-29
 Author: Karen Blocksom
 Depends:
-    R (>= 2.10)
+    R (>= 3.0)
 Imports:
     dplyr,
     plyr,
@@ -13,7 +13,7 @@ Imports:
     Hmisc,
     gtools,
     stringr
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Maintainer: Karen Blocksom <blocksom.karen@epa.gov>
 Description: More about what it does (maybe more than one line)
 License: GPL (>= 2)
 Suggests:
@@ -21,4 +21,5 @@ Suggests:
     knitr,
     rmarkdown
 LazyData: true
+VignetteBuilder: knitr
 RoxygenNote: 5.0.1

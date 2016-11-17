@@ -1,3 +1,44 @@
+#' @export
+#' @title Calculate NRSA Invasive Species Metrics
+#' @description This function calculates the invasive species 
+#' portion of the physical habitat metrics for National Rivers and 
+#' Streams Assessment (NRSA) data.  The function requires a data 
+#' frame containing the invasive species/legacy riparian trees data file.
+#' @param named arguments consisting of data frames containing presence/absence
+#' data for individual invasive taxa.  Each dataframe is expected to 
+#' have the following columns:
+#' \itemize{
+#'  \item SITE integer or character specifying the site visit
+#'  \item VALUE character values of 'X' or 'Y' signifying presence 
+#'  and '' or 'N' signifying absence. 
+#'  }
+#'  The names of each argument (data frames) are used
+#'  to create the names of the resulting metrics using a prefix of 'f_' for 
+#'  the fraction of the reach containing a taxon.  
+#'  The use of 'NONE' as a name is prohibited as that is left for use to 
+#'  show where no invasives were found, and is thus not included in the 
+#'  calculations of ip_score
+#' @return Either a data frame when metric calculation is successful 
+#' or a character string containing an error message when metric 
+#' calculation is not successful.  The data frame contains the 
+#' following columns:
+#' \itemize{
+#' \item SITE - universal ID value
+#' \item METRIC - metric name
+#' \item VALUE - metric value
+#' }
+#' Metrics calculated include all invasive species input names with
+#' the prefix 'f_', representing the fraction of the reach containing
+#' the taxon. The metric f_none represents the fraction of the reach 
+#' with no invasives.
+#' 
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' 
+
 nrsaInvasiveSpecies <- function(...) {
 
 ################################################################################

@@ -1,3 +1,108 @@
+#' @export
+#' @title Calculate NRSA Channel Habitat Metrics
+#' @description This function calculates the channel habitat 
+#' portion of the physical habitat metrics for National Rivers 
+#' and Streams Assessment (NRSA) data.  The function requires a 
+#' data frame containing the thalweg data file.
+#' @param bChannelUnit  A data frame containing channel unit codes from 
+#' boatable reaches, with the following columns:
+#' \itemize{
+#' \item SITE    integer or character specifying the site visit
+#' \item VALUE   character values, expected to be as specified in the 
+#' bChannelUnitCodeList argument column 'code'. Only values which occur 
+#' in the code column will be included in the calculations.
+#' }
+#' @param bChannelUnitCodeList A data frame specifying the boatable 
+#' channel unit codes, meanings and class memberships.  The default value 
+#' of this argument is for the EPA NARS processing.  It should 
+#' have the following columns:
+#' \itemize{
+#'  \item code  character values for the channel units as they occur in the 
+#'  VALUE column of bChannelUnit
+#'  \item metsSuffix  character values which are used as the suffix for 
+#'  resulting metric names, e.g., a value of 'falls' results in 'pct_falls' 
+#'  as the resulting metric name.
+#'  \item category    character values that are used soley to
+#'  help the human reader organize things. This column is not used by the code.
+#'  \item isFast logical values for each habitat code specifying whether it 
+#'  is considered fast or not.  Used to calculate pct_fast and  
+#'  pct_slow; if this column does not exist, neither of those metrics will be
+#'  calculated. Codes for which this value is NA will not be considered as 
+#'  either fast nor slow.
+#'  \item isPool logical values for each habitat code specifying whether it 
+#'  is considered a pool habitat or not.  Used to calculate 
+#'  pct_pool; if this column does not exist, this metric will not be 
+#'  calculated.
+#' }
+#' @param wChannelUnit A data frame containing channel unit codes from wadeable 
+#' reaches, with the following columns:
+#' \itemize{
+#'                  \item SITE    integer or character specifying the site 
+#'                                 visit
+#'                  \item VALUE   character values, expected to be as specified
+#'                                in the wChannelUnitCodeList argument column 
+#'                                'code'. Only values which occur in the code
+#'                                column will be included in the calculations.
+#' }
+#' @param wChannelUnitCodeList  A data frame specifying the wadeable 
+#' channel unit codes, meanings and class memberships.  The default 
+#' value of this argument is for the EPA NARS processing.  It should  
+#' have the following columns:
+#' \itemize{
+#'    \item code        character values for the channel units
+#'                      as they occur in the VALUE column of
+#'                      bChannelUnit
+#'    \item metsSuffix  character values which are used as the
+#'                      suffix for resulting metric names, e.g.
+#'                      a value of 'falls' results in 'pct_falls'
+#'                      as the resulting metric name.
+#'    \item category    character values that are used soley to
+#'                      help the human reader organize things.
+#'                      This column is not used by the code.
+#'    \item isFast      logical values for each habitat code
+#'                      specifying whether it is considered fast
+#'                      or not.  Used to calculate pct_fast and
+#'                      pct_slow; if this column does not exist,
+#'                      neither of those metrics will be 
+#'                      calculated. Codes for which this value
+#'                      is NA will not be considered as either
+#'                      fast nor slow.
+#'    \item isPool      logical values for each habitat code
+#'                      specifying whether it is considered a
+#'                      pool habitat or not.  Used to calculate
+#'                      pct_pool; if this column does not exist,
+#'                      this metric will not be calculated.
+#' }
+#' @return Either a data frame when metric calculation is successful 
+#' or a character string containing an error message when metric 
+#' calculation is not successful.  The data frame contains the following 
+#' columns:
+#' \itemize{
+#'    \item SITE - universal ID value
+#'    \item METRIC - metric name
+#'    \item VALUE - metric value
+#' }
+#'  Metrics calculated include: pct_fa, pct_ca, pct_ra, pct_ri, pct_gl,  
+#'  pct_fast, pct_slow, pct_pool, pct_pp, pct_pd, pct_pb, pct_pt, pct_pl,
+#'  pct_p, pct_dr  
+#'  
+#' Descriptions for all metrics are included in 
+#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' 
+#' @examples
+#' head(thalwegEx) 
+#' 
+#' bChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THAL')
+#' wChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THALW')
+#' 
+#' chanHabOut <- nrsaChannelHabitat(bChannelUnit=bChan, wChannelUnit=wChan)
+#' head(chanHabOut)
+
+
 nrsaChannelHabitat <- function(bChannelUnit = NULL
                               ,bChannelUnitCodeList = data.frame(code=c('FA','RA','RI','GL','PO','CA','DR')
                                                                 ,metsSuffix=c('fa','ra','ri','gl','pool','ca','dr')

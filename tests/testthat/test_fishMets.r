@@ -128,11 +128,11 @@ fishCts.eco <- merge(fishCts_test,ecoTest,by='UID')
 test_that("MMI fish metric values correct",
 {
   testOut <- calcNRSA_FishMMImets(fishCts.eco,fishTaxa,sampID=c('UID'),dist='IS_DISTINCT',
-                             ct='FINAL_CT',anomct='ANOM_CT',taxa_id='TAXA_ID',
+                             ct='FINAL_CT',taxa_id='TAXA_ID',
                              tol='TOLERANCE_NRSA',vel='VEL_NRSA',
                              habitat='HABITAT_NRSA',trophic='TROPHIC_NRSA',
                              migr='MIGR_NRSA',nonnat='NON_NATIVE',
-                             reprod='REPROD_NRSA', temp='TEMP_NRSA',
+                             reprod='REPROD_NRSA', 
                              family='FAMILY',genus='GENUS',comname='FINAL_NAME',
                              ecoreg='AGGR_ECO9_2015')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','AGGR_ECO9_2015')

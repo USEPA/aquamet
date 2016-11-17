@@ -5,19 +5,19 @@
 \title{Calculate only fish metrics necessary for NRSA MMI}
 \usage{
 calcNRSA_FishMMImets(indata, inTaxa = NULL, sampID = "UID", ecoreg = NULL,
-  dist = "IS_DISTINCT", ct = "TOTAL", anomct = "ANOM_CT",
-  taxa_id = "TAXA_ID", tol = "TOLERANCE", vel = "VELOCITY",
-  habitat = "HABITAT", trophic = "TROPHIC", migr = "MIGRATORY",
-  nonnat = "NONNATIVE", reprod = "REPROD", temp = "TEMP",
-  family = "FAMILY", genus = "GENUS", comname = "NAME")
+  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
+  tol = "TOLERANCE", vel = "VELOCITY", habitat = "HABITAT",
+  trophic = "TROPHIC", migr = "MIGRATORY", nonnat = "NONNATIVE",
+  reprod = "REPROD", family = "FAMILY", genus = "GENUS",
+  comname = "NAME")
 }
 \arguments{
 \item{inTaxa}{a data frame containing taxonomic information, 
 including variables that match the arguments for (\emph{family}), 
 (\emph{genus}), and (\emph{comname}), as well as autecology traits 
 with names that match those in the arguments \emph{tol}, \emph{vel}, 
-\emph{habitat}, \emph{trophic}, \emph{migr}, \emph{reprod}, and 
-\emph{temp}. In addition, there should be a variable with the 
+\emph{habitat}, \emph{trophic}, \emph{migr}, and \emph{reprod}. 
+In addition, there should be a variable with the 
 name in argument \emph{taxa_id} that matches 
 with all of those in the indf data frame}
 
@@ -35,9 +35,6 @@ the default is \emph{IS_DISTINCT}.}
 
 \item{ct}{A string with the name of the count variable. If not 
 specified, the default is \emph{FINAL_CT}.}
-
-\item{anomct}{A string with the name of the count variable. If not 
-specified, the default is \emph{ANOM_CT}.}
 
 \item{taxa_id}{A string with the name of the taxon ID variable 
 in \emph{indf} that matches that in \emph{inTaxa}. The default 
@@ -79,11 +76,6 @@ is \emph{NONNATIVE}.}
 values include C (Clean, coarse lithophil), D (Drifter),
 G (Guarder), O (Other), or blank if unknown. The default
 value is \emph{REPROD}.}
-
-\item{temp}{A string with the name of the variable in 
-\emph{inTaxa} containing the temperature preference values.
-Valid values include WM (warm), CD (cold water), CL (cool water), 
-or blank if unknow. The default value is \emph{TEMP}.}
 
 \item{family}{A string with the name of the variable in the 
 \emph{inTaxa} taxalist containing family name. The default value 

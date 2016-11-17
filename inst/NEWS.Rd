@@ -1,6 +1,28 @@
 \name{NEWS}
 \title{aquamet News}
 
+
+\section{CHANGES IN aquamet VERSION 2.4 (Released 2016-11-01)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item Rewrote \code{fishMet} and \code{invertMet} into several functions which each calculate 
+      a subset of metrics. Added functions to calculate NRSA multimetric indices (MMIs) and just the 
+      metrics included in the MMIs. Added flexibility in input variable names for all functions. Added
+      vignettes and improved documentation.
+      
+      \item Modified and renamed physical habitat functions for NRSA to allow total flexibility in naming
+      of input variables and values associated with certain input variables. Updated documentation for
+      the new functions. 
+    }
+  }
+
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item None.
+    }
+  }
+}
+
 \section{CHANGES IN aquamet VERSION 2.3 (Released 2015-03-10)}{
   \subsection{NEW FEATURES}{
     \itemize{
