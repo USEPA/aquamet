@@ -1,5 +1,5 @@
 ---
-title: "Calculating Macroinvertebrate Metrics"
+title: "Calculating Macroinvertebrare Metrics"
 author: "Karen Blocksom "
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette

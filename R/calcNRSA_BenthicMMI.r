@@ -1,8 +1,8 @@
 #' @export
-#' @title Calculate only fish metrics necessary for NRSA MMI
+#' @title Calculate the NRSA benthic macroinvertebrate MMI
 #' 
 #' @description This is a function that calculates 
-#' the fish MMI as used for the National Rivers and Streams 
+#' the benthic MMI as used for the National Rivers and Streams 
 #' Assessment, based on inputs of the appropriate metrics.
 #' 
 #' @param inMets A data frame containing, at minimum, the variables 
@@ -10,7 +10,7 @@
 #' necessary for calculation of MMI by region. If values for more than 
 #' the necessary metrics are included in the input data frame, the 
 #' unnecessary  metrics will be ignored for each given site.
-#' REDO THIS PART!!!!!
+#' 
 #' The necessary metrics, by aggregate ecoregion, are:
 #' 
 #'  CPL: NOINPIND, HPRIME, SHRDNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX

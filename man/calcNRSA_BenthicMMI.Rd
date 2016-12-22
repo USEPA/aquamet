@@ -2,7 +2,7 @@
 % Please edit documentation in R/calcNRSA_BenthicMMI.r
 \name{calcNRSA_BenthicMMI}
 \alias{calcNRSA_BenthicMMI}
-\title{Calculate only fish metrics necessary for NRSA MMI}
+\title{Calculate the NRSA benthic macroinvertebrate MMI}
 \usage{
 calcNRSA_BenthicMMI(inMets, sampID = "UID", ecoreg = "ECOREG",
   totlnind = "TOTLNIND")
@@ -13,7 +13,7 @@ specified in the arguments for sampID, ecoreg, totlnind, and the metrics
 necessary for calculation of MMI by region. If values for more than 
 the necessary metrics are included in the input data frame, the 
 unnecessary  metrics will be ignored for each given site.
-REDO THIS PART!!!!!
+
 The necessary metrics, by aggregate ecoregion, are:
 
  CPL: NOINPIND, HPRIME, SHRDNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
@@ -57,7 +57,7 @@ RICH_PT, TOLR_PT, MMI_BENT, BENT_MMI_COND.
 }
 \description{
 This is a function that calculates 
-the fish MMI as used for the National Rivers and Streams 
+the benthic MMI as used for the National Rivers and Streams 
 Assessment, based on inputs of the appropriate metrics.
 }
 \author{

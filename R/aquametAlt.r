@@ -5,9 +5,10 @@
 #' 
 #' @importFrom Hmisc "%nin%"
 #' @importFrom gtools smartbind
-#' @importFrom dplyr filter select "%>%"
 #' @importFrom plyr ddply mutate summarize summarise rename
+#' @importFrom dplyr filter select "%>%"
 #' @importFrom reshape2 dcast melt
-#' @importFrom stringr str_detect
+#' @importFrom stringr str_detect 
+
 NULL
 ## NULL

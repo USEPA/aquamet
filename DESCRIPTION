@@ -2,13 +2,13 @@ Package: aquamet
 Type: Package
 Title: Calculate NRSA and NLA metrics
 Version: 2.4
-Date: 2016-9-29
+Date: 2016-12-14
 Author: Karen Blocksom
 Depends:
     R (>= 3.0)
 Imports:
-    dplyr,
     plyr,
+    dplyr,
     reshape2,
     Hmisc,
     gtools,

@@ -23,6 +23,7 @@ First calculate all of the input metrics required as inputs. The following funct
 For this function, all data inputs are required to use the function.
 ```{r chanmorph}
 library(aquamet)
+library(stringr)
 
 head(bankgeomEx)
 head(thalwegEx)
@@ -89,85 +90,4 @@ lwdOut <- nrsaLargeWoody(bCounts=boatCnt,wCounts=wadeCnt,reachlength=subset(reac
 
 
 
-```{r allBent.1}
-library(aquametAlt)
 
-head(bentEx)
-```
-This example dataset contains all of the necessary variables required to calculate all of the macroinvertebrates metrics. For this dataset, the combination of `UID`, `SAMPLE_TYPE`, and `SAMPLE_CAT` identifies individual samples, `TAXA_ID` identifies the taxon and links to same field in the taxalist, `TOTAL` is the count for the taxon, and `IS_DISTINCT` is the distinctness, which 0 indicating non-distinct within the sample and 1 distinct.
-
-```{r allBent.2}
-head(bentTaxa)
-```
-This is the desired format of the taxalist. All of the necessary traits are included in the taxalist for metric calculation. The variable `FAM_OR_CLS` is the same as `FAMILY` and is an artifact from the NRSA 2008-9 study.
-```{r allFish.3}
-outdf <- calcAllBentMets(bentEx,bentTaxa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
-                                       ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
-                                       ,habit='HABIT_WSA',ptv='PTV_WSA')
-
-names(outdf)
-```
-The definitions of all metrics can be found in **NRSA_Invertebrate_Metric_Descriptions.pdf** found in this package.
-
-## 2.2 Subsets of metrics
-
-Suppose only tolerance-related and taxonomic metrics are of interest. Then we need only to run the `calcBentTolMets()` and `calcBentTaxMets()` functions. 
-
-### Taxonomy metrics
-
-```{r subMets.1}
-outTax <- calcBentTaxMets(bentEx,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
-                                        ,dist='IS_DISTINCT',ct='TOTAL')
-names(outTax)
-head(outTax)
-```
-
-### Tolerance metrics
-
-```{r subMets.2}
-outTol <- calcBentTolMets(bentEx,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
-                           ,dist='IS_DISTINCT',ct='TOTAL',ptv='PTV_WSA')
-names(outTol)
-head(outTol)
-
-```
-**************************
-# 3 Calculate only benthic MMI metrics and MMI
-
-First, we will need to create a data frame containing the three-letter code for the 9 aggregated ecoregions and add that to the input data frame (`inCts`). Then run the function `calcNRSA_BentMMImets()`, followed by `calcNRSA_BentMMI()`.
-
-
-## 3.1 Calculate only benthic MMI metrics
-
-This function calculates metrics for only the MMI for the ecoregion of each site. In order to match the taxonomy used in the NRSA MMI, the function `prepBentCts_WSA()` must be run.
-
-```{r mmiMets.1}
-bentWSA <- prepBentCts_WSA(bentEx,bentTaxa
-                             ,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
-                             ,ct='TOTAL',taxa_id='TAXA_ID')
-
-eco9 <- data.frame(UID=c(10000,10001), ECO9=c('CPL','WMT'),stringsAsFactors=F)
-
-bentEx.1 <- merge(bentWSA, eco9, by='UID')
-
-outMets <- calcNRSA_BentMMImets(inCts=bentEx.1,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
-                                       ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
-                                       ,habit='HABIT_WSA',ptv='PTV_WSA',ecoreg='ECO9')
-
-head(outMets)
-
-```
-Note that there are missing values for metrics that are not included in the MMI for a given ecoregion. Any given UID should only have values for 6 metrics, which is the case in our example. 
-
-## 3.2 Calculate NRSA benthic MMI
-
-Now use the output of the function above to calculate the benthic MMI. The output data frame should have the ecoregion still included, and that will be used in calculating the NRSA MMI and assigning a condition class.
-
-```{r mmiMets.3}
-
-outMMI <- calcNRSA_BenthicMMI(outMets, sampID='UID', ecoreg='ECO9')
-
-head(outMMI)
-
-```
-Again, note that there are missing values for the metrics and metric scores not included in the MMI for a given site. If there is a mix of ecoregions in the input dataset, there will be these missing values for some metrics and metric scores.

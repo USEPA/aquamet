@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Karen Blocksom" />
+
+<meta name="date" content="2016-12-14" />
+
+<title>Calculating Macroinvertebrare Metrics</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; }
+code > span.dt { color: #902000; }
+code > span.dv { color: #40a070; }
+code > span.bn { color: #40a070; }
+code > span.fl { color: #40a070; }
+code > span.ch { color: #4070a0; }
+code > span.st { color: #4070a0; }
+code > span.co { color: #60a0b0; font-style: italic; }
+code > span.ot { color: #007020; }
+code > span.al { color: #ff0000; font-weight: bold; }
+code > span.fu { color: #06287e; }
+code > span.er { color: #ff0000; font-weight: bold; }
+</style>
+
+
+
+<link href="data:text/css,body%20%7B%0A%20%20background%2Dcolor%3A%20%23fff%3B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20max%2Dwidth%3A%20700px%3B%0A%20%20overflow%3A%20visible%3B%0A%20%20padding%2Dleft%3A%202em%3B%0A%20%20padding%2Dright%3A%202em%3B%0A%20%20font%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0A%20%20font%2Dsize%3A%2014px%3B%0A%20%20line%2Dheight%3A%201%2E35%3B%0A%7D%0A%0A%23header%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0A%0A%23TOC%20%7B%0A%20%20clear%3A%20both%3B%0A%20%20margin%3A%200%200%2010px%2010px%3B%0A%20%20padding%3A%204px%3B%0A%20%20width%3A%20400px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20border%2Dradius%3A%205px%3B%0A%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20font%2Dsize%3A%2013px%3B%0A%20%20line%2Dheight%3A%201%2E3%3B%0A%7D%0A%20%20%23TOC%20%2Etoctitle%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%20%20font%2Dsize%3A%2015px%3B%0A%20%20%20%20margin%2Dleft%3A%205px%3B%0A%20%20%7D%0A%0A%20%20%23TOC%20ul%20%7B%0A%20%20%20%20padding%2Dleft%3A%2040px%3B%0A%20%20%20%20margin%2Dleft%3A%20%2D1%2E5em%3B%0A%20%20%20%20margin%2Dtop%3A%205px%3B%0A%20%20%20%20margin%2Dbottom%3A%205px%3B%0A%20%20%7D%0A%20%20%23TOC%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dleft%3A%20%2D2em%3B%0A%20%20%7D%0A%20%20%23TOC%20li%20%7B%0A%20%20%20%20line%2Dheight%3A%2016px%3B%0A%20%20%7D%0A%0Atable%20%7B%0A%20%20margin%3A%201em%20auto%3B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dcolor%3A%20%23DDDDDD%3B%0A%20%20border%2Dstyle%3A%20outset%3B%0A%20%20border%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0A%20%20border%2Dwidth%3A%202px%3B%0A%20%20padding%3A%205px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0A%20%20border%2Dwidth%3A%201px%3B%0A%20%20border%2Dstyle%3A%20inset%3B%0A%20%20line%2Dheight%3A%2018px%3B%0A%20%20padding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0A%20%20border%2Dleft%2Dstyle%3A%20none%3B%0A%20%20border%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Ap%20%7B%0A%20%20margin%3A%200%2E5em%200%3B%0A%7D%0A%0Ablockquote%20%7B%0A%20%20background%2Dcolor%3A%20%23f6f6f6%3B%0A%20%20padding%3A%200%2E25em%200%2E75em%3B%0A%7D%0A%0Ahr%20%7B%0A%20%20border%2Dstyle%3A%20solid%3B%0A%20%20border%3A%20none%3B%0A%20%20border%2Dtop%3A%201px%20solid%20%23777%3B%0A%20%20margin%3A%2028px%200%3B%0A%7D%0A%0Adl%20%7B%0A%20%20margin%2Dleft%3A%200%3B%0A%7D%0A%20%20dl%20dd%20%7B%0A%20%20%20%20margin%2Dbottom%3A%2013px%3B%0A%20%20%20%20margin%2Dleft%3A%2013px%3B%0A%20%20%7D%0A%20%20dl%20dt%20%7B%0A%20%20%20%20font%2Dweight%3A%20bold%3B%0A%20%20%7D%0A%0Aul%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%7D%0A%20%20ul%20li%20%7B%0A%20%20%20%20list%2Dstyle%3A%20circle%20outside%3B%0A%20%20%7D%0A%20%20ul%20ul%20%7B%0A%20%20%20%20margin%2Dbottom%3A%200%3B%0A%20%20%7D%0A%0Apre%2C%20code%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20color%3A%20%23333%3B%0A%20%20white%2Dspace%3A%20pre%2Dwrap%3B%20%20%20%20%2F%2A%20Wrap%20long%20lines%20%2A%2F%0A%7D%0Apre%20%7B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20margin%3A%205px%200px%2010px%200px%3B%0A%20%20padding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0A%20%20background%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0A%0Acode%20%7B%0A%20%20font%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0A%20%20font%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0A%20%20padding%3A%202px%200px%3B%0A%7D%0A%0Adiv%2Efigure%20%7B%0A%20%20text%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0A%20%20background%2Dcolor%3A%20%23FFFFFF%3B%0A%20%20padding%3A%202px%3B%0A%20%20border%3A%201px%20solid%20%23DDDDDD%3B%0A%20%20border%2Dradius%3A%203px%3B%0A%20%20border%3A%201px%20solid%20%23CCCCCC%3B%0A%20%20margin%3A%200%205px%3B%0A%7D%0A%0Ah1%20%7B%0A%20%20margin%2Dtop%3A%200%3B%0A%20%20font%2Dsize%3A%2035px%3B%0A%20%20line%2Dheight%3A%2040px%3B%0A%7D%0A%0Ah2%20%7B%0A%20%20border%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20padding%2Dbottom%3A%202px%3B%0A%20%20font%2Dsize%3A%20145%25%3B%0A%7D%0A%0Ah3%20%7B%0A%20%20border%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0A%20%20padding%2Dtop%3A%2010px%3B%0A%20%20font%2Dsize%3A%20120%25%3B%0A%7D%0A%0Ah4%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0A%20%20margin%2Dleft%3A%208px%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Ah5%2C%20h6%20%7B%0A%20%20border%2Dbottom%3A%201px%20solid%20%23ccc%3B%0A%20%20font%2Dsize%3A%20105%25%3B%0A%7D%0A%0Aa%20%7B%0A%20%20color%3A%20%230033dd%3B%0A%20%20text%2Ddecoration%3A%20none%3B%0A%7D%0A%20%20a%3Ahover%20%7B%0A%20%20%20%20color%3A%20%236666ff%3B%20%7D%0A%20%20a%3Avisited%20%7B%0A%20%20%20%20color%3A%20%23800080%3B%20%7D%0A%20%20a%3Avisited%3Ahover%20%7B%0A%20%20%20%20color%3A%20%23BB00BB%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%20%20a%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0A%20%20%20%20text%2Ddecoration%3A%20underline%3B%20%7D%0A%0A%2F%2A%20Class%20described%20in%20https%3A%2F%2Fbenjeffrey%2Ecom%2Fposts%2Fpandoc%2Dsyntax%2Dhighlighting%2Dcss%0A%20%20%20Colours%20from%20https%3A%2F%2Fgist%2Egithub%2Ecom%2Frobsimmons%2F1172277%20%2A%2F%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Keyword%20%2A%2F%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%2F%2A%20DataType%20%2A%2F%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%2F%2A%20DecVal%20%28decimal%20values%29%20%2A%2F%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20BaseN%20%2A%2F%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Float%20%2A%2F%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20Char%20%2A%2F%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%2F%2A%20String%20%2A%2F%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%2F%2A%20Comment%20%2A%2F%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%2F%2A%20OtherToken%20%2A%2F%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20AlertToken%20%2A%2F%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%2F%2A%20Function%20calls%20%2A%2F%20%0Acode%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%2F%2A%20ErrorTok%20%2A%2F%0A%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Calculating Macroinvertebrare Metrics</h1>
+<h4 class="author"><em>Karen Blocksom</em></h4>
+<h4 class="date"><em>2016-12-14</em></h4>
+
+
+
+<div id="preliminaries" class="section level1">
+<h1>1 Preliminaries</h1>
+<p>One of the primary goals of this package is to calculate benthic macroinvertebrate metrics as used in both the National Rivers and Streams Assessment (NRSA) conducted in 2008-9 and 2013-14 and the National Lakes Assessment (NLA) conducted in 2007 and 2012 by EPA’s Office of Water. Benthic macroinvertebrates were collected at all sites, and samples were processed in the laboratory to obtain the taxon name, number of individuals, and were recorded in the field. Non-native status was then determined for all taxa on a site-specific basis. For the purposes of calculations, the metrics were broken down into several subsets, depending on which autecology traits were required to calculate them. There are also separate functions to calculate just the metrics used in the regional multimetric indices (MMIs) and the MMI scores themselves based on metric inputs. This vignette will describe how to use the various functions along with the example datasets provided and the included taxa lists, to obtain the full set of metrics, a subset of metrics based on metric type, and the benthic multimetric index used in assigning biological condition.</p>
+<p>The functions in this package allow for a great deal of flexibility in terms of input variable names and the taxalist used in calculating metrics. However, the actual values of various traits are assumed to match those used in NRSA and NLA. This means that some metrics will not calculate correctly if the taxalist used in the function does not use the same trait values. In addition, the functions assume that data have already been summarized to the level of sample and taxon, and a within-sample distinctness (0/1) already assigned to each taxon, so any steps required to get to this point must be done prior to use of the functions. All taxa in the count data must be included in the taxa list in order to be included in the calculations. Functions will look for specific types of inconsistencies, like missing variables, and either provide a warning or will fail to run, depending on the issue.</p>
+<p>In NRSA, a different level of aggregation of taxonomy is used to match that used in the development of the MMI from the Wadeable Streams Assessment (WSA). In order to prepare data to match this taxonomic level, users are encouraged to use the function <code>prepBentCts_WSA()</code>, which aggregates to the appropriate levels and provides data in the appropriate format for input into the metric functions.</p>
+<hr />
+</div>
+<div id="calculating-macroinvertebrate-metrics" class="section level1">
+<h1>2 Calculating macroinvertebrate metrics</h1>
+<p>There are two main approaches to calculating the benthic macroinvertebrate metrics. One may either calculate all metrics at once, which may take a long time with larger datasets, or one may calculate various subsets of metrics. The latter approach may be helpful if only certain metrics are of interest or only certain traits are available. In the first approach, the function <code>calcAllBentMets</code> serves as a wrapper function for a number of metric subset functions. The other approach involves using individual funcions, including <code>calcBentTaxMets</code>, <code>calcBentTolMets</code>, <code>calcBentFFGmets</code>, <code>calcBentHabitMets</code>, and/or <code>calcBentDominMets</code>.</p>
+<div id="all-metrics-at-once" class="section level2">
+<h2>2.1 All metrics at once</h2>
+<p>Calculate all metrics using the example macroinvertebrate count data included in the package, <code>bentEx</code>, along with the included taxalist, <code>bentTaxa</code>.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(aquamet)
+
+<span class="kw">head</span>(bentEx)</code></pre>
+<pre><code>##     UID SAMPLE_TYPE SAMPLE_CAT TAXA_ID TOTAL IS_DISTINCT
+## 1 10000       BERWW          P    3547     2           1
+## 2 10000       BERWW          P    4191    29           1
+## 3 10000       BERWW          P    4107    12           1
+## 4 10000       BERWW          P    3620     1           1
+## 5 10000       BERWW          P    3759     5           1
+## 6 10000       BERWW          P    4309     4           1</code></pre>
+<p>This example dataset contains all of the necessary variables required to calculate all of the macroinvertebrates metrics. For this dataset, the combination of <code>UID</code>, <code>SAMPLE_TYPE</code>, and <code>SAMPLE_CAT</code> identifies individual samples, <code>TAXA_ID</code> identifies the taxon and links to same field in the taxalist, <code>TOTAL</code> is the count for the taxon, and <code>IS_DISTINCT</code> is the distinctness, which 0 indicating non-distinct within the sample and 1 distinct.</p>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(bentTaxa)</code></pre>
+<pre><code>##   PUBLICATION_DATE TAXA_ID TARGET_TAXON NON_TARGET     PHYLUM   CLASS
+## 1       2016-05-11    3405       ABEDUS            ARTHROPODA INSECTA
+## 2       2016-05-11    3406  ABLABESMYIA            ARTHROPODA INSECTA
+## 3       2016-05-11    3407   ACENTRELLA            ARTHROPODA INSECTA
+## 4       2016-05-11    3408    ACERPENNA            ARTHROPODA INSECTA
+## 5       2016-05-11    3409      ACILIUS            ARTHROPODA INSECTA
+## 6       2016-05-11    3410       ACNEUS            ARTHROPODA INSECTA
+##           ORDER         FAMILY   SUBFAMILY        TRIBE       GENUS
+## 1     HEMIPTERA BELOSTOMATIDAE                               ABEDUS
+## 2       DIPTERA   CHIRONOMIDAE TANYPODINAE PENTANEURINI ABLABESMYIA
+## 3 EPHEMEROPTERA       BAETIDAE                           ACENTRELLA
+## 4 EPHEMEROPTERA       BAETIDAE                            ACERPENNA
+## 5    COLEOPTERA     DYTISCIDAE                              ACILIUS
+## 6    COLEOPTERA    PSEPHENIDAE                               ACNEUS
+##        FFG FFG_WSA HABIT HABIT_WSA PTV PTV_WSA VOLTINISM ITISTSN
+## 1 CF,CG,PR            CB            NA      NA   grthan1  103717
+## 2       PR      PR    SP        SP 5.6     5.6            128079
+## 3       CG      CG    SW        SW 4.0     4.0   grthan1  100801
+## 4       CG      CG    SW        SW 3.6     3.6   grthan1  568546
+## 5       PR            SW            NA      NA         1  112074
+## 6                     CN            NA      NA            114082</code></pre>
+<p>This is the desired format of the taxalist. All of the necessary traits are included in the taxalist for metric calculation. The variable <code>FAM_OR_CLS</code> is the same as <code>FAMILY</code> and is an artifact from the NRSA 2008-9 study.</p>
+<pre class="sourceCode r"><code class="sourceCode r">outdf &lt;-<span class="st"> </span><span class="kw">calcAllBentMets</span>(bentEx,bentTaxa,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+                                       ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>,<span class="dt">ffg=</span><span class="st">'FFG_WSA'</span>
+                                       ,<span class="dt">habit=</span><span class="st">'HABIT_WSA'</span>,<span class="dt">ptv=</span><span class="st">'PTV_WSA'</span>)</code></pre>
+<pre><code>## [1] &quot;Done calculating taxonomy metrics.&quot;
+## [1] &quot;Done calculating functional feeding group metrics.&quot;
+## [1] &quot;Done calculating habit metrics.&quot;
+## [1] &quot;Done calculating tolerance metrics.&quot;
+## [1] &quot;Calculated tolerance index.&quot;
+## [1] &quot;Shannon Diversity calculated&quot;
+## [1] &quot;Dominance calculated&quot;
+## [1] &quot;Chironomid dominance calculated&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outdf)</code></pre>
+<pre><code>##   [1] &quot;UID&quot;          &quot;SAMPLE_TYPE&quot;  &quot;SAMPLE_CAT&quot;   &quot;AMPHNTAX&quot;    
+##   [5] &quot;AMPHPIND&quot;     &quot;AMPHPTAX&quot;     &quot;CHIRNTAX&quot;     &quot;CHIRPIND&quot;    
+##   [9] &quot;CHIRPTAX&quot;     &quot;CRUSNTAX&quot;     &quot;CRUSPIND&quot;     &quot;CRUSPTAX&quot;    
+##  [13] &quot;DIPTNTAX&quot;     &quot;DIPTPIND&quot;     &quot;DIPTPTAX&quot;     &quot;EPHENTAX&quot;    
+##  [17] &quot;EPHEPIND&quot;     &quot;EPHEPTAX&quot;     &quot;EPOTNTAX&quot;     &quot;EPOTPIND&quot;    
+##  [21] &quot;EPOTPTAX&quot;     &quot;EPT_NTAX&quot;     &quot;EPT_PIND&quot;     &quot;EPT_PTAX&quot;    
+##  [25] &quot;HEMINTAX&quot;     &quot;HEMIPIND&quot;     &quot;HEMIPTAX&quot;     &quot;MITENTAX&quot;    
+##  [29] &quot;MITEPIND&quot;     &quot;MITEPTAX&quot;     &quot;MOLLNTAX&quot;     &quot;MOLLPIND&quot;    
+##  [33] &quot;MOLLPTAX&quot;     &quot;NOINNTAX&quot;     &quot;NOINPIND&quot;     &quot;NOINPTAX&quot;    
+##  [37] &quot;ODONNTAX&quot;     &quot;ODONPIND&quot;     &quot;ODONPTAX&quot;     &quot;OLLENTAX&quot;    
+##  [41] &quot;OLLEPIND&quot;     &quot;OLLEPTAX&quot;     &quot;ORTHNTAX&quot;     &quot;ORTHPIND&quot;    
+##  [45] &quot;ORTHPTAX&quot;     &quot;PLECNTAX&quot;     &quot;PLECPIND&quot;     &quot;PLECPTAX&quot;    
+##  [49] &quot;TANYNTAX&quot;     &quot;TANYPIND&quot;     &quot;TANYPTAX&quot;     &quot;TRICNTAX&quot;    
+##  [53] &quot;TRICPIND&quot;     &quot;TRICPTAX&quot;     &quot;TUBINAIDNTAX&quot; &quot;TUBINAIDPIND&quot;
+##  [57] &quot;TUBINAIDPTAX&quot; &quot;ORTHCHIRPIND&quot; &quot;COFINTAX&quot;     &quot;COFIPIND&quot;    
+##  [61] &quot;COFIPTAX&quot;     &quot;COFITRICNTAX&quot; &quot;COFITRICPIND&quot; &quot;COFITRICPTAX&quot;
+##  [65] &quot;COGANTAX&quot;     &quot;COGAPIND&quot;     &quot;COGAPTAX&quot;     &quot;PREDNTAX&quot;    
+##  [69] &quot;PREDPIND&quot;     &quot;PREDPTAX&quot;     &quot;SCRPNTAX&quot;     &quot;SCRPPIND&quot;    
+##  [73] &quot;SCRPPTAX&quot;     &quot;SHRDNTAX&quot;     &quot;SHRDPIND&quot;     &quot;SHRDPTAX&quot;    
+##  [77] &quot;BURRNTAX&quot;     &quot;BURRPIND&quot;     &quot;BURRPTAX&quot;     &quot;CLMBNTAX&quot;    
+##  [81] &quot;CLMBPIND&quot;     &quot;CLMBPTAX&quot;     &quot;CLNGNTAX&quot;     &quot;CLNGPIND&quot;    
+##  [85] &quot;CLNGPTAX&quot;     &quot;SPWLNTAX&quot;     &quot;SPWLPIND&quot;     &quot;SPWLPTAX&quot;    
+##  [89] &quot;SWIMNTAX&quot;     &quot;SWIMPIND&quot;     &quot;SWIMPTAX&quot;     &quot;FACLNTAX&quot;    
+##  [93] &quot;FACLPIND&quot;     &quot;FACLPTAX&quot;     &quot;INTLNTAX&quot;     &quot;INTLPIND&quot;    
+##  [97] &quot;INTLPTAX&quot;     &quot;NTOLNTAX&quot;     &quot;NTOLPIND&quot;     &quot;NTOLPTAX&quot;    
+## [101] &quot;STOLNTAX&quot;     &quot;STOLPIND&quot;     &quot;STOLPTAX&quot;     &quot;TL01NTAX&quot;    
+## [105] &quot;TL01PIND&quot;     &quot;TL01PTAX&quot;     &quot;TL23NTAX&quot;     &quot;TL23PIND&quot;    
+## [109] &quot;TL23PTAX&quot;     &quot;TL45NTAX&quot;     &quot;TL45PIND&quot;     &quot;TL45PTAX&quot;    
+## [113] &quot;TL67NTAX&quot;     &quot;TL67PIND&quot;     &quot;TL67PTAX&quot;     &quot;TOLRNTAX&quot;    
+## [117] &quot;TOLRPIND&quot;     &quot;TOLRPTAX&quot;     &quot;WTD_TV&quot;       &quot;HPRIME&quot;      
+## [121] &quot;DOM1PIND&quot;     &quot;DOM3PIND&quot;     &quot;DOM5PIND&quot;     &quot;CHIRDOM1PIND&quot;
+## [125] &quot;CHIRDOM3PIND&quot; &quot;CHIRDOM5PIND&quot; &quot;TOTLNIND&quot;     &quot;TOTLNTAX&quot;</code></pre>
+<p>The definitions of all metrics can be found in <strong>NRSA_Invertebrate_Metric_Descriptions.pdf</strong> found in this package.</p>
+</div>
+<div id="subsets-of-metrics" class="section level2">
+<h2>2.2 Subsets of metrics</h2>
+<p>Suppose only tolerance-related and taxonomic metrics are of interest. Then we need only to run the <code>calcBentTolMets()</code> and <code>calcBentTaxMets()</code> functions.</p>
+<div id="taxonomy-metrics" class="section level3">
+<h3>Taxonomy metrics</h3>
+<pre class="sourceCode r"><code class="sourceCode r">outTax &lt;-<span class="st"> </span><span class="kw">calcBentTaxMets</span>(bentEx,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+                                        ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>)</code></pre>
+<pre><code>## [1] &quot;Done calculating taxonomy metrics.&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outTax)</code></pre>
+<pre><code>##  [1] &quot;UID&quot;          &quot;SAMPLE_TYPE&quot;  &quot;SAMPLE_CAT&quot;   &quot;AMPHNTAX&quot;    
+##  [5] &quot;AMPHPIND&quot;     &quot;AMPHPTAX&quot;     &quot;CHIRNTAX&quot;     &quot;CHIRPIND&quot;    
+##  [9] &quot;CHIRPTAX&quot;     &quot;CRUSNTAX&quot;     &quot;CRUSPIND&quot;     &quot;CRUSPTAX&quot;    
+## [13] &quot;DIPTNTAX&quot;     &quot;DIPTPIND&quot;     &quot;DIPTPTAX&quot;     &quot;EPHENTAX&quot;    
+## [17] &quot;EPHEPIND&quot;     &quot;EPHEPTAX&quot;     &quot;EPOTNTAX&quot;     &quot;EPOTPIND&quot;    
+## [21] &quot;EPOTPTAX&quot;     &quot;EPT_NTAX&quot;     &quot;EPT_PIND&quot;     &quot;EPT_PTAX&quot;    
+## [25] &quot;HEMINTAX&quot;     &quot;HEMIPIND&quot;     &quot;HEMIPTAX&quot;     &quot;MITENTAX&quot;    
+## [29] &quot;MITEPIND&quot;     &quot;MITEPTAX&quot;     &quot;MOLLNTAX&quot;     &quot;MOLLPIND&quot;    
+## [33] &quot;MOLLPTAX&quot;     &quot;NOINNTAX&quot;     &quot;NOINPIND&quot;     &quot;NOINPTAX&quot;    
+## [37] &quot;ODONNTAX&quot;     &quot;ODONPIND&quot;     &quot;ODONPTAX&quot;     &quot;OLLENTAX&quot;    
+## [41] &quot;OLLEPIND&quot;     &quot;OLLEPTAX&quot;     &quot;ORTHNTAX&quot;     &quot;ORTHPIND&quot;    
+## [45] &quot;ORTHPTAX&quot;     &quot;PLECNTAX&quot;     &quot;PLECPIND&quot;     &quot;PLECPTAX&quot;    
+## [49] &quot;TANYNTAX&quot;     &quot;TANYPIND&quot;     &quot;TANYPTAX&quot;     &quot;TRICNTAX&quot;    
+## [53] &quot;TRICPIND&quot;     &quot;TRICPTAX&quot;     &quot;TUBINAIDNTAX&quot; &quot;TUBINAIDPIND&quot;
+## [57] &quot;TUBINAIDPTAX&quot; &quot;ORTHCHIRPIND&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(outTax)</code></pre>
+<pre><code>##     UID SAMPLE_TYPE SAMPLE_CAT AMPHNTAX AMPHPIND AMPHPTAX CHIRNTAX
+## 1 10000       BERWW          P        0        0        0       13
+## 2 10001       BERWW          P        0        0        0       12
+##   CHIRPIND CHIRPTAX CRUSNTAX CRUSPIND CRUSPTAX DIPTNTAX DIPTPIND DIPTPTAX
+## 1    38.88    35.14        0        0        0       20    49.03    54.05
+## 2    17.15    27.27        0        0        0       18    21.64    40.91
+##   EPHENTAX EPHEPIND EPHEPTAX EPOTNTAX EPOTPIND EPOTPTAX EPT_NTAX EPT_PIND
+## 1        4    28.73    10.81        9    33.05    24.32        6    30.89
+## 2        6    42.50    13.64       12    52.05    27.27        9    43.27
+##   EPT_PTAX HEMINTAX HEMIPIND HEMIPTAX MITENTAX MITEPIND MITEPTAX MOLLNTAX
+## 1    16.22        0        0        0        0     0.00     0.00        2
+## 2    20.45        0        0        0        1     0.19     2.27        3
+##   MOLLPIND MOLLPTAX NOINNTAX NOINPIND NOINPTAX ODONNTAX ODONPIND ODONPTAX
+## 1     2.81     5.41        5     5.83    13.51        3     2.16     8.11
+## 2    10.14     6.82        7    16.57    15.91        3     8.77     6.82
+##   OLLENTAX OLLEPIND OLLEPTAX ORTHNTAX ORTHPIND ORTHPTAX PLECNTAX PLECPIND
+## 1        3     3.02     8.11        1     0.22     2.70        0        0
+## 2        2     6.04     4.55        1     0.19     2.27        0        0
+##   PLECPTAX TANYNTAX TANYPIND TANYPTAX TRICNTAX TRICPIND TRICPTAX
+## 1        0        2     5.18     5.41        2     2.16     5.41
+## 2        0        2     0.78     4.55        3     0.78     6.82
+##   TUBINAIDNTAX TUBINAIDPIND TUBINAIDPTAX ORTHCHIRPIND
+## 1            1         2.59         2.70         0.56
+## 2            2         6.04         4.55         1.14</code></pre>
+</div>
+<div id="tolerance-metrics" class="section level3">
+<h3>Tolerance metrics</h3>
+<pre class="sourceCode r"><code class="sourceCode r">outTol &lt;-<span class="st"> </span><span class="kw">calcBentTolMets</span>(bentEx,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+                           ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">ptv=</span><span class="st">'PTV_WSA'</span>)</code></pre>
+<pre><code>## [1] &quot;Done calculating tolerance metrics.&quot;
+## [1] &quot;Calculated tolerance index.&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outTol)</code></pre>
+<pre><code>##  [1] &quot;UID&quot;         &quot;SAMPLE_TYPE&quot; &quot;SAMPLE_CAT&quot;  &quot;FACLNTAX&quot;    &quot;FACLPIND&quot;   
+##  [6] &quot;FACLPTAX&quot;    &quot;INTLNTAX&quot;    &quot;INTLPIND&quot;    &quot;INTLPTAX&quot;    &quot;NTOLNTAX&quot;   
+## [11] &quot;NTOLPIND&quot;    &quot;NTOLPTAX&quot;    &quot;STOLNTAX&quot;    &quot;STOLPIND&quot;    &quot;STOLPTAX&quot;   
+## [16] &quot;TL01NTAX&quot;    &quot;TL01PIND&quot;    &quot;TL01PTAX&quot;    &quot;TL23NTAX&quot;    &quot;TL23PIND&quot;   
+## [21] &quot;TL23PTAX&quot;    &quot;TL45NTAX&quot;    &quot;TL45PIND&quot;    &quot;TL45PTAX&quot;    &quot;TL67NTAX&quot;   
+## [26] &quot;TL67PIND&quot;    &quot;TL67PTAX&quot;    &quot;TOLRNTAX&quot;    &quot;TOLRPIND&quot;    &quot;TOLRPTAX&quot;   
+## [31] &quot;WTD_TV&quot;</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(outTol)</code></pre>
+<pre><code>##     UID SAMPLE_TYPE SAMPLE_CAT FACLNTAX FACLPIND FACLPTAX INTLNTAX
+## 1 10000       BERWW          P       18    54.00    48.65        3
+## 2 10001       BERWW          P       27    70.96    61.36        5
+##   INTLPIND INTLPTAX NTOLNTAX NTOLPIND NTOLPTAX STOLNTAX STOLPIND STOLPTAX
+## 1     5.40     8.11       18    31.10    48.65        7    18.36    18.92
+## 2     5.07    11.36       25    56.92    56.82        3    11.11     6.82
+##   TL01NTAX TL01PIND TL01PTAX TL23NTAX TL23PIND TL23PTAX TL45NTAX TL45PIND
+## 1        0     0.00     0.00        4     5.62    10.81       14    25.49
+## 2        2     4.09     4.55        9     8.97    20.45       14    43.86
+##   TL45PTAX TL67NTAX TL67PIND TL67PTAX TOLRNTAX TOLRPIND TOLRPTAX WTD_TV
+## 1    37.84        6    40.39    16.22       10    30.45    27.03   5.53
+## 2    31.82        9    21.25    20.45        5    13.26    11.36   4.51</code></pre>
+<hr />
+</div>
+</div>
+</div>
+<div id="calculate-only-benthic-mmi-metrics-and-mmi" class="section level1">
+<h1>3 Calculate only benthic MMI metrics and MMI</h1>
+<p>First, we will need to create a data frame containing the three-letter code for the 9 aggregated ecoregions and add that to the input data frame (<code>inCts</code>). Then run the function <code>calcNRSA_BentMMImets()</code>, followed by <code>calcNRSA_BentMMI()</code>.</p>
+<div id="calculate-only-benthic-mmi-metrics" class="section level2">
+<h2>3.1 Calculate only benthic MMI metrics</h2>
+<p>This function calculates metrics for only the MMI for the ecoregion of each site. In order to match the taxonomy used in the NRSA MMI, the function <code>prepBentCts_WSA()</code> must be run.</p>
+<pre class="sourceCode r"><code class="sourceCode r">bentWSA &lt;-<span class="st"> </span><span class="kw">prepBentCts_WSA</span>(bentEx,bentTaxa
+                             ,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+                             ,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>)
+
+eco9 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">UID=</span><span class="kw">c</span>(<span class="dv">10000</span>,<span class="dv">10001</span>), <span class="dt">ECO9=</span><span class="kw">c</span>(<span class="st">'CPL'</span>,<span class="st">'WMT'</span>),<span class="dt">stringsAsFactors=</span>F)
+
+bentEx<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw">merge</span>(bentWSA, eco9, <span class="dt">by=</span><span class="st">'UID'</span>)
+
+outMets &lt;-<span class="st"> </span><span class="kw">calcNRSA_BentMMImets</span>(<span class="dt">inCts=</span>bentEx<span class="fl">.1</span>,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+                                       ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>,<span class="dt">ffg=</span><span class="st">'FFG_WSA'</span>
+                                       ,<span class="dt">habit=</span><span class="st">'HABIT_WSA'</span>,<span class="dt">ptv=</span><span class="st">'PTV_WSA'</span>,<span class="dt">ecoreg=</span><span class="st">'ECO9'</span>)
+
+<span class="kw">head</span>(outMets)</code></pre>
+<pre><code>##     UID SAMPLE_TYPE SAMPLE_CAT ECO9 CLNGPTAX EPT_NTAX EPT_PTAX NOINPIND
+## 1 10000       BERWW          P  CPL    28.57        6       NA     5.83
+## 2 10001       BERWW          P  WMT    30.95        9    21.43       NA
+##   SCRPNTAX SHRDNTAX TOLRPTAX HPRIME DOM5PIND TOTLNIND
+## 1       NA        1    31.43    2.6       NA      463
+## 2        6       NA    16.67     NA       63      513</code></pre>
+<p>Note that there are missing values for metrics that are not included in the MMI for a given ecoregion. Any given UID should only have values for 6 metrics, which is the case in our example.</p>
+</div>
+<div id="calculate-nrsa-benthic-mmi" class="section level2">
+<h2>3.2 Calculate NRSA benthic MMI</h2>
+<p>Now use the output of the function above to calculate the benthic MMI. The output data frame should have the ecoregion still included, and that will be used in calculating the NRSA MMI and assigning a condition class.</p>
+<pre class="sourceCode r"><code class="sourceCode r">outMMI &lt;-<span class="st"> </span><span class="kw">calcNRSA_BenthicMMI</span>(outMets, <span class="dt">sampID=</span><span class="st">'UID'</span>, <span class="dt">ecoreg=</span><span class="st">'ECO9'</span>)
+
+<span class="kw">head</span>(outMMI)</code></pre>
+<pre><code>##     UID ECO9 MMI_BENT BENT_MMI_COND COMP_PT DIVS_PT FEED_PT HABT_PT
+## 1 10000  CPL    43.18          Fair    9.29     5.8       0    3.52
+## 2 10001  WMT     31.3          Poor    0.66    4.63    7.14    0.93
+##   RICH_PT TOLR_PT
+## 1    3.12    4.18
+## 2    1.76    3.66</code></pre>
+<p>Again, note that there are missing values for the metrics and metric scores not included in the MMI for a given site. If there is a mix of ecoregions in the input dataset, there will be these missing values for some metrics and metric scores.</p>
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
