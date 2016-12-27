@@ -161,6 +161,9 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
 #   2/09/16 cws Based on local feedback, deciding to expect bDepth argument to
 #           have UNITS column and do unit conversion in the code. Removed old
 #           comments, added descriptions of arguments
+# 11/08/16 cws Added new metrics rpxdep_cm, rpvdep_cm, rpmxdep_cm, rpgt05x_cm, 
+#          rpgt10x_cm, rpgt20x_cm which are expressed in the same units for all 
+#          protocols.
 #
 # ARGUMENTS:
 # bDepth          dataframe containing thalweg depths for boatable reaches, with
@@ -1046,6 +1049,16 @@ nrsaResidualPools.siteSummaries <- function(poolInfo, stationInfo, protocols) {
   depthMets <- merge(depthMets, rpgt10x, by='SITE', all=TRUE)
   depthMets <- merge(depthMets, rpgt20, by='SITE', all=TRUE)
   depthMets <- merge(depthMets, rpgt20x, by='SITE', all=TRUE)
+  
+  wadeableSites <- unique(subset(protocols, PROTOCOL %in% 'WADEABLE')$SITE)
+  depthMets <- mutate(depthMets
+                     ,rpxdep_cm  = rpxdep  * ifelse(SITE %in% wadeableSites, 1, 100)
+                     ,rpvdep_cm  = rpvdep  * ifelse(SITE %in% wadeableSites, 1, 100)
+                     ,rpmxdep_cm = rpmxdep * ifelse(SITE %in% wadeableSites, 1, 100)
+                     ,rpgt05x_cm = rpgt05x * ifelse(SITE %in% wadeableSites, 1, 100)
+                     ,rpgt10x_cm = rpgt10x * ifelse(SITE %in% wadeableSites, 1, 100)
+                     ,rpgt20x_cm = rpgt20x * ifelse(SITE %in% wadeableSites, 1, 100)
+                     )
 
   areaMets <- merge(rpxarea, rpvarea, by='SITE', all=TRUE)
   areaMets <- merge(areaMets, rpmxar, by='SITE', all=TRUE)

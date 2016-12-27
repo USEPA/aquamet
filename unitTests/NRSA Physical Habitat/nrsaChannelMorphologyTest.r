@@ -1,8 +1,16 @@
-#nsraChannelMorphologyTest.r
+# nrsaChannelMorphologyTest.r
 # RUnit tests
+#
+# 11/07/16 cws Added xdepth_cm and sddepth_cm values to expected.  Corrected 
+#          misspelled unit test name. Modified nrsaChannelMorphologyTest.process
+#          to test case when actual and expected have different metrics names.
+#          Corrected comparisons to use correct subsets of expected values
+#          when data for only one protocol is supplied. Added new metrics
+#          xdepth_cm and sddepth_cm.
+#
 
 
-nsraChannelMorphologyTest <- function ()
+nrsaChannelMorphologyTest <- function ()
 # test of metsChannelMorphology function
 # ARGUMENTS:
 #  none
@@ -34,7 +42,8 @@ nsraChannelMorphologyTest <- function ()
   checkEquals(0, nrow(errs)
             ,"Error: bankMorphology metrics are broken when supplying data for both protocols"
             )
-  
+
+    
   # Test supplying only wadeable data
   bg.w <- subset(bg, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
   thal.w <- subset(thal, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
@@ -52,7 +61,7 @@ nsraChannelMorphologyTest <- function ()
                                  ,wIncisedHeight = bg %>% subset(SITE %in% wadeableSites & PARAMETER=='INCISHGT')
                                  ,wWettedWidth =   thal %>% subset(SITE %in% wadeableSites & PARAMETER=='WETWIDTH')
                                  )
-  errs<-nrsaChannelMorphologyTest.process(actual, expected)
+  errs<-nrsaChannelMorphologyTest.process(actual, exp.w)
   checkEquals(0, nrow(errs)
             ,"Error: bankMorphology metrics are broken when supplying data for wadeable sites"
             )
@@ -74,7 +83,7 @@ nsraChannelMorphologyTest <- function ()
                                  ,wIncisedHeight = NULL
                                  ,wWettedWidth = NULL
                                  )
-  errs<-nrsaChannelMorphologyTest.process(actual, expected)
+  errs<-nrsaChannelMorphologyTest.process(actual, exp.b)
   checkEquals(0, nrow(errs)
             ,"Error: bankMorphology metrics are broken when supplying data for boatable sites"
             )
@@ -109,6 +118,7 @@ nrsaChannelMorphologyTest.process <- function(actual, expected)
    
     tt <- merge(expected, actual, by=c('SITE','METRIC')
                ,suffixes=c('.expected','.actual')
+               ,all=TRUE
                )
     tt$VALUE.expected <- as.numeric (tt$VALUE.expected)
     tt$VALUE.actual <- as.numeric (tt$VALUE.actual)
@@ -2273,13 +2283,26 @@ metsChannelMorphologyTest.createExpectedResults <- function()
   metstest$VALUE <- with(metstest
                          , ifelse(SITE %in% 1:6 & METRIC %in% c('xdepth','sddepth')
                                  ,as.character(as.numeric(metstest$VALUE) * 100)
-                          ,ifelse(SITE %in% 8:9 & METRIC %in% c('xdepth','sddepth','xwxd','sdwxd')
+                          ,ifelse(SITE %in% 8:9 & METRIC %in% c('xdepth','sddepth','xwxd','sdwxd') # sites 8 & 9 are recorded in FT; site 7 is in M.
                                  ,as.character(as.numeric(metstest$VALUE) * 0.3048)
-                          ,ifelse(SITE %in% 8:9 & METRIC %in% c('xwd_rat','sdwd_rat')
+                          ,ifelse(SITE %in% 8:9 & METRIC %in% c('xwd_rat','sdwd_rat')              # sites 8 & 9 are recorded in FT; site 7 is in M.
                                  ,as.character(as.numeric(metstest$VALUE) / 0.3048)
                           ,VALUE
                           )))
                          )
+
+  # add on new xdepth_cm and sddepth_cm mets
+  metstest <- rbind(metstest
+                   ,metstest %>%
+                    subset(METRIC %in% c('xdepth','sddepth')) %>%
+                    mutate(METRIC = paste0(METRIC, '_cm')
+                          ,VALUE = ifelse(SITE %in% 1:6, VALUE
+                                  ,ifelse(SITE %in% 7:9, as.character(as.numeric(VALUE) * 100)
+                                  ,'argh'
+                                   ))
+                          )
+                   )
+
   return(metstest)
 
 }

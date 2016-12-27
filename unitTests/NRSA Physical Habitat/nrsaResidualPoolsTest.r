@@ -6,6 +6,9 @@
 #          commented out code at the top. Modified nrsaResidualPoolsTest.createThalweg
 #          to not return columns as factors, and units for wadeable depths are 
 #          uniformly CM.
+# 11/08/16 cws Added new metrics in nrsaResidualPoolsTest.createSiteSummaries: 
+#          rpxdep_cm, rpvdep_cm, rpmxdep_cm, rpgt05x_cm, rpgt10x_cm, rpgt20x_cm 
+#          which are expressed in the same units for all protocols.
 #
 
 nrsaResidualPoolsTest <- function()
@@ -3983,6 +3986,17 @@ nrsaResidualPoolsTest.createSiteSummaries <- function(uids)
                  mutate(SITE='2002 WMTP99-0601 1 IN FT AND M')
                 )
 
+  
+  # Add in *_cm metrics, converting m to cm if boatable; wadeable values already in cm
+  wadeableSites <- unique(subset(nrsaResidualPoolsTest.createThalweg(), SAMPLE_TYPE=='PHAB_THALW')$SITE)
+  schar <- mutate(schar
+                 ,rpxdep_cm  = rpxdep  * ifelse(SITE %in% wadeableSites, 1, 100)
+                 ,rpvdep_cm  = rpvdep  * ifelse(SITE %in% wadeableSites, 1, 100)
+                 ,rpmxdep_cm = rpmxdep * ifelse(SITE %in% wadeableSites, 1, 100)
+                 ,rpgt05x_cm = rpgt05x * ifelse(SITE %in% wadeableSites, 1, 100)
+                 ,rpgt10x_cm = rpgt10x * ifelse(SITE %in% wadeableSites, 1, 100)
+                 ,rpgt20x_cm = rpgt20x * ifelse(SITE %in% wadeableSites, 1, 100)
+                 )
   
   if(!is.null(uids)) {
       schar <- subset(schar, SITE %in% uids)
