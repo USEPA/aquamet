@@ -9,6 +9,8 @@
 #' @importFrom dplyr filter select "%>%"
 #' @importFrom reshape2 dcast melt
 #' @importFrom stringr str_detect 
+#' @import foreach
+#' @import RUnit
 
 NULL
 ## NULL

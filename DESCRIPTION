@@ -12,7 +12,9 @@ Imports:
     reshape2,
     Hmisc,
     gtools,
-    stringr
+    stringr,
+    foreach,
+    RUnit
 Maintainer: Karen Blocksom <blocksom.karen@epa.gov>
 Description: More about what it does (maybe more than one line)
 License: GPL (>= 2)
