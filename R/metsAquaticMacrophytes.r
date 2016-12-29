@@ -166,7 +166,7 @@ metsAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWei
 	)
 	
 	tt<-ddply(subset(amCover, grepl('^AM.+',PARAMETER))
-			 ,.(UID,PARAMETER)
+			 ,c('UID','PARAMETER')
 			 ,summarise
 			 ,FC = mean(calc, na.rm=TRUE)
 			 ,V  = sd(calc, na.rm=TRUE)

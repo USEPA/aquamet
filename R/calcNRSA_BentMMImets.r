@@ -6,7 +6,7 @@
 #' Rivers and Streams Assessment (NRSA), based on the 
 #' aggregated Omernik ecoregions included in the input 
 #' data frame. 
-#' @param indf A data frame containing, at minimum, the variables 
+#' @param inCts A data frame containing, at minimum, the variables 
 #' specified in the arguments for sampID, dist, ct, taxa_id, and
 #' ecoreg. It is assumed that the data have been aggregated
 #' to the taxonomic levels used in WSA/NRSA already. This can
@@ -16,9 +16,9 @@
 #' and TRIBE, as well as autecology traits with names that match those 
 #' in the arguments ffg, habit, and ptv. In addition, there
 #' should be a variable with the name in argument taxa_id that matches 
-#' with all of those in the indf data frame
+#' with all of those in the inCts data frame
 #' @param sampID A character vector containing the names of all 
-#' variables in indf that specify a unique sample. If not specified, 
+#' variables in inCts that specify a unique sample. If not specified, 
 #' the default is \emph{UID}
 #' @param dist A string with the name of the distinctness variable, 
 #' which is assumed to have only values of 0 or 1. If not specified, 
@@ -29,7 +29,7 @@
 #' Valid values that correspond to regions used in NRSA are
 #' CPL, NAP, NPL, SAP, sPL, TPL, UMW, WMT, and XER.
 #' @param taxa_id A string with the name of the taxon ID variable 
-#' in \emph{indf} that matches that in \emph{inTaxa}. The default 
+#' in \emph{inCts} that matches that in \emph{inTaxa}. The default 
 #' value is \emph{TAXA_ID}.
 #' @param ffg A string with the name of the functional feeding group 
 #' variable in inTaxa. The default value is \emph{FFG}. Values used

@@ -70,7 +70,8 @@ sampTr <- unique(thalwegEx[,c('SITE','TRANSECT')])
 sideCh <- subset(thalwegEx,PARAMETER \%in\% c('SIDCHN','OFF_CHAN'))
 wTr <- subset(thalwegEx,PARAMETER=='INCREMNT',select=c('SITE','TRANSECT','VALUE'))
 bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
-trDist <- rbind(wTr,bTr) \%>\% plyr::mutate(VALUE=as.numeric(VALUE))
+trDist <- rbind(wTr,bTr) 
+trDist <- plyr::mutate(trDist,VALUE=as.numeric(VALUE))
 
 generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,
 transectSpacing=trDist)

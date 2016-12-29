@@ -80,9 +80,11 @@
 # 11/16/15 cws Changed UID to SITE and RESULT to VALUE in summaryby
 #
 ################################################################################
-#' @export
-if(getRversion() >= "2.15.1")
-   utils::globalVariables(c("calc", "cover_dd", "cover_lit", "coverSuffix", "infl_rip", "infl_dd", "isAg", "lsub_d25", "lsub_d75", "presence"))
+
+if(getRversion() >= "3.0")
+   utils::globalVariables(c("calc", "cover_dd", "cover_lit", "coverSuffix", "infl_rip", "infl_dd", 
+                            "isAg", "lsub_d25", "lsub_d75", "presence")
+                          ,package='aquamet',add=T)
 
 
 
@@ -213,7 +215,7 @@ return(lt)
 }
 
 
-#' @export
+
 calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {	
 # Creates synthesized 2007-like characteristicCover values from NLA drawdown 
 # and riparian cover values, using the relation developed by Phil Kaufmann:
@@ -305,7 +307,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 }
 
 
-#' @export
+
 calcSynInfluence <- function(influenceData) {
 # Creates synthesized 2007-like weighted influence values from NLA drawdown 
 # and riparian human influence values, using the following relation:
@@ -425,7 +427,7 @@ calcSynInfluence <- function(influenceData) {
 }
 
 
-#' @export
+
 convert_to_char <- function(df) {
 
 ################################################################################
@@ -446,7 +448,7 @@ convert_to_char <- function(df) {
 }
 
 
-#' @export
+
 count <- function(x) {
 # Returns the number of non-missing values in the vector, used to determine
 # sample size.  
@@ -464,7 +466,7 @@ count <- function(x) {
 }
 
 
-#' @export
+
 dfCompare <- function(df1, df2, byVars, zeroFudge=1e-17, verbose=FALSE) {
 # Used to find differences in data frames.  Comparisons will be restricted to
 # records with equivalent keys and to common columns.  Rows and columns ocuring
@@ -683,7 +685,7 @@ dfCompare <- function(df1, df2, byVars, zeroFudge=1e-17, verbose=FALSE) {
 } 
 
 
-#' @export
+
 dfLengthen <- function(df, keys, name, value, values) {
 # Converts a data frame from 'wide' format (values listed horizontally with 
 # separate columns for each variable) to 'narrow' format (variables listed 
@@ -730,7 +732,7 @@ dfLengthen <- function(df, keys, name, value, values) {
 }
 
 
-#' @export
+
 dfWiden <- function(df, keys, name, values, makeNumeric=TRUE) {
 # Converts a data frame from 'narrow' format (variables listed vertically in a 
 # single column) to 'wide' format (values listed horizontally with separate
@@ -795,7 +797,7 @@ dfWiden <- function(df, keys, name, values, makeNumeric=TRUE) {
 }
 
 
-#' @export
+
 expand.data.frame <- function(df, cols) {
 # Expands a data frame so that it contains a cartesian product of values in each  
 # of the named columns.  Columns not named in the cols argument will have NA
@@ -826,7 +828,7 @@ expand.data.frame <- function(df, cols) {
 }
 
 
-#' @export
+
 fillinDrawdownData <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
 # Expands the provided NLA data to include rows for all data expected at each  
 # site and fills in unrecorded drawdown values based on the value of DRAWDOWN.  
@@ -908,7 +910,7 @@ fillinDrawdownData <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
 }
 
 
-#' @export
+
 fillinDrawdownData.expansion <- function(df) {
 # Expands cover/influence data so each site has rows for each value expected at 
 # each station.
@@ -946,7 +948,7 @@ fillinDrawdownData.expansion <- function(df) {
 }
 
 
-#' @export
+
 first <- function(df, v, first.v) {
 # Mimics the SAS FIRST. operator by creating a new column containing a boolean
 # flag which is TRUE if the row has different by-variable values than the
@@ -989,7 +991,7 @@ first <- function(df, v, first.v) {
 }
 
 
-#' @export
+
 gmean <- function(x) {
 
 # Returns the geometric mean of the specified data
@@ -1002,7 +1004,7 @@ gmean <- function(x) {
 }
 
 
-#' @export
+
 idr <- function(x, method=2) {
 # Returns interdecile range (90%-10% of population, assuming gaussian
 # distribution) of the specified data.  Quantile calculation type 2 matches
@@ -1019,7 +1021,7 @@ idr <- function(x, method=2) {
 }
 
 
-#' @export
+
 iqr <- function(x, method=2) {
 # Returns interquartile range (75%-25% of population, assuming gaussian
 # distribution) of the specified data.  Quantile calculation type 2 matches
@@ -1036,7 +1038,7 @@ iqr <- function(x, method=2) {
 }
 
 
-#' @export
+
 interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds) {
 
 # 03/02/10 cws Created
@@ -1110,7 +1112,7 @@ interpolatePercentile <- function(df, classVar, percentile, pctlVar, classBounds
 }
 
 
-#' @export
+
 is.subset <- function(a, b) {
 # Returns TRUE if elements in vector a are a subset of the elements in vector 
 # b, or FALSE otherwise.
@@ -1126,7 +1128,7 @@ is.subset <- function(a, b) {
 }
 
 
-#' @export
+
 intermediateMessage <- function(text, loc='middle', intermediateMessages=TRUE) {
 # Display brief message(s) during metrics calculation, if enabled by 
 # intermediateMessages
@@ -1148,7 +1150,6 @@ intermediateMessage <- function(text, loc='middle', intermediateMessages=TRUE) {
 }
 
 
-#' @export
 lag <- function(df, v, lag.v, offset=1) {
 # Mimics the SAS LAGx() function by creating new column(s) containing the
 # values of the specified column(s) from the previous row.
@@ -1202,7 +1203,7 @@ lag <- function(df, v, lag.v, offset=1) {
 }
 
 
-#' @export
+
 last <- function(df, v, last.v) {
 # Mimics the SAS LAST. operator by creating a new column containing a boolean
 # flag which is TRUE if the row has different by-variable values than the
@@ -1251,7 +1252,6 @@ last <- function(df, v, last.v) {
 }
 
 
-#' @export
 lead <- function(df, v, lead.v, offset=1) {
 # Antimimics the SAS LAGx() function by creating a new column containing the
 # values of the specified column from the next row.
@@ -1305,7 +1305,7 @@ lead <- function(df, v, lead.v, offset=1) {
 }
 
 
-#' @export
+
 modalClass <- function(x, values, classes) {
 # Determines most common classes, based on counts for each class.  Counts are
 # expected to occur in the same row (i.e. long format).  This function is
@@ -1357,7 +1357,7 @@ modalClass <- function(x, values, classes) {
 }
 
 
-#' @export
+
 modalClasses <- function(df, classes, weights, delim = ', ') {
 # Determines most common classes at a site based on weights for each.  
 # Ties are allowed and separated by the string given by argument delim.
@@ -1401,7 +1401,7 @@ modalClasses <- function(df, classes, weights, delim = ', ') {
 }
 
 
-#' @export
+
 modalCount <- function(x) {
 
 # 03/10/10 cws created
@@ -1415,7 +1415,7 @@ modalCount <- function(x) {
 }
 
 
-#' @export
+
 modalvalue <- function(x, na.rm=FALSE) {
 # Returns the mode of the specified data. This function was taken from the R 
 # wiki site:
@@ -1451,7 +1451,6 @@ modalvalue <- function(x, na.rm=FALSE) {
 }
 
 
-#' @export
 modalValues <- function(x, delim='&', na.rm=FALSE) {
 # Returns character string containing modal values of the input vector, 
 # separating ties with the specified character.  This ability to report tied 
@@ -1497,7 +1496,7 @@ modalValues <- function(x, delim='&', na.rm=FALSE) {
 }
 
 
-#' @export
+
 normalizedCover <- function(df, coverValue, coverNorm, allowTotalBelow100=FALSE) {
 # Calculates normalized areal cover values so they total 100% at each
 # station/subid.  Returns the input data frame with an additional column
@@ -1567,7 +1566,7 @@ normalizedCover <- function(df, coverValue, coverNorm, allowTotalBelow100=FALSE)
 }
 
 
-#' @export
+
 nWadeableStationsPerTransect <- function(thal) {
 
 # Estimates the intended number of wadeable thalweg stations to be visited at
@@ -1646,7 +1645,7 @@ nWadeableStationsPerTransect <- function(thal) {
 }
 
 
-#' @export
+
 protectedMean <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 # Calculates mean using mean(), but can trap additional incalculable values.
 #
@@ -1685,7 +1684,7 @@ protectedMean <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 }
 
 
-#' @export
+
 protectedSum <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 # Calculates a vector sum using sum(), but can trap additional incalculable values.
 #
@@ -1724,7 +1723,7 @@ protectedSum <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 }
 
 
-#' @export
+
 rename <- function(df, old, new) {
   # This method assumes that names in old & new are listed in the same
   # order as the names in df 
@@ -1742,7 +1741,7 @@ rename <- function(df, old, new) {
 }
 
 
-#' @export
+
 summaryby <- function(xxx,yyy,zzz) {
 
     # This function uses aggregate to determine a statistic (mean, count, sd,
@@ -1769,7 +1768,7 @@ summaryby <- function(xxx,yyy,zzz) {
 }
 
 
-#' @export
+
 trimws <- function(text) {
 # Trims leading and trailing white space from a character string.
 # Taken from http://togaware.com/datamining/survivor/Trim_Whitespace.html
@@ -1783,7 +1782,7 @@ trimws <- function(text) {
 }
 
 
-#' @export
+
 uidCreate <- function(df, keys, sep='+') {
 # Returns a vector consisting of a single unique identifier for the specified 
 # dataframe using the specified list of keys.  This is done to replace multiple
@@ -1810,7 +1809,7 @@ uidCreate <- function(df, keys, sep='+') {
 }
 
 
-#' @export
+
 uidSeparate <- function(df, uidName, keyNames, sep='+') {
 # Returns the dataframe consisting of the initial dataframe with additional
 # columns containing the components of the uid.  This function reverses the

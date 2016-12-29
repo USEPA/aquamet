@@ -16,7 +16,9 @@ Imports:
     foreach,
     RUnit
 Maintainer: Karen Blocksom <blocksom.karen@epa.gov>
-Description: More about what it does (maybe more than one line)
+Description: This package calculates fish, macroinvertebrate, and physical 
+    habitat metrics used in the National Rivers and Streams Assessment and the
+    National Lakes Assessment.
 License: GPL (>= 2)
 Suggests:
     testthat,

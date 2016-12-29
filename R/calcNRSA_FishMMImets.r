@@ -5,7 +5,7 @@
 #' only the fish metrics used in the National Rivers and Streams
 #' Assessment fish MMI.
 #' 
-#' @param indf A data frame containing, at minimum, the variables 
+#' @param indata A data frame containing, at minimum, the variables 
 #' specified in the arguments for \emph{sampID}, \emph{dist}, 
 #' \emph{ct}, and \emph{taxa_id}, as well as the optional variable 
 #' for non-native status in \emph{nonnat}.
@@ -16,9 +16,9 @@
 #' \emph{habitat}, \emph{trophic}, \emph{migr}, and \emph{reprod}. 
 #' In addition, there should be a variable with the 
 #' name in argument \emph{taxa_id} that matches 
-#' with all of those in the indf data frame
+#' with all of those in the indata data frame
 #' @param sampID A character vector containing the names of all 
-#' variables in indf that specify a unique sample. If not specified, 
+#' variables in indata that specify a unique sample. If not specified, 
 #' the default is \emph{UID}
 #' @param ecoreg A string with the name of the ecoregion variable. 
 #' Valid values that correspond to regions used in NRSA are
@@ -29,7 +29,7 @@
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{FINAL_CT}.
 #' @param taxa_id A string with the name of the taxon ID variable 
-#' in \emph{indf} that matches that in \emph{inTaxa}. The default 
+#' in \emph{indata} that matches that in \emph{inTaxa}. The default 
 #' value is \emph{TAXA_ID}.
 #' @param tol A string with the name of the variable in the 
 #' \emph{inTaxa} taxalist containing tolerance categories. Valid

@@ -9,7 +9,7 @@
 \format{
   A data frame with 4 observations on the following 2 variables.
   \describe{
-    \item{UID}{unique site visit ID.}
+    \item{SITE}{unique site visit ID.}
     \item{VALXSITE}{X-site sampling status sub-category.}
   }
 }

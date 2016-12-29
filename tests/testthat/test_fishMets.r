@@ -1,5 +1,5 @@
 library(testthat)
-library(aquametAlt)
+library(aquamet)
 
 context("Test fish metric and MMI calculations")
 

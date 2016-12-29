@@ -16,7 +16,7 @@
 ###############################################################################
 
 
-if(getRversion() >= "2.15.1")
+if(getRversion() >= "3.0")
    utils::globalVariables(c("ALIENNIND", "ALIENNTAX", "ANOM_CT", "ANOMNIND",
       "bentTaxa", "CHIRNIND", "diam", "domN", "FINAL_CT", "first.group",
       "first.UID", "firstRow", "fishTaxa", "FLAG", "group", "HERP",

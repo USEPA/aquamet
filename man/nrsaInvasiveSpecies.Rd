@@ -7,7 +7,7 @@
 nrsaInvasiveSpecies(...)
 }
 \arguments{
-\item{named}{arguments consisting of data frames containing presence/absence
+\item{...}{named arguments consisting of data frames containing presence/absence
 data for individual invasive taxa.  Each dataframe is expected to 
 have the following columns:
 \itemize{

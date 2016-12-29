@@ -12,6 +12,11 @@ calcNRSA_FishMMImets(indata, inTaxa = NULL, sampID = "UID", ecoreg = NULL,
   comname = "NAME")
 }
 \arguments{
+\item{indata}{A data frame containing, at minimum, the variables 
+specified in the arguments for \emph{sampID}, \emph{dist}, 
+\emph{ct}, and \emph{taxa_id}, as well as the optional variable 
+for non-native status in \emph{nonnat}.}
+
 \item{inTaxa}{a data frame containing taxonomic information, 
 including variables that match the arguments for (\emph{family}), 
 (\emph{genus}), and (\emph{comname}), as well as autecology traits 
@@ -19,10 +24,10 @@ with names that match those in the arguments \emph{tol}, \emph{vel},
 \emph{habitat}, \emph{trophic}, \emph{migr}, and \emph{reprod}. 
 In addition, there should be a variable with the 
 name in argument \emph{taxa_id} that matches 
-with all of those in the indf data frame}
+with all of those in the indata data frame}
 
 \item{sampID}{A character vector containing the names of all 
-variables in indf that specify a unique sample. If not specified, 
+variables in indata that specify a unique sample. If not specified, 
 the default is \emph{UID}}
 
 \item{ecoreg}{A string with the name of the ecoregion variable. 
@@ -37,7 +42,7 @@ the default is \emph{IS_DISTINCT}.}
 specified, the default is \emph{FINAL_CT}.}
 
 \item{taxa_id}{A string with the name of the taxon ID variable 
-in \emph{indf} that matches that in \emph{inTaxa}. The default 
+in \emph{indata} that matches that in \emph{inTaxa}. The default 
 value is \emph{TAXA_ID}.}
 
 \item{tol}{A string with the name of the variable in the 
@@ -88,11 +93,6 @@ value is \emph{GENUS}}
 \item{comname}{A string with the name of the variable in the 
 \emph{inTaxa} taxalist containing the common name. The 
 default value is \emph{NAME}.}
-
-\item{indf}{A data frame containing, at minimum, the variables 
-specified in the arguments for \emph{sampID}, \emph{dist}, 
-\emph{ct}, and \emph{taxa_id}, as well as the optional variable 
-for non-native status in \emph{nonnat}.}
 }
 \value{
 A data frame containing the variables in sampID and 

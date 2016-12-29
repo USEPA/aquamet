@@ -1,5 +1,5 @@
 library(testthat)
-library(aquametAlt)
+library(aquamet)
 
 context("Test benthic metric and MMI calculations")
 

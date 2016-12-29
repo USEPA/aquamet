@@ -9,15 +9,21 @@ calcNRSA_BentMMImets(inCts, inTaxa = NULL, sampID = "UID", ecoreg = NULL,
   habit = "HABIT", ptv = "PTV")
 }
 \arguments{
+\item{inCts}{A data frame containing, at minimum, the variables 
+specified in the arguments for sampID, dist, ct, taxa_id, and
+ecoreg. It is assumed that the data have been aggregated
+to the taxonomic levels used in WSA/NRSA already. This can
+be done using the function \emph{calcNRSA_BentMMImets()}.}
+
 \item{inTaxa}{a data frame containing taxonomic information, 
 including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
 and TRIBE, as well as autecology traits with names that match those 
 in the arguments ffg, habit, and ptv. In addition, there
 should be a variable with the name in argument taxa_id that matches 
-with all of those in the indf data frame}
+with all of those in the inCts data frame}
 
 \item{sampID}{A character vector containing the names of all 
-variables in indf that specify a unique sample. If not specified, 
+variables in inCts that specify a unique sample. If not specified, 
 the default is \emph{UID}}
 
 \item{ecoreg}{A string with the name of the ecoregion variable. 
@@ -32,7 +38,7 @@ the default is \emph{IS_DISTINCT}.}
 specified, the default is \emph{TOTAL}.}
 
 \item{taxa_id}{A string with the name of the taxon ID variable 
-in \emph{indf} that matches that in \emph{inTaxa}. The default 
+in \emph{inCts} that matches that in \emph{inTaxa}. The default 
 value is \emph{TAXA_ID}.}
 
 \item{ffg}{A string with the name of the functional feeding group 
@@ -50,12 +56,6 @@ may have more than one value for HABIT.}
 
 \item{ptv}{A string with the name of the pollution tolerance value 
 variable in inTaxa. The default is \emph{PTV}.}
-
-\item{indf}{A data frame containing, at minimum, the variables 
-specified in the arguments for sampID, dist, ct, taxa_id, and
-ecoreg. It is assumed that the data have been aggregated
-to the taxonomic levels used in WSA/NRSA already. This can
-be done using the function \emph{calcNRSA_BentMMImets()}.}
 }
 \value{
 A data frame containing the variables in sampID and all of 

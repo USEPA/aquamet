@@ -4,7 +4,7 @@
 #' portion of the physical habitat metrics for National Rivers and 
 #' Streams Assessment (NRSA) data.  The function requires a data 
 #' frame containing the invasive species/legacy riparian trees data file.
-#' @param named arguments consisting of data frames containing presence/absence
+#' @param ... named arguments consisting of data frames containing presence/absence
 #' data for individual invasive taxa.  Each dataframe is expected to 
 #' have the following columns:
 #' \itemize{

@@ -1,4 +1,4 @@
 library(testthat)
-library(aquametAlt)
+library(aquamet)
 
-test_check("aquametAlt")
+test_check("aquamet")

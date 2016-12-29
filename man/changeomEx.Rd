@@ -9,7 +9,7 @@
 \format{
   A data frame with 479 observations on the following 11 variables.
   \describe{
-    \item{UID}{unique site visit ID.}
+    \item{SITE}{unique site visit ID.}
     \item{TRANSECT}{reach transect label.}
     \item{SAMPLE_TYPE}{indicator of field form from which data obtained.}
     \item{PARAMETER}{character variable of parameter measured in field.}
@@ -18,7 +18,7 @@
     \item{LINE}{line number on field form.}
     \item{METHOD}{method of measurement.}
     \item{UNITS}{units of measured parameter.}
-    \item{RESULT}{value of measured parameter.}
+    \item{VALUE}{value of measured parameter.}
     \item{FLAG}{flag of value of measured parameter.}    
   }
 }

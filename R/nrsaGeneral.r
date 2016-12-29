@@ -55,7 +55,8 @@
 #' sideCh <- subset(thalwegEx,PARAMETER %in% c('SIDCHN','OFF_CHAN'))
 #' wTr <- subset(thalwegEx,PARAMETER=='INCREMNT',select=c('SITE','TRANSECT','VALUE'))
 #' bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
-#' trDist <- rbind(wTr,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
+#' trDist <- rbind(wTr,bTr) 
+#' trDist <- plyr::mutate(trDist,VALUE=as.numeric(VALUE))
 #' 
 #' generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,
 #' transectSpacing=trDist)
@@ -196,12 +197,12 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
         sidecnt <- NULL
     } else {
         sidecnt <- sampledTransects %>%
-                   ddply('SITE', summarise
+                   plyr::ddply('SITE', summarise
                         ,VALUE= protectedSum(TRANSECT %in% sideChannelTransects
                                             ,na.rm=TRUE
                                             )
                         ) %>%
-                   mutate(METRIC = 'sidecnt')
+                   plyr::mutate(METRIC = 'sidecnt')
     }
 
     intermediateMessage('.1')
@@ -213,11 +214,11 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
     } else {
         pct_side <- sideChannels %>%
                     subset(VALUE %in% c('Y','N',NA)) %>%
-                    mutate(standardizedPresent = VALUE=='Y') %>%
-                    ddply('SITE', summarise
+                    plyr::mutate(standardizedPresent = VALUE=='Y') %>%
+                    plyr::ddply('SITE', summarise
                          ,VALUE = 100 * protectedMean(standardizedPresent, na.rm=TRUE)
                          ) %>%
-                    mutate(METRIC = 'pct_side')
+                    plyr::mutate(METRIC = 'pct_side')
     }
 
     intermediateMessage('.2')
@@ -229,15 +230,15 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
         xtranspc <- NULL
     } else {
         reachlen <- transectSpacing %>%
-                    ddply('SITE', summarise
+                    plyr::ddply('SITE', summarise
                          ,VALUE = protectedSum(as.numeric(VALUE), na.rm=TRUE)
                          ) %>%
-                    mutate(METRIC = 'reachlen')
+                    plyr::mutate(METRIC = 'reachlen')
         xtranspc <- transectSpacing %>%
-                    ddply('SITE', summarise
+                    plyr::ddply('SITE', summarise
                          ,VALUE = protectedMean(as.numeric(VALUE), na.rm=TRUE)
                          ) %>%
-                    mutate(METRIC = 'xtranspc')
+                    plyr::mutate(METRIC = 'xtranspc')
     }
 
     intermediateMessage('.3')
