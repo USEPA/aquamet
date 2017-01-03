@@ -141,7 +141,7 @@ calcBentTaxMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
   
   # ORTHCHIRPIND are % of Chironomidae individuals in ORTHOCLADIINAE (not in
   # total indiv in sample)
-  outWide <- ddply(outWide, c(sampID,'SAMPID','TOTLNTAX'), mutate,
+  outWide <- plyr::ddply(outWide, c(sampID,'SAMPID','TOTLNTAX'), mutate,
                   ORTHCHIRPIND=round(ORTHNIND/CHIRNIND*100,2)) %>%
     mutate(ORTHCHIRPIND=ifelse(is.na(ORTHCHIRPIND)|is.nan(ORTHCHIRPIND),0,ORTHCHIRPIND))
   

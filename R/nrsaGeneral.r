@@ -67,6 +67,7 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
                        ,sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')
                        ) {
   
+   
 ################################################################################
 # Function: metsGeneral
 # Title: Calculate NRSA General Metrics
@@ -190,20 +191,24 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
     sampledTransects <- absentAsNULL(sampledTransects, ifdfTransects)
     sideChannels <- absentAsNULL(sideChannels, ifdf)
     transectSpacing <- absentAsNULL(transectSpacing, ifdfValues)
-   
+
 
     # Calculate count of side channels SIDECNT (only meaningful for wadeables)
     if(is.null(sampledTransects)) {
         sidecnt <- NULL
     } else {
+      
+      
         sidecnt <- sampledTransects %>%
-                   plyr::ddply('SITE', summarise
-                        ,VALUE= protectedSum(TRANSECT %in% sideChannelTransects
+          mutate(inSideChan=TRANSECT %in% sideChannelTransects) %>%
+                   ddply('SITE', summarise
+                        ,VALUE= protectedSum(inSideChan
                                             ,na.rm=TRUE
                                             )
                         ) %>%
-                   plyr::mutate(METRIC = 'sidecnt')
+                   mutate(METRIC = 'sidecnt')
     }
+
 
     intermediateMessage('.1')
 
@@ -214,11 +219,11 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
     } else {
         pct_side <- sideChannels %>%
                     subset(VALUE %in% c('Y','N',NA)) %>%
-                    plyr::mutate(standardizedPresent = VALUE=='Y') %>%
-                    plyr::ddply('SITE', summarise
+                    mutate(standardizedPresent = VALUE=='Y') %>%
+                    ddply('SITE', summarise
                          ,VALUE = 100 * protectedMean(standardizedPresent, na.rm=TRUE)
                          ) %>%
-                    plyr::mutate(METRIC = 'pct_side')
+                    mutate(METRIC = 'pct_side')
     }
 
     intermediateMessage('.2')
@@ -230,15 +235,15 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
         xtranspc <- NULL
     } else {
         reachlen <- transectSpacing %>%
-                    plyr::ddply('SITE', summarise
+                    ddply('SITE', summarise
                          ,VALUE = protectedSum(as.numeric(VALUE), na.rm=TRUE)
                          ) %>%
-                    plyr::mutate(METRIC = 'reachlen')
+                    mutate(METRIC = 'reachlen')
         xtranspc <- transectSpacing %>%
-                    plyr::ddply('SITE', summarise
+                    ddply('SITE', summarise
                          ,VALUE = protectedMean(as.numeric(VALUE), na.rm=TRUE)
                          ) %>%
-                    plyr::mutate(METRIC = 'xtranspc')
+                    mutate(METRIC = 'xtranspc')
     }
 
     intermediateMessage('.3')

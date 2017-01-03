@@ -1,7 +1,7 @@
 #' aquamet: Calculate metrics used in NRSA and NLA
 #' 
 #' @docType package
-#' @name aquamet
+#' @name aquamet 
 #' 
 #' @importFrom Hmisc "%nin%" capitalize
 #' @importFrom gtools smartbind
@@ -11,6 +11,10 @@
 #' @importFrom stringr str_detect 
 #' @import foreach
 #' @import RUnit
+#' @keywords package
+#' @title aquamet
+
+
 
 if(getRversion() >= "3.0") utils::globalVariables(c('DOM1PIND','DOM3PIND','DOM5PIND','FAMILY','CHIRDOM1PIND'
                   ,'CHIRDOM3PIND','CHIRDOM5PIND'
@@ -22,5 +26,5 @@ if(getRversion() >= "3.0") utils::globalVariables(c('DOM1PIND','DOM3PIND','DOM5P
                   ,'DIRECTION','isFast','isSlow','isPool','characteristicCover','field'
                   ,'standardizedPresent','loc','len','first.SITE','BANK','pct','VALUE.sa'
                   ,'VALUE.fn','ONBANK','TARGET_TAXON','TOTAL','isfast','isslow','ispool'
-                  ,'coverType'),package="aquamet",add=TRUE)
+                  ,'coverType'))
 ## NULL
