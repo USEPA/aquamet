@@ -10,7 +10,7 @@
 #' specified in the arguments for sampID, dist, ct, and taxa_id
 #' @param inTaxa a data frame containing taxonomic information, 
 #' including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
-#' and TRIBE, as well as autecology traits with names that match those 
+#' TRIBE, and GENUS, as well as autecology traits with names that match those 
 #' in the arguments ffg, habit, and ptv. In addition, there
 #' should be a variable with the name in argument taxa_id that matches 
 #' with all of those in the indf data frame. 
