@@ -146,7 +146,7 @@ calcFishTaxMets <- function(indata, inTaxa=NULL, sampID='UID', dist='IS_DISTINCT
                      ,RBCATO=ifelse(toupper(GENUS) %in% c('MOXOSTOMA', 'HYPENTELIUM'
                                   , 'MINYTREMA', 'ERIMYZON' , 'CATOSTOMUS', 'CYCLEPTUS'
                                   , 'PANTOSTEUS' , 'THOBURNIA'),1,NA)
-                     ,CENT=ifelse(toupper(FAMILY)=='CENTRARCHIDAE' & toupper(GENUS)!='MICROPTERUS',1,NA)
+                     ,CENT=ifelse(toupper(FAMILY)=='CENTRARCHIDAE' & (toupper(GENUS)!='MICROPTERUS')|is.na(GENUS)),1,NA)
                      ,CYPR=ifelse(toupper(FAMILY)=='CYPRINIDAE' & toupper(NAME) %nin% 
                                     c('COMMON CARP','GOLDFISH','BIGHEAD CARP','GRASS CARP','MIRROR CARP'),1,NA)
                      ) 

@@ -17,6 +17,8 @@
 #' station, with the following columns:
 #' \itemize{
 #'          \item SITE integer or character specifying the site visit
+#'          \item TRANSECT character value specifying the transect for which 
+#'              values were recorded
 #'          \item VALUE character values, expected to be 'Y', 'N' or NA
 #' }
 #' @param transectSpacing dataframe containing distances (in meters) between 
