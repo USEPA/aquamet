@@ -39,14 +39,17 @@ following columns:
 \item VALUE numeric values
 }}
 
-\item{lsub_dmm}{\itemize{
+\item{lsub_dmm}{dataframe containing log10 of the mean 
+substrate diameter (units are mm) using the old 
+one-boulder-class system for all reaches
+\itemize{
 \item SITE integer or character specifying the site visit
 \item VALUE numeric values
 }}
 
 \item{lsub2dmm}{A data frame containing log10 of the mean 
-substrate diameter (units are mm) using the old one-boulder
--class system for all reaches, with the following columns:
+substrate diameter (units are mm) using the two-boulder-class 
+system for all reaches, with the following columns:
 \itemize{
 \item SITE integer or character specifying the site visit
 \item VALUE numeric values
