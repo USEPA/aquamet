@@ -17,7 +17,7 @@
 #' \item VALUE numeric values
 #' }           
 #' @param wXdepth A data frame containing mean depths (units 
-#' are cm) for wadetable reaches, with the following columns:
+#' are cm) for wadeable reaches, with the following columns:
 #' \itemize{
 #' \item SITE integer or character specifying the site visit
 #' \item VALUE numeric values
