@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2017-01-23" />
+<meta name="date" content="2017-01-30" />
 
 <title>Calculating Relative Bed Stability</title>
 
@@ -52,7 +52,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 
 <h1 class="title toc-ignore">Calculating Relative Bed Stability</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2017-01-23</em></h4>
+<h4 class="date"><em>2017-01-30</em></h4>
 
 
 
@@ -67,11 +67,25 @@ code > span.er { color: #ff0000; font-weight: bold; }
 <div id="channel-morphology-metrics" class="section level2">
 <h2>2.1 Channel morphology metrics</h2>
 <p>Several channel morphology metrics are required as inputs for <code>nrsaBedStability()</code>. These include mean and standard deviation for depth, for wadeable and boatable sites separately, mean bankfull height and width, and mean wetted width. To run the <code>nrsaChannelMorphology()</code> function, all data inputs are required. Boatable inputs for bankfull height and width, wetted width, and incised height are recorded in the channel/riparian transect data, and depth measurements come from thalweg data. Wadeable inputs for bankfull height and width and incised height come from channel/riparian cross-section data, and depth and wetted width come from thalweg profile data.</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(aquamet)
-<span class="kw">library</span>(stringr)
-<span class="kw">library</span>(plyr)
-
-<span class="kw">head</span>(bankgeomEx)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(aquamet)</code></pre>
+<pre><code>## 
+## Attaching package: 'aquamet'</code></pre>
+<pre><code>## The following object is masked from 'package:stats':
+## 
+##     lag</code></pre>
+<pre><code>## The following object is masked from 'package:base':
+## 
+##     trimws</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(stringr)</code></pre>
+<pre><code>## Warning: package 'stringr' was built under R version 3.2.5</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(plyr)</code></pre>
+<pre><code>## Warning: package 'plyr' was built under R version 3.2.5</code></pre>
+<pre><code>## 
+## Attaching package: 'plyr'</code></pre>
+<pre><code>## The following objects are masked from 'package:aquamet':
+## 
+##     count, rename</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(bankgeomEx)</code></pre>
 <pre><code>##       SITE TRANSECT BANK SAMPLE_TYPE PARAMETER VALUE UNITS FLAG
 ## 5587 10002        I   LF  PHAB_CHANW  UNDERCUT   0.6     M     
 ## 5588 10002        I NONE  PHAB_CHANW   BANKHGT   1.9     M     
@@ -300,8 +314,8 @@ lwdOut &lt;-<span class="st"> </span><span class="kw">nrsaLargeWoody</span>(<spa
 </div>
 <div id="slope-metrics" class="section level2">
 <h2>2.5 Slope metrics</h2>
-<p>Mean slope is a required input for <code>nrsaBedStability()</code>. The <code>nrsaSlopeBearing()</code> function calculates mean slope as an output. The inputs differ between boatable and wadeable sites. The bearing, slope and distance field measurements at boatable sites are recorded on the NRSA channel/riparian transect form. For wadeable sites, the measurements for slope, bearing, and proportion of transect are recorded on the NRSA slope and bearing form (wadeable sites only). For each transect, there may be more than supplemental readings for slope, bearing, and proportion or distance. The initial or base readings for transect must be coded as LINE=0, with additional readings numbered LINE=1, 2, etc.</p>
-<p>For boatable sites, field measurement is generally no longer measured, and the slope is obtained via GIS (and passed to the function in the argument <code>gisSlope</code>).</p>
+<p>Mean slope is a required input for <code>nrsaBedStability()</code>. The <code>nrsaSlopeBearing()</code> function calculates mean slope as an output. The inputs differ between boatable and wadeable sites. The bearing, slope and distance field measurements at boatable sites are recorded on the NRSA channel/riparian transect form. For wadeable sites, the measurements for slope, bearing, and proportion of transect are recorded on the NRSA slope and bearing form (wadeable sites only). For each transect, there may be more than supplemental readings for slope, bearing, and proportion or distance. The initial or base readings for transect must be coded as LINE=0, with additional readings numbered LINE=1, 2, etc. For slope measurements, METHOD (which should be ‘CL’ if a clinometer is used, and all other methods are treated the same), and UNITS (PERCENT or CM) are also expected to be provided.</p>
+<p>For boatable sites, field measurement is generally no longer measured, and the slope is obtained via GIS and passed to the function in the argument <code>gisSlope</code>. This can also be done for wadeable sites. Sinuosity can also be obtained via GIS and passed through the argument <code>gisSinuosity</code>. Only GIS slopes for boatable sites are used as inputs for this example.</p>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(changeomEx)</code></pre>
 <pre><code>##       SITE TRANSECT SAMPLE_TYPE PARAMETER TRANLINE BANK LINE METHOD
 ## 3710 10000        A  PHAB_SLOPE   BEARING     NONE NONE &lt;NA&gt;     TR
@@ -333,8 +347,6 @@ changeom.b &lt;-<span class="st"> </span><span class="kw">subset</span>(changeom
 <span class="st">   </span>plyr::<span class="kw">mutate</span>(<span class="dt">LINE=</span><span class="kw">ifelse</span>(LINE==<span class="dv">999</span>, <span class="dv">0</span>, LINE))
 bDist &lt;-<span class="st"> </span><span class="kw">subset</span>(changeom.b, PARAMETER==<span class="st">'DISTANCE'</span>) %&gt;%
 <span class="st">   </span>plyr::<span class="kw">mutate</span>(<span class="dt">LINE=</span><span class="kw">ifelse</span>(LINE==<span class="dv">999</span>, <span class="dv">0</span>, LINE))
-<span class="co"># bSlp &lt;- subset(changeomEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' &amp; PARAMETER=='SLOPE') %&gt;%</span>
-<span class="co">#    plyr::mutate(LINE=ifelse(LINE==999, 0, LINE))</span>
 
 gis.bSlp &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">c</span>(<span class="dv">13799</span>,<span class="dv">13904</span>),<span class="dt">VALUE=</span><span class="kw">c</span>(<span class="fl">0.002178</span>,<span class="fl">0.051732</span>))
 
@@ -380,6 +392,7 @@ slopeOut &lt;-<span class="st"> </span><span class="kw">nrsaSlopeBearing</span>(
 </div>
 <div id="residual-pools-metrics" class="section level2">
 <h2>2.6 Residual pools metrics</h2>
+<p>The mean slope from section 2.5 above is required to calculate <code>rp100</code>, the mean residual depth at thalweg in cm, using the function <code>nrsaResidualPools()</code>. The inputs for this function include thalweg depth measurements from the NRSA channel/riparian transect form at boatable sites and from the NRSA thalweg profile and woody debris form at wadeable sites. The transect spacing input for this function is the same format as that used in <code>nrsaGeneral()</code>, so we will just use the data frame created as an input for that function.</p>
 <pre class="sourceCode r"><code class="sourceCode r">meanslope &lt;-<span class="st"> </span><span class="kw">subset</span>(slopeOut, METRIC==<span class="st">'xslope'</span>) %&gt;%
 <span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
 
@@ -388,20 +401,10 @@ bDep &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,(PAR
 wDep &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,PARAMETER==<span class="st">'DEPTH'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_THALW'</span>) %&gt;%
 <span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE),<span class="dt">STATION=</span><span class="kw">as.numeric</span>(STATION))
 
-<span class="co"># bTr &lt;- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))</span>
-<span class="co"># wTr.alt.2 &lt;- subset(thalwegEx, PARAMETER=='INCREMNT' &amp; TRANSECT=='A' &amp; STATION==0 &amp; SAMPLE_TYPE=='PHAB_THALW'</span>
-<span class="co">#                  ,select=c('SITE','VALUE')) %&gt;%</span>
-<span class="co">#   plyr::mutate(VALUE=as.numeric(VALUE)) %&gt;%</span>
-<span class="co">#   merge(unique(subset(thalwegEx,SAMPLE_TYPE=='PHAB_THALW',select=c('SITE','TRANSECT')))</span>
-<span class="co">#         ,by='SITE')</span>
-<span class="co"># allTran &lt;- rbind(bTr, wTr) %&gt;% plyr::mutate(VALUE=as.numeric(VALUE))</span>
-<span class="co"># allTran &lt;- rbind(bTr, wTr.alt)</span>
-
 respoolOut &lt;-<span class="st"> </span><span class="kw">nrsaResidualPools</span>(<span class="dt">bDepth =</span> bDep     
                            ,<span class="dt">wDepth =</span> wDep     
                            ,<span class="dt">siteSlopes =</span> meanslope
-                           ,<span class="dt">transectSpacing =</span> tranSpace
-                           ,<span class="dt">writeIntermediateFiles=</span><span class="ot">FALSE</span>, <span class="dt">oldeMethods=</span><span class="ot">FALSE</span>)</code></pre>
+                           ,<span class="dt">transectSpacing =</span> tranSpace)</code></pre>
 <pre><code>##   Residual Pools calculations.A.B.C.D dataOrganization.w1.w2.w3.w4.w5.b1.b2.b3.b4.b5.b6.b7.1.2.3.4 dimensions.1.2.3.4.5 poolCharacteristics.1.2.3.4   siteSummaries .1.2.3.4.5</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(respoolOut$METRIC)</code></pre>
 <pre><code>##  [1] &quot;rpxlen&quot;     &quot;rpvlen&quot;     &quot;rpmxlen&quot;    &quot;totplen&quot;    &quot;rpxdep&quot;    
@@ -414,7 +417,8 @@ respoolOut &lt;-<span class="st"> </span><span class="kw">nrsaResidualPools</spa
 </div>
 <div id="calculate-bed-stability-metrics" class="section level1">
 <h1>3 Calculate Bed Stability Metrics</h1>
-<p>Use all of the metric outputs of other functions to run the bed stability metrics function.</p>
+<p>Use all of the metric outputs of other functions to run the bed stability metrics function, <code>nrsaBedStability()</code>. This is done by subsetting each of the output data frames and selecting only the METRIC value of interest. Because the depth-related inputs are specific to boatable or wadeable sites, the output data frame from <code>nrsaChannelMorphology()</code>, <code>chanmorphOut</code> must be split into separate boatable and wadeable pieces. The easiest way to do this is to keep only SITE values that occur in the <code>nrsaChannelMorphology()</code> input <code>bD</code> for boatable inputs and those in <code>wD</code> for wadeable inputs.</p>
+<p>Numerous metrics are calculated, but one of the more important metrics calculated by the <code>nrsaBedStabilty()</code> function is <code>lrbs_g08</code>, the log of relative bed stability. This metric is used as an indicator of physical habitat condition.</p>
 <pre class="sourceCode r"><code class="sourceCode r">boat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">unique</span>(bD$SITE),<span class="dt">stringsAsFactors=</span>F)
 wade &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">unique</span>(wD$SITE),<span class="dt">stringsAsFactors=</span>F)
 

@@ -111,8 +111,6 @@ bBear <- subset(changeom.b, PARAMETER=='BEAR') %>%
    plyr::mutate(LINE=ifelse(LINE==999, 0, LINE))
 bDist <- subset(changeom.b, PARAMETER=='DISTANCE') %>%
    plyr::mutate(LINE=ifelse(LINE==999, 0, LINE))
-# bSlp <- subset(changeomEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-#    plyr::mutate(LINE=ifelse(LINE==999, 0, LINE))
 
 gis.bSlp <- data.frame(SITE=c(13799,13904),VALUE=c(0.002178,0.051732))
 
@@ -163,20 +161,10 @@ bDep <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_
 wDep <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW') %>%
   plyr::mutate(VALUE=as.numeric(VALUE),STATION=as.numeric(STATION))
 
-# bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
-# wTr.alt.2 <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0 & SAMPLE_TYPE=='PHAB_THALW'
-#                  ,select=c('SITE','VALUE')) %>%
-#   plyr::mutate(VALUE=as.numeric(VALUE)) %>%
-#   merge(unique(subset(thalwegEx,SAMPLE_TYPE=='PHAB_THALW',select=c('SITE','TRANSECT')))
-#         ,by='SITE')
-# allTran <- rbind(bTr, wTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
-# allTran <- rbind(bTr, wTr.alt)
-
 respoolOut <- nrsaResidualPools(bDepth = bDep     
                            ,wDepth = wDep     
                            ,siteSlopes = meanslope
-                           ,transectSpacing = tranSpace
-                           ,writeIntermediateFiles=FALSE, oldeMethods=FALSE)
+                           ,transectSpacing = tranSpace)
 
 unique(respoolOut$METRIC)
 

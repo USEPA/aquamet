@@ -156,9 +156,9 @@ unique(subcharOut$METRIC)
 ```
 ## 2.5 Slope metrics
 
-Mean slope is a required input for `nrsaBedStability()`. The `nrsaSlopeBearing()` function calculates mean slope as an output. The inputs differ between boatable and wadeable sites. The bearing, slope and distance field measurements at boatable sites are recorded on the NRSA channel/riparian transect form. For wadeable sites, the measurements for slope, bearing, and proportion of transect are recorded on the NRSA slope and bearing form (wadeable sites only). For each transect, there may be more than supplemental readings for slope, bearing, and proportion or distance. The initial or base readings for transect must be coded as LINE=0, with additional readings numbered LINE=1, 2, etc. For slope measurements, METHOD (TR or NONE) and UNITS (PERCENT or CM) are also expected to be provided.   
+Mean slope is a required input for `nrsaBedStability()`. The `nrsaSlopeBearing()` function calculates mean slope as an output. The inputs differ between boatable and wadeable sites. The bearing, slope and distance field measurements at boatable sites are recorded on the NRSA channel/riparian transect form. For wadeable sites, the measurements for slope, bearing, and proportion of transect are recorded on the NRSA slope and bearing form (wadeable sites only). For each transect, there may be more than supplemental readings for slope, bearing, and proportion or distance. The initial or base readings for transect must be coded as LINE=0, with additional readings numbered LINE=1, 2, etc. For slope measurements, METHOD (which should be 'CL' if a clinometer is used, and all other methods are treated the same), and UNITS (PERCENT or CM) are also expected to be provided. 
 
-For boatable sites, field measurement is generally no longer measured, and the slope is obtained via GIS (and passed to the function in the argument `gisSlope`). 
+For boatable sites, field measurement is generally no longer measured, and the slope is obtained via GIS and passed to the function in the argument `gisSlope`. This can also be done for wadeable sites. Sinuosity can also be obtained via GIS and passed through the argument `gisSinuosity`. Only GIS slopes for boatable sites are used as inputs for this example.  
 
 ```{r slope}
 head(changeomEx)
@@ -172,8 +172,6 @@ bBear <- subset(changeom.b, PARAMETER=='BEAR') %>%
    plyr::mutate(LINE=ifelse(LINE==999, 0, LINE))
 bDist <- subset(changeom.b, PARAMETER=='DISTANCE') %>%
    plyr::mutate(LINE=ifelse(LINE==999, 0, LINE))
-# bSlp <- subset(changeomEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-#    plyr::mutate(LINE=ifelse(LINE==999, 0, LINE))
 
 gis.bSlp <- data.frame(SITE=c(13799,13904),VALUE=c(0.002178,0.051732))
 
@@ -217,6 +215,9 @@ unique(slopeOut$METRIC)
 ```
 
 ## 2.6 Residual pools metrics
+
+The mean slope from section 2.5 above is required to calculate `rp100`, the mean residual depth at thalweg in cm, using the function `nrsaResidualPools()`. The inputs for this function include thalweg depth measurements from the NRSA channel/riparian transect form at boatable sites and from the NRSA thalweg profile and woody debris form at wadeable sites. The transect spacing input for this function is the same format as that used in `nrsaGeneral()`, so we will just use the data frame created as an input for that function. 
+
 ```{r respools}
 meanslope <- subset(slopeOut, METRIC=='xslope') %>%
   plyr::mutate(VALUE=as.numeric(VALUE))
@@ -226,26 +227,19 @@ bDep <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_
 wDep <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW') %>%
   plyr::mutate(VALUE=as.numeric(VALUE),STATION=as.numeric(STATION))
 
-# bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
-# wTr.alt.2 <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0 & SAMPLE_TYPE=='PHAB_THALW'
-#                  ,select=c('SITE','VALUE')) %>%
-#   plyr::mutate(VALUE=as.numeric(VALUE)) %>%
-#   merge(unique(subset(thalwegEx,SAMPLE_TYPE=='PHAB_THALW',select=c('SITE','TRANSECT')))
-#         ,by='SITE')
-# allTran <- rbind(bTr, wTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
-# allTran <- rbind(bTr, wTr.alt)
-
 respoolOut <- nrsaResidualPools(bDepth = bDep     
                            ,wDepth = wDep     
                            ,siteSlopes = meanslope
-                           ,transectSpacing = tranSpace
-                           ,writeIntermediateFiles=FALSE, oldeMethods=FALSE)
+                           ,transectSpacing = tranSpace)
 
 unique(respoolOut$METRIC)
 ```
 # 3 Calculate Bed Stability Metrics
 
-Use all of the metric outputs of other functions to run the bed stability metrics function.
+Use all of the metric outputs of other functions to run the bed stability metrics function, `nrsaBedStability()`. This is done by subsetting each of the output data frames and selecting only the METRIC value of interest. Because the depth-related inputs are specific to boatable or wadeable sites, the output data frame from `nrsaChannelMorphology()`, `chanmorphOut` must be split into separate boatable and wadeable pieces. The easiest way to do this is to keep only SITE values that occur in the `nrsaChannelMorphology()` input `bD` for boatable inputs and those in `wD` for wadeable inputs. 
+
+Numerous metrics are calculated, but one of the more important metrics calculated by the `nrsaBedStabilty()` function is `lrbs_g08`, the log of relative bed stability. This metric is used as an indicator of physical habitat condition. 
+
 ```{r bedstab}
 boat <- data.frame(SITE=unique(bD$SITE),stringsAsFactors=F)
 wade <- data.frame(SITE=unique(wD$SITE),stringsAsFactors=F)
