@@ -410,7 +410,6 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
     }
   intermediateMessage('.2')
 
-
   # Calculate transect spacing TRANSPC from incremental DISTANCE values.
   # Calculate incremental proportion values from DISTANCE and TRANSPC.
   # Handle TRANSPC as a parameter in a separate dataframe.  Boatable reaches
@@ -499,8 +498,9 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
                      ,ifelse(sb$UNITS.SLOPE %in% c('PERCENT')
                             ,as.numeric(sb$SLOPE)
                             ,ifelse(sb$UNITS.SLOPE %in% c('CM','NONE')
-                                   ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
-                                                 (sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   # ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
+                                   #               (sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   ,100 * as.numeric(sb$SLOPE)/(sb$TRANSPC*100 * sb$PROPORTION/100)
                                    ,NA
                                    )
                             )
@@ -508,8 +508,9 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
                      ,ifelse(sb$UNITS.SLOPE %in% c('PERCENT','NONE')
                             ,as.numeric(sb$SLOPE)
                             ,ifelse(sb$UNITS.SLOPE %in% c('CM')            # Note: This section of code is not currently tested in the unit test
-                                   ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
-                                                 (sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   # ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
+                                   #               (sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   ,100 * as.numeric(sb$SLOPE)/(sb$TRANSPC*100 * sb$PROPORTION/100)
                                    ,NA
                                    )
                             )
@@ -568,7 +569,6 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 
   intermediateMessage('.6')
 
-   
   #########################################################################
   # Intermediate calculations over entire reach
   # totEast   distance East travelled from start to end of reach

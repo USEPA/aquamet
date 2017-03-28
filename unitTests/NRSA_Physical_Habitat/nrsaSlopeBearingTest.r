@@ -10,6 +10,9 @@
 #  1/21/16 cws Changed input data to use LINE=0 instead of LINE=999 to indicate
 #          at-transect location in boatable reaches.
 #  1/22/16 cws Removed old commented out code and prettyprinted test code a bit.
+#  3/28/17 cws Modified to add data for wadeable site "2003 WWYP99-0659 1 no subsightings"
+#          which is based on "2003 WWYP99-0659 1" but modified with hand calculations
+#          to not contain subsightings but result in the same final metrics.
 #
 
 nrsaSlopeBearingTest <- function()
@@ -18,12 +21,14 @@ nrsaSlopeBearingTest <- function()
 # 2000 WAZP99-0505 1                 Stream with no supplemental readings
 # 2000 WAZP99-0569 1                 Stream with many supplemental readings
 # 2003 WWYP99-0659 1                 Stream with slopes in cm
+# 2003 WWYP99-0659 1 no subsightings Stream with slopes in cm with subsights that have been collapsed to have same results.             #### NEW
 # 2003 WWYP99-0659 1 missing CM subsightings   Stream with slopes in cm
 # 2003 WWYP99-0659 1 slope unit NONE Stream with slopes in cm, but UNITS=NONE
 # 2000 WAZP99-0569 1 no incremnt     Stream with no incremnt information
 # 2000 WAZP99-0569 1 no slopes       Stream with no slope information
 # 2000 WAZP99-0569 1 only 2 slopes   Stream with insufficient slope information
 # 2000 WIDP99-0556 1                 River with some supplemental readings
+# 2000 WIDP99-0556 1 with slopes in cm River with some supplemental readings with slopes expressed as elevations that have same results.  #### NEW
 # 2000 WIDP99-0556 1 with NA slopes  River with all slope values missing
 # 2000 WIDP99-0556 1 with absent slopes  River with no slope values at all
 # 2000 WIDP99-0556 1 slope unit NONE River with some supplemental readings and
@@ -807,6 +812,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 0 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 0 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 0 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 0 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 0 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 0 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 0 PHAB_THALW NA M
@@ -897,6 +912,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 1 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 1 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 1 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 1 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 1 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 1 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 1 PHAB_THALW NA M
@@ -987,6 +1012,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 2 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 2 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 2 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 2 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 2 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 2 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 2 PHAB_THALW NA M
@@ -1077,6 +1112,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 3 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 3 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 3 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 3 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 3 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 3 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 3 PHAB_THALW NA M
@@ -1167,6 +1212,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 4 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 4 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 4 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 4 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 4 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 4 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 4 PHAB_THALW NA M
@@ -1267,6 +1322,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 5 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 5 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 5 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 5 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 5 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 5 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 5 PHAB_THALW NA M
@@ -1357,6 +1422,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 6 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 6 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 6 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 6 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 6 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 6 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 6 PHAB_THALW NA M
@@ -1447,6 +1522,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 7 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 7 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 7 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 7 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 7 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 7 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 7 PHAB_THALW NA M
@@ -1537,6 +1622,16 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 8 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 8 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' C 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 8 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 8 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 8 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 8 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' C 1.5 INCREMNT 8 PHAB_THALW NA M
@@ -1624,6 +1719,15 @@ nrsaSlopeBearingTest.makeThalweg <- function()
         '2003 WWYP99-0659 1' H 1.5 INCREMNT 9 PHAB_THALW NA M
         '2003 WWYP99-0659 1' I 1.5 INCREMNT 9 PHAB_THALW NA M
         '2003 WWYP99-0659 1' J 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' A 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' B 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' D 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' E 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' F 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' G 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' H 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' I 1.5 INCREMNT 9 PHAB_THALW NA M
+        '2003 WWYP99-0659 1 no subsightings' J 1.5 INCREMNT 9 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' A 1.5 INCREMNT 9 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' B 1.5 INCREMNT 9 PHAB_THALW NA M
         '2003 WWYP99-0659 1 missing CM subsightings' D 1.5 INCREMNT 9 PHAB_THALW NA M
@@ -3284,6 +3388,61 @@ nrsaSlopeBearingTest.makeChannelGeometry <- function()
 			              ,METHOD = 'NONE'
             			  ,stringsAsFactors=FALSE
 			              )
+	           ,data.frame(SITE = '2000 WIDP99-0556 1 with slopes in cm'
+            			  ,TRANSECT = c('A','B','C','D','E','F','G','H','I','J'
+			                           ,'A','B','C','D','E','F','G','H','I','J'
+            			               ,'B','D','B','D','D','D','A','B','C','D'
+			                           ,'E','F','G','H','I','J','A','B','C','D'
+			                           ,'E','F','G','H','I','J','B','D','D'
+                				       )        
+			              ,VALUE = c('120','48','120','34.2857143','120'        # slopeElev = slopePct * distInCM/100
+			                         ,'120','60','120','60','120'
+             			             ,'150','50','40','50','70'
+			                         ,'60','60','50','40','30'
+                     	             ,'72','34.2857143','140','40','51.4285713'
+             			             ,'20','CM','CM','CM','CM'                     # unit changed from PERCENT to CM
+             			             ,'CM','CM','CM','CM','CM'
+			                         ,'CM','600','240','599.9999994','171.4285716'
+			                         ,'600','600','600','600','600'
+			                         ,'600','360','171.4285716','257.1428574'
+				                     )
+			              ,PARAMETER = c('SLOPE','SLOPE','SLOPE','SLOPE','SLOPE'
+			                            ,'SLOPE','SLOPE','SLOPE','SLOPE','SLOPE'
+            			                ,'BEAR','BEAR','BEAR','BEAR','BEAR'
+            			                ,'BEAR','BEAR','BEAR','BEAR','BEAR'
+            			                ,'SLOPE','SLOPE','BEAR','BEAR','SLOPE'
+            			                ,'BEAR','NA','NA','NA','NA'
+            			                ,'NA','NA','NA','NA','NA'
+			                            ,'NA','DISTANCE','DISTANCE','DISTANCE','DISTANCE'
+			                            ,'DISTANCE','DISTANCE','DISTANCE','DISTANCE','DISTANCE'
+            			                ,'DISTANCE','DISTANCE','DISTANCE','DISTANCE')
+            			  ,LINE = c(999, 999, 999, 999, 999
+			                       ,999, 999, 999, 999, 999
+            			           ,999, 999, 999, 999, 999
+			                       ,999, 999, 999, 999, 999
+            			           ,1, 1, 1, 1, 2
+			                       ,2, NA, NA, NA, NA
+            			           ,NA, NA, NA, NA, NA
+			                       ,NA, 999, 999, 999, 999
+            			           ,999, 999, 999, 999, 999
+			                       ,999, 1, 1, 2)
+            			  ,UNITS = c('CM','CM','CM','CM','CM'            # was all 'NONE', now changed for elevation
+			                        ,'CM','CM','CM','CM','CM'
+            			            ,'NONE','NONE','NONE','NONE','NONE'
+            			            ,'NONE','NONE','NONE','NONE','NONE'
+            			            ,'CM','CM','NONE','NONE','CM'
+            			            ,'NONE','NONE','NONE','NONE','NONE'
+            			            ,'NONE','NONE','NONE','NONE','NONE'
+			                        ,'NONE','NONE','NONE','NONE','NONE'
+			                        ,'NONE','NONE','NONE','NONE','NONE'
+            			            ,'NONE','NONE','NONE','NONE')
+			              ,TRANLINE = 'NONE'
+            			  ,BANK = 'NONE'
+			              ,SAMPLE_TYPE = 'PHAB_CHANBFRONT'
+            			  ,FLAG = as.character(NA)
+			              ,METHOD = 'NONE'
+            			  ,stringsAsFactors=FALSE
+			              )
                ,data.frame(SITE = '2000 WIDP99-0556 1 with NA slopes'
                           ,TRANSECT = c('A','B','C','D','E','F','G','H','I','J'
                                        ,'A','B','C','D','E','F','G','H','I','J'
@@ -3543,6 +3702,59 @@ nrsaSlopeBearingTest.makeChannelGeometry <- function()
 			                    ,'NONE','NONE','CM','CM','NONE'
         			            ,'NONE','NONE','NONE','CM','NONE'
 		        	            ,'NONE','CM'
+				                )
+        			  ,TRANLINE = 'NONE'
+		        	  ,BANK = 'NONE'
+        			  ,SAMPLE_TYPE = 'PHAB_SLOPE'
+		        	  ,FLAG = as.character(NA)
+        			  ,METHOD = 'TR'
+		        	  ,stringsAsFactors=FALSE
+			  )
+	       ,data.frame(SITE = '2003 WWYP99-0659 1 no subsightings'
+        			  ,TRANSECT = c('A','A','A'
+        			               ,'B','B','B'
+        			               ,'C','C','C'
+			                       ,'D','D','D'
+        			               ,'E','E','E'
+        			               ,'F','F','F'
+        			               ,'G','G','G'
+			                       ,'H','H','H'
+        			               ,'I','I','I'
+        			               ,'J','J','J'
+		        		           )
+        			  ,VALUE = c('161','36','100'
+        			            ,'12','100','110'
+        			            ,'121.0429871','16','76.95159'   # condensed transect uses hand calculated bearing; proportion hand calculated to reflect shorter resulting crows distance
+			                    ,'26','230','100'
+        			            ,'100','193','8'
+        			            ,'100','120','18'
+        			            ,'159.0','11', '62.93204'        # condensed transect uses hand calculated bearing; proportion hand calculated to reflect shorter resulting crows distance
+			                    ,'246','100','14'
+        			            ,'197.5','12','76.0406'          # condensed transect uses hand calculated bearing; proportion hand calculated to reflect shorter resulting crows distance
+        			            ,'100','100','1'
+		        		        )
+        			  ,PARAMETER = c('BEARING','SLOPE','PROP'
+        			                ,'SLOPE','PROP','BEARING'
+        			                ,'BEARING','SLOPE','PROP' # condensed transect
+			                        ,'SLOPE','BEARING','PROP'
+        			                ,'PROP','BEARING','SLOPE'
+        			                ,'PROP','BEARING','SLOPE'
+        			                ,'BEARING','SLOPE','PROP' # condensed transect
+			                        ,'BEARING','PROP','SLOPE'
+        			                ,'BEARING','SLOPE','PROP' # condensed transect
+        			                ,'PROP','BEARING','SLOPE'
+		        		 	        )
+        			  ,LINE = as.numeric(NA)
+		        	  ,UNITS = c('NONE','CM','NONE'
+		        	            ,'CM','NONE','NONE'
+		        	            ,'NONE','CM','NONE' # condensed transect
+        			            ,'CM','NONE','NONE'
+		        	            ,'NONE','NONE','CM'
+		        	            ,'NONE','NONE','CM'
+		        	            ,'NONE','CM','NONE' # condensed transect
+		        	            ,'NONE','NONE','CM'
+		        	            ,'NONE','CM','NONE' # condensed transect
+		        	            ,'NONE','NONE','CM'
 				                )
         			  ,TRANLINE = 'NONE'
 		        	  ,BANK = 'NONE'
@@ -4234,6 +4446,7 @@ nrsaSlopeBearingTest.makeProtocols <- function()
                            ,'2000 WAZP99-0505 1 with clinometer and low slope'
                            ,'2000 WAZP99-0569 1'
                            ,'2003 WWYP99-0659 1'
+                           ,'2003 WWYP99-0659 1 no subsightings'
                            ,'2003 WWYP99-0659 1 slope unit NONE'
                            ,'2003 WWYP99-0659 1 missing CM subsightings'
                            ,'2000 WAZP99-0569 1 no incremnt'
@@ -4242,16 +4455,17 @@ nrsaSlopeBearingTest.makeProtocols <- function()
                            ,'2000 WAZP99-0569 1 missing PERCENT subsightings'
 
                            ,'2000 WIDP99-0556 1'
+                           ,'2000 WIDP99-0556 1 with slopes in cm'
                            ,'2000 WIDP99-0556 1 with NA slopes'
                            ,'2000 WIDP99-0556 1 with absent slopes'
                            ,'2000 WIDP99-0556 1 slope unit PCT'
                            ,'2000 WSDP99-0531 1'
                            )
                    ,'PROTOCOL'=c('WADEABLE','WADEABLE','WADEABLE','WADEABLE'
-                                ,'WADEABLE','WADEABLE','WADEABLE','WADEABLE'
+                                ,'WADEABLE','WADEABLE','WADEABLE','WADEABLE','WADEABLE'
                                 ,'WADEABLE','WADEABLE','WADEABLE','WADEABLE'
                                 ,'BOATABLE','BOATABLE','BOATABLE','BOATABLE'
-                                ,'BOATABLE'
+                                ,'BOATABLE','BOATABLE'
                                 )
                    ,stringsAsFactors=FALSE
                    )
@@ -4320,7 +4534,15 @@ nrsaSlopeBearingTest.makeExpectedResults <- function()
                               ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
                                          ,'xbearing','sinu','pctClinometer'
                                          )
-                              ,'VALUE'=c('0.588307961','0.588307961','0.371371587','10','15.000'
+                              ,'VALUE'=c('1.026666667','1.026666667','0.648035969','10','15.000'  # Corrected xslope & xslope_field, was 0.588307961; vslope was 0.371371587
+                                         ,'161.8415','1.66858','0'
+                                         )
+                              )
+                   ,data.frame('SITE'='2003 WWYP99-0659 1 no subsightings'
+                              ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
+                                         ,'xbearing','sinu','pctClinometer'
+                                         )
+                              ,'VALUE'=c('1.026666667','1.026666667','0.648035969','10','15.000'  # Corrected xslope & xslope_field, was 0.588307961; vslope was 0.371371587
                                          ,'161.8415','1.66858','0'
                                          )
                               )
@@ -4328,7 +4550,7 @@ nrsaSlopeBearingTest.makeExpectedResults <- function()
                               ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
                                          ,'xbearing','sinu','pctClinometer'
                                          )
-                              ,'VALUE'=c('0.588307961','0.588307961','0.371371587','10','15.000'
+                              ,'VALUE'=c('1.026666667','1.026666667','0.648035969','10','15.000'  # Corrected xslope & xslope_field, was 0.588307961; vslope was 0.371371587
                                          ,'161.8415','1.66858','0'
                                          )
                               )
@@ -4336,7 +4558,7 @@ nrsaSlopeBearingTest.makeExpectedResults <- function()
                               ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
                                          ,'xbearing','sinu','pctClinometer'
                                          )
-                              ,'VALUE'=c('0.588283195','0.588283195','0.371371003','10','15.000'
+                              ,'VALUE'=c('1.026666667','1.026666667','0.648035969','10','15.000'  # Corrected xslope & xslope_field, was 0.588307961; vslope was 0.371371587
                                          ,'161.8415','1.66858','0'
                                          )
                               )
@@ -4373,6 +4595,14 @@ nrsaSlopeBearingTest.makeExpectedResults <- function()
                                          )
                               )
                    ,data.frame('SITE'='2000 WIDP99-0556 1'
+                              ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
+                                         ,'xbearing','sinu','pctClinometer'
+                                         )
+                              ,'VALUE'=c('0.18000','0.18000','0.04216','10','600.00'
+                                         ,'59.395','1.23583','0'
+                                         )
+                              )
+                   ,data.frame('SITE'='2000 WIDP99-0556 1 with slopes in cm'
                               ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
                                          ,'xbearing','sinu','pctClinometer'
                                          )
@@ -4483,7 +4713,15 @@ nrsaSlopeBearingTest.makeExpectedResultsWithGIS <- function()
                               ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
                                          ,'xbearing','sinu','pctClinometer'
                                          )
-                              ,'VALUE'=c('0.588307961','0.588307961','0.371371587','10','15.000'
+                              ,'VALUE'=c('1.026666667','1.026666667','0.648035969','10','15.000'    # Corrected xslope & xslope_field, was 0.588307961; vslope was 0.371371587
+                                         ,'161.8415','1.66858','0'
+                                         )
+                              )
+                   ,data.frame('SITE'='2003 WWYP99-0659 1 no subsightings'
+                              ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
+                                         ,'xbearing','sinu','pctClinometer'
+                                         )
+                              ,'VALUE'=c('1.026666667','1.026666667','0.648035969','10','15.000'  # Corrected xslope & xslope_field, was 0.588307961; vslope was 0.371371587
                                          ,'161.8415','1.66858','0'
                                          )
                               )
@@ -4491,7 +4729,7 @@ nrsaSlopeBearingTest.makeExpectedResultsWithGIS <- function()
                               ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
                                          ,'xbearing','sinu','pctClinometer'
                                          )
-                              ,'VALUE'=c('0.588307961','0.588307961','0.371371587','10','15.000'
+                              ,'VALUE'=c('1.026666667','1.026666667','0.648035969','10','15.000'  # Corrected xslope & xslope_field, was 0.588307961; vslope was 0.371371587
                                          ,'161.8415','1.66858','0'
                                          )
                               )
@@ -4499,7 +4737,7 @@ nrsaSlopeBearingTest.makeExpectedResultsWithGIS <- function()
                               ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
                                          ,'xbearing','sinu','pctClinometer'
                                          )
-                              ,'VALUE'=c('0.588283195','0.588283195','0.371371003','10','15.000'
+                              ,'VALUE'=c('1.026666667','1.026666667','0.648035969','10','15.000'  # Corrected xslope & xslope_field, was 0.588307961; vslope was 0.371371587
                                          ,'161.8415','1.66858','0'
                                          )
                               )
@@ -4536,6 +4774,14 @@ nrsaSlopeBearingTest.makeExpectedResultsWithGIS <- function()
                                          )
                               )
                    ,data.frame('SITE'='2000 WIDP99-0556 1'
+                              ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
+                                         ,'xbearing','sinu','pctClinometer'
+                                         )
+                              ,'VALUE'=c('0.18000','0.18000','0.04216','10','600.00'
+                                         ,'59.395','1.23583','0'
+                                         )
+                              )
+                   ,data.frame('SITE'='2000 WIDP99-0556 1 with slopes in cm'
                               ,'METRIC'=c('xslope_field','xslope','vslope','nslp','transpc'
                                          ,'xbearing','sinu','pctClinometer'
                                          )
