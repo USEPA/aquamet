@@ -41,6 +41,15 @@ portion of the physical habitat metrics for National Rivers
 and Streams Assessment (NRSA) data.  The function requires a 
 data frame containing the channel depth data file.
 }
+\examples{
+head(chandepthEx) 
+
+bLitDep <- subset(chandepthEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER \%in\% c('POLE','SONAR'))
+
+litDepOut <- nrsaLittoralDepth(bLitDep)
+print(litDepOut)
+
+}
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}

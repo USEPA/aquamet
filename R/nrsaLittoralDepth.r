@@ -29,6 +29,14 @@
 #' Descriptions for all metrics are included in 
 #' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
 #' documentation.
+#' @examples 
+#' head(chandepthEx) 
+#' 
+#' bLitDep <- subset(chandepthEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER %in% c('POLE','SONAR'))
+#' 
+#' litDepOut <- nrsaLittoralDepth(bLitDep)
+#' print(litDepOut)
+#' 
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 

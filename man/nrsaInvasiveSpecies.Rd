@@ -47,6 +47,26 @@ portion of the physical habitat metrics for National Rivers and
 Streams Assessment (NRSA) data.  The function requires a data 
 frame containing the invasive species/legacy riparian trees data file.
 }
+\examples{
+head(invlegEx,10)
+# This example has no invasive species present
+invspp <- subset(invlegEx, PARAMETER=='SPECIES' & VALUE!='SNAG') \%>\%
+   plyr::mutate(value=1) \%>\%
+   reshape2::dcast(SITE+TRANSECT~VALUE) \%>\%
+   merge(subset(invlegEx, PARAMETER=='NO_INVASIVES' & VALUE=='X'), by=c('SITE','TRANSECT'), all=T) \%>\%
+   dplyr::filter(VALUE!='X') \%>\% # This selects transects where NO_INVASIVES is not 'X' (where invasives occur)
+   dplyr::select(-SAMPLE_TYPE, -PARAMETER, -VALUE, -FLAG, -UNITS) \%>\%
+   reshape2::melt(id.vars=c('SITE','TRANSECT'), variable.name='PARAMETER', value.name='VALUE')
+   
+unique(as.character(invspp$PARAMETER))
+
+noinv <- subset(invlegEx, PARAMETER=='NO_INVASIVES')     
+   
+invasiveOut <- nrsaInvasiveSpecies(none = noinv)
+
+invasiveOut
+
+}
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}

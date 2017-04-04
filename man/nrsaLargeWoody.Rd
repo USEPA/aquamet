@@ -159,6 +159,10 @@ and Streams Assessment (NRSA) data.  The function requires data
 frames containing the thalweg, channel geometry, bank 
 geometry, large woody debris, and stream verification form data files.
 }
+\examples{
+See Bed Stability vignette for example of calculating large woody debris metrics.
+  
+}
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
