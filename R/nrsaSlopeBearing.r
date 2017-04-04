@@ -223,6 +223,7 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #            at-transect location in boatable reaches). Updated argument 
 #            descriptions.
 #    3/16/16 cws Removed old UID column name from documentation
+#    3/22/17 cws Added some comments for the slope units conversion. That stuff looks odd.
 #
 # Arguments:
 # bBearing          dataframe containing bearing values recorded in the field 
@@ -409,7 +410,6 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
     }
   intermediateMessage('.2')
 
-
   # Calculate transect spacing TRANSPC from incremental DISTANCE values.
   # Calculate incremental proportion values from DISTANCE and TRANSPC.
   # Handle TRANSPC as a parameter in a separate dataframe.  Boatable reaches
@@ -495,22 +495,22 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 
   # Convert mix of slopes in cm and percent to all percent.
   sb$SLOPE <-  ifelse(sb$SITE %in% sbWadeable$SITE 
-                      # subset(protocols, PROTOCOL %in% c('WADEABLE','NONE'))$SITE
                      ,ifelse(sb$UNITS.SLOPE %in% c('PERCENT')
                             ,as.numeric(sb$SLOPE)
                             ,ifelse(sb$UNITS.SLOPE %in% c('CM','NONE')
-                                   ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
-                                                 (sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   # ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
+                                   #               (sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   ,100 * as.numeric(sb$SLOPE)/(sb$TRANSPC*100 * sb$PROPORTION/100)
                                    ,NA
                                    )
                             )
               ,ifelse(sb$SITE %in% sbBoatable$SITE 
-                      # subset(protocols, PROTOCOL=='BOATABLE')$SITE
                      ,ifelse(sb$UNITS.SLOPE %in% c('PERCENT','NONE')
                             ,as.numeric(sb$SLOPE)
-                            ,ifelse(sb$UNITS.SLOPE %in% c('CM')
-                                   ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
-                                                 (sb$TRANSPC*100 * sb$PROPORTION/100))
+                            ,ifelse(sb$UNITS.SLOPE %in% c('CM')            # Note: This section of code is not currently tested in the unit test
+                                   # ,(360/(2*pi))*tan(as.numeric(sb$SLOPE)/
+                                   #               (sb$TRANSPC*100 * sb$PROPORTION/100))
+                                   ,100 * as.numeric(sb$SLOPE)/(sb$TRANSPC*100 * sb$PROPORTION/100)
                                    ,NA
                                    )
                             )
@@ -569,7 +569,6 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 
   intermediateMessage('.6')
 
-   
   #########################################################################
   # Intermediate calculations over entire reach
   # totEast   distance East travelled from start to end of reach
