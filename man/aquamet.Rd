@@ -9,4 +9,3 @@
 aquamet: Calculate metrics used in NRSA and NLA
 }
 \keyword{package}
-

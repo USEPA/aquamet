@@ -167,4 +167,3 @@ See Bed Stability vignette for example of calculating large woody debris metrics
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
 }
-
