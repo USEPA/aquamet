@@ -146,7 +146,7 @@ test_that("MMI fish metric values correct",
 # Create data frame of log10(watershed area) values
 
 lwsarea <- data.frame(UID=c(11222, 11703, 11711, 12384, 14080, 14275, 14315, 15194, 15196, 15198)
-                      ,LWSAREA=c(3.88120,6.37310,6.37530,3.81080,0.55011,4.41280,2.80430,2.28930,2.45630,2.02670))
+                      ,LWSAREA=c(3.88288,6.36191,6.36425,3.81217,-1.02872,4.41280,2.80386,2.28921,2.45688,2.02662))
 fishws_test <- merge(fishMet_test,lwsarea,by='UID') %>% merge(ecoTest,by='UID')
 # Put fish metrics in wide format
 fishws_test.1 <- reshape2::dcast(fishws_test,UID+SAMPLE_TYPE+LWSAREA+AGGR_ECO9_2015~PARAMETER,value.var='RESULT')
