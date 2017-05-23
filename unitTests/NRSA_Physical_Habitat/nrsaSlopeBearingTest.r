@@ -33,6 +33,8 @@ nrsaSlopeBearingTest <- function()
 # 2000 WAZP99-0569 1 no incremnt     Stream with no incremnt information
 # 2000 WAZP99-0569 1 no slopes       Stream with no slope information
 # 2000 WAZP99-0569 1 only 2 slopes   Stream with insufficient slope information
+# 2014 CARO-1043 1                   Stream with mixed slope units, no subsightings
+# 2015 AKBB-018 1                    Stream with pct slope units, 2 blank units
 #
 # 2000 WIDP99-0556 1                 River with some supplemental readings
 # 2000 WIDP99-0556 1 with slopes in cm River with some supplemental readings with slopes expressed as elevations that have same results.  #### NEW
@@ -118,6 +120,7 @@ nrsaSlopeBearingTest <- function()
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                       )))
                                                 ,PARAMETER = NULL
+                                                ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                 )                                         
                                ,gisSinuosity = NULL
                                ,gisSlope = NULL
@@ -177,13 +180,14 @@ nrsaSlopeBearingTest <- function()
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                       )))
                                                ,PARAMETER = NULL
+                                               ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                )                                         
                                ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
                                ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
                                )
     results <- results[order(results$SITE, results$METRIC),]
     results$VALUE <- as.numeric(results$VALUE)
-    
+
     expectedWithGIS <- expectedWithGIS[order(expectedWithGIS$SITE, expectedWithGIS$METRIC),]
     expectedWithGIS$VALUE <- as.numeric(expectedWithGIS$VALUE)
     errs <- dfCompare(expectedWithGIS, results, c('SITE','METRIC'), zeroFudge=1e-4)
@@ -232,6 +236,7 @@ nrsaSlopeBearingTest <- function()
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                        )))
                                                 ,PARAMETER = NULL
+                                                ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                 )                                         
                                ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
                                ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
@@ -287,6 +292,7 @@ nrsaSlopeBearingTest <- function()
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                       )))
                                                ,PARAMETER = NULL
+                                               ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                )                                         
                                ,gisSinuosity = NULL
                                ,gisSlope = NULL
@@ -344,6 +350,7 @@ nrsaSlopeBearingTest <- function()
                                                         ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                          )))
                                                  ,PARAMETER = NULL
+                                                 ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                  )                                         
                                  ,gisSinuosity = NULL
                                  ,gisSlope = NULL
@@ -400,6 +407,7 @@ nrsaSlopeBearingTest <- function()
                                                         ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                          )))
                                                  ,PARAMETER = NULL
+                                                 ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                  )                                         
                                  ,gisSinuosity = NULL
                                  ,gisSlope = NULL
@@ -5207,13 +5215,282 @@ nrsaSlopeBearingTest.makeThalweg <- function()
                           "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
                           "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
                           "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
-
-        
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 14 "DEPTH" 1.5 NA "CM"
+                          #"2015 AKBB-018 1" "PHAB_THALW" "D" 15 "DEPTH" 1.5 NA "CM" # actual data has this extra station.
                         ')
     thaldata <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
     close(tc)
     return(thaldata)
 }
+
 
 nrsaSlopeBearingTest.makeChannelGeometry <- function()
 # Create dataframe of channel geometry data for unit test
@@ -6041,7 +6318,69 @@ nrsaSlopeBearingTest.makeChannelGeometry <- function()
                           "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE2" "2" "NONE" "TR" NA
                           "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE2" "10" "NONE" "TR" NA
                           "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE3" "0" "NONE" "TR" NA
-                        ')
+#                         "SITE" "SAMPLE_TYPE" "TRANSECT" "LINE" "BANK" "TRANLINE" "PARAMETER" "VALUE" "UNITS" "METHOD" "FLAG"
+#                         "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "50" "NONE" "TR" NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        A   NA NONE     NONE     BEARING     320   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        B   NA NONE     NONE     BEARING     320   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        C   NA NONE     NONE     BEARING     320   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        D   NA NONE     NONE     BEARING     347   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        E   NA NONE     NONE     BEARING     347   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        F   NA NONE     NONE     BEARING     331   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        G   NA NONE     NONE     BEARING     331   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        H   NA NONE     NONE     BEARING     331   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        I   NA NONE     NONE     BEARING     320   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        J   NA NONE     NONE     BEARING     320   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        A   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        B   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        C   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        D   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        E   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        F   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        G   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        H   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        I   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        J   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        A   NA NONE     NONE       SLOPE       0   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        B   NA NONE     NONE       SLOPE       0   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        C   NA NONE     NONE       SLOPE       0   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        D   NA NONE     NONE       SLOPE       4   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        E   NA NONE     NONE       SLOPE       1   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        F   NA NONE     NONE       SLOPE       0   CM    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        G   NA NONE     NONE       SLOPE       0   CM    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        H   NA NONE     NONE       SLOPE       0   CM    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        I   NA NONE     NONE       SLOPE       0   CM    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        J   NA NONE     NONE       SLOPE       1   CM    TR   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        A   NA NONE     NONE   BEARING   138 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        B   NA NONE     NONE   BEARING   120 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        C   NA NONE     NONE   BEARING   120 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        D   NA NONE     NONE   BEARING   116 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        E   NA NONE     NONE   BEARING   130 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        F   NA NONE     NONE   BEARING   138 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        G   NA NONE     NONE   BEARING   148 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        H   NA NONE     NONE   BEARING   148 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        I   NA NONE     NONE   BEARING   126 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        J   NA NONE     NONE   BEARING   110 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        A   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        B   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        C   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        D   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        E   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        F   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        G   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        H   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        I   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        J   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        A   NA NONE     NONE     SLOPE   4.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        B   NA NONE     NONE     SLOPE   5.5 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        C   NA NONE     NONE     SLOPE   5.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        D   NA NONE     NONE     SLOPE   5.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        E   NA NONE     NONE     SLOPE   4.5 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        F   NA NONE     NONE     SLOPE   5.5 ""          ""   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        G   NA NONE     NONE     SLOPE   6.0 ""          ""   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        H   NA NONE     NONE     SLOPE   4.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        I   NA NONE     NONE     SLOPE   4.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        J   NA NONE     NONE     SLOPE   4.5 PERCENT     CL   NA
+                         ')
     rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
     close(tc)
     return(rc)
@@ -7562,6 +7901,8 @@ nrsaSlopeBearingTest.makeProtocols <- function()
                             '2000 WIDP99-0556 1 with absent slopes' BOATABLE
                             '2000 WIDP99-0556 1 slope unit PCT' BOATABLE
                             '2000 WSDP99-0531 1' BOATABLE
+                            '2014 CARO-1043 1' WADEABLE
+                            '2015 AKBB-018 1' WADEABLE
                         ")
     rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
     close(tc)
@@ -7739,6 +8080,22 @@ nrsaSlopeBearingTest.makeExpectedResults <- function()
                              '2000 WSDP99-0531 1'      xbearing           51.499
                              '2000 WSDP99-0531 1'          sinu          2.33470
                              '2000 WSDP99-0531 1' pctClinometer                0
+                               '2014 CARO-1043 1'          nslp               10
+                               '2014 CARO-1043 1' pctClinometer               50
+                               '2014 CARO-1043 1'          sinu 1.01637308274482
+                               '2014 CARO-1043 1'       transpc               16
+                               '2014 CARO-1043 1'        vslope 1.26671121083958
+                               '2014 CARO-1043 1'      xbearing 328.653856558643
+                               '2014 CARO-1043 1'        xslope          0.50625
+                               '2014 CARO-1043 1'  xslope_field          0.50625
+                                '2015 AKBB-018 1'          nslp               10
+                                '2015 AKBB-018 1' pctClinometer               80
+                                '2015 AKBB-018 1'          sinu  1.0245505113752
+                                '2015 AKBB-018 1'       transpc               15
+                                '2015 AKBB-018 1'        vslope 1.83072541784822
+                                '2015 AKBB-018 1'      xbearing 129.385874766173
+                                '2015 AKBB-018 1'        xslope 3.72666666666667
+                                '2015 AKBB-018 1'  xslope_field 3.72666666666667
                          ")
     rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
     close(tc)
@@ -8101,6 +8458,22 @@ nrsaSlopeBearingTest.makeExpectedResultsWithGIS <- function()
   'An extra reach not in the main expected results'    xslope_map   1.5999999999999
   'An extra reach not in the main expected results'          sinu       1.101010101
   'An extra reach not in the main expected results' pctClinometer           0.00000
+                                 '2014 CARO-1043 1'          nslp               10
+                                 '2014 CARO-1043 1' pctClinometer               50
+                                 '2014 CARO-1043 1'          sinu 1.01637308274482
+                                 '2014 CARO-1043 1'       transpc               16
+                                 '2014 CARO-1043 1'        vslope 1.26671121083958
+                                 '2014 CARO-1043 1'      xbearing 328.653856558643
+                                 '2014 CARO-1043 1'        xslope          0.50625
+                                 '2014 CARO-1043 1'  xslope_field          0.50625
+                                  '2015 AKBB-018 1'          nslp               10
+                                  '2015 AKBB-018 1' pctClinometer               80
+                                  '2015 AKBB-018 1'          sinu  1.0245505113752
+                                  '2015 AKBB-018 1'       transpc               15
+                                  '2015 AKBB-018 1'        vslope 1.83072541784822
+                                  '2015 AKBB-018 1'      xbearing 129.385874766173
+                                  '2015 AKBB-018 1'        xslope 3.72666666666667
+                                  '2015 AKBB-018 1'  xslope_field 3.72666666666667
                          ")
     rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
     close(tc)
