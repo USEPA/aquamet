@@ -38,7 +38,8 @@ nrsaSlopeBearingTest.simplifiedArguments <- function()
     nrsaSlopeBearingTest.simplifiedArguments.missingUNITS()
     nrsaSlopeBearingTest.simplifiedArguments.missingMETHOD()
     # nrsaSlopeBearingTest.simplifiedArguments.missingUNITSandMETHOD()
-    nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0()
+    nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_A()
+    nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_B()
     nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine012()
     nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine0()
     nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine012()
@@ -159,7 +160,8 @@ nrsaSlopeBearingTest.simplifiedArguments.missingMETHOD <- function()
     checkEquals(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), "Incorrect handling of missing methods")
 }
 
-nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0 <- function()
+nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_A <- function()
+# Tests simplest case in which all transects have identical numbers of backsightings
 {
     base <- data.frame(TRANSECT=rep(c('A','B','C','D'), each=3), LINE=rep(0:2, times=4), stringsAsFactors=FALSE)
     expected <- rbind(data.frame(SITE=1, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
@@ -191,6 +193,42 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0 <- f
                               )
     dd <- dfCompare(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), c('SITE','METRIC'), zeroFudge=1e-14)
     checkEquals(NULL, dd, "Incorrect handling of backsighted elevation slopes only provided at LINE 0")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_B <- function()
+# Tests case in which transects have differing numbers of backsightings
+{
+    #base <- data.frame(TRANSECT=rep(c('A','B','C','D'), each=3), LINE=rep(0:2, times=4), stringsAsFactors=FALSE)
+    base <- data.frame(TRANSECT=c('A','A','B','B','C','C','C','D','D','D'), LINE=c(0:1,0:1,0:2,0:2), stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
+                                ,pctClinometer=0, vslope=sqrt(sum((c(.1,.2,.3,.4)-.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ,data.frame(SITE=2, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
+                                ,pctClinometer=100, vslope=sqrt(sum((c(.1,.2,.3,.4)-0.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200, 150))))
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=c(10,'', 10,NA, 3.3,3.3,3.4, 5,5,0))
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=c(1,'', 2,NA, 3,NA,NA, 4,NA,''), METHOD='TR', UNITS='CM')
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200,150))))
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=c(100,'', 100,NA, 33,33,34, 50,50,0))
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,'', 2,NA, 3,NA,NA, 4,NA,''), METHOD='CL', UNITS='CM')
+                              ,gisSinuosity =     NULL
+                              ,gisSlope =         NULL
+                              )
+    dd <- dfCompare(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), c('SITE','METRIC'), zeroFudge=1e-14)
+    checkEquals(NULL, dd, "Incorrect handling of backsighted elevation slopes only provided at LINE 0, transects having differing numbers of suplemental backsightings")
 }
 
 nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine012 <- function()
