@@ -4,7 +4,7 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2017-01-30" />
+<meta name="date" content="2017-05-03" />
 
 <title>Calculating Relative Bed Stability</title>
 
@@ -52,7 +52,7 @@ code > span.er { color: #ff0000; font-weight: bold; }
 
 <h1 class="title toc-ignore">Calculating Relative Bed Stability</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2017-01-30</em></h4>
+<h4 class="date"><em>2017-05-03</em></h4>
 
 
 
@@ -446,8 +446,8 @@ bedstabOut &lt;-<span class="st"> </span><span class="kw">nrsaBedStability</span
 ## [21] &quot;ldcbf_g08&quot;     &quot;s_ldcbf_g08&quot;   &quot;lrbs_g08&quot;      &quot;s_lrbs_g08&quot;</code></pre>
 <pre class="sourceCode r"><code class="sourceCode r"><span class="kw">subset</span>(bedstabOut, METRIC==<span class="st">'lrbs_g08'</span>)</code></pre>
 <pre><code>##     SITE   METRIC     VALUE
-## 89 10000 lrbs_g08 -2.330207
-## 90 10002 lrbs_g08 -3.797863
+## 89 10000 lrbs_g08 -2.549066
+## 90 10002 lrbs_g08 -4.088021
 ## 91 13799 lrbs_g08  1.933206
 ## 92 13904 lrbs_g08 -1.250798</code></pre>
 </div>
@@ -459,7 +459,7 @@ bedstabOut &lt;-<span class="st"> </span><span class="kw">nrsaBedStability</span
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>

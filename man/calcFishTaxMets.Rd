@@ -80,4 +80,3 @@ if a non-native status variable is included in the input count data.
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }
-
