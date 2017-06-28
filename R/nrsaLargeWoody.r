@@ -264,6 +264,11 @@ nrsaLargeWoody <- function(bCounts=NULL
 #            May expand those code definition arguments to include size 
 #            information.
 #    3/01/16 cws Documenting arguments in comments at top.  Removed old code.
+#    6/28/17 cws R v 3.3.0 dplyr::mutate() now stops with an error if the 
+#            dataframe has zero rows; under 3.1.0 it added a column to the zero 
+#            row dataframe and went on.  This means the unit test no longer works.
+#            The creation of the reachlen dataframe based on df2 was jiggered to
+#            to handle this case, and now the unit test works.
 #
 # Arguments:
 # bCounts       dataframe containing large woody debris class counts at each 
@@ -482,7 +487,11 @@ nrsaLargeWoody <- function(bCounts=NULL
 
 
 #reachlen
-   reachlen <- mutate(df2, METRIC = 'reachlen')
+    if(nrow(df2)==0) {
+        reachlen <- data.frame(SITE=1L, VALUE=1, METRIC='reachlen') %>% subset(FALSE)
+    } else {
+        reachlen <- mutate(df2, METRIC = 'reachlen')
+    }
 #   thal$TRANSECT <- NULL
 #   thal$STATION <- NULL
 #   thal$SAMPLE_TYPE <- NULL
