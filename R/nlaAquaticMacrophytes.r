@@ -1,4 +1,4 @@
-metsAquaticMacrophytes <- function(df) {
+metsAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, total=NULL) {
 
 ################################################################################
 # Function: metsAquaticMacrophytes
@@ -29,6 +29,10 @@ metsAquaticMacrophytes <- function(df) {
 #            described above: 1103 NA and 0 values absent as above, but only one
 #            difference due to floating point issues, AMVFLOATING at 8465.
 #   06/12/14 tmk: Removed calls to the require() function.
+#    6/29/17 cws Renamed from metsAquaticMacrophytes to nlaAquaticMacrophytes.
+#            Changed argument from single dataframe to one dataframe per value,
+#            as was done with the NRSA metrics functions.
+#
 # Arguments:
 #   df = a data frame containing aquatic macrophyte data.  The data frame must
 #     include columns that are named as follows:
@@ -56,9 +60,16 @@ metsAquaticMacrophytes <- function(df) {
 ################################################################################
 
   # Print initial messages
-  cat('Aquatic Macrophyte calculations:\n')
   intermediateMessage('Aquatic Macrophyte mets', loc='start')
 
+    # Standardize arguments, then combine them into single dataframe as expected
+    # in the rest of the function
+    
+    
+    
+    # End of changes to function, subsequent lines are unmodified.
+    
+    
   # Subset the input data frame
   amData <- subset(df, PARAMETER %in% c('AM_EMERGENT', 'AM_FLOATING'
                                      ,'AM_SUBMERGENT', 'AM_TOTALCOVER'
