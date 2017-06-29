@@ -2,7 +2,7 @@
 % Please edit documentation in R/NLAphab_indicators.r
 \name{nlaDrawdownIndicator}
 \alias{nlaDrawdownIndicator}
-\title{Calculate NLA drawdown indicator}
+\title{Calculate NLA Drawdown Indicator}
 \usage{
 nlaDrawdownIndicator(x, sampID, bfxVertDD, bfxHorizDD, ecoreg, lake_origin)
 }

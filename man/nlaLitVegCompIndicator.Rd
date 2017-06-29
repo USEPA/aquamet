@@ -2,11 +2,11 @@
 % Please edit documentation in R/NLAphab_indicators.r
 \name{nlaLitVegCompIndicator}
 \alias{nlaLitVegCompIndicator}
-\title{Calculate NLA littoral Vegetation complexity indicator}
+\title{Calculate NLA Littoral Vegetation Complexity Indicator}
 \usage{
-nlaLitVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, rdis_ix,
-  hiiAg, ecoreg, fciNatural, fcfcSnag, amfcFloating, amfcEmergent, fcfcBoulders,
-  fcfcBrush, fcfcLedges, fcfcLiveTrees, fcfcOverhang)
+nlaLitVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, ecoreg,
+  fciNatural, fcfcSnag, amfcFloating, amfcEmergent, fcfcBoulders, fcfcBrush,
+  fcfcLedges, fcfcLiveTrees, fcfcOverhang)
 }
 \arguments{
 \item{x}{Input data frame containing other variables as specified in
@@ -25,14 +25,6 @@ or 'MAN_MADE'}
 \item{area}{Area of lake or reservoir, in square kilometers}
 
 \item{elev}{Lake surface elevation (meters above sea level)}
-
-\item{rdis_ix}{Riparian disturbance (lakeshore anthropogenic disturbance)
-indicator, which can be calculated using \code{nlaRipDistIndicator()} 
-function.}
-
-\item{hiiAg}{NLA physical habitat index of agricultural influences
-based on weighted mean human influence metrics for crops, pasture, 
-and orchards. Calculated by the function \code{metsHumanImpact()}}
 
 \item{ecoreg}{Lake ecoregion, based on aggregated Omernick ecoregions,
 with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.}

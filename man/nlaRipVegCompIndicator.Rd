@@ -2,11 +2,11 @@
 % Please edit documentation in R/NLAphab_indicators.r
 \name{nlaRipVegCompIndicator}
 \alias{nlaRipVegCompIndicator}
-\title{Calculate NLA riparian Vegetation complexity indicator}
+\title{Calculate NLA Riparian Vegetation Complexity Indicator}
 \usage{
-nlaRipVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, rdis_ix,
-  hiiAg, ecoreg, rviWoody, rvfcGndInundated, rvfcUndWoody, rvfcGndWoody,
-  rvfpCanBig, ssfcBedrock, ssfcBoulders)
+nlaRipVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, ecoreg,
+  rviWoody, rvfcGndInundated, rvfcUndWoody, rvfcGndWoody, rvfpCanBig,
+  ssfcBedrock, ssfcBoulders)
 }
 \arguments{
 \item{x}{Input data frame containing other variables as specified in
@@ -26,14 +26,6 @@ or 'MAN_MADE'}
 
 \item{elev}{Lake surface elevation (meters above sea level)}
 
-\item{rdis_ix}{Riparian disturbance (lakeshore anthropogenic disturbance)
-indicator, which can be calculated using \code{nlaRipDistIndicator()} 
-function.}
-
-\item{hiiAg}{NLA physical habitat index of agricultural influences
-based on weighted mean human influence metrics for crops, pasture, 
-and orchards. Calculated by the function \code{metsHumanImpact()}}
-
 \item{ecoreg}{Lake ecoregion, based on aggregated Omernick ecoregions,
 with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.}
 
@@ -49,14 +41,14 @@ calculated by function \code{metsRiparianVegetationNLA()}}
 \item{rvfcGndWoody}{Fraction of ground cover as woody vegetation,
 calculated by function \code{metsRiparianVegetationNLA()}}
 
+\item{rvfpCanBig}{Fraction of canopy as trees with dbh > 30 cm,
+calculated by function \code{metsRiparianVegetationNLA()}}
+
 \item{ssfcBedrock}{Fractional shoreline cover of bedrock, calculated
 by function \code{metsShorelineSubstrate()}.}
 
 \item{ssfcBoulders}{Fractional shoreline cover of boulders, calculated
 by function \code{metsShorelineSubstrate()}.}
-
-\item{rvfcCanBig}{Fraction of canopy as trees with dbh > 30 cm,
-calculated by function \code{metsRiparianVegetationNLA()}}
 }
 \value{
 A data frame containing:

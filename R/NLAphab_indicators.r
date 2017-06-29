@@ -1,5 +1,5 @@
 #' @export
-#' @title Calculate NLA riparian Vegetation complexity indicator
+#' @title Calculate NLA Riparian Vegetation Complexity Indicator
 #' 
 #' @description Using metric values and various predictors as inputs, calculate 
 #' indicator score for RVegQc3OE, the observed over expected value for
@@ -24,14 +24,6 @@
 #' 
 #' @param elev Lake surface elevation (meters above sea level)
 #' 
-#' @param rdis_ix Riparian disturbance (lakeshore anthropogenic disturbance)
-#' indicator, which can be calculated using \code{nlaRipDistIndicator()} 
-#' function. 
-#' 
-#' @param hiiAg NLA physical habitat index of agricultural influences
-#' based on weighted mean human influence metrics for crops, pasture, 
-#' and orchards. Calculated by the function \code{metsHumanImpact()} 
-#' 
 #' @param ecoreg Lake ecoregion, based on aggregated Omernick ecoregions,
 #' with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.
 #' 
@@ -47,7 +39,7 @@
 #' @param rvfcGndWoody Fraction of ground cover as woody vegetation,
 #' calculated by function \code{metsRiparianVegetationNLA()}
 #' 
-#' @param rvfcCanBig Fraction of canopy as trees with dbh > 30 cm,
+#' @param rvfpCanBig Fraction of canopy as trees with dbh > 30 cm,
 #' calculated by function \code{metsRiparianVegetationNLA()}
 #' 
 #' @param ssfcBedrock Fractional shoreline cover of bedrock, calculated
@@ -72,26 +64,34 @@
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
 
-nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_ix,hiiAg,ecoreg
+nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,rviWoody,rvfcGndInundated,rvfcUndWoody,rvfcGndWoody
                                    ,rvfpCanBig,ssfcBedrock,ssfcBoulders){
   
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
-  dfIn <- plyr::rename(x,c(lat='lat',lon='lon',lake_origin='lake_origin',area='area'
-                           ,elev='elev',rdis_ix='rdis_ix',hiiAg='hiiAg',ecoreg='ecoreg'
-                           ,rviWoody='rviWoody',rvfcGndInundated='rvfcGndInundated'
-                           ,rvfcUndWoody='rvfcUndWoody',rvfcGndWoody='rvfcGndWoody'
-                           ,rvfcCanBig='rvfcCanBig',ssfcBedrock='ssfcBedrock'
-                           ,ssfcBoulders='ssfcBoulders')) %>%
-    plyr::mutate(reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
+  names(x)[names(x)==lat] <- 'lat'
+  names(x)[names(x)==lon] <- 'lon'
+  names(x)[names(x)==lake_origin] <- 'lake_origin'
+  names(x)[names(x)==area] <- 'area'
+  names(x)[names(x)==elev] <- 'elev'
+  names(x)[names(x)==ecoreg] <- 'ecoreg'
+  names(x)[names(x)==rviWoody] <- 'rviWoody'
+  names(x)[names(x)==rvfcGndInundated] <- 'rvfcGndInundated'
+  names(x)[names(x)==rvfcUndWoody] <- 'rvfcUndWoody'
+  names(x)[names(x)==rvfcGndWoody] <- 'rvfcGndWoody'
+  names(x)[names(x)==rvfpCanBig] <- 'rvfpCanBig'
+  names(x)[names(x)==ssfcBedrock] <- 'ssfcBedrock'
+  names(x)[names(x)==ssfcBoulders] <- 'ssfcBoulders'
+
+  dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                         ,elevXlat=elev*lat
                         ,l_area=log10(area))
   
   # melt dfIn now in preparation for merging with the parameter df being created next
   dfIn.long <- reshape2::melt(dfIn,id.vars=c(sampID,'ecoreg')
                               ,measure.vars=c('lat','lon','l_area','reservoir','elev'
-                                              ,'rdis_ix','hiiAg','elevXlat'),na.rm=T)
+                                              ,'elevXlat'),na.rm=T)
   
   # Create data frame of regression parameters in order to calculate expected values
   expParam <- data.frame(ecoreg=c('NAP','SAP','CPL','UMW','NPL','SPL','TPL','WMT','XER')
@@ -102,16 +102,14 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
                          ,lat = c(-0.03705,NA,NA,NA,NA,NA,NA,-0.01939,-0.02612)
                          ,lon = c(0.01723,0.01012,NA,NA,NA,NA,NA,NA,NA)
                          ,reservoir = c(-0.07954,NA,NA,NA,NA,NA,NA,-0.25957,NA)
-                         ,rdis_ix = c(-0.31865,NA,-0.15193,NA,NA,NA,NA,NA,NA)
                          ,elevXlat = c(NA,NA,-0.00003019,NA,NA,NA,NA,NA,NA)
-                         ,hiiAg = c(rep(NA,4),rep(-0.086385,3),NA,NA)
                          ,elev = c(rep(NA,7),-0.00008953,-0.00013249)
                          ,l_area = c(rep(NA,7),0.07296,NA)
                          ,stringsAsFactors=F) %>%
     reshape2::melt(id.vars=c('ecoreg','intercept','resp','respAdj'),value.name='coef') 
   
   # Merge the two data frames and calculate the expected value for riparian veg complexity
-  dfExp <- merge(dfIn,expParam,by=c('ecoreg','variable')) %>%
+  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) %>%
     dplyr::mutate(coef=ifelse(is.na(coef),0,coef)) %>%
     plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) %>%
     dplyr::mutate(calcVal=sumVal + intercept) %>%
@@ -126,8 +124,8 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
                                   ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssfcBedrock + ssfcBoulders))))
 
   # Now merge the expected and observed values and calculate O/E  
-  dfOE <- dplyr::select(dfObs,sampID,ecoreg,RVegQ) %>% 
-    merge(dfExp[,c(sampID,RVegQc3x15)], by=sampID) %>%
+  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','RVegQ')) %>% 
+    merge(dfExp[,c(sampID,'RVegQc3x15')], by=sampID) %>%
     mutate(RVegQc3OE = RVegQ/RVegQc3x15)
   
   # Create data frame containing O/E thresholds by ECO9 region
@@ -146,7 +144,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
 
 
 #' @export
-#' @title Calculate NLA littoral Vegetation complexity indicator
+#' @title Calculate NLA Littoral Vegetation Complexity Indicator
 #' 
 #' @description Using metric values and various predictors as inputs, calculate 
 #' indicator score for LitCvrQc3OE, the observed over expected value for
@@ -170,14 +168,6 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
 #' @param area Area of lake or reservoir, in square kilometers
 #' 
 #' @param elev Lake surface elevation (meters above sea level)
-#' 
-#' @param rdis_ix Riparian disturbance (lakeshore anthropogenic disturbance)
-#' indicator, which can be calculated using \code{nlaRipDistIndicator()} 
-#' function. 
-#' 
-#' @param hiiAg NLA physical habitat index of agricultural influences
-#' based on weighted mean human influence metrics for crops, pasture, 
-#' and orchards. Calculated by the function \code{metsHumanImpact()} 
 #' 
 #' @param ecoreg Lake ecoregion, based on aggregated Omernick ecoregions,
 #' with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.
@@ -226,21 +216,31 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
 #' @keywords survey
 #' 
 #' 
-nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_ix,hiiAg,ecoreg
+nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,fciNatural,fcfcSnag,amfcFloating,amfcEmergent,fcfcBoulders
                                    ,fcfcBrush,fcfcLedges,fcfcLiveTrees,fcfcOverhang){
   
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
-    dfIn <- plyr::rename(x,c(lat='lat',lon='lon',lake_origin='lake_origin',area='area'
-                           ,elev='elev',rdis_ix='rdis_ix',hiiAg='hiiAg',ecoreg='ecoreg'
-                           ,fciNatural='fciNatural',fcfcSnag='fcfcSnag',amfcFloating='amfcFloating'
-                           ,amfcEmergent='amfcEmergent',fcfcBoulders='fcfcBoulders'
-                           ,fcfcBrush='fcfcBrush',fcfcLedges='fcfcLedges'
-                           ,fcfcLiveTrees='fcfcLiveTrees',fcfcOverhang='fcfcOverhang')) %>%
-    plyr::mutate(reservoir = ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
+  names(x)[names(x)==lat] <- 'lat'
+  names(x)[names(x)==lon] <- 'lon'
+  names(x)[names(x)==lake_origin] <- 'lake_origin'
+  names(x)[names(x)==area] <- 'area'
+  names(x)[names(x)==elev] <- 'elev'
+  names(x)[names(x)==ecoreg] <- 'ecoreg'
+  names(x)[names(x)==fciNatural] <- 'fciNatural'
+  names(x)[names(x)==fcfcSnag] <- 'fcfcSnag'
+  names(x)[names(x)==amfcFloating] <- 'amfcFloating'
+  names(x)[names(x)==amfcEmergent] <- 'amfcEmergent'
+  names(x)[names(x)==fcfcBoulders] <- 'fcfcBoulders'
+  names(x)[names(x)==fcfcBrush] <- 'fcfcBrush'
+  names(x)[names(x)==fcfcLedges] <- 'fcfcLedges'
+  names(x)[names(x)==fcfcLiveTrees] <- 'fcfcLiveTrees'
+  names(x)[names(x)==fcfcOverhang] <- 'fcfcOverhang'
+  
+    dfIn <- plyr::mutate(x, reservoir = ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                  ,elevXlon = elev*lon
-                 ,l_elev = log10(elev)
+                 ,l_elev = log10(elev+1)
                  ,l_area = log10(area)
                  ,amfcFltEmg= amfcFloating + amfcEmergent)
     
@@ -248,7 +248,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
   # melt dfIn now in preparation for merging with the parameter df being created next
   dfIn.long <- reshape2::melt(dfIn,id.vars=c(sampID,'ecoreg')
                               ,measure.vars=c('lat','l_area','reservoir','l_elev'
-                                              ,'rdis_ix','hiiAg','elevXlon','elev'),na.rm=T)
+                                              ,'elevXlon','elev'),na.rm=T)
   
   # Create data frame of regression parameters in order to calculate expected values
   expParam <- data.frame(ecoreg=c('NAP','SAP','CPL','UMW','NPL','SPL','TPL','WMT','XER')
@@ -257,10 +257,8 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
                          ,intercept = c(-0.8598,-0.66613,0.71804,-0.87559,-1.03378,-1.03378
                                         ,-1.03378,-1.10550,0.08706)
                          ,lat = c(NA,NA,NA,NA,NA,NA,NA,0.00407,-0.02849)
-                         ,reservoir = c(NA,NA,NA,NA,0.10822,0.10822,0.10822,NA,NA)
-                         ,rdis_ix = c(-0.28562,-0.51350,-0.12565,NA,NA,NA,NA,NA,NA)
+                         ,reservoir = c(NA,NA,NA,NA,0.10822,0.10822,0.10822,-0.18384,NA)
                          ,elevXlon = c(NA,-0.00000410,NA,NA,NA,NA,NA,NA,NA)
-                         ,hiiAg = c(NA,NA,NA,NA,-0.38197,-0.38197,-0.38197,NA,NA)
                          ,l_elev = c(NA,NA,-0.19300,NA,NA,NA,NA,NA,NA)
                          ,l_area = c(-0.08109,NA,NA,NA,NA,NA,NA,-0.05083,NA)
                          ,elev = c(rep(NA,7),-0.00004299,-0.00003932)
@@ -268,7 +266,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
     reshape2::melt(id.vars=c('ecoreg','intercept','resp','respAdj'),value.name='coef') 
   
   # Merge the two data frames and calculate the expected value for riparian veg complexity
-  dfExp <- merge(dfIn,expParam,by=c('ecoreg','variable')) %>%
+  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) %>%
     plyr::mutate(coef=ifelse(is.na(coef),0,coef)) %>%
     plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) %>%
     dplyr::mutate(calcVal=sumVal + intercept) %>%
@@ -282,8 +280,8 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
                                                     (fcfcSnag/0.2875) + (amfcFltEmg/1.515)))))
   
   # Now merge the expected and observed values and calculate O/E  
-  dfOE <- dplyr::select(dfObs,sampID,ecoreg,LitCvrQ) %>% 
-    merge(dfExp[,c(sampID,LitCvrQc3x15)], by=sampID) %>%
+  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitCvrQ')) %>% 
+    merge(dfExp[,c(sampID,'LitCvrQc3x15')], by=sampID) %>%
     mutate(LitCvrQc3OE = LitCvrQ/LitCvrQc3x15)
   
   # Create data frame containing O/E thresholds by ECO9 region
@@ -295,14 +293,15 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
   # Apply thresholds to O/E to assign condition classes
   dfOut <- merge(dfOE,tholds,by='ecoreg') %>%
     plyr::mutate(LITCVR_COND=ifelse(is.na(LitCvrQc3OE),'Not Assessed',ifelse(LitCvrQc3OE>gf,'Good'
-                                                                      ,ifelse(LitCvrQc3OE>fp,'Fair','Poor'))))
+                                                                      ,ifelse(LitCvrQc3OE>fp,'Fair','Poor')))) %>%
+    subset(select=c(sampID,'LitCvrQ','LitCvrQc3OE','LITCVR_COND'))
   
   
 }
 
 
 #' @export
-#' @title Calculate NLA littoral-riparian Vegetation complexity indicator
+#' @title Calculate NLA Littoral-riparian Vegetation Complexity Indicator
 #' 
 #' @description Using metric values and various predictors as inputs, calculate 
 #' indicator score for LitRipCvrQc3OE, the observed over expected value for
@@ -326,14 +325,6 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
 #' @param area Area of lake or reservoir, in square kilometers
 #' 
 #' @param elev Lake surface elevation (meters above sea level)
-#' 
-#' @param rdis_ix Riparian disturbance (lakeshore anthropogenic disturbance)
-#' indicator, which can be calculated using \code{nlaRipDistIndicator()} 
-#' function. 
-#' 
-#' @param hiiAg NLA physical habitat index of agricultural influences
-#' based on weighted mean human influence metrics for crops, pasture, 
-#' and orchards. Calculated by the function \code{metsHumanImpact()} 
 #' 
 #' @param ecoreg Lake ecoregion, based on aggregated Omernick ecoregions,
 #' with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.
@@ -362,23 +353,29 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_i
 #' @keywords survey
 #' 
 #' 
-nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdis_ix,hiiAg,ecoreg
+nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                       ,rvegq,litcvrq){
   
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
-  dfIn <- plyr::rename(x,c(lat='lat',lon='lon',lake_origin='lake_origin',area='area'
-                           ,elev='elev',rdis_ix='rdis_ix',hiiAg='hiiAg',ecoreg='ecoreg'
-                           ,rvegq='rvegq',litcvrq='litcvrq')) %>%
-    plyr::mutate(reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
+  names(x)[names(x)==lat] <- 'lat'
+  names(x)[names(x)==lon] <- 'lon'
+  names(x)[names(x)==lake_origin] <- 'lake_origin'
+  names(x)[names(x)==area] <- 'area'
+  names(x)[names(x)==elev] <- 'elev'
+  names(x)[names(x)==ecoreg] <- 'ecoreg'
+  names(x)[names(x)==rvegq] <- 'rvegq'
+  names(x)[names(x)==litcvrq] <- 'litcvrq'
+  
+  dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                  ,elevXlon=elev*lon
-                 ,l_elev=log10(elev)
+                 ,l_elev=log10(elev+1)
                  ,l_area=log10(area))
   
   # melt dfIn now in preparation for merging with the parameter df being created next
   dfIn.long <- reshape2::melt(dfIn,id.vars=c(sampID,'ecoreg')
                               ,measure.vars=c('lat','lon','l_area','reservoir','elev'
-                                              ,'rdis_ix','hiiAg','elevXlon','l_elev'),na.rm=T)
+                                              ,'elevXlon','l_elev'),na.rm=T)
   
   # Create data frame of regression parameters in order to calculate expected values
   expParam <- data.frame(ecoreg=c('NAP','SAP','CPL','UMW','NPL','SPL','TPL','WMT','XER')
@@ -388,9 +385,7 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdi
                          ,lat = c(-0.03964,NA,NA,NA,NA,NA,NA,-0.01015,-0.02529)
                          ,lon = c(0.01798,0.03141,NA,NA,NA,NA,NA,NA,NA)
                          ,reservoir = c(-0.08301,NA,NA,NA,NA,NA,NA,-0.22650,NA)
-                         ,rdis_ix = c(-0.34039,NA,-0.14358,NA,NA,NA,NA,NA,NA)
                          ,elevXlon = c(NA,-0.000115130,NA,NA,NA,NA,NA,NA,NA)
-                         ,hiiAg = c(NA,NA,NA,NA,-0.61960,-0.61960,-0.61960,NA,NA)
                          ,l_area = c(NA,NA,NA,NA,NA,NA,NA,0.04200,NA)
                          ,l_elev = c(NA,NA,-0.15322,NA,NA,NA,NA,NA,NA)
                          ,elev = c(NA,-0.00923,NA,NA,NA,NA,NA,-0.00006666,-0.00010090)
@@ -398,7 +393,7 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdi
     reshape2::melt(id.vars=c('ecoreg','intercept','resp','respAdj'),value.name='coef') 
   
   # Merge the two data frames and calculate the expected value for riparian veg complexity
-  dfExp <- merge(dfIn,expParam,by=c('ecoreg','variable')) %>%
+  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) %>%
     plyr::mutate(coef=ifelse(is.na(coef),0,coef)) %>%
     plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) %>%
     dplyr::mutate(calcVal=sumVal + intercept) %>%
@@ -409,8 +404,8 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdi
     plyr::mutate(LitRipCvrQ = (rvegq + litcvrq)/2)
   
   # Now merge the expected and observed values and calculate O/E  
-  dfOE <- dplyr::select(dfObs,sampID,ecoreg,LitRipCvrQ) %>% 
-    merge(dfExp[,c(sampID,LitCvrQc3x15)], by=sampID) %>%
+  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitRipCvrQ')) %>% 
+    merge(dfExp[,c(sampID,'LitRipCvrQc3x15')], by=sampID) %>%
     mutate(LitRipCvrQc3OE = LitRipCvrQ/LitRipCvrQc3x15)
  
   # Create data frame containing O/E thresholds by ECO9 region
@@ -423,14 +418,14 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdi
   dfOut <- merge(dfOE,tholds,by='ecoreg') %>%
     plyr::mutate(LITRIPCVR_COND=ifelse(is.na(LitRipCvrQc3OE),'Not Assessed',ifelse(LitRipCvrQc3OE>gf,'Good'
                                                                           ,ifelse(LitRipCvrQc3OE>fp,'Fair','Poor')))) %>%
-    subset(select=c(sampID,LitRipCvrQ,LitRipCvrQc3OE,LITRIPCVR_COND))
+    subset(select=c(sampID,'LitRipCvrQ','LitRipCvrQc3OE','LITRIPCVR_COND'))
   
   
 }
 
 
 #' @export
-#' @title Calculate NLA lakeshore anthropogenic disturbance indicator
+#' @title Calculate NLA Lakeshore Anthropogenic Disturbance Indicator
 #' 
 #' @description Using metric values as inputs, calculate 
 #' indicator score for RDis_IX, the indicator of lakeshore anthropogenic disturbance. 
@@ -470,23 +465,25 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,rdi
 nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
-  dfIn <- plyr::rename(x,c(hiiAg='hiiAg',hiiNonAg='hiiNonAg',hifpAnyCirca='hifpAnyCirca')) 
+  names(x)[names(x)==hiiAg] <- 'hiiAg'
+  names(x)[names(x)==hiiNonAg] <- 'hiiNonAg'
+  names(x)[names(x)==hifpAnyCirca] <- 'hifpAnyCirca'
   
   # Calculate RDis_IX based on input metrics
-  dfObs <- plyr::mutate(dfIn, RDis_IX = 0.5*(1 - (1/(1 + hiiNonAg + (5*hiiAg))) + hifpAnyCirca))
+  dfObs <- plyr::mutate(x, RDis_IX = 0.5*(1 - (1/(1 + hiiNonAg + (5*hiiAg))) + hifpAnyCirca))
   
   # Assign condition class
   dfOut <- plyr::mutate(dfObs, RDIS_COND = ifelse(is.na(RDis_IX),'Not Assessed',
                                                   ifelse(RDis_IX > 0.75,'Poor',
                                                          ifelse(RDis_IX <= 0.2, 'Good','Fair')))) %>%
-    subset(select=c(sampID,RDis_IX,RDIS_COND))
+    subset(select=c(sampID,'RDis_IX','RDIS_COND'))
     
 }  
 
 
 
 #' @export
-#' @title Calculate NLA drawdown indicator
+#' @title Calculate NLA Drawdown Indicator
 #' 
 #' @description Using metric values as inputs, calculate 
 #' indicator score for lake drawdown, based on both horizontal
@@ -525,37 +522,40 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
 nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origin){
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
-  dfIn <- plyr::rename(x,c(bfxVertDD='vertDD', bfxHorizDD='horizDD', ecoreg='ecoreg', lake_origin='lake_origin')) 
-  
+  names(x)[names(x)==bfxVertDD] <- 'vertDD'
+  names(x)[names(x)==bfxHorizDD] <- 'horizDD'
+  names(x)[names(x)==ecoreg] <- 'ecoreg'
+  names(x)[names(x)==lake_origin] <- 'lake_origin'
+
   tholdsVert <- data.frame(ecoreg = c('NAP','NAP','SAP','SAP','UMW','UMW','CPL','CPL','NPL'
-                                      ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT')
-                           ,lake_origin=c(rep(8,c('ALL','MAN_MADE')))
-                           ,p75V = c(0.12,0.12,0.20,0.20,0.11,0.11,0.03,0.03,0.06,0.36
-                                   ,0.06,0.36,0.06,0.36,0.33,1.05)
-                           ,p95V = c(0.47,0.47,0.76,0.76,0.50,0.50,1.00,1.00,0.28
-                                    ,1.20,1.00,2.00)
+                                      ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT','XER','XER')
+                           ,lake_origin=c(rep(c('NATURAL','MAN_MADE'),9))
+                           ,p75V = c(0.22,0.22,0.30,0.30,0.14,0.14,0.03,0.03,0.12,0.36,0.12,0.36,0.12,0.36
+                                     ,0.33,1.00,0.33,1.00)
+                           ,p95V = c(0.515,0.515,1.24,1.24,0.50,0.50,1.01,1.01,0.42,1.20,0.42,1.20,0.42,1.20
+                                     ,1.06,2.00,1.06,2.00)
                            ,stringsAsFactors=F)
   
   tholdsHoriz <- data.frame(ecoreg = c('NAP','NAP','SAP','SAP','UMW','UMW','CPL','CPL','NPL'
-                                       ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT')
-                            ,lake_origin=c(rep(8,c('ALL','MAN_MADE')))
-                            ,p75H = c(0.25,0.25,0.20,0.20,0.51,0.51,0.10,0.10,1.55
-                                     ,0.64,4.39)
-                            ,p95H = c(1.65,1.65,2.15,2.15,2.65,2.65,4.00,4.00,2.85
-                                     ,14.63,9.43,11.37)
+                                       ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT','XER','XER')
+                            ,lake_origin=c(rep(c('NATURAL','MAN_MADE'),9))
+                            ,p75H = c(0.47,0.47,0.305,0.305,0.58,0.58,0.10,0.10,0.40,1.40,0.40,1.40,0.40,1.40
+                                      ,0.64,3.51,0.64,3.51)
+                            ,p95H = c(2.52,2.52,2.83,2.83,2.65,2.65,4.0,4.0,4.00,14.63,4.00,14.63,4.00,14.63
+                                      ,9.43,11.37,9.43,11.37)
                             ,stringsAsFactors=F)
 
-  dfvert <- merge(dfIn, tholdsVert, by=c('ecoreg','lake_origin')) %>%
+  dfvert <- merge(x, tholdsVert, by=c('ecoreg','lake_origin')) %>%
     merge(tholdsHoriz, by=c('ecoreg','lake_origin')) %>%
     plyr::mutate(vertDD_cond = ifelse(is.na(vertDD),'Not Assessed', ifelse(vertDD <= p75V
                             , 'Small', ifelse(vertDD > p95V, 'Large', 'Medium')))
-                 ,horizDD_cond = ifelse(is.na(HorizDD), 'Not Assessed'
-                                        , ifelse(HorizDD <= p75H, 'Small'
-                                                 ,ifelse(HorizDD > p95H, 'Large', 'Medium')))) %>%
-    plyr::mutate(DRAWDOWN_COND = ifelse(vertDD_cond=='Small'|horizDD_cond=='Small', 'Small'
+                 ,horizDD_cond = ifelse(is.na(horizDD), 'Not Assessed'
+                                        , ifelse(horizDD <= p75H, 'Small'
+                                                 ,ifelse(horizDD > p95H, 'Large', 'Medium')))) %>%
+    plyr::mutate(DRAWDOWN_COND = ifelse(vertDD_cond=='Large'|horizDD_cond=='Large', 'Large'
                                   , ifelse(vertDD_cond=='Medium'|horizDD_cond=='Medium', 'Medium'
-                                  , ifelse(vertDD_cond=='Large'|horizDD_cond=='Large', 'Large'
-                                           , 'Not Assessed')))) %>%
+                                  , ifelse(vertDD_cond=='Small'|horizDD_cond=='Small', 'Small'
+                                           , 'Not Assessed')))) %>% 
     subset(select = c(sampID, 'DRAWDOWN_COND'))
   
   

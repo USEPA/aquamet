@@ -2,10 +2,10 @@
 % Please edit documentation in R/NLAphab_indicators.r
 \name{nlaLitRipVegCompIndicator}
 \alias{nlaLitRipVegCompIndicator}
-\title{Calculate NLA littoral-riparian Vegetation complexity indicator}
+\title{Calculate NLA Littoral-riparian Vegetation Complexity Indicator}
 \usage{
-nlaLitRipVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, rdis_ix,
-  hiiAg, ecoreg, rvegq, litcvrq)
+nlaLitRipVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, ecoreg,
+  rvegq, litcvrq)
 }
 \arguments{
 \item{x}{Input data frame containing other variables as specified in
@@ -24,14 +24,6 @@ or 'MAN_MADE'}
 \item{area}{Area of lake or reservoir, in square kilometers}
 
 \item{elev}{Lake surface elevation (meters above sea level)}
-
-\item{rdis_ix}{Riparian disturbance (lakeshore anthropogenic disturbance)
-indicator, which can be calculated using \code{nlaRipDistIndicator()} 
-function.}
-
-\item{hiiAg}{NLA physical habitat index of agricultural influences
-based on weighted mean human influence metrics for crops, pasture, 
-and orchards. Calculated by the function \code{metsHumanImpact()}}
 
 \item{ecoreg}{Lake ecoregion, based on aggregated Omernick ecoregions,
 with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.}

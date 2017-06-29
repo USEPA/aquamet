@@ -2,7 +2,7 @@
 % Please edit documentation in R/NLAphab_indicators.r
 \name{nlaRipDistIndicator}
 \alias{nlaRipDistIndicator}
-\title{Calculate NLA lakeshore anthropogenic disturbance indicator}
+\title{Calculate NLA Lakeshore Anthropogenic Disturbance Indicator}
 \usage{
 nlaRipDistIndicator(x, sampID, hiiAg, hiiNonAg, hifpAnyCirca)
 }
