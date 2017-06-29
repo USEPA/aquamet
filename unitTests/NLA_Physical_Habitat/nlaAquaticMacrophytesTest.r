@@ -1,68 +1,57 @@
-# metsAquaticMacrophytes.r
+# nlasAquaticMacrophytesTest.r
 # RUnit tests
 #
-#  5/20/2015 cws Modified expected value in unit test for 8417 AMVEMERGENT
-#            from 0.0783510618236211 to 0.078351061823621; the extra digit
-#            had previously been added to 'avoid truncation by SAS', but
-#            it seems to cause dfCompare to choke on it, and the easiest
-#            thing to do now is just remove it.
+#  5/20/15 cws Modified expected value in unit test for 8417 AMVEMERGENT
+#          from 0.0783510618236211 to 0.078351061823621; the extra digit
+#          had previously been added to 'avoid truncation by SAS', but
+#          it seems to cause dfCompare to choke on it, and the easiest
+#          thing to do now is just remove it.
+#  6/29/17 cws Renamed from metsAquaticMacrophytesTest to nlasAquaticMacrophytesTest.
+#          Using unit test with 2007 data as 2012 data test was not functioning.
+#          Reverted change to single AMVEMERGENT.
 #
 
-metsAquaticMacrophytesTest <- function()
+nlaAquaticMacrophytesTest <- function()
 # unit test for metsAquaticMacrophytes
 # No need to create separate test with 2012 data as it has not changed.
 {
-	metsAquaticMacrophytesTest.2007()
-#	metsAquaticMacrophytesTest.2012()
-}
-
-
-
-metsAquaticMacrophytesTest.2007 <- function()
-{
-	testData <- metsAquaticMacrophytesTest.createTestData2007()
-	expected <- metsAquaticMacrophytesTest.createExpectedResults2007()
-#testData$subid <- testData$STATION
-#names(testData) <- tolower(names(testData))
-	actual <- metsAquaticMacrophytes(testData)
-#names(actual) <- toupper(names(actual))
-#actual <- melt(actual, 'UID', variable.name='PARAMETER', value.name='RESULT')
-#actual$PARAMETER <- toupper(as.character(actual$PARAMETER))
-#actual$RESULT <- as.character(actual$RESULT)
+	testData <- nlaAquaticMacrophytesTest.createTestData2007() 
+	
+    # Test with good data for all arguments
+	expected <- nlaAquaticMacrophytesTest.createExpectedResults2007()
+	actual <- nlaAquaticMacrophytes(emergent = testData %>% subset(PARAMETER=='AM_EMERGENT') %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% select(SITE, STATION, VALUE)
+	                               ,floating = testData %>% subset(PARAMETER=='AM_FLOATING') %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% select(SITE, STATION, VALUE)
+	                               ,submergent = testData %>% subset(PARAMETER=='AM_SUBMERGENT') %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% select(SITE, STATION, VALUE)
+	                               ,totalCover = testData %>% subset(PARAMETER=='AM_TOTALCOVER') %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% select(SITE, STATION, VALUE)
+	                               )
 
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
-return(list(e=expected, a=actual))
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-16)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
+	
+	# Test cases when no data is sent
+	expected <- NULL
+	actual <- nlaAquaticMacrophytes()
+	checkEquals(expected, actual, "Incorrect response when args are NULL")
+	
+	actual <- try(nlaAquaticMacrophytes(emergent = testData %>% subset(PARAMETER=='AM_EMERGENT') %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% select(SITE, STATION, VALUE)
+	                                   ,floating = testData %>% subset(PARAMETER=='AM_FLOATING') %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% select(SITE, STATION, VALUE)
+	                                   ,submergent = testData %>% subset(PARAMETER=='AM_SUBMERGENT') %>% dplyr::rename(SITE=UID, VALUE=RESULT) %>% select(SITE, STATION, VALUE)
+	                                   ,totalCover = 'foo'
+	                                   )
+	             ,silent=TRUE
+	             ) 
+	checkTrue(class(actual) == 'try-error', "Incorrect response when an argument is unexpected class")
 	
 }
 
 
-
-metsAquaticMacrophytesTest.2012 <- function()
-{
-	testData <- metsAquaticMacrophytesTest.createTestData2012()
-	expected <- metsAquaticMacrophytesTest.createExpectedResults2012()
-	actual <- metsAquaticMacrophytes(testData)
-	
-	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
-	
-	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
-	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
-	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
-	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics")
-	
-}
-
-
-
-metsAquaticMacrophytesTest.createTestData2007 <- function()
+nlaAquaticMacrophytesTest.createTestData2007 <- function()
 # Test data based on 2007 values
 #	UID		Description
 #	8258	Has 2 extra stations 
@@ -261,7 +250,8 @@ metsAquaticMacrophytesTest.createTestData2007 <- function()
 							8453       J AM_SUBMERGENT      3
 							8453       J AM_TOTALCOVER      4
 						")
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL) %>%
+	        mutate(RESULT = as.character(RESULT))
 	close(tc)
 	
 	return(fake)		
@@ -270,10 +260,10 @@ metsAquaticMacrophytesTest.createTestData2007 <- function()
 
 
 
-metsAquaticMacrophytesTest.createExpectedResults2007 <- function()
+nlaAquaticMacrophytesTest.createExpectedResults2007 <- function()
 #
 {
-	tc <- textConnection("   UID      PARAMETER            RESULT
+	tc <- textConnection("  SITE         METRIC             VALUE
 							8258        AMFCALL 0.233333333333333
 							8258   AMFCEMERGENT 0.239583333333333
 							8258   AMFCFLOATING 0.120833333333333
@@ -309,7 +299,7 @@ metsAquaticMacrophytesTest.createExpectedResults2007 <- function()
 							8417    AMNFLOATING                10
 							8417  AMNSUBMERGENT                10
 							8417         AMVALL 0.372575495705233
-							8417    AMVEMERGENT 0.078351061823621
+							8417    AMVEMERGENT 0.0783510618236211 # added one last digit so character comparison would match
 							8417    AMVFLOATING                 0
 							8417  AMVSUBMERGENT 0.208099869186781
 							8435        AMFCALL                 0
@@ -372,40 +362,10 @@ metsAquaticMacrophytesTest.createExpectedResults2007 <- function()
 						")
 	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	close(tc)
-	
-	fake$RESULT <- as.character(fake$RESULT)
+
+	fake$VALUE <- as.character(fake$VALUE)
 	return(fake)		
 
 }
-
-
-
-metsAquaticMacrophytesTest.createTestData2012 <- function()
-#
-{
-	tc <- textConnection("   UID STATION   PARAMETER        RESULT
-						")
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	close(tc)
-	
-	return(fake)		
-
-}
-
-
-
-metsAquaticMacrophytesTest.createExpectedResults2012 <- function()
-#
-{
-	tc <- textConnection("   UID    PARAMETER        RESULT
-						")
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	close(tc)
-	
-	return(fake)		
-
-}
-
-
 
 # end of file

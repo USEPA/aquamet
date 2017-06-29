@@ -1,7 +1,7 @@
-metsAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, total=NULL) {
+nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, totalCover=NULL) {
 
 ################################################################################
-# Function: metsAquaticMacrophytes
+# Function: nlaAquaticMacrophytes
 # Title: Calculate NLA Aquatic Macrophyte Metrics
 # Programmers: Curt Seeliger
 #              Tom Kincaid
@@ -31,7 +31,11 @@ metsAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL
 #   06/12/14 tmk: Removed calls to the require() function.
 #    6/29/17 cws Renamed from metsAquaticMacrophytes to nlaAquaticMacrophytes.
 #            Changed argument from single dataframe to one dataframe per value,
-#            as was done with the NRSA metrics functions.
+#            as was done with the NRSA metrics functions.  Call interface 
+#            modified. Changed UID to SITE and RESULT to VALUE throughout, and
+#            returning metric name in METRIC rather than PARAMETER, but
+#            otherwise left the body of the function intact. Returning NULL if
+#            arguments contain no data.
 #
 # Arguments:
 #   df = a data frame containing aquatic macrophyte data.  The data frame must
@@ -60,21 +64,40 @@ metsAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL
 ################################################################################
 
   # Print initial messages
-  intermediateMessage('Aquatic Macrophyte mets', loc='start')
+  intermediateMessage('NLA Aquatic Macrophyte metrics', loc='start')
 
     # Standardize arguments, then combine them into single dataframe as expected
     # in the rest of the function
+    addParameter <- function(df, ...) {
+        
+        args <- list(...)
+        
+        if(is.null(args)) return(NULL)
+        else if(all(is.na(args))) return(NULL)
+        
+        rc <- df %>% mutate(PARAMETER=args[[1]])
+        return(rc)
+        
+    }
+    emergent <- aquametStandardizeArgument(emergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_EMERGENT')
+    floating <- aquametStandardizeArgument(floating, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_FLOATING')
+    submergent <- aquametStandardizeArgument(submergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_SUBMERGENT')
+    totalCover <- aquametStandardizeArgument(totalCover, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_TOTALCOVER')
     
+    df <- rbind(emergent, floating, submergent, totalCover)
+    if(is.null(df)) {
+        intermediateMessage(' -- arguments contain no data', loc='end')
+        return(NULL)
+    }
     
-    
-    # End of changes to function, subsequent lines are unmodified.
+    ########## End of changes to function
     
     
   # Subset the input data frame
   amData <- subset(df, PARAMETER %in% c('AM_EMERGENT', 'AM_FLOATING'
                                      ,'AM_SUBMERGENT', 'AM_TOTALCOVER'
                                      )
-                    ,c(UID,STATION,PARAMETER,RESULT)
+                    ,c(SITE,STATION,PARAMETER,VALUE)
                     )
 
     # Create tables for converting field values to calculation values
@@ -91,45 +114,45 @@ metsAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL
     intermediateMessage('.1')
 
     # Calculate fractional presence and cover values of individual cover classes
-	indivCovers <- metsAquaticMacrophytes.individualCover(amData, presence04, cover04)
+	indivCovers <- nlaAquaticMacrophytes.individualCover(amData, presence04, cover04)
 	
 	intermediateMessage('.2')
 	
 	
     # Calculate interquartile range of cover in total layer
 	amCover<-merge(amData, cover04
-				  ,by.x='RESULT'
+				  ,by.x='VALUE'
 				  ,by.y='field'
 				  ,all.x=TRUE, sort=FALSE
 				  )
 	tt<-subset(amCover, PARAMETER=='AM_TOTALCOVER')
-    iqrCover<-aggregate(list(RESULT=tt$calc)
-                       ,list(UID=tt$UID)
+    iqrCover<-aggregate(list(VALUE=tt$calc)
+                       ,list(SITE=tt$SITE)
                        ,iqr
                        )
- 	iqrCover$PARAMETER <- 'AMIQALL'   
+ 	iqrCover$METRIC <- 'AMIQALL'   
     
 
     # Calculate interdecile range of cover in total layer
-    idrCover<-aggregate(list(RESULT = tt$calc)
-                       ,list(UID = tt$UID)
+    idrCover<-aggregate(list(VALUE = tt$calc)
+                       ,list(SITE = tt$SITE)
                        ,idr
                        )
-    idrCover$PARAMETER <- 'AMIDALL'
+    idrCover$METRIC <- 'AMIDALL'
     				 
     intermediateMessage('.3')
 
 
     # Calculate index of total macrophyte cover, defined as the mean of
     # the sum of cover values at each transect
-	amiTotal <- metsAquaticMacrophytes.indices(amCover)
+	amiTotal <- nlaAquaticMacrophytes.indices(amCover)
 
     intermediateMessage('.4')
 
 
     # combine metrics for aquatic macrophytes, sort result
     amMets <- within(rbind(indivCovers, iqrCover, idrCover, amiTotal)
-	                ,RESULT <- as.character(RESULT)
+	                ,VALUE <- as.character(VALUE)
 					)
     intermediateMessage(' Done.', loc='end')
 
@@ -137,21 +160,21 @@ metsAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL
 }
 
 
-metsAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeights)
+nlaAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeights)
 # Determines fractional presence, fractional cover, cover sd and cover counts. 
-# Returns dataframe with columns UID, PARAMETER, RESULT
+# Returns dataframe with columns SITE, METRIC, VALUE
 {
 	# Fractional presence
 	amPresence<-merge(df
 					 ,presenceWeights
-					 ,by.x='RESULT'
+					 ,by.x='VALUE'
 					 ,by.y='field'
 					 ,all.x=TRUE
 					 ,sort=FALSE
 					 )
 	
-	tt<-aggregate(list(RESULT = amPresence$calc)
-				 ,list(UID = amPresence$UID
+	tt<-aggregate(list(VALUE = amPresence$calc)
+				 ,list(SITE = amPresence$SITE
 					  ,PARAMETER = amPresence$PARAMETER
 					  )
 				,mean, na.rm=TRUE
@@ -171,19 +194,19 @@ metsAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWei
 	# Mean, sd and counts of midpoint cover.  These are not normalized
 	# since they are all independent categories.
 	amCover<-merge(df, coverWeights
-			,by.x='RESULT'
+			,by.x='VALUE'
 			,by.y='field'
 			,all.x=TRUE, sort=FALSE
 	)
 	
 	tt<-ddply(subset(amCover, grepl('^AM.+',PARAMETER))
-			 ,c('UID','PARAMETER')
+			 ,c('SITE','PARAMETER')
 			 ,summarise
 			 ,FC = mean(calc, na.rm=TRUE)
 			 ,V  = sd(calc, na.rm=TRUE)
 			 ,N  = length(na.omit(calc))
 			 )
-	coverMets <- within(melt(tt, c('UID','PARAMETER'), variable.name='met', value.name='RESULT')
+	coverMets <- within(melt(tt, c('SITE','PARAMETER'), variable.name='met', value.name='VALUE')
 			,{PARAMETER <- paste0('AM', met
 								 ,ifelse(PARAMETER=='AM_TOTALCOVER', 'ALL', gsub('^AM_(.+)$', '\\1', PARAMETER))
 								 )
@@ -193,28 +216,28 @@ metsAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWei
 
 	intermediateMessage('b')
 			
-	rc <- rbind(meanPresence, coverMets)
+	rc <- rbind(meanPresence, coverMets) %>% dplyr::rename(METRIC=PARAMETER)
 }
 
 
-metsAquaticMacrophytes.indices <- function(df)
+nlaAquaticMacrophytes.indices <- function(df)
 # Calculates AMITOTAL defined as the mean of the sum of cover values at each transect
-# Returns dataframe with columns UID, PARAMETER, RESULT
+# Returns dataframe with columns SITE, METRIC, VALUE
 {
 	qq <- subset(df, PARAMETER %in% c('AM_EMERGENT', 'AM_FLOATING', 'AM_SUBMERGENT'))
 	
 	tt <- aggregate(qq$calc
-				   ,list(UID = qq$UID
+				   ,list(SITE = qq$SITE
 						,STATION = qq$STATION
 						)
 				   ,sum, na.rm=TRUE
 				   )
 	
-	amiTotal <- aggregate(list(RESULT = tt$x)
-						 ,list(UID = tt$UID)
+	amiTotal <- aggregate(list(VALUE = tt$x)
+						 ,list(SITE = tt$SITE)
 						 ,mean, na.rm=TRUE
 						 )
-	amiTotal$PARAMETER <- 'AMITOTAL'
+	amiTotal$METRIC <- 'AMITOTAL'
 	
 	return(amiTotal)
 }
