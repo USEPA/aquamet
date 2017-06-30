@@ -1,26 +1,26 @@
 # metsRiparianVegetationNLA.r
 # RUnit tests
+#  6/02/17 cws Renamed to include NLA in all the test function names.
 
-
-metsRiparianVegetationTest <- function()
+metsRiparianVegetationNLATest <- function()
 # unit test for metsRiparianVegetation
 #
 # The complex testing here is due to the precision differences between
 # calculated and retrieved values, requiring separate tests for presence (names)
 # type and value of the metrics.
 {
-	metsRiparianVegetationTest.2007()
-	metsRiparianVegetationTest.withDrawDown()
-	metsRiparianVegetationTest.withDrawDownAndFillin()
+	metsRiparianVegetationNLATest.2007()
+	metsRiparianVegetationNLATest.withDrawDown()
+	metsRiparianVegetationNLATest.withDrawDownAndFillin()
 }
 
 
 
-metsRiparianVegetationTest.2007 <- function()
+metsRiparianVegetationNLATest.2007 <- function()
 # Unit test with 2007 data
 {		
-	testData <- metsRiparianVegetationTest.createTestData2007()
-	expected <- metsRiparianVegetationTest.expectedResults2007()
+	testData <- metsRiparianVegetationNLATest.createTestData2007()
+	expected <- metsRiparianVegetationNLATest.expectedResults2007()
 	actual <- metsRiparianVegetationNLA(testData, createSyntheticCovers=FALSE)
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
@@ -36,11 +36,11 @@ metsRiparianVegetationTest.2007 <- function()
 
 
 
-metsRiparianVegetationTest.withDrawDown <- function()
+metsRiparianVegetationNLATest.withDrawDown <- function()
 # Unit test with 2012 data, but do NOT fill in unrecorded drawdown values
 {
-	testData <- metsRiparianVegetationTest.createTestDataWithDrawDown()
-	expected <- metsRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin()
+	testData <- metsRiparianVegetationNLATest.createTestDataWithDrawDown()
+	expected <- metsRiparianVegetationNLATest.expectedResultsWithDrawDownAndNoFillin()
 	expected$RESULT <- as.numeric(expected$RESULT)
 	actual <- metsRiparianVegetationNLA(testData, fillinDrawdown=FALSE)
 	
@@ -65,11 +65,11 @@ metsRiparianVegetationTest.withDrawDown <- function()
 
 
 
-metsRiparianVegetationTest.withDrawDownAndFillin <- function()
+metsRiparianVegetationNLATest.withDrawDownAndFillin <- function()
 # Unit test with 2012 data using the option to fill in unrecorded drawdown values.
 {
-	testData <- metsRiparianVegetationTest.createTestDataWithDrawDown()
-	expected <- metsRiparianVegetationTest.expectedResultsWithDrawDown()
+	testData <- metsRiparianVegetationNLATest.createTestDataWithDrawDown()
+	expected <- metsRiparianVegetationNLATest.expectedResultsWithDrawDown()
 	expected$RESULT <- as.numeric(expected$RESULT)
 	actual <- metsRiparianVegetationNLA(testData)
 	
@@ -94,7 +94,7 @@ metsRiparianVegetationTest.withDrawDownAndFillin <- function()
 
 
 
-metsRiparianVegetationTest.createTestData2007 <- function()
+metsRiparianVegetationNLATest.createTestData2007 <- function()
 # This data is based on NLA2007 data for the following VISIT_ID:
 #	7469	full complement of data, stations A-J (normal)
 #	7472	partial data, stations A-J
@@ -740,7 +740,7 @@ metsRiparianVegetationTest.createTestData2007 <- function()
 
 
 
-metsRiparianVegetationTest.expectedResults2007 <- function()
+metsRiparianVegetationNLATest.expectedResults2007 <- function()
 # Values expected based on test data.  These were taken directly from tblPHABMET_LONG
 # in the 2007 NLA databse.
 #phab <- sqlFetch(nla07, 'tblPHABMET_LONG', stringsAsFactors=FALSE) 
@@ -1187,7 +1187,7 @@ metsRiparianVegetationTest.expectedResults2007 <- function()
 
 
 
-metsRiparianVegetationTest.createTestDataWithDrawDown <- function()
+metsRiparianVegetationNLATest.createTestDataWithDrawDown <- function()
 # This data is based on NLA2012 data for the following UIDs:
 #	6362	data exists only at station J, HORIZ_DIST_DD present
 #	6396	full data exists at stations A-J
@@ -2498,7 +2498,7 @@ metsRiparianVegetationTest.createTestDataWithDrawDown <- function()
 
 
 
-metsRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
+metsRiparianVegetationNLATest.expectedResultsWithDrawDownAndNoFillin <- function()
 #
 {
 	tc <- textConnection("	 UID             PARAMETER                      RESULT
@@ -3807,7 +3807,7 @@ metsRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
 
 
 
-metsRiparianVegetationTest.expectedResultsWithDrawDown <- function()
+metsRiparianVegetationNLATest.expectedResultsWithDrawDown <- function()
 # These values were calculated metsRiparianVegetationTest.sas on 20 Nov 2013,
 # with the exception of 91 zero values which I did not have time to correct in 
 # the SAS program -- these rows are appended at the end.

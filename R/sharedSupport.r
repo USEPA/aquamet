@@ -266,6 +266,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 	# 	a) if prop_dd is 1 and cover_dd is not missing, then syn = cover_dd
 	#	b) if prop_dd is 0 and cover_lit is not missing, then syn = cover_lit
 	#	c) if both cover_dd and cover_lit are not missing, then syn = cover_dd OR cover_lit
+#print('coverData');print(head(coverData))
 	covers <- dcast(within(subset(coverData, PARAMETER != 'HORIZ_DIST_DD')
 	                      ,{coverType <- gsub('^(.+)_DD$', '\\1', PARAMETER)
 							coverLocation <- ifelse(grepl('_DD$', PARAMETER), 'cover_dd', 'cover_lit')
@@ -274,9 +275,10 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 				   ,UID+STATION+coverType~coverLocation
 		           ,value.var='characteristicCover'
 				   )
-	
+#print('.0')	
 	covers <- merge(covers, props, by=c('UID','STATION'), all.x=TRUE)
 #print("calcSynCovers covers:"); print(subset(covers, UID==7263 & grepl('SNAG', coverType)))	
+#print('.1')	
 	
 	coverProps <- within(covers	
 					    ,{assumptionMade <- assumptions & is.na(prop_dd) & is.na(cover_dd) & !is.na(cover_lit)
@@ -295,6 +297,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 						  syn <- as.numeric(substr(as.character(basicSyntheticCover), 1, 18))
 					     }
 					    )
+#print('.2')	
 
 	# Reorganize calculation to long format with expected PARAMETER name
 	rc <- within(coverProps
@@ -303,6 +306,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 				  characteristicCover <- ifelse(is.nan(syn), NA, syn)
 				 }
 		        )[c('UID','STATION','PARAMETER','RESULT','characteristicCover', 'assumptionMade')]
+#print('.3')	
 
 	return(rc)
 }

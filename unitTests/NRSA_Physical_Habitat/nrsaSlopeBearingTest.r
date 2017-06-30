@@ -13,22 +13,355 @@
 #  3/28/17 cws Modified to add data for wadeable site "2003 WWYP99-0659 1 no subsightings"
 #          which is based on "2003 WWYP99-0659 1" but modified with hand calculations
 #          to not contain subsightings but result in the same final metrics.
-#
+#  5/19/17 cws Rewrote code creating thalweg and channel geometry testdata, as
+#          well as nrsaSlopeBearingTest.makeExpectedResultsWithGIS,  
+#          nrsaSlopeBearingTest.makeGisCalcs, nrsaSlopeBearingTest.makeProtocols 
+#          and nrsaSlopeBearingTest.makeExpectedResults in preparation for 
+#          expanding unit test (Changes to test data resulted in loss of zeros 
+#          in text values, but does not change the test calculation results). 
+#  5/23/17 cws Adding test cases using simplified arguments rather than munged 
+#          data typical of actual use. This will make what each case tests much
+#          clearer. Or so I hope.
 
 nrsaSlopeBearingTest <- function()
+{
+    nrsaSlopeBearingTest.simplifiedArguments()
+    nrsaSlopeBearingTest.typicalDataMungedArguments() # early, 'classical' tests
+}
+
+
+nrsaSlopeBearingTest.simplifiedArguments <- function()
+# Tests using simple, artificial data as arguments
+{
+    # nrsaSlopeBearingTest.simplifiedArguments.nullArgs()
+    nrsaSlopeBearingTest.simplifiedArguments.crazyBearings()
+    nrsaSlopeBearingTest.simplifiedArguments.missingUNITS()
+    nrsaSlopeBearingTest.simplifiedArguments.missingMETHOD()
+    # nrsaSlopeBearingTest.simplifiedArguments.missingUNITSandMETHOD()
+    nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_A()
+    nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_B()
+    nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine012()
+    nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine0()
+    nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine012()
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.nullArgs <- function()                 # Requires modification of nrsaSlopeBearing() to handle lack of data.
+{
+    expected <- data.frame()
+    actual <- nrsaSlopeBearing(bBearing = NULL
+                              ,bDistance = NULL
+                              ,bSlope = NULL
+                              ,wBearing = NULL
+                              ,wTransectSpacing = NULL
+                              ,wProportion = NULL
+                              ,wSlope = NULL
+                              ,gisSinuosity = NULL
+                              ,gisSlope = NULL
+                              )
+    checkEquals(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), "Incorrect handling of missing units")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.crazyBearings <- function()   
+# NOTE: This test points out the absurdity of the xbearing definition in some 
+# unrealistic cases, which suggests that the calculation should be redefined in
+# some way.
+{
+    base <- data.frame(SITE=1L, TRANSECT=c('A','B','C','D'), LINE=0, stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=0, xslope_field=0
+                                ,pctClinometer=100, vslope=0, nslp=4
+                                ,transpc=1, xbearing=mean(c(90,180,270,360))
+                                ,sinu=23106851772068704 # This would be infinite but for floating point errors. It's close enough.
+                                )
+                     ,data.frame(SITE=2, xslope=0, xslope_field=0
+                                ,pctClinometer=100, vslope=0, nslp=4
+                                ,transpc=1, xbearing=mean(c(359,180,180,1))
+                                ,sinu=  4/sqrt(0^2 + (cos(1*2*pi/360) + -1 + -1 + cos(359*2*pi/360))^2) # 13131.558738459949
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))    
+    actual <- nrsaSlopeBearing(bBearing = base %>% mutate(VALUE=c(90,180,270,360))
+                              ,bDistance = base %>% mutate(VALUE=1)
+                              ,bSlope = base %>% mutate(VALUE=0, METHOD='CL', UNITS='PERCENT')
+                              ,wBearing = base %>% mutate(SITE=2, VALUE=c(359,180,180,1))
+                              ,wTransectSpacing = base %>% mutate(SITE=2, VALUE=1)
+                              ,wProportion = base %>% mutate(SITE=2, VALUE=100)
+                              ,wSlope = base %>% mutate(SITE=2, VALUE=0, METHOD='CL', UNITS='PERCENT')
+                              ,gisSinuosity = NULL
+                              ,gisSlope = NULL
+                              )
+    dd <- dfCompare(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), c('SITE','METRIC'), zeroFudge=1e-10)  # needed for sinu value at site 2.
+    checkEquals(NULL, dd, "Incorrect handling of crazy bearings")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.missingUNITS <- function()
+{
+    base <- data.frame(SITE=1L, TRANSECT=c('A','B','C','D'), LINE=0, stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=0.15, xslope_field=0.15
+                                ,pctClinometer=0, vslope=1/(10*sqrt(2)), nslp=2
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ,data.frame(SITE=2, xslope=1.5, xslope_field=1.5
+                                ,pctClinometer=100, vslope=1/sqrt(2), nslp=2
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(100,150,200,150))
+                              ,bDistance =        base %>% mutate(VALUE=10)
+                              ,bSlope =           base %>% mutate(VALUE=c(1,2,3,4), METHOD='TR', UNITS=c('CM','CM','',NA))
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=c(100,150,200,150))
+                              ,wTransectSpacing = base %>% mutate(SITE=2L, VALUE=10)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=100)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,2,3,4), METHOD='CL', UNITS=c('PERCENT','PERCENT','',NA))
+                              ,gisSinuosity =     NULL
+                              ,gisSlope =         NULL
+                              )
+    checkEquals(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), "Incorrect handling of missing units")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.missingMETHOD <- function()
+{
+    base <- data.frame(SITE=1L, TRANSECT=c('A','B','C','D'), LINE=0, stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=0.25, xslope_field=0.25
+                                ,pctClinometer=0, vslope=sqrt(sum((c(.1,.2,.3,.4)-.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ,data.frame(SITE=2, xslope=2.5, xslope_field=2.5
+                                ,pctClinometer=100*2/3, vslope=sqrt(sum((c(1,2,3,4)-2.5)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(100,150,200,150))
+                              ,bDistance =        base %>% mutate(VALUE=10)
+                              ,bSlope =           base %>% mutate(VALUE=c(1,2,3,4), METHOD=c('TR','TR',NA,''), UNITS='CM')
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=c(100,150,200,150))
+                              ,wTransectSpacing = base %>% mutate(SITE=2L, VALUE=10)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=100)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,2,3,4), METHOD=c('CL','CL',NA,''), UNITS='PERCENT')
+                              ,gisSinuosity =     NULL
+                              ,gisSlope =         NULL
+                              )
+    checkEquals(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), "Incorrect handling of missing methods")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_A <- function()
+# Tests simplest case in which all transects have identical numbers of backsightings
+{
+    base <- data.frame(TRANSECT=rep(c('A','B','C','D'), each=3), LINE=rep(0:2, times=4), stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
+                                ,pctClinometer=0, vslope=sqrt(sum((c(.1,.2,.3,.4)-.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ,data.frame(SITE=2, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
+                                ,pctClinometer=100, vslope=sqrt(sum((c(.1,.2,.3,.4)-0.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)))
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='TR', UNITS='CM')
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)))
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='CL', UNITS='CM')
+                              ,gisSinuosity =     NULL
+                              ,gisSlope =         NULL
+                              )
+    dd <- dfCompare(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), c('SITE','METRIC'), zeroFudge=1e-14)
+    checkEquals(NULL, dd, "Incorrect handling of backsighted elevation slopes only provided at LINE 0")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_B <- function()
+# Tests case in which transects have differing numbers of backsightings
+{
+    #base <- data.frame(TRANSECT=rep(c('A','B','C','D'), each=3), LINE=rep(0:2, times=4), stringsAsFactors=FALSE)
+    base <- data.frame(TRANSECT=c('A','A','B','B','C','C','C','D','D','D'), LINE=c(0:1,0:1,0:2,0:2), stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
+                                ,pctClinometer=0, vslope=sqrt(sum((c(.1,.2,.3,.4)-.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ,data.frame(SITE=2, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
+                                ,pctClinometer=100, vslope=sqrt(sum((c(.1,.2,.3,.4)-0.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200, 150))))
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=c(10,'', 10,NA, 3.3,3.3,3.4, 5,5,0))
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=c(1,'', 2,NA, 3,NA,NA, 4,NA,''), METHOD='TR', UNITS='CM')
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200,150))))
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=c(100,'', 100,NA, 33,33,34, 50,50,0))
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,'', 2,NA, 3,NA,NA, 4,NA,''), METHOD='CL', UNITS='CM')
+                              ,gisSinuosity =     NULL
+                              ,gisSlope =         NULL
+                              )
+    dd <- dfCompare(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), c('SITE','METRIC'), zeroFudge=1e-14)
+    checkEquals(NULL, dd, "Incorrect handling of backsighted elevation slopes only provided at LINE 0, transects having differing numbers of suplemental backsightings")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine012 <- function()
+{
+    base <- data.frame(TRANSECT=rep(c('A','B','C','D'), each=3), LINE=rep(0:2, times=4), stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
+                                ,pctClinometer=0, vslope=sqrt(sum((c(.1,.2,.3,.4)-.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ,data.frame(SITE=2, xslope=100*(1+2+3+4)/(40*100), xslope_field=100*(1+2+3+4)/(40*100)
+                                ,pctClinometer=100, vslope=sqrt(sum((c(.1,.2,.3,.4)-0.25)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)))
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1*.33,1*.33,1*.34), ifelse(TRANSECT=='B', c(2*.33,2*.33,2*.34), ifelse(TRANSECT=='C', c(3*.33,3*.33,3*.34),c(4*.33,4*.33,4*.34)))), METHOD='TR', UNITS='CM')
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)))
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1*.33,1*.33,1*.34), ifelse(TRANSECT=='B', c(2*.33,2*.33,2*.34), ifelse(TRANSECT=='C', c(3*.33,3*.33,3*.34),c(4*.33,4*.33,4*.34)))), METHOD='CL', UNITS='CM')
+                              ,gisSinuosity =     NULL
+                              ,gisSlope =         NULL
+                              )
+    dd <- dfCompare(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), c('SITE','METRIC'), zeroFudge=1e-14)
+    checkEquals(NULL, dd, "Incorrect handling of backsighted elevation slopes only provided at LINEs 0,1,2")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine0 <- function()
+# Note: Currently (25 May 2017) only wadeable slopes recorded in CM are allowed
+# to be recorded only at LINE 0, with the phab code filling in the elevation on 
+# other LINEs based on PROPORTION values. This test tests the case when PERCENT
+# slopes are recorded only on LINE 0.
+#
+{
+    base <- data.frame(TRANSECT=rep(c('A','B','C','D'), each=3), LINE=rep(0:2, times=4), stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=(1+2+3+4)/4, xslope_field=(1+2+3+4)/4                                 # values when PERCENTs are filled in for absent subsightings
+                                ,pctClinometer=0, vslope=sqrt(sum((c(1,2,3,4)-2.5)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ,data.frame(SITE=2, xslope=(1+2+3+4)/4, xslope_field=(1+2+3+4)/4
+                                ,pctClinometer=100, vslope=sqrt(sum((c(1,2,3,4)-2.5)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))
+    expected <- expected %>%                                                                                         # values when PERCENTs are NOT filled in for absent subsightings
+                mutate(VALUE = ifelse(METRIC %in% c('xslope','xslope_field'), VALUE*0.33
+                              ,ifelse(METRIC == 'vslope', sqrt(sum((c(1,2,3,4)*0.33-2.5*0.33)^2)/3)
+                                     ,VALUE
+                               ))
+                      )
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)))
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='TR', UNITS='PERCENT')
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)))
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='CL', UNITS='PERCENT')
+                              ,gisSinuosity =     NULL
+                              ,gisSlope =         NULL
+                              )
+    dd <- dfCompare(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), c('SITE','METRIC'), zeroFudge=1e-14)
+    checkEquals(NULL, dd, "Incorrect handling of backsighted PERCENT slopes only provided at LINE 0")
+}
+
+nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine012 <- function()
+{
+    base <- data.frame(TRANSECT=rep(c('A','B','C','D'), each=3), LINE=rep(0:2, times=4), stringsAsFactors=FALSE)
+    expected <- rbind(data.frame(SITE=1, xslope=(1+2+3+4)/4, xslope_field=(1+2+3+4)/4
+                                ,pctClinometer=0, vslope=sqrt(sum((c(1,2,3,4)-2.5)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ,data.frame(SITE=2, xslope=(1+2+3+4)/4, xslope_field=(1+2+3+4)/4
+                                ,pctClinometer=100, vslope=sqrt(sum((c(1,2,3,4)-2.5)^2)/3), nslp=4
+                                ,transpc=10, xbearing=150
+                                ,sinu= 40/sqrt(sum(c(10*cos(c(10,60,60)*(2*pi/360)), -10*sin(20*(2*pi/360))))^2 + 
+                                               sum(c(10*sin(c(10,60,60)*(2*pi/360)), 10*cos(20*(2*pi/360))))^2
+                                              )     # 1.217442832054
+                                )
+                     ) %>%
+                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                mutate(METRIC=as.character(METRIC))
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)))
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 1, ifelse(TRANSECT=='B', 2, ifelse(TRANSECT=='C', 3, 4))), METHOD='TR', UNITS='PERCENT')
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)))
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 1, ifelse(TRANSECT=='B', 2, ifelse(TRANSECT=='C', 3, 4))), METHOD='CL', UNITS='PERCENT')
+                              ,gisSinuosity =     NULL
+                              ,gisSlope =         NULL
+                              )
+    dd <- dfCompare(expected, actual %>% mutate(VALUE=as.numeric(VALUE)), c('SITE','METRIC'), zeroFudge=1e-14)
+    checkEquals(NULL, dd, "Incorrect handling of backsighted PERCENT slopes provided at LINE 0,1,2")
+}
+
+
+nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
 # Unit test for nrsaSlopeBearing. Test data taken from WEMAP data on 2-Feb-2010,
 # and is then transformed into the expected organization for NRSA data.
 # 2000 WAZP99-0505 1                 Stream with no supplemental readings
 # 2000 WAZP99-0569 1                 Stream with many supplemental readings
 # 2003 WWYP99-0659 1                 Stream with slopes in cm
-# 2003 WWYP99-0659 1 no subsightings Stream with slopes in cm with subsights that have been collapsed to have same results.             #### NEW
+# 2003 WWYP99-0659 1 no subsightings Stream with slopes in cm with subsights that have been collapsed to have same results.
 # 2003 WWYP99-0659 1 missing CM subsightings   Stream with slopes in cm
 # 2003 WWYP99-0659 1 slope unit NONE Stream with slopes in cm, but UNITS=NONE
 # 2000 WAZP99-0569 1 no incremnt     Stream with no incremnt information
 # 2000 WAZP99-0569 1 no slopes       Stream with no slope information
 # 2000 WAZP99-0569 1 only 2 slopes   Stream with insufficient slope information
+# 2014 CARO-1043 1                   Stream with mixed slope units, no subsightings
+# 2015 AKBB-018 1                    Stream with pct slope units, 2 blank units
+#
 # 2000 WIDP99-0556 1                 River with some supplemental readings
-# 2000 WIDP99-0556 1 with slopes in cm River with some supplemental readings with slopes expressed as elevations that have same results.  #### NEW
+# 2000 WIDP99-0556 1 with slopes in cm River with some supplemental readings with slopes expressed as elevations that have same results.
 # 2000 WIDP99-0556 1 with NA slopes  River with all slope values missing
 # 2000 WIDP99-0556 1 with absent slopes  River with no slope values at all
 # 2000 WIDP99-0556 1 slope unit NONE River with some supplemental readings and
@@ -111,6 +444,7 @@ nrsaSlopeBearingTest <- function()
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                       )))
                                                 ,PARAMETER = NULL
+                                                ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                 )                                         
                                ,gisSinuosity = NULL
                                ,gisSlope = NULL
@@ -170,13 +504,14 @@ nrsaSlopeBearingTest <- function()
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                       )))
                                                ,PARAMETER = NULL
+                                               ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                )                                         
                                ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
                                ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
                                )
     results <- results[order(results$SITE, results$METRIC),]
     results$VALUE <- as.numeric(results$VALUE)
-    
+
     expectedWithGIS <- expectedWithGIS[order(expectedWithGIS$SITE, expectedWithGIS$METRIC),]
     expectedWithGIS$VALUE <- as.numeric(expectedWithGIS$VALUE)
     errs <- dfCompare(expectedWithGIS, results, c('SITE','METRIC'), zeroFudge=1e-4)
@@ -225,6 +560,7 @@ nrsaSlopeBearingTest <- function()
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                        )))
                                                 ,PARAMETER = NULL
+                                                ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                 )                                         
                                ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
                                ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
@@ -280,6 +616,7 @@ nrsaSlopeBearingTest <- function()
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                       )))
                                                ,PARAMETER = NULL
+                                               ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                )                                         
                                ,gisSinuosity = NULL
                                ,gisSlope = NULL
@@ -337,6 +674,7 @@ nrsaSlopeBearingTest <- function()
                                                         ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                          )))
                                                  ,PARAMETER = NULL
+                                                 ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                  )                                         
                                  ,gisSinuosity = NULL
                                  ,gisSlope = NULL
@@ -393,6 +731,7 @@ nrsaSlopeBearingTest <- function()
                                                         ,ifelse(PARAMETER == 'SLOPE3', 2, NA
                                                          )))
                                                  ,PARAMETER = NULL
+                                                 ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
                                                  )                                         
                                  ,gisSinuosity = NULL
                                  ,gisSlope = NULL
@@ -737,7 +1076,7 @@ nrsaSlopeBearingTest.makeTestDataDEPRECATED <- function()
 }
 
 
-nrsaSlopeBearingTest.makeThalweg <- function()
+nrsaSlopeBearingTest.makeThalwegOLD <- function()
 # Create dataframe of thalweg data for unit test
 {
   tc <-textConnection("
@@ -2973,8 +3312,3405 @@ nrsaSlopeBearingTest.makeThalweg <- function()
   return(tt)
 }
 
+nrsaSlopeBearingTest.makeThalweg <- function()
+# Create dataframe of thalweg data for unit test
+{
+    tc <- textConnection('"SITE" "SAMPLE_TYPE" "TRANSECT" "STATION" "PARAMETER" "VALUE" "FLAG" "UNITS"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "C" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 0 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 1 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 2 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 3 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 4 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 5 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 6 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 7 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 8 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 9 "DEPTH" NA NA "CM"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "A" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "B" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "C" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "D" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "E" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "F" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "G" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "H" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "I" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 0 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 1 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 2 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 3 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 4 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 5 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 6 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 7 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 8 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_THALW" "J" 9 "INCREMNT" NA NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 missing PERCENT subsightings" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "A" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "B" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "C" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "D" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "E" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "F" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "G" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "H" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "I" 9 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 0 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 1 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 2 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 3 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 4 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 5 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 6 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 7 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 8 "INCREMNT" "1.5" NA "M"
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_THALW" "J" 9 "INCREMNT" "1.5" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 0 "INCREMNT" "1.6" NA "M"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "A" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "B" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "C" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "D" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "E" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "F" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "G" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "H" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "I" 9 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 0 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 1 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 2 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 3 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 4 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 5 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 6 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 7 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 8 "DEPTH" "1.5" NA "CM"
+                          "2014 CARO-1043 1" "PHAB_THALW" "J" 9 "DEPTH" "1.5" NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 0 "INCREMNT" "1.0" NA "M"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 0 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 1 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 2 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 3 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 4 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 5 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 6 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 7 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 8 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 9 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 10 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 11 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 12 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 13 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "A" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "B" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "C" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "D" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "E" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "F" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "G" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "H" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "I" 14 "DEPTH" 1.5 NA "CM"
+                          "2015 AKBB-018 1" "PHAB_THALW" "J" 14 "DEPTH" 1.5 NA "CM"
+                          #"2015 AKBB-018 1" "PHAB_THALW" "D" 15 "DEPTH" 1.5 NA "CM" # actual data has this extra station.
+                        ')
+    thaldata <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    close(tc)
+    return(thaldata)
+}
+
 
 nrsaSlopeBearingTest.makeChannelGeometry <- function()
+# Create dataframe of channel geometry data for unit test
+{
+    tc <- textConnection('"SITE" "SAMPLE_TYPE" "TRANSECT" "LINE" "BANK" "TRANLINE" "PARAMETER" "VALUE" "UNITS" "METHOD" "FLAG"
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "354" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "357" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "11" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "3" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "9" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "17" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "5" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "57" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "23" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "53" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "7" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "4" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "7.5" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "12.5" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "5" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "3.5" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "1.5" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "4" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "6.5" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "354" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "357" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "11" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "3" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "9" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "17" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "5" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "57" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "23" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "53" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "7" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "4" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "7.5" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "12.5" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "5" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "3.5" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "1.5" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "4" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "6.5" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "354" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "357" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "11" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "3" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "9" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "17" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "5" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "57" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "23" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "53" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "0.7" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "0.6" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "0.4" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "0.75" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "1.25" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "0.5" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "0.35" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "0.15" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "0.4" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with clinometer and low slope" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "0.65" "PERCENT" "CL" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "354" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "357" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "11" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "3" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "9" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "17" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "5" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "57" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "23" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "53" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "0.7" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "0.6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "0.4" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "0.75" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "1.25" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "0.5" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "0.35" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "0.15" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "0.4" "PERCENT" "TR" NA
+                          "2000 WAZP99-0505 1 with low slope" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "0.65" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "50" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "40" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "4" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "65" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "37" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "10" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "107" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "76" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "23" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING2" "58" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING2" "39" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING2" "53" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING2" "19" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING2" "73" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING2" "45" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING3" "0" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "30" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP2" "34" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP2" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP2" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP2" "70" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP3" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "10" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "11" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "22" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "8" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "12.2" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "8" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE2" "10" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE2" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE2" "13" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE2" "8" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE2" "10" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE2" "14" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE3" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "50" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "40" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "4" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "65" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "37" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "10" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "107" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "76" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "23" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING2" "58" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING2" "39" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING2" "53" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING2" "19" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING2" "73" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING2" "45" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING3" "0" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "30" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP2" "34" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP2" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP2" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP2" "70" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP3" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "10" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "11" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "22" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "8" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "12.2" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "8" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE2" NA "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE2" NA "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE2" NA "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE2" NA "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE2" NA "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE2" NA "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 missing PERCENT subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE3" NA "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "50" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "40" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "4" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "65" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "37" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "10" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "107" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "76" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "23" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING2" "58" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING2" "39" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING2" "53" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING2" "19" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING2" "73" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING2" "45" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING3" "0" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "30" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP2" "34" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP2" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP2" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP2" "70" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP3" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "10" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "11" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "22" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "8" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "12.2" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "8" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE2" "10" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE2" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE2" "13" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE2" "8" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE2" "10" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE2" "14" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE3" "12" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "50" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "40" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "4" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "65" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "37" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "10" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "107" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "76" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "23" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING2" "58" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING2" "39" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING2" "53" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING2" "19" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING2" "73" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING2" "45" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING3" "0" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "30" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP2" "34" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP2" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP2" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP2" "70" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 no slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP3" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "50" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "40" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "4" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "65" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "37" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "10" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "107" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "76" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "23" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING2" "58" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING2" "39" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING2" "53" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING2" "19" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING2" "73" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING2" "45" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING3" "0" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "80" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "30" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP2" "34" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP2" "75" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP2" "25" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP2" "20" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP2" "70" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP3" "33" "NONE" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "6" "PERCENT" "TR" NA
+                          "2000 WAZP99-0569 1 only 2 slopes" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "10" "PERCENT" "TR" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "BEAR" "150" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "BEAR" "140" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "BEAR" "20" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "BEAR" "70" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "BEAR" "30" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "DISTANCE" "360" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "DISTANCE" "240" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "DISTANCE" "599.9999994" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "DISTANCE" "257.1428574" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "A" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "B" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "C" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "E" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "F" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "G" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "H" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "I" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "J" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "BEAR" "150" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "BEAR" "140" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "BEAR" "20" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "BEAR" "70" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "BEAR" "30" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "DISTANCE" "360" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "DISTANCE" "240" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "DISTANCE" "599.9999994" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "DISTANCE" "257.1428574" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "A" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "B" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "C" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "E" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "F" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "G" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "H" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "I" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "J" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "SLOPE" "0.2" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "SLOPE" "0.2" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "SLOPE" "0.2" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "SLOPE" "0.2" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "SLOPE" "0.2" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "SLOPE" "0.2" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "SLOPE" "0.2" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "SLOPE" "0.1" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "SLOPE" "0.2" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "SLOPE" "0.1" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 slope unit PCT" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "SLOPE" "0.2" "PERCENT" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "BEAR" "150" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "BEAR" "140" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "BEAR" "20" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "BEAR" "70" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "BEAR" "30" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "DISTANCE" "360" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "DISTANCE" "240" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "DISTANCE" "599.9999994" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "DISTANCE" "257.1428574" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "A" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "B" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "C" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "D" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "E" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "F" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "G" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "H" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "I" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with absent slopes" "PHAB_CHANBFRONT" "J" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "BEAR" "150" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "BEAR" "140" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "BEAR" "20" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "BEAR" "70" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "BEAR" "30" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "DISTANCE" "360" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "DISTANCE" "240" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "DISTANCE" "599.9999994" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "DISTANCE" "257.1428574" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "A" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "B" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "C" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "E" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "F" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "G" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "H" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "I" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "J" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with NA slopes" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "SLOPE" NA "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "BEAR" "150" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "BEAR" "140" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "BEAR" "20" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "BEAR" "70" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "BEAR" "30" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "DISTANCE" "360" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "DISTANCE" "240" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "DISTANCE" "599.9999994" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "DISTANCE" "257.1428574" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "DISTANCE" "171.4285716" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "DISTANCE" "600" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "A" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "B" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "C" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "E" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "F" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "G" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "H" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "I" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "J" NA "NONE" "NONE" "NA" "CM" "NONE" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "SLOPE" "120" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "SLOPE" "72" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "SLOPE" "48" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "SLOPE" "120" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "SLOPE" "34.2857143" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "SLOPE" "51.4285713" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "SLOPE" "34.2857143" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "SLOPE" "120" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "SLOPE" "120" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "SLOPE" "60" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "SLOPE" "120" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "SLOPE" "60" "CM" "NONE" NA
+                          "2000 WIDP99-0556 1 with slopes in cm" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "SLOPE" "120" "CM" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 1 "NONE" "NONE" "BEAR" "340" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 2 "NONE" "NONE" "BEAR" "20" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "BEAR" "80" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "BEAR" "10" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 2 "NONE" "NONE" "BEAR" "100" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 1 "NONE" "NONE" "BEAR" "350" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 2 "NONE" "NONE" "BEAR" "60" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "BEAR" "360" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "BEAR" "80" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "BEAR" "40" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "E" 1 "NONE" "NONE" "BEAR" "20" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "BEAR" "330" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 1 "NONE" "NONE" "BEAR" "330" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 2 "NONE" "NONE" "BEAR" "80" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "BEAR" "120" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "G" 1 "NONE" "NONE" "BEAR" "140" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "BEAR" "50" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "H" 1 "NONE" "NONE" "BEAR" "340" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "BEAR" "90" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 1 "NONE" "NONE" "BEAR" "200" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 2 "NONE" "NONE" "BEAR" "220" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "BEAR" "200" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 1 "NONE" "NONE" "BEAR" "160" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 2 "NONE" "NONE" "BEAR" "240" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "BEAR" "180" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 1 "NONE" "NONE" "DISTANCE" "160" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 2 "NONE" "NONE" "DISTANCE" "57.1428572" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "DISTANCE" "182.8571428" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "DISTANCE" "100" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 2 "NONE" "NONE" "DISTANCE" "100" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "DISTANCE" "200" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 1 "NONE" "NONE" "DISTANCE" "170" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 2 "NONE" "NONE" "DISTANCE" "140" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "DISTANCE" "90" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "DISTANCE" "50" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "DISTANCE" "250" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "DISTANCE" "100" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "E" 1 "NONE" "NONE" "DISTANCE" "350" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "DISTANCE" "50" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 1 "NONE" "NONE" "DISTANCE" "90" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 2 "NONE" "NONE" "DISTANCE" "250" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "DISTANCE" "60" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "G" 1 "NONE" "NONE" "DISTANCE" "100" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "DISTANCE" "300" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "H" 1 "NONE" "NONE" "DISTANCE" "237.0370372" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "DISTANCE" "162.9629628" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 1 "NONE" "NONE" "DISTANCE" "130" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 2 "NONE" "NONE" "DISTANCE" "150" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "DISTANCE" "120" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 1 "NONE" "NONE" "DISTANCE" "210" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 2 "NONE" "NONE" "DISTANCE" "140" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "DISTANCE" "50" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "E" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "G" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "H" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" NA "NONE" "NONE" "NA" "PERCENT" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 2 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "A" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 2 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "B" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 2 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "C" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 2 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "D" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "E" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "E" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 2 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "F" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "G" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "G" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "H" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "H" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 2 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "I" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 1 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 2 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2000 WSDP99-0531 1" "PHAB_CHANBFRONT" "J" 999 "NONE" "NONE" "SLOPE" "0.1" "NONE" "NONE" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "161" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "110" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "193" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "230" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "193" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "120" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "210" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "246" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "157" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING2" "75" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING2" "108" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING2" "238" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING3" "124" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "20" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP2" "30" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP2" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP2" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP3" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "36" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "12" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "12" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "26" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "8" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "18" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "9" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "14" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "2" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "1" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE2" "4" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE2" "2" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE2" "10" "CM" "TR" NA
+                          "2003 WWYP99-0659 1" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE3" "0" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "161" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "110" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "193" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "230" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "193" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "120" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "210" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "246" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "157" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING2" "75" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING2" "108" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING2" "238" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING3" "124" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "20" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP2" "30" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP2" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP2" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP3" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "36" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "12" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "16" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "26" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "8" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "18" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "11" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "14" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "12" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "1" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE2" NA "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE2" NA "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE2" NA "CM" "TR" NA
+                          "2003 WWYP99-0659 1 missing CM subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE3" NA "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "161" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "110" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "121.0429871" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "230" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "193" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "120" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "159.0" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "246" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "197.5" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "76.95159" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "62.93204" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "76.0406" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "36" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "12" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "16" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "26" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "8" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "18" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "11" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "14" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "12" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 no subsightings" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "1" "CM" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "161" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "B" NA "NONE" "NONE" "BEARING" "110" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING" "193" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "D" NA "NONE" "NONE" "BEARING" "230" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "E" NA "NONE" "NONE" "BEARING" "193" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "F" NA "NONE" "NONE" "BEARING" "120" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING" "210" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "H" NA "NONE" "NONE" "BEARING" "246" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING" "157" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "J" NA "NONE" "NONE" "BEARING" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING2" "75" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "G" NA "NONE" "NONE" "BEARING2" "108" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "I" NA "NONE" "NONE" "BEARING2" "238" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "BEARING3" "124" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "A" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "B" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP" "20" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "D" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "E" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "F" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "H" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "J" NA "NONE" "NONE" "PROP" "100" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP2" "30" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "G" NA "NONE" "NONE" "PROP2" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "I" NA "NONE" "NONE" "PROP2" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "PROP3" "50" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "A" NA "NONE" "NONE" "SLOPE" "36" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "B" NA "NONE" "NONE" "SLOPE" "12" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE" "12" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "D" NA "NONE" "NONE" "SLOPE" "26" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "E" NA "NONE" "NONE" "SLOPE" "8" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "F" NA "NONE" "NONE" "SLOPE" "18" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE" "9" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "H" NA "NONE" "NONE" "SLOPE" "14" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE" "2" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "J" NA "NONE" "NONE" "SLOPE" "1" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE2" "4" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "G" NA "NONE" "NONE" "SLOPE2" "2" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "I" NA "NONE" "NONE" "SLOPE2" "10" "NONE" "TR" NA
+                          "2003 WWYP99-0659 1 slope unit NONE" "PHAB_SLOPE" "C" NA "NONE" "NONE" "SLOPE3" "0" "NONE" "TR" NA
+#                         "SITE" "SAMPLE_TYPE" "TRANSECT" "LINE" "BANK" "TRANLINE" "PARAMETER" "VALUE" "UNITS" "METHOD" "FLAG"
+#                         "2000 WAZP99-0569 1 no incremnt" "PHAB_SLOPE" "A" NA "NONE" "NONE" "BEARING" "50" "NONE" "TR" NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        A   NA NONE     NONE     BEARING     320   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        B   NA NONE     NONE     BEARING     320   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        C   NA NONE     NONE     BEARING     320   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        D   NA NONE     NONE     BEARING     347   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        E   NA NONE     NONE     BEARING     347   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        F   NA NONE     NONE     BEARING     331   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        G   NA NONE     NONE     BEARING     331   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        H   NA NONE     NONE     BEARING     331   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        I   NA NONE     NONE     BEARING     320   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        J   NA NONE     NONE     BEARING     320   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        A   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        B   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        C   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        D   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        E   NA NONE     NONE        PROP     100   NONE    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        F   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        G   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        H   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        I   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        J   NA NONE     NONE        PROP     100   NONE    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        A   NA NONE     NONE       SLOPE       0   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        B   NA NONE     NONE       SLOPE       0   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        C   NA NONE     NONE       SLOPE       0   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        D   NA NONE     NONE       SLOPE       4   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        E   NA NONE     NONE       SLOPE       1   PERCENT    CL   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        F   NA NONE     NONE       SLOPE       0   CM    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        G   NA NONE     NONE       SLOPE       0   CM    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        H   NA NONE     NONE       SLOPE       0   CM    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        I   NA NONE     NONE       SLOPE       0   CM    TR   NA
+                          "2014 CARO-1043 1"  PHAB_SLOPE        J   NA NONE     NONE       SLOPE       1   CM    TR   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        A   NA NONE     NONE   BEARING   138 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        B   NA NONE     NONE   BEARING   120 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        C   NA NONE     NONE   BEARING   120 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        D   NA NONE     NONE   BEARING   116 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        E   NA NONE     NONE   BEARING   130 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        F   NA NONE     NONE   BEARING   138 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        G   NA NONE     NONE   BEARING   148 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        H   NA NONE     NONE   BEARING   148 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        I   NA NONE     NONE   BEARING   126 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        J   NA NONE     NONE   BEARING   110 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        A   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        B   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        C   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        D   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        E   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        F   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        G   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        H   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        I   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        J   NA NONE     NONE      PROP   100 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        A   NA NONE     NONE     SLOPE   4.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        B   NA NONE     NONE     SLOPE   5.5 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        C   NA NONE     NONE     SLOPE   5.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        D   NA NONE     NONE     SLOPE   5.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        E   NA NONE     NONE     SLOPE   4.5 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        F   NA NONE     NONE     SLOPE   5.5 ""          ""   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        G   NA NONE     NONE     SLOPE   6.0 ""          ""   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        H   NA NONE     NONE     SLOPE   4.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        I   NA NONE     NONE     SLOPE   4.0 PERCENT     CL   NA
+                          "2015 AKBB-018 1"  PHAB_SLOPE        J   NA NONE     NONE     SLOPE   4.5 PERCENT     CL   NA
+                         ')
+    rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    close(tc)
+    return(rc)
+}
+
+nrsaSlopeBearingTest.makeChannelGeometryOLD2 <- function()
 # Create dataframe of channel geometry data for unit test
 {
     cg <- rbind(data.frame(SITE = '2000 WAZP99-0505 1'
@@ -3852,7 +7588,6 @@ nrsaSlopeBearingTest.makeChannelGeometry <- function()
   return(cg)
 }
 
-
 nrsaSlopeBearingTest.makeChannelGeometryOLD <- function()
 # Create dataframe of channel geometry data for unit test
 {
@@ -4440,40 +8175,258 @@ nrsaSlopeBearingTest.makeChannelGeometryOLD <- function()
 nrsaSlopeBearingTest.makeProtocols <- function()
 # Create dataframe of protocol information for unit test
 {
-  return(data.frame('SITE'=c('2000 WAZP99-0505 1'
-                           ,'2000 WAZP99-0505 1 with clinometer'
-                           ,'2000 WAZP99-0505 1 with low slope'
-                           ,'2000 WAZP99-0505 1 with clinometer and low slope'
-                           ,'2000 WAZP99-0569 1'
-                           ,'2003 WWYP99-0659 1'
-                           ,'2003 WWYP99-0659 1 no subsightings'
-                           ,'2003 WWYP99-0659 1 slope unit NONE'
-                           ,'2003 WWYP99-0659 1 missing CM subsightings'
-                           ,'2000 WAZP99-0569 1 no incremnt'
-                           ,'2000 WAZP99-0569 1 no slopes'
-                           ,'2000 WAZP99-0569 1 only 2 slopes'
-                           ,'2000 WAZP99-0569 1 missing PERCENT subsightings'
-
-                           ,'2000 WIDP99-0556 1'
-                           ,'2000 WIDP99-0556 1 with slopes in cm'
-                           ,'2000 WIDP99-0556 1 with NA slopes'
-                           ,'2000 WIDP99-0556 1 with absent slopes'
-                           ,'2000 WIDP99-0556 1 slope unit PCT'
-                           ,'2000 WSDP99-0531 1'
-                           )
-                   ,'PROTOCOL'=c('WADEABLE','WADEABLE','WADEABLE','WADEABLE'
-                                ,'WADEABLE','WADEABLE','WADEABLE','WADEABLE','WADEABLE'
-                                ,'WADEABLE','WADEABLE','WADEABLE','WADEABLE'
-                                ,'BOATABLE','BOATABLE','BOATABLE','BOATABLE'
-                                ,'BOATABLE','BOATABLE'
-                                )
-                   ,stringsAsFactors=FALSE
-                   )
-        )
+  # return(data.frame('SITE'=c('2000 WAZP99-0505 1'
+  #                          ,'2000 WAZP99-0505 1 with clinometer'
+  #                          ,'2000 WAZP99-0505 1 with low slope'
+  #                          ,'2000 WAZP99-0505 1 with clinometer and low slope'
+  #                          ,'2000 WAZP99-0569 1'
+  #                          ,'2003 WWYP99-0659 1'
+  #                          ,'2003 WWYP99-0659 1 no subsightings'
+  #                          ,'2003 WWYP99-0659 1 slope unit NONE'
+  #                          ,'2003 WWYP99-0659 1 missing CM subsightings'
+  #                          ,'2000 WAZP99-0569 1 no incremnt'
+  #                          ,'2000 WAZP99-0569 1 no slopes'
+  #                          ,'2000 WAZP99-0569 1 only 2 slopes'
+  #                          ,'2000 WAZP99-0569 1 missing PERCENT subsightings'
+  # 
+  #                          ,'2000 WIDP99-0556 1'
+  #                          ,'2000 WIDP99-0556 1 with slopes in cm'
+  #                          ,'2000 WIDP99-0556 1 with NA slopes'
+  #                          ,'2000 WIDP99-0556 1 with absent slopes'
+  #                          ,'2000 WIDP99-0556 1 slope unit PCT'
+  #                          ,'2000 WSDP99-0531 1'
+  #                          )
+  #                  ,'PROTOCOL'=c('WADEABLE','WADEABLE','WADEABLE','WADEABLE'
+  #                               ,'WADEABLE','WADEABLE','WADEABLE','WADEABLE','WADEABLE'
+  #                               ,'WADEABLE','WADEABLE','WADEABLE','WADEABLE'
+  #                               ,'BOATABLE','BOATABLE','BOATABLE','BOATABLE'
+  #                               ,'BOATABLE','BOATABLE'
+  #                               )
+  #                  ,stringsAsFactors=FALSE
+  #                  )
+  #       )
+    tc <- textConnection("  SITE PROTOCOL
+                            '2000 WAZP99-0505 1' WADEABLE
+                            '2000 WAZP99-0505 1 with clinometer' WADEABLE
+                            '2000 WAZP99-0505 1 with low slope' WADEABLE
+                            '2000 WAZP99-0505 1 with clinometer and low slope' WADEABLE
+                            '2000 WAZP99-0569 1' WADEABLE
+                            '2003 WWYP99-0659 1' WADEABLE
+                            '2003 WWYP99-0659 1 no subsightings' WADEABLE
+                            '2003 WWYP99-0659 1 slope unit NONE' WADEABLE
+                            '2003 WWYP99-0659 1 missing CM subsightings' WADEABLE
+                            '2000 WAZP99-0569 1 no incremnt' WADEABLE
+                            '2000 WAZP99-0569 1 no slopes' WADEABLE
+                            '2000 WAZP99-0569 1 only 2 slopes' WADEABLE
+                            '2000 WAZP99-0569 1 missing PERCENT subsightings' WADEABLE
+                            '2000 WIDP99-0556 1' BOATABLE
+                            '2000 WIDP99-0556 1 with slopes in cm' BOATABLE
+                            '2000 WIDP99-0556 1 with NA slopes' BOATABLE
+                            '2000 WIDP99-0556 1 with absent slopes' BOATABLE
+                            '2000 WIDP99-0556 1 slope unit PCT' BOATABLE
+                            '2000 WSDP99-0531 1' BOATABLE
+                            '2014 CARO-1043 1' WADEABLE
+                            '2015 AKBB-018 1' WADEABLE
+                        ")
+    rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    close(tc)
+    return(rc)
 }
 
 
 nrsaSlopeBearingTest.makeExpectedResults <- function()
+# Create dataframe of calculation results for unit test using field values.
+#
+# NOTE: '2000 WAZP99-0569 1 only 2 slopes' xslope and vslope values should be
+#       NA when metric calculations remove calculations based on small sample
+#       sizes, but are 5.99, 5.67099638511611 (respectively) when small sample
+#       sizes are not taken into account (as when the study uses GPS based
+#       slope estimations).
+# NOTE: Sites with no slope infomration will not have xslope, xslope_field 
+#       nor pctClinometer values -- not even NA.  These are not included in the
+#       expected results.  Also boatable SITEs 2000 WIDP99-0556 1, 
+#       2000 WIDP99-0556 1 slope unit PCT, and 2000 WSDP99-0531 1 will not 
+#       have pct_Clinometer nor xslope_field values.  Additionally, xslope values
+#       are removed (0.18, 0.18 and 0.10, respectively) as any field data for
+#       boatable reaches is (currently) ignored (only 2 sites recorded any in 
+#       2008-2009 so this is ok).
+{
+    tc <- textConnection("                   SITE        METRIC            VALUE
+                             '2000 WAZP99-0505 1'  xslope_field             5.75
+                             '2000 WAZP99-0505 1'        xslope             5.75
+                             '2000 WAZP99-0505 1'        vslope           2.9930
+                             '2000 WAZP99-0505 1'          nslp               10
+                             '2000 WAZP99-0505 1'       transpc             15.0
+                             '2000 WAZP99-0505 1'      xbearing           16.442
+                             '2000 WAZP99-0505 1'          sinu           1.0680
+                             '2000 WAZP99-0505 1' pctClinometer                0
+             '2000 WAZP99-0505 1 with clinometer'  xslope_field             5.75
+             '2000 WAZP99-0505 1 with clinometer'        xslope             5.75
+             '2000 WAZP99-0505 1 with clinometer'        vslope           2.9930
+             '2000 WAZP99-0505 1 with clinometer'          nslp               10
+             '2000 WAZP99-0505 1 with clinometer'       transpc             15.0
+             '2000 WAZP99-0505 1 with clinometer'      xbearing           16.442
+             '2000 WAZP99-0505 1 with clinometer'          sinu           1.0680
+             '2000 WAZP99-0505 1 with clinometer' pctClinometer              100
+              '2000 WAZP99-0505 1 with low slope'  xslope_field            0.575
+              '2000 WAZP99-0505 1 with low slope'        xslope            0.575
+              '2000 WAZP99-0505 1 with low slope'        vslope          0.29930
+              '2000 WAZP99-0505 1 with low slope'          nslp               10
+              '2000 WAZP99-0505 1 with low slope'       transpc             15.0
+              '2000 WAZP99-0505 1 with low slope'      xbearing           16.442
+              '2000 WAZP99-0505 1 with low slope'          sinu           1.0680
+              '2000 WAZP99-0505 1 with low slope' pctClinometer                0
+'2000 WAZP99-0505 1 with clinometer and low slope' xslope_field            0.575
+'2000 WAZP99-0505 1 with clinometer and low slope'       xslope            0.575
+'2000 WAZP99-0505 1 with clinometer and low slope'       vslope          0.29930
+'2000 WAZP99-0505 1 with clinometer and low slope'         nslp               10
+'2000 WAZP99-0505 1 with clinometer and low slope'      transpc             15.0
+'2000 WAZP99-0505 1 with clinometer and low slope'    xbearing           16.442
+'2000 WAZP99-0505 1 with clinometer and low slope'         sinu           1.0680
+'2000 WAZP99-0505 1 with clinometer and low slope' pctClinometer             100
+                             '2000 WAZP99-0569 1'  xslope_field          10.8300
+                             '2000 WAZP99-0569 1'        xslope          10.8300
+                             '2000 WAZP99-0569 1'        vslope           3.5006
+                             '2000 WAZP99-0569 1'          nslp               10
+                             '2000 WAZP99-0569 1'       transpc           15.000
+                             '2000 WAZP99-0569 1'      xbearing         42.43476
+                             '2000 WAZP99-0569 1'          sinu           1.1251
+                             '2000 WAZP99-0569 1' pctClinometer                0
+                             '2003 WWYP99-0659 1'  xslope_field      1.026666667
+                             '2003 WWYP99-0659 1'        xslope      1.026666667
+                             '2003 WWYP99-0659 1'        vslope      0.648035969
+                             '2003 WWYP99-0659 1'          nslp               10
+                             '2003 WWYP99-0659 1'       transpc           15.000
+                             '2003 WWYP99-0659 1'      xbearing         161.8415
+                             '2003 WWYP99-0659 1'          sinu          1.66858
+                             '2003 WWYP99-0659 1' pctClinometer                0
+             '2003 WWYP99-0659 1 no subsightings'  xslope_field      1.026666667
+             '2003 WWYP99-0659 1 no subsightings'        xslope      1.026666667
+             '2003 WWYP99-0659 1 no subsightings'        vslope      0.648035969
+             '2003 WWYP99-0659 1 no subsightings'          nslp               10
+             '2003 WWYP99-0659 1 no subsightings'       transpc           15.000
+             '2003 WWYP99-0659 1 no subsightings'      xbearing         161.8415
+             '2003 WWYP99-0659 1 no subsightings'          sinu          1.66858
+             '2003 WWYP99-0659 1 no subsightings' pctClinometer                0
+             '2003 WWYP99-0659 1 slope unit NONE'  xslope_field      1.026666667
+             '2003 WWYP99-0659 1 slope unit NONE'        xslope      1.026666667
+             '2003 WWYP99-0659 1 slope unit NONE'        vslope      0.648035969
+             '2003 WWYP99-0659 1 slope unit NONE'          nslp               10
+             '2003 WWYP99-0659 1 slope unit NONE'       transpc           15.000
+             '2003 WWYP99-0659 1 slope unit NONE'      xbearing         161.8415
+             '2003 WWYP99-0659 1 slope unit NONE'          sinu          1.66858
+             '2003 WWYP99-0659 1 slope unit NONE' pctClinometer                0
+     '2003 WWYP99-0659 1 missing CM subsightings'  xslope_field      1.026666667
+     '2003 WWYP99-0659 1 missing CM subsightings'        xslope      1.026666667
+     '2003 WWYP99-0659 1 missing CM subsightings'        vslope      0.648035969
+     '2003 WWYP99-0659 1 missing CM subsightings'          nslp               10
+     '2003 WWYP99-0659 1 missing CM subsightings'       transpc           15.000
+     '2003 WWYP99-0659 1 missing CM subsightings'      xbearing         161.8415
+     '2003 WWYP99-0659 1 missing CM subsightings'          sinu          1.66858
+     '2003 WWYP99-0659 1 missing CM subsightings' pctClinometer                0
+                 '2000 WAZP99-0569 1 no incremnt'  xslope_field          10.8300
+                 '2000 WAZP99-0569 1 no incremnt'        xslope          10.8300
+                 '2000 WAZP99-0569 1 no incremnt'        vslope           3.5006
+                 '2000 WAZP99-0569 1 no incremnt'          nslp               10
+                 '2000 WAZP99-0569 1 no incremnt'       transpc               NA
+                 '2000 WAZP99-0569 1 no incremnt'      xbearing               NA
+                 '2000 WAZP99-0569 1 no incremnt'          sinu               NA
+                 '2000 WAZP99-0569 1 no incremnt' pctClinometer                0
+                   '2000 WAZP99-0569 1 no slopes'  xslope_field               NA
+                   '2000 WAZP99-0569 1 no slopes'        xslope               NA
+                   '2000 WAZP99-0569 1 no slopes'        vslope               NA
+                   '2000 WAZP99-0569 1 no slopes'          nslp                0
+                   '2000 WAZP99-0569 1 no slopes'       transpc           15.000
+                   '2000 WAZP99-0569 1 no slopes'      xbearing         42.43476
+                   '2000 WAZP99-0569 1 no slopes'          sinu           1.1251
+                   '2000 WAZP99-0569 1 no slopes' pctClinometer                0
+               '2000 WAZP99-0569 1 only 2 slopes'  xslope_field             5.99
+               '2000 WAZP99-0569 1 only 2 slopes'        xslope             5.99
+               '2000 WAZP99-0569 1 only 2 slopes'        vslope 5.67099638511611
+               '2000 WAZP99-0569 1 only 2 slopes'          nslp                2
+               '2000 WAZP99-0569 1 only 2 slopes'       transpc           15.000
+               '2000 WAZP99-0569 1 only 2 slopes'      xbearing         42.43476
+               '2000 WAZP99-0569 1 only 2 slopes'          sinu           1.1251
+               '2000 WAZP99-0569 1 only 2 slopes' pctClinometer                0
+'2000 WAZP99-0569 1 missing PERCENT subsightings'  xslope_field            7.554
+'2000 WAZP99-0569 1 missing PERCENT subsightings'        xslope            7.554
+'2000 WAZP99-0569 1 missing PERCENT subsightings'        vslope      4.236571465
+'2000 WAZP99-0569 1 missing PERCENT subsightings'          nslp               10
+'2000 WAZP99-0569 1 missing PERCENT subsightings'       transpc           15.000
+'2000 WAZP99-0569 1 missing PERCENT subsightings'      xbearing         42.43476
+'2000 WAZP99-0569 1 missing PERCENT subsightings'          sinu           1.1251
+'2000 WAZP99-0569 1 missing PERCENT subsightings' pctClinometer                0
+                             '2000 WIDP99-0556 1'  xslope_field          0.18000
+                             '2000 WIDP99-0556 1'        xslope          0.18000
+                             '2000 WIDP99-0556 1'        vslope          0.04216
+                             '2000 WIDP99-0556 1'          nslp               10
+                             '2000 WIDP99-0556 1'       transpc           600.00
+                             '2000 WIDP99-0556 1'      xbearing           59.395
+                             '2000 WIDP99-0556 1'          sinu          1.23583
+                             '2000 WIDP99-0556 1' pctClinometer                0
+           '2000 WIDP99-0556 1 with slopes in cm'  xslope_field          0.18000
+           '2000 WIDP99-0556 1 with slopes in cm'        xslope          0.18000
+           '2000 WIDP99-0556 1 with slopes in cm'        vslope          0.04216
+           '2000 WIDP99-0556 1 with slopes in cm'          nslp               10
+           '2000 WIDP99-0556 1 with slopes in cm'       transpc           600.00
+           '2000 WIDP99-0556 1 with slopes in cm'      xbearing           59.395
+           '2000 WIDP99-0556 1 with slopes in cm'          sinu          1.23583
+           '2000 WIDP99-0556 1 with slopes in cm' pctClinometer                0
+              '2000 WIDP99-0556 1 with NA slopes'  xslope_field               NA
+              '2000 WIDP99-0556 1 with NA slopes'        xslope               NA
+              '2000 WIDP99-0556 1 with NA slopes'        vslope               NA
+              '2000 WIDP99-0556 1 with NA slopes'          nslp                0
+              '2000 WIDP99-0556 1 with NA slopes'       transpc           600.00
+              '2000 WIDP99-0556 1 with NA slopes'      xbearing           59.395
+              '2000 WIDP99-0556 1 with NA slopes'          sinu          1.23583
+              '2000 WIDP99-0556 1 with NA slopes' pctClinometer                0
+          '2000 WIDP99-0556 1 with absent slopes'  xslope_field               NA
+          '2000 WIDP99-0556 1 with absent slopes'        xslope               NA
+          '2000 WIDP99-0556 1 with absent slopes'        vslope               NA
+          '2000 WIDP99-0556 1 with absent slopes'          nslp                0
+          '2000 WIDP99-0556 1 with absent slopes'       transpc           600.00
+          '2000 WIDP99-0556 1 with absent slopes'      xbearing           59.395
+          '2000 WIDP99-0556 1 with absent slopes'          sinu          1.23583
+          '2000 WIDP99-0556 1 with absent slopes' pctClinometer                0
+              '2000 WIDP99-0556 1 slope unit PCT'  xslope_field          0.18000
+              '2000 WIDP99-0556 1 slope unit PCT'        xslope          0.18000
+              '2000 WIDP99-0556 1 slope unit PCT'        vslope          0.04216
+              '2000 WIDP99-0556 1 slope unit PCT'          nslp               10
+              '2000 WIDP99-0556 1 slope unit PCT'       transpc           600.00
+              '2000 WIDP99-0556 1 slope unit PCT'      xbearing           59.395
+              '2000 WIDP99-0556 1 slope unit PCT'          sinu          1.23583
+              '2000 WIDP99-0556 1 slope unit PCT' pctClinometer                0
+                             '2000 WSDP99-0531 1'  xslope_field          0.10000
+                             '2000 WSDP99-0531 1'        xslope          0.10000
+                             '2000 WSDP99-0531 1'        vslope          0.00000
+                             '2000 WSDP99-0531 1'          nslp               10
+                             '2000 WSDP99-0531 1'       transpc           400.00
+                             '2000 WSDP99-0531 1'      xbearing           51.499
+                             '2000 WSDP99-0531 1'          sinu          2.33470
+                             '2000 WSDP99-0531 1' pctClinometer                0
+                               '2014 CARO-1043 1'          nslp               10
+                               '2014 CARO-1043 1' pctClinometer               50
+                               '2014 CARO-1043 1'          sinu 1.01637308274482
+                               '2014 CARO-1043 1'       transpc               16
+                               '2014 CARO-1043 1'        vslope 1.26671121083958
+                               '2014 CARO-1043 1'      xbearing 328.653856558643
+                               '2014 CARO-1043 1'        xslope          0.50625
+                               '2014 CARO-1043 1'  xslope_field          0.50625
+                                '2015 AKBB-018 1'          nslp               10
+                                '2015 AKBB-018 1' pctClinometer               80
+                                '2015 AKBB-018 1'          sinu  1.0245505113752
+                                '2015 AKBB-018 1'       transpc               15
+                                '2015 AKBB-018 1'        vslope 1.83072541784822
+                                '2015 AKBB-018 1'      xbearing 129.385874766173
+                                '2015 AKBB-018 1'        xslope 3.72666666666667
+                                '2015 AKBB-018 1'  xslope_field 3.72666666666667
+                         ")
+    rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    close(tc)
+    return(rc)
+}
+
+nrsaSlopeBearingTest.makeExpectedResultsOLD <- function()
 # Create dataframe of calculation results for unit test using field values.
 #
 # NOTE: '2000 WAZP99-0569 1 only 2 slopes' xslope and vslope values should be
@@ -4650,8 +8603,209 @@ nrsaSlopeBearingTest.makeExpectedResults <- function()
   return(expected)
 }
 
-
 nrsaSlopeBearingTest.makeExpectedResultsWithGIS <- function()
+# Create dataframe of calculation results for unit test using field values 
+# AND map based values
+#
+# NOTE: '2000 WAZP99-0569 1 only 2 slopes' xslope and vslope values should be
+#       NA when metric calculations remove calculations based on small sample
+#       sizes, but are 5.99, 5.67099638511611 (respectively) when small sample
+#       sizes are not taken into account (as when the study uses GPS based
+#       slope estimations).
+# NOTE: Sites with no slope infomration will not have xslope, xslope_field 
+#       nor pctClinometer values -- not even NA.  These are not included in the
+#       expected results.  Also boatable SITEs 2000 WIDP99-0556 1, 
+#       2000 WIDP99-0556 1 slope unit PCT, and 2000 WSDP99-0531 1 will not 
+#       have pct_Clinometer nor xslope_field values.  Additionally, xslope values
+#       are removed (0.18, 0.18 and 0.10, respectively) as any field data for
+#       boatable reaches is (currently) ignored (only 2 sites recorded any in 
+#       2008-2009 so this is ok).
+{
+    tc <- textConnection("                     SITE        METRIC             VALUE
+                               '2000 WAZP99-0505 1'  xslope_field              5.75
+                               '2000 WAZP99-0505 1'        xslope              5.75
+                               '2000 WAZP99-0505 1'        vslope            2.9930
+                               '2000 WAZP99-0505 1'          nslp                10
+                               '2000 WAZP99-0505 1'       transpc              15.0
+                               '2000 WAZP99-0505 1'      xbearing            16.442
+                               '2000 WAZP99-0505 1'          sinu    1.067600000001
+                               '2000 WAZP99-0505 1' pctClinometer                 0
+                               '2000 WAZP99-0505 1'    xslope_map           12.3456
+               '2000 WAZP99-0505 1 with clinometer'  xslope_field              5.75
+               '2000 WAZP99-0505 1 with clinometer'        xslope              5.75
+               '2000 WAZP99-0505 1 with clinometer'        vslope            2.9930
+               '2000 WAZP99-0505 1 with clinometer'          nslp                10
+               '2000 WAZP99-0505 1 with clinometer'       transpc              15.0
+               '2000 WAZP99-0505 1 with clinometer'      xbearing            16.442
+               '2000 WAZP99-0505 1 with clinometer'          sinu            1.0680
+               '2000 WAZP99-0505 1 with clinometer' pctClinometer               100
+                '2000 WAZP99-0505 1 with low slope'  xslope_field             0.575
+                '2000 WAZP99-0505 1 with low slope'        xslope             0.575
+                '2000 WAZP99-0505 1 with low slope'        vslope           0.29930
+                '2000 WAZP99-0505 1 with low slope'          nslp                10
+                '2000 WAZP99-0505 1 with low slope'       transpc              15.0
+                '2000 WAZP99-0505 1 with low slope'      xbearing            16.442
+                '2000 WAZP99-0505 1 with low slope'          sinu            1.0680
+                '2000 WAZP99-0505 1 with low slope' pctClinometer                 0
+ '2000 WAZP99-0505 1 with clinometer and low slope'  xslope_field             0.575
+ '2000 WAZP99-0505 1 with clinometer and low slope'        xslope             0.575
+ '2000 WAZP99-0505 1 with clinometer and low slope'        vslope           0.29930
+ '2000 WAZP99-0505 1 with clinometer and low slope'          nslp                10
+ '2000 WAZP99-0505 1 with clinometer and low slope'       transpc              15.0
+ '2000 WAZP99-0505 1 with clinometer and low slope'      xbearing            16.442
+ '2000 WAZP99-0505 1 with clinometer and low slope'          sinu            1.0680
+ '2000 WAZP99-0505 1 with clinometer and low slope' pctClinometer               100
+                               '2000 WAZP99-0569 1'  xslope_field           10.8300
+                               '2000 WAZP99-0569 1'        xslope           10.8300
+                               '2000 WAZP99-0569 1'        vslope            3.5006
+                               '2000 WAZP99-0569 1'          nslp                10
+                               '2000 WAZP99-0569 1'       transpc            15.000
+                               '2000 WAZP99-0569 1'      xbearing          42.43476
+                               '2000 WAZP99-0569 1'          sinu            1.1251
+                               '2000 WAZP99-0569 1' pctClinometer                 0
+                               '2000 WAZP99-0569 1'    xslope_map 10.82999999999999
+                               '2003 WWYP99-0659 1'  xslope_field       1.026666667
+                               '2003 WWYP99-0659 1'        xslope       1.026666667
+                               '2003 WWYP99-0659 1'        vslope       0.648035969
+                               '2003 WWYP99-0659 1'          nslp                10
+                               '2003 WWYP99-0659 1'       transpc            15.000
+                               '2003 WWYP99-0659 1'      xbearing          161.8415
+                               '2003 WWYP99-0659 1'          sinu           1.66858
+                               '2003 WWYP99-0659 1' pctClinometer                 0
+               '2003 WWYP99-0659 1 no subsightings'  xslope_field       1.026666667
+               '2003 WWYP99-0659 1 no subsightings'        xslope       1.026666667
+               '2003 WWYP99-0659 1 no subsightings'        vslope       0.648035969
+               '2003 WWYP99-0659 1 no subsightings'          nslp                10
+               '2003 WWYP99-0659 1 no subsightings'       transpc            15.000
+               '2003 WWYP99-0659 1 no subsightings'      xbearing          161.8415
+               '2003 WWYP99-0659 1 no subsightings'          sinu           1.66858
+               '2003 WWYP99-0659 1 no subsightings' pctClinometer                 0
+               '2003 WWYP99-0659 1 slope unit NONE'  xslope_field       1.026666667
+               '2003 WWYP99-0659 1 slope unit NONE'        xslope       1.026666667
+               '2003 WWYP99-0659 1 slope unit NONE'        vslope       0.648035969
+               '2003 WWYP99-0659 1 slope unit NONE'          nslp                10
+               '2003 WWYP99-0659 1 slope unit NONE'       transpc            15.000
+               '2003 WWYP99-0659 1 slope unit NONE'      xbearing          161.8415
+               '2003 WWYP99-0659 1 slope unit NONE'          sinu           1.66858
+               '2003 WWYP99-0659 1 slope unit NONE' pctClinometer                 0
+       '2003 WWYP99-0659 1 missing CM subsightings'  xslope_field       1.026666667
+       '2003 WWYP99-0659 1 missing CM subsightings'        xslope       1.026666667
+       '2003 WWYP99-0659 1 missing CM subsightings'        vslope       0.648035969
+       '2003 WWYP99-0659 1 missing CM subsightings'          nslp                10
+       '2003 WWYP99-0659 1 missing CM subsightings'       transpc            15.000
+       '2003 WWYP99-0659 1 missing CM subsightings'      xbearing          161.8415
+       '2003 WWYP99-0659 1 missing CM subsightings'          sinu           1.66858
+       '2003 WWYP99-0659 1 missing CM subsightings' pctClinometer                 0
+                   '2000 WAZP99-0569 1 no incremnt'  xslope_field           10.8300
+                   '2000 WAZP99-0569 1 no incremnt'        xslope           10.8300
+                   '2000 WAZP99-0569 1 no incremnt'        vslope            3.5006
+                   '2000 WAZP99-0569 1 no incremnt'          nslp                10
+                   '2000 WAZP99-0569 1 no incremnt'       transpc                NA
+                   '2000 WAZP99-0569 1 no incremnt'      xbearing                NA
+                   '2000 WAZP99-0569 1 no incremnt'          sinu                NA
+                   '2000 WAZP99-0569 1 no incremnt' pctClinometer                 0
+                     '2000 WAZP99-0569 1 no slopes'  xslope_field                NA
+                     '2000 WAZP99-0569 1 no slopes'        xslope                NA
+                     '2000 WAZP99-0569 1 no slopes'        vslope                NA
+                     '2000 WAZP99-0569 1 no slopes'          nslp                 0
+                     '2000 WAZP99-0569 1 no slopes'       transpc            15.000
+                     '2000 WAZP99-0569 1 no slopes'      xbearing          42.43476
+                     '2000 WAZP99-0569 1 no slopes'          sinu            1.1251
+                     '2000 WAZP99-0569 1 no slopes' pctClinometer                 0
+                 '2000 WAZP99-0569 1 only 2 slopes'  xslope_field              5.99
+                 '2000 WAZP99-0569 1 only 2 slopes'        xslope              5.99
+                 '2000 WAZP99-0569 1 only 2 slopes'        vslope  5.67099638511611
+                 '2000 WAZP99-0569 1 only 2 slopes'          nslp                 2
+                 '2000 WAZP99-0569 1 only 2 slopes'       transpc            15.000
+                 '2000 WAZP99-0569 1 only 2 slopes'      xbearing          42.43476
+                 '2000 WAZP99-0569 1 only 2 slopes'          sinu            1.1251
+                 '2000 WAZP99-0569 1 only 2 slopes' pctClinometer                 0
+  '2000 WAZP99-0569 1 missing PERCENT subsightings'  xslope_field             7.554
+  '2000 WAZP99-0569 1 missing PERCENT subsightings'        xslope             7.554
+  '2000 WAZP99-0569 1 missing PERCENT subsightings'        vslope       4.236571465
+  '2000 WAZP99-0569 1 missing PERCENT subsightings'          nslp                10
+  '2000 WAZP99-0569 1 missing PERCENT subsightings'       transpc            15.000
+  '2000 WAZP99-0569 1 missing PERCENT subsightings'      xbearing          42.43476
+  '2000 WAZP99-0569 1 missing PERCENT subsightings'          sinu            1.1251
+  '2000 WAZP99-0569 1 missing PERCENT subsightings' pctClinometer                 0
+                               '2000 WIDP99-0556 1'  xslope_field           0.18000
+                               '2000 WIDP99-0556 1'        xslope           0.18000
+                               '2000 WIDP99-0556 1'        vslope           0.04216
+                               '2000 WIDP99-0556 1'          nslp                10
+                               '2000 WIDP99-0556 1'       transpc            600.00
+                               '2000 WIDP99-0556 1'      xbearing            59.395
+                               '2000 WIDP99-0556 1'          sinu           1.23583
+                               '2000 WIDP99-0556 1' pctClinometer                 0
+             '2000 WIDP99-0556 1 with slopes in cm'  xslope_field           0.18000
+             '2000 WIDP99-0556 1 with slopes in cm'        xslope           0.18000
+             '2000 WIDP99-0556 1 with slopes in cm'        vslope           0.04216
+             '2000 WIDP99-0556 1 with slopes in cm'          nslp                10
+             '2000 WIDP99-0556 1 with slopes in cm'       transpc            600.00
+             '2000 WIDP99-0556 1 with slopes in cm'      xbearing            59.395
+             '2000 WIDP99-0556 1 with slopes in cm'          sinu           1.23583
+             '2000 WIDP99-0556 1 with slopes in cm' pctClinometer                 0
+                '2000 WIDP99-0556 1 with NA slopes'  xslope_field                NA
+                '2000 WIDP99-0556 1 with NA slopes'        xslope           0.01234
+                '2000 WIDP99-0556 1 with NA slopes'        vslope                NA
+                '2000 WIDP99-0556 1 with NA slopes'          nslp                 0
+                '2000 WIDP99-0556 1 with NA slopes'       transpc            600.00
+                '2000 WIDP99-0556 1 with NA slopes'      xbearing            59.395
+                '2000 WIDP99-0556 1 with NA slopes'          sinu           1.23583
+                '2000 WIDP99-0556 1 with NA slopes' pctClinometer                 0
+                '2000 WIDP99-0556 1 with NA slopes'    xslope_map           0.01234
+            '2000 WIDP99-0556 1 with absent slopes'  xslope_field                NA
+            '2000 WIDP99-0556 1 with absent slopes'        xslope          0.567890
+            '2000 WIDP99-0556 1 with absent slopes'        vslope                NA
+            '2000 WIDP99-0556 1 with absent slopes'          nslp                 0
+            '2000 WIDP99-0556 1 with absent slopes'       transpc            600.00
+            '2000 WIDP99-0556 1 with absent slopes'      xbearing            59.395
+            '2000 WIDP99-0556 1 with absent slopes'          sinu           1.23583
+            '2000 WIDP99-0556 1 with absent slopes' pctClinometer                 0
+            '2000 WIDP99-0556 1 with absent slopes'    xslope_map          0.567890
+                '2000 WIDP99-0556 1 slope unit PCT'  xslope_field           0.18000
+                '2000 WIDP99-0556 1 slope unit PCT'        xslope           0.18000
+                '2000 WIDP99-0556 1 slope unit PCT'        vslope           0.04216
+                '2000 WIDP99-0556 1 slope unit PCT'          nslp                10
+                '2000 WIDP99-0556 1 slope unit PCT'       transpc            600.00
+                '2000 WIDP99-0556 1 slope unit PCT'      xbearing            59.395
+                '2000 WIDP99-0556 1 slope unit PCT'          sinu           1.23583
+                '2000 WIDP99-0556 1 slope unit PCT' pctClinometer                 0
+                               '2000 WSDP99-0531 1'  xslope_field           0.10000
+                               '2000 WSDP99-0531 1'        xslope           0.10000
+                               '2000 WSDP99-0531 1'        vslope           0.00000
+                               '2000 WSDP99-0531 1'          nslp                10
+                               '2000 WSDP99-0531 1'       transpc            400.00
+                               '2000 WSDP99-0531 1'      xbearing            51.499
+                               '2000 WSDP99-0531 1'          sinu           2.33470
+                               '2000 WSDP99-0531 1' pctClinometer                 0
+  'An extra reach not in the main expected results'        xslope   1.5999999999999
+  'An extra reach not in the main expected results'    xslope_map   1.5999999999999
+  'An extra reach not in the main expected results'          sinu       1.101010101
+  'An extra reach not in the main expected results' pctClinometer           0.00000
+                                 '2014 CARO-1043 1'          nslp               10
+                                 '2014 CARO-1043 1' pctClinometer               50
+                                 '2014 CARO-1043 1'          sinu 1.01637308274482
+                                 '2014 CARO-1043 1'       transpc               16
+                                 '2014 CARO-1043 1'        vslope 1.26671121083958
+                                 '2014 CARO-1043 1'      xbearing 328.653856558643
+                                 '2014 CARO-1043 1'        xslope          0.50625
+                                 '2014 CARO-1043 1'  xslope_field          0.50625
+                                  '2015 AKBB-018 1'          nslp               10
+                                  '2015 AKBB-018 1' pctClinometer               80
+                                  '2015 AKBB-018 1'          sinu  1.0245505113752
+                                  '2015 AKBB-018 1'       transpc               15
+                                  '2015 AKBB-018 1'        vslope 1.83072541784822
+                                  '2015 AKBB-018 1'      xbearing 129.385874766173
+                                  '2015 AKBB-018 1'        xslope 3.72666666666667
+                                  '2015 AKBB-018 1'  xslope_field 3.72666666666667
+                         ")
+    rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    close(tc)
+    return(rc)
+}
+
+
+nrsaSlopeBearingTest.makeExpectedResultsWithGISOLD <- function()
 # Create dataframe of calculation results for unit test using field values 
 # AND map based values
 #
@@ -4844,35 +8998,44 @@ nrsaSlopeBearingTest.makeExpectedResultsWithGIS <- function()
 nrsaSlopeBearingTest.makeGisCalcs <- function()
 # Creates a dataframe of fake GIS calculations of XSLOPE and SINU.
 {
-    gisCalcs <- rbind(data.frame('SITE'='2000 WAZP99-0505 1'
-                                ,'METRIC'=c('xslope','sinu')
-                                ,'VALUE'=c('12.3456','1.067600000001')
-                                ,stringsAsFactors=FALSE
-                                )
-                     ,data.frame('SITE'='2000 WAZP99-0569 1'
-                                ,'METRIC'=c('xslope')
-                                ,'VALUE'=c('10.82999999999999')
-                                ,stringsAsFactors=FALSE
-                                )
-                     ,data.frame('SITE'='2000 WIDP99-0556 1 with NA slopes'
-                                ,'METRIC'='xslope'
-                                ,VALUE='0.01234'
-                                ,stringsAsFactors=FALSE
-                                )
-                     ,data.frame('SITE'='2000 WIDP99-0556 1 with absent slopes'
-                                ,'METRIC'='xslope'
-                                ,VALUE='0.567890'
-                                ,stringsAsFactors=FALSE
-                                )
-                     ,data.frame('SITE'='An extra reach not in the main expected results'
-                                ,'METRIC'=c('xslope','sinu')
-                                ,'VALUE'=c('1.5999999999999','1.101010101')
-                                ,stringsAsFactors=FALSE
-                                )
-                     )
-
-  return(gisCalcs)
+    # gisCalcs <- rbind(data.frame('SITE'='2000 WAZP99-0505 1'
+    #                             ,'METRIC'=c('xslope','sinu')
+    #                             ,'VALUE'=c('12.3456','1.067600000001')
+    #                             ,stringsAsFactors=FALSE
+    #                             )
+    #                  ,data.frame('SITE'='2000 WAZP99-0569 1'
+    #                             ,'METRIC'=c('xslope')
+    #                             ,'VALUE'=c('10.82999999999999')
+    #                             ,stringsAsFactors=FALSE
+    #                             )
+    #                  ,data.frame('SITE'='2000 WIDP99-0556 1 with NA slopes'
+    #                             ,'METRIC'='xslope'
+    #                             ,VALUE='0.01234'
+    #                             ,stringsAsFactors=FALSE
+    #                             )
+    #                  ,data.frame('SITE'='2000 WIDP99-0556 1 with absent slopes'
+    #                             ,'METRIC'='xslope'
+    #                             ,VALUE='0.567890'
+    #                             ,stringsAsFactors=FALSE
+    #                             )
+    #                  ,data.frame('SITE'='An extra reach not in the main expected results'
+    #                             ,'METRIC'=c('xslope','sinu')
+    #                             ,'VALUE'=c('1.5999999999999','1.101010101')
+    #                             ,stringsAsFactors=FALSE
+    #                             )
+    #                  )
+    tc <- textConnection("SITE METRIC VALUE
+                          '2000 WAZP99-0505 1'                              xslope           12.3456
+                          '2000 WAZP99-0505 1'                              sinu      1.067600000001
+                          '2000 WAZP99-0569 1'                              xslope 10.82999999999999
+                          '2000 WIDP99-0556 1 with NA slopes'               xslope           0.01234
+                          '2000 WIDP99-0556 1 with absent slopes'           xslope          0.567890
+                          'An extra reach not in the main expected results' xslope   1.5999999999999
+                          'An extra reach not in the main expected results'   sinu       1.101010101
+                         ")
+    gisCalcs <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    close(tc)
+    return(gisCalcs)
 }
-
 
 # end of file
