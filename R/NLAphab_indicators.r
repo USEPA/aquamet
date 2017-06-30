@@ -48,6 +48,9 @@
 #' @param ssfcBoulders Fractional shoreline cover of boulders, calculated
 #' by function \code{metsShorelineSubstrate()}.
 #' 
+#' @param hipwWalls Human influence weighted presence of walls, calculated 
+#' by function \code{metsHumanImpact()}.
+#' 
 #' @return A data frame containing:
 #' \itemize{
 #' \item{sampID}{The variables in the argument \emph{sampID}}
@@ -66,7 +69,7 @@
 
 nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,rviWoody,rvfcGndInundated,rvfcUndWoody,rvfcGndWoody
-                                   ,rvfpCanBig,ssfcBedrock,ssfcBoulders){
+                                   ,rvfpCanBig,ssfcBedrock,ssfcBoulders,hipwWalls){
   
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
@@ -83,10 +86,12 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   names(x)[names(x)==rvfpCanBig] <- 'rvfpCanBig'
   names(x)[names(x)==ssfcBedrock] <- 'ssfcBedrock'
   names(x)[names(x)==ssfcBoulders] <- 'ssfcBoulders'
+  names(x)[names(x)==hipwWalls] <- 'hipwWalls'
 
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                         ,elevXlat=elev*lat
-                        ,l_area=log10(area))
+                        ,l_area=log10(area)
+                        ,ssiNatBedBld=ifelse(hipwWalls>=0.10,0,(ssfcBedrock + ssfcBoulders)))
   
   # melt dfIn now in preparation for merging with the parameter df being created next
   dfIn.long <- reshape2::melt(dfIn,id.vars=c(sampID,'ecoreg')
@@ -117,11 +122,11 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   
   # Calculate the observed indicator value, depending on ecoregion
   dfObs <- dfIn %>%
-    mutate(RVegQ = ifelse(ecoreg %in% c('NAP','SAP','UMW')
+    mutate(RVegQ = ifelse(ecoreg %in% c('NAP','SAP','UMW','CPL')
                           ,0.5*(rvfcGndInundated + (rviWoody/2.5))
                           ,ifelse(ecoreg %in% c('NPL','SPL','TPL')
                                   ,0.5*(rvfcGndInundated + ((rvfcUndWoody + rvfcGndWoody)/1.75))
-                                  ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssfcBedrock + ssfcBoulders))))
+                                  ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssiNatBedBld))))
 
   # Now merge the expected and observed values and calculate O/E  
   dfOE <- subset(dfObs,select=c(sampID,'ecoreg','RVegQ')) %>% 
@@ -379,8 +384,8 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   
   # Create data frame of regression parameters in order to calculate expected values
   expParam <- data.frame(ecoreg=c('NAP','SAP','CPL','UMW','NPL','SPL','TPL','WMT','XER')
-                         ,resp = c('log10','log10','log10','log10','log10','log10','log10','log10','log10')
-                         ,respAdj = c(0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01)
+                         ,resp = c('log10','log10','none','log10','log10','log10','log10','log10','log10')
+                         ,respAdj = c(0.01,0.01,NA,0.01,0.01,0.01,0.01,0.01,0.01)
                          ,intercept = c(2.41606,1.92708,0.59561,-0.70830,-0.82455,-0.82455,-0.82455,-0.08802,0.24931)
                          ,lat = c(-0.03964,NA,NA,NA,NA,NA,NA,-0.01015,-0.02529)
                          ,lon = c(0.01798,0.03141,NA,NA,NA,NA,NA,NA,NA)
@@ -540,9 +545,9 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
                                        ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT','XER','XER')
                             ,lake_origin=c(rep(c('NATURAL','MAN_MADE'),9))
                             ,p75H = c(0.25,0.25,0.200,0.200,0.510,0.510,0.10,0.10,0.10,1.550
-                                      ,0.10,1.550,0.10,1.550,0.64,2.00,0.64,2.00)
+                                      ,0.10,1.550,0.10,1.550,0.64,4.39,0.64,4.39)
                             ,p95H = c(1.65,1.65,2.15,2.15,2.65,2.65,4.0,4.0,2.85,14.63
-                                      ,2.85,14.63,2.85,14.63,9.43,4.39,9.43,4.39)
+                                      ,2.85,14.63,2.85,14.63,9.43,11.37,9.43,11.37)
                             ,stringsAsFactors=F)
 
   dfvert <- merge(x, tholdsVert, by=c('ecoreg','lake_origin')) %>%

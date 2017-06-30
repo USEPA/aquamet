@@ -153,9 +153,8 @@ metsRiparianVegetationNLA <- function(df, createSyntheticCovers=TRUE,
 			   			    }
 	                       )
 
-
 		synValues <- calcSynCovers(rbind(rvData, horizDist), 15, assumptions=FALSE)
-								   
+
 		# Make the resulting dataframe look like the data we're calculating metrics with.
 		newValues <- within(synValues[c('UID','STATION','PARAMETER','RESULT','characteristicCover')]
 						   ,{SAMPLE_TYPE<-'PHAB'
@@ -166,7 +165,7 @@ metsRiparianVegetationNLA <- function(df, createSyntheticCovers=TRUE,
 										 ))
 							}
 						   )
-						   
+
 	  	rvData <- rbind(rvData, newValues)
   	}
 	

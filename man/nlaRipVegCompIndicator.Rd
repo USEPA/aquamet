@@ -6,7 +6,7 @@
 \usage{
 nlaRipVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, ecoreg,
   rviWoody, rvfcGndInundated, rvfcUndWoody, rvfcGndWoody, rvfpCanBig,
-  ssfcBedrock, ssfcBoulders)
+  ssfcBedrock, ssfcBoulders, hipwWalls)
 }
 \arguments{
 \item{x}{Input data frame containing other variables as specified in
@@ -49,6 +49,9 @@ by function \code{metsShorelineSubstrate()}.}
 
 \item{ssfcBoulders}{Fractional shoreline cover of boulders, calculated
 by function \code{metsShorelineSubstrate()}.}
+
+\item{hipwWalls}{Human influence weighted presence of walls, calculated 
+by function \code{metsHumanImpact()}.}
 }
 \value{
 A data frame containing:
