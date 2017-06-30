@@ -530,19 +530,19 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
   tholdsVert <- data.frame(ecoreg = c('NAP','NAP','SAP','SAP','UMW','UMW','CPL','CPL','NPL'
                                       ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT','XER','XER')
                            ,lake_origin=c(rep(c('NATURAL','MAN_MADE'),9))
-                           ,p75V = c(0.22,0.22,0.30,0.30,0.14,0.14,0.03,0.03,0.12,0.36,0.12,0.36,0.12,0.36
-                                     ,0.33,1.00,0.33,1.00)
-                           ,p95V = c(0.515,0.515,1.24,1.24,0.50,0.50,1.01,1.01,0.42,1.20,0.42,1.20,0.42,1.20
-                                     ,1.06,2.00,1.06,2.00)
+                           ,p75V = c(0.122,0.122,0.200,0.200,0.111,0.111,0.03,0.03,0.06,0.36
+                                     ,0.06,0.36,0.06,0.36,0.33,1.05,0.33,1.05)
+                           ,p95V = c(0.47,0.47,0.76,0.76,0.500,0.500,1.00,1.00,0.28,1.20
+                                     ,0.28,1.20,0.28,1.20,1.00,2.00,1.00,2.00)
                            ,stringsAsFactors=F)
   
   tholdsHoriz <- data.frame(ecoreg = c('NAP','NAP','SAP','SAP','UMW','UMW','CPL','CPL','NPL'
                                        ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT','XER','XER')
                             ,lake_origin=c(rep(c('NATURAL','MAN_MADE'),9))
-                            ,p75H = c(0.47,0.47,0.305,0.305,0.58,0.58,0.10,0.10,0.40,1.40,0.40,1.40,0.40,1.40
-                                      ,0.64,3.51,0.64,3.51)
-                            ,p95H = c(2.52,2.52,2.83,2.83,2.65,2.65,4.0,4.0,4.00,14.63,4.00,14.63,4.00,14.63
-                                      ,9.43,11.37,9.43,11.37)
+                            ,p75H = c(0.25,0.25,0.200,0.200,0.510,0.510,0.10,0.10,0.10,1.550
+                                      ,0.10,1.550,0.10,1.550,0.64,2.00,0.64,2.00)
+                            ,p95H = c(1.65,1.65,2.15,2.15,2.65,2.65,4.0,4.0,2.85,14.63
+                                      ,2.85,14.63,2.85,14.63,9.43,4.39,9.43,4.39)
                             ,stringsAsFactors=F)
 
   dfvert <- merge(x, tholdsVert, by=c('ecoreg','lake_origin')) %>%
@@ -556,7 +556,7 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
                                   , ifelse(vertDD_cond=='Medium'|horizDD_cond=='Medium', 'Medium'
                                   , ifelse(vertDD_cond=='Small'|horizDD_cond=='Small', 'Small'
                                            , 'Not Assessed')))) %>% 
-    subset(select = c(sampID, 'DRAWDOWN_COND'))
+    subset(select = c(sampID, 'horizDD_cond','vertDD_cond','DRAWDOWN_COND'))
   
   
   
