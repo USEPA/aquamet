@@ -1,8 +1,14 @@
 #' @export
-metsBankFeatures <- function(df, data2007=FALSE) {
+nlaBankFeatures <- function(angle = NULL
+                           ,drawdown = NULL
+                           ,horizontalDistance = NULL
+                           ,horizontalDistanceDrawdown = NULL
+                           ,verticalHeight = NULL
+                           ,verticalHeightDrawdown = NULL
+                           ) {
 
 ################################################################################
-# Function: metsBankFeatures
+# Function: nlaBankFeatures
 # Title: Calculate NLA Bank Features Metrics
 # Programmers: Curt Seeliger
 #              Tom Kincaid
@@ -32,6 +38,15 @@ metsBankFeatures <- function(df, data2007=FALSE) {
 #   02/19/14 cws: Modified metsBankFeatures.fillinDistancesTest() to expect only
 #            distance and drawdown related parameters in the returned dataframe.
 #   06/12/14 tmk: Removed calls to the require() function.
+#    6/30/17 cws Renamed from metsBankFeatures to nlaBankFeatures.
+#            Changed argument from single dataframe to one dataframe per value,
+#            as was done with the NRSA metrics functions.  Call interface 
+#            modified. Changed UID to SITE and RESULT to VALUE throughout, and
+#            returning metric name in METRIC rather than PARAMETER, but
+#            otherwise left the body of the function intact. Returning NULL if
+#            arguments contain no data. Removed data2007 argument as it wasnt 
+#            being used.
+#
 # Arguments:
 #   df = a data frame containing bank features data.  The data frame must
 #     include columns that are named as follows:
@@ -48,8 +63,6 @@ metsBankFeatures <- function(df, data2007=FALSE) {
 #                   argument has the following values: ANGLE, HORIZ_DIST,
 #                   VERT_HEIGHT, HORIZ_DIST_DD, and VERT_HEIGHT_DD.
 #       RESULT - parameter values, which are the values used in calculations.
-#   data2007 = a logical value, which equals TRUE if 2007 data is being
-#     processed.  The default value is FALSE.
 # Output:
 #   A data frame that contains the following columns:
 #     UID - universal ID value
@@ -61,13 +74,33 @@ metsBankFeatures <- function(df, data2007=FALSE) {
 ################################################################################
 
   # Print initial messages
-  cat('Bank Features calculations:\n')
-  intermediateMessage('Bank Features mets', loc='start')
+  intermediateMessage('NLA Bank Features metrics', loc='start')
 
-	stdData <- metsBankFeatures.standardizeData(df, data2007)
+    # Standardize arguments, then combine them into single dataframe as expected
+    # in the rest of the function
+    addParameter <- function(df, ...) {
+        
+        args <- list(...)
+        
+        if(is.null(args)) return(NULL)
+        else if(all(is.na(args))) return(NULL)
+        
+        rc <- df %>% mutate(PARAMETER=args[[1]])
+        return(rc)
+        
+    }
+    angle <- aquametStandardizeArgument(angle, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'ANGLE')
+    drawdown <- aquametStandardizeArgument(drawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'DRAWDOWN')
+    horizontalDistance <- aquametStandardizeArgument(horizontalDistance, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'HORIZ_DIST')
+    horizontalDistanceDrawdown <- aquametStandardizeArgument(horizontalDistanceDrawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'HORIZ_DIST_DD')
+    verticalHeight <- aquametStandardizeArgument(verticalHeight, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'VERT_HEIGHT')
+    verticalHeightDrawdown <- aquametStandardizeArgument(verticalHeightDrawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'VERT_HEIGHT_DD')
 
-	angleMets <- metsBankFeatures.bankAngle(stdData)
-	distanceMets <- metsBankFeatures.distances(stdData) 
+    df <- rbind(angle, drawdown, horizontalDistance, horizontalDistanceDrawdown, verticalHeight, verticalHeightDrawdown)
+	stdData <- nlaBankFeatures.standardizeData(df)
+
+	angleMets <- nlaBankFeatures.bankAngle(stdData)
+	distanceMets <- nlaBankFeatures.distances(stdData) 
 
   bfMets <- rbind(angleMets, distanceMets)
 	
@@ -77,16 +110,16 @@ metsBankFeatures <- function(df, data2007=FALSE) {
 }
 
 
-metsBankFeatures.standardizeData <- function(df, data2007)
+nlaBankFeatures.standardizeData <- function(df)
 # returns dataframe with standardized input data.
 # NEAR VERTICAL is from 2007 and NEAR_VERTICAL_UNDERCUT is from 2012.  These
 # are standardized here (and should eventually be changed in the database)
 ## TODO Standardize ANGLE values in 2007 and 2012 NLA tables.
 {
-	rc <- within(df, RESULT <- ifelse(PARAMETER %in% c('ANGLE') & 
-							          RESULT %in% c('NEAR VERTICAL','NEAR_VERTICAL_UNDERCUT')
+	rc <- within(df, VALUE <- ifelse(PARAMETER %in% c('ANGLE') & 
+							          VALUE %in% c('NEAR VERTICAL','NEAR_VERTICAL_UNDERCUT')
 					 				 ,'NEAR_VERTICAL'
-						  			 ,RESULT
+						  			 ,VALUE
 									 )
 				)
 				
@@ -94,17 +127,17 @@ metsBankFeatures.standardizeData <- function(df, data2007)
 }
 
 
-metsBankFeatures.bankAngle <- function(df)
+nlaBankFeatures.bankAngle <- function(df)
 # calculates bank angle metrics.  Returns dataframe
-# with columns UID, PARAMETER, RESULT
+# with columns SITE, PARAMETER, VALUE
 {
 	angles<-subset(df, PARAMETER=='ANGLE' & 
-					   RESULT %in% c('FLAT','GRADUAL','STEEP','NEAR_VERTICAL')
+					   VALUE %in% c('FLAT','GRADUAL','STEEP','NEAR_VERTICAL')
 				  )
 	
 	# mode of bank angle class
-	modeAngle<-aggregate(list(RESULT=angles$RESULT)
-						,list(UID=angles$UID)
+	modeAngle<-aggregate(list(VALUE=angles$VALUE)
+						,list(SITE=angles$SITE)
 						,modalValues, delim=', ', na.rm=TRUE
 						)
 	modeAngle$PARAMETER <- 'BFOANGLE'
@@ -112,58 +145,58 @@ metsBankFeatures.bankAngle <- function(df)
 	
 	
 	# calculate fraction of lake with specific bank angles:
-	flatAngle<-aggregate(list(RESULT=(angles$RESULT=='FLAT'))
-						,list(UID=angles$UID)
+	flatAngle<-aggregate(list(VALUE=(angles$VALUE=='FLAT'))
+						,list(SITE=angles$SITE)
 						,protectedMean, na.rm=TRUE
 						)
 	flatAngle <- within(flatAngle
 					   ,{PARAMETER <- 'BFFFLAT'
-						 RESULT <- as.character(RESULT)
+						 VALUE <- as.character(VALUE)
 					 	}
 					   )	
 	
-	gradualAngle<-aggregate(list(RESULT=(angles$RESULT=='GRADUAL'))
-						   ,list(UID=angles$UID)
+	gradualAngle<-aggregate(list(VALUE=(angles$VALUE=='GRADUAL'))
+						   ,list(SITE=angles$SITE)
 						   ,protectedMean, na.rm=TRUE
 					 	   )
 	gradualAngle <- within(gradualAngle
 						  ,{PARAMETER <- 'BFFGRADUAL'
-							RESULT <- as.character(RESULT)
+							VALUE <- as.character(VALUE)
 						   }
 						  )	
 	
-	steepAngle<-aggregate(list(RESULT=(angles$RESULT=='STEEP'))
-						 ,list(UID=angles$UID)
+	steepAngle<-aggregate(list(VALUE=(angles$VALUE=='STEEP'))
+						 ,list(SITE=angles$SITE)
 						 ,protectedMean, na.rm=TRUE
 						 )
 	steepAngle$PARAMETER <- 'BFFSTEEP'
 	steepAngle <- within(steepAngle
 					   ,{PARAMETER <- 'BFFSTEEP'
-						 RESULT <- as.character(RESULT)
+						 VALUE <- as.character(VALUE)
 						}
 					   )	
 	
-	verticalAngle<-aggregate(list(RESULT=(angles$RESULT=='NEAR_VERTICAL'))
-							,list(UID=angles$UID)
+	verticalAngle<-aggregate(list(VALUE=(angles$VALUE=='NEAR_VERTICAL'))
+							,list(SITE=angles$SITE)
 							,protectedMean, na.rm=TRUE
 							)
 	verticalAngle$PARAMETER <- 'BFFVERTICAL'
 	verticalAngle <- within(verticalAngle
 					   	   ,{PARAMETER <- 'BFFVERTICAL'
-						   	 RESULT <- as.character(RESULT)
+						   	 VALUE <- as.character(VALUE)
 							}
 					   	   )	
 	
 	
 	# number of slopes recorded 
-	nAngle<-aggregate(list(RESULT=I(angles$RESULT))
-					 ,list(UID=angles$UID)
+	nAngle<-aggregate(list(VALUE=I(angles$VALUE))
+					 ,list(SITE=angles$SITE)
 					 ,count
 					 )
 	nAngle$PARAMETER <- 'BFNANGLE'
 	nAngle <- within(nAngle
 					,{PARAMETER <- 'BFNANGLE'
-					  RESULT <- as.character(RESULT)
+					  VALUE <- as.character(VALUE)
 					 }
 					)	
 	
@@ -176,15 +209,15 @@ metsBankFeatures.bankAngle <- function(df)
 }
 
 
-metsBankFeatures.distances <- function(df)
+nlaBankFeatures.distances <- function(df)
 # calculates metrics for horizontal distances and vertical heights.  
-# Returns dataframe with columns UID, PARAMETER, RESULT.
+# Returns dataframe with columns SITE, PARAMETER, VALUE.
 {
 	# Modify drawdown data based on assumptions. This is only meaningful if 
 	# DRAWDOWN data is present, but that is (currently) handled inside the 
 	# function.
 	intermediateMessage('.4')
-	df <- metsBankFeatures.fillinDistances(df)
+	df <- nlaBankFeatures.fillinDistances(df)
 	intermediateMessage('.5')
 	
 	
@@ -193,10 +226,10 @@ metsBankFeatures.distances <- function(df)
 	#   results in generation of warning messages about coercion 
 	#   introducing NA results.
 	tt <- subset(df, PARAMETER %in% c('VERT_HEIGHT','HORIZ_DIST', 'VERT_HEIGHT_DD','HORIZ_DIST_DD'))
-	tt$RESULT <- as.numeric(tt$RESULT)
+	tt$VALUE <- as.numeric(tt$VALUE)
 	
-	meanDists<-aggregate(list(RESULT=tt$RESULT)
-						,list(UID=tt$UID
+	meanDists<-aggregate(list(VALUE=tt$VALUE)
+						,list(SITE=tt$SITE
 							 ,PARAMETER=tt$PARAMETER
 							 )
 						,protectedMean, na.rm=TRUE
@@ -210,8 +243,8 @@ metsBankFeatures.distances <- function(df)
 							   )
 	
 	
-	nDists<-aggregate(list(RESULT=tt$RESULT)
-					 ,list(UID=tt$UID
+	nDists<-aggregate(list(VALUE=tt$VALUE)
+					 ,list(SITE=tt$SITE
 						  ,PARAMETER=tt$PARAMETER
 						  )
 					 ,count
@@ -230,7 +263,7 @@ metsBankFeatures.distances <- function(df)
 }
 
 
-metsBankFeatures.fillinDistances <- function(df)
+nlaBankFeatures.fillinDistances <- function(df)
 # Used to fill in missing values of HORIZ_DIST_DD and VERT_HEIGHT_DD with zeros where
 # it is safe to assume they are zero, i.e. when there is no drawdown noted.
 #
@@ -240,35 +273,35 @@ metsBankFeatures.fillinDistances <- function(df)
 # ASSUMPTIONS:
 # PARAMETER values include at least one row of HORIZ_DIST_DD and VERT_HEIGHT_DD, otherwise
 #   the expand.data.frame() call will not work.
-# df has columns UID, STATION, PARAMETER, RESULT and none other.
+# df has columns SITE, STATION, PARAMETER, VALUE and none other.
 #
 {
 	distances <- subset(df
 					   ,PARAMETER %in% c('DRAWDOWN','HORIZ_DIST','VERT_HEIGHT','HORIZ_DIST_DD','VERT_HEIGHT_DD')
-			   		   ,select=c(UID, STATION, PARAMETER, RESULT)
+			   		   ,select=c(SITE, STATION, PARAMETER, VALUE)
 					   )
 	
 	# Make absent VERT_DIST_DD and HORIZ_DIST_DD values present in data with NA values.
 	# This is done so they can be set to zero later.
-	indivSites <- lapply(unique(distances$UID)
+	indivSites <- lapply(unique(distances$SITE)
 				 		,function(uid) {
 							
-							thisSite <- subset(distances, UID==uid)
+							thisSite <- subset(distances, SITE==uid)
 									
 							if('DRAWDOWN' %in% thisSite$PARAMETER) {
 										
 								# make sure 'HORIZ_DIST_DD','VERT_HEIGHT_DD' occur in this visit data
 								tt <- rbind(thisSite
-										   ,data.frame(UID=uid
+										   ,data.frame(SITE=uid
 							   						  ,STATION='DELETEME'
 								  					  ,PARAMETER=c('HORIZ_DIST_DD','VERT_HEIGHT_DD')
-								  					  ,RESULT=as.character(NA)
+								  					  ,VALUE=as.character(NA)
 								  					  ,stringsAsFactors=FALSE
 								  				  	  )
 							   		   	   )
 									
-								# Add absent rows for this UID and then remove the rows 'seeded' above.
-								rc <- subset(expand.data.frame(tt, c('UID','STATION','PARAMETER'))
+								# Add absent rows for this SITE and then remove the rows 'seeded' above.
+								rc <- subset(expand.data.frame(tt, c('SITE','STATION','PARAMETER'))
 											,STATION != 'DELETEME'
 											)
 													
@@ -287,16 +320,16 @@ metsBankFeatures.fillinDistances <- function(df)
 						 
 	# Determine rows where missing distances can be assumed to be zero unless 
 	# recorded as otherwise.
-	correctableValues <- subset(distances, PARAMETER=='DRAWDOWN' & RESULT=='NO')
+	correctableValues <- subset(distances, PARAMETER=='DRAWDOWN' & VALUE=='NO')
 	
 	
 	# Change missing values to zero when DRAWDOWN is 'NO'. 
 	dfFilledin <- within(dfExpanded
-						,RESULT <- ifelse(paste(UID, STATION) %in% with(correctableValues, paste(UID, STATION))
+						,VALUE <- ifelse(paste(SITE, STATION) %in% with(correctableValues, paste(SITE, STATION))
 										  & PARAMETER %in% c('HORIZ_DIST_DD','VERT_HEIGHT_DD')
-										  & is.na(RESULT)
+										  & is.na(VALUE)
 										 ,'0'
-										 ,RESULT
+										 ,VALUE
 										 )
 						)
 						

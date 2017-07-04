@@ -1,20 +1,20 @@
-# metsBankFeatures.r
+# nlaBankFeaturesTest.r
 # RUnit tests
 
 
-metsBankFeatures.fillinDistancesTest <- function()
-# unit test for metsBankFeatures.fillinDistances
+nlaBankFeatures.fillinDistancesTest <- function()
+# unit test for nlaBankFeatures.fillinDistances
 #
-# UID distsPresent tests case where distance is always present
-# UID distsNA tests case where distances rows are present and recorded as NA
-# UID distsAbsent tests case where distances rows are not present in the data
+# SITE distsPresent tests case where distance is always present
+# SITE distsNA tests case where distances rows are present and recorded as NA
+# SITE distsAbsent tests case where distances rows are not present in the data
 #   and not all stations were sampled.
-# UID drawdownAbsent tests case where DRAWDOWN and HORIZ_DIST_DD is absent
+# SITE drawdownAbsent tests case where DRAWDOWN and HORIZ_DIST_DD is absent
 #   in the data and not all stations were sampled. In this case, no changes
 #   are made to the data for this site.
 #
 {
-	testData <- data.frame(UID=c(rep('distsPresent',4*10)
+	testData <- data.frame(SITE=c(rep('distsPresent',4*10)
 	                            ,rep('distsNA', 4*10)
 				                ,rep('distsAbsent', 2*8)
 				                ,rep('drawdownAbsent', 2*8)
@@ -29,7 +29,7 @@ metsBankFeatures.fillinDistancesTest <- function()
 									  ,rep(c('DRAWDOWN','other'), times=8)
 									  ,rep(c('VERT_HEIGHT_DD','other'), times=8)
 									  )
-						  ,RESULT=c(rep(c('YES','1','2','x','NO','2','3','y',NA,'3','4','z'), length=10*4)
+						  ,VALUE=c(rep(c('YES','1','2','x','NO','2','3','y',NA,'3','4','z'), length=10*4)
 				                   ,rep(c('YES', NA, NA,'x','NO', NA, NA,'y',NA, NA, NA,'z'), length=10*4)
 								   ,rep(c('YES','x','NO','y',NA,'z'), length=8*2)
 								   ,rep(c('1','x','2','y',NA,'z'), length=8*2)
@@ -37,7 +37,7 @@ metsBankFeatures.fillinDistancesTest <- function()
 						  ,stringsAsFactors=FALSE
 						  )
 
-	expected <- data.frame(UID=c(rep('distsPresent',4*10)
+	expected <- data.frame(SITE=c(rep('distsPresent',4*10)
 	                           	,rep('distsNA', 4*10)
 			                	,rep('distsAbsent', 4*8)
 								,rep('drawdownAbsent', 2*8)
@@ -52,7 +52,7 @@ metsBankFeatures.fillinDistancesTest <- function()
 								  	  ,rep(c('DRAWDOWN','HORIZ_DIST_DD','VERT_HEIGHT_DD','other'), times=8)
 									  ,rep(c('VERT_HEIGHT_DD','other'), times=8)
 								  	  )
-					  	  ,RESULT=c(rep(c('YES','1','2','x','NO','2','3','y',NA,'3','4','z'), length=10*4)
+					  	  ,VALUE=c(rep(c('YES','1','2','x','NO','2','3','y',NA,'3','4','z'), length=10*4)
 			                   	   ,rep(c('YES', NA, NA,'x','NO','0','0','y',NA, NA, NA,'z'), length=10*4)
 							   	   ,rep(c('YES', NA, NA,'x','NO','0','0','y',NA, NA, NA,'z'), length=8*4)
 								   ,rep(c('1','x','2','y',NA,'z'), length=8*2)
@@ -62,34 +62,38 @@ metsBankFeatures.fillinDistancesTest <- function()
 	expected <- subset(expected, PARAMETER != 'other')
 	
 	
-	actual <- metsBankFeatures.fillinDistances(testData)
+	actual <- nlaBankFeatures.fillinDistances(testData)
 
-	diff <- dfCompare(expected, actual, c('UID','STATION','PARAMETER'))
+	diff <- dfCompare(expected, actual, c('SITE','STATION','PARAMETER'))
 	checkEquals(NULL, diff, "Incorrect filling in of drawdown distances")
 }
 
 
-
-metsBankFeaturesTest <- function()
-# unit test for metsBankFeatures
+nlaBankFeaturesTest <- function()
+# unit test for nlaBankFeatures
 {
-	metsBankFeaturesTest.2007()
-	metsBankFeaturesTest.2012withDrawdown()
-	metsBankFeaturesTest.2012noDrawdown()
+	nlaBankFeaturesTest.2007()
+	nlaBankFeaturesTest.2012withDrawdown()
+	nlaBankFeaturesTest.2012noDrawdown()
 }
 
 
-
-metsBankFeaturesTest.2007 <- function()
+nlaBankFeaturesTest.2007 <- function()
 #
 {
-	testData <- metsBankFeaturesTest.createTestData2007()
-	expected <- metsBankFeaturesTest.createExpectedResults2007()
+	testData <- nlaBankFeaturesTest.createTestData2007()
+	expected <- nlaBankFeaturesTest.createExpectedResults2007()
 #testData$subid <- testData$STATION
 #names(testData) <- tolower(names(testData))
-	actual <- metsBankFeatures(testData)
+	actual <- nlaBankFeatures(angle = testData %>% subset(PARAMETER=='ANGLE') %>% select(SITE,STATION,VALUE)
+                             ,drawdown = testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE,STATION,VALUE)
+                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% select(SITE,STATION,VALUE)
+                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% select(SITE,STATION,VALUE)
+                             )
 #names(actual) <- toupper(names(actual))
-#actual <- melt(actual, 'UID', variable.name='PARAMETER', value.name='RESULT')
+#actual <- melt(actual, 'SITE', variable.name='PARAMETER', value.name='VALUE')
 #actual$PARAMETER <- as.character(actual$PARAMETER)
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
@@ -98,18 +102,23 @@ metsBankFeaturesTest.2007 <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','PARAMETER'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
 
-
-metsBankFeaturesTest.2012withDrawdown <- function()
+nlaBankFeaturesTest.2012withDrawdown <- function()
 # Test with 2012 data with DRAWDOWN values
 {
-	testData <- metsBankFeaturesTest.createTestData2012()
-	expected <- metsBankFeaturesTest.createExpectedResults2012withDrawdown()
-	actual <- metsBankFeatures(testData)
+	testData <- nlaBankFeaturesTest.createTestData2012()
+	expected <- nlaBankFeaturesTest.createExpectedResults2012withDrawdown()
+	actual <- nlaBankFeatures(angle = testData %>% subset(PARAMETER=='ANGLE') %>% select(SITE,STATION,VALUE)
+                             ,drawdown = testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE,STATION,VALUE)
+                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% select(SITE,STATION,VALUE)
+                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% select(SITE,STATION,VALUE)
+                             )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -117,18 +126,24 @@ metsBankFeaturesTest.2012withDrawdown <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','PARAMETER'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
 
 
-metsBankFeaturesTest.2012noDrawdown <- function()
+nlaBankFeaturesTest.2012noDrawdown <- function()
 # Test with 2012 data lacking DRAWDOWN values
 {
-	testData <- subset(metsBankFeaturesTest.createTestData2012(), PARAMETER != 'DRAWDOWN')
-	expected <- metsBankFeaturesTest.createExpectedResults2012noDrawdown()
-	actual <- metsBankFeatures(testData)
+	testData <- subset(nlaBankFeaturesTest.createTestData2012(), PARAMETER != 'DRAWDOWN')
+	expected <- nlaBankFeaturesTest.createExpectedResults2012noDrawdown()
+	actual <- nlaBankFeatures(angle = testData %>% subset(PARAMETER=='ANGLE') %>% select(SITE,STATION,VALUE)
+                             ,drawdown = testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE,STATION,VALUE)
+                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% select(SITE,STATION,VALUE)
+                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% select(SITE,STATION,VALUE)
+                             )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -136,16 +151,16 @@ metsBankFeaturesTest.2012noDrawdown <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','PARAMETER'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
 
 
-metsBankFeaturesTest.createTestData2007 <- function()
+nlaBankFeaturesTest.createTestData2007 <- function()
 #
 {
-	tc <- textConnection("   UID STATION   PARAMETER        RESULT
+	tc <- textConnection("   SITE STATION   PARAMETER        VALUE
 							7468       A       ANGLE         STEEP
 							7468       B       ANGLE       GRADUAL
 							7468       C       ANGLE         STEEP
@@ -398,11 +413,10 @@ metsBankFeaturesTest.createTestData2007 <- function()
 }
 
 
-
-metsBankFeaturesTest.createExpectedResults2007 <- function()
+nlaBankFeaturesTest.createExpectedResults2007 <- function()
 #
 {
-	tc <- textConnection("   UID     PARAMETER              RESULT
+	tc <- textConnection("   SITE     PARAMETER              VALUE
 							7468       BFFFLAT   0.111111111111111
 							7468    BFFGRADUAL   0.333333333333333
 							7468      BFFSTEEP   0.333333333333333
@@ -501,8 +515,7 @@ metsBankFeaturesTest.createExpectedResults2007 <- function()
 }
 
 
-
-metsBankFeaturesTest.createTestData2012 <- function()
+nlaBankFeaturesTest.createTestData2012 <- function()
 # Returns dataframe of test data using 2012 data.
 #
 # 6160	Has 10 HORIZ_DIST_DD and 10 VERT_HEIGHT_DD, no non-DD values
@@ -525,7 +538,7 @@ metsBankFeaturesTest.createTestData2012 <- function()
 # 6735	Has 10 values of everything, all distances are 0.
 # 
 {
-	tc <- textConnection("   UID STATION      PARAMETER                 RESULT
+	tc <- textConnection("   SITE STATION      PARAMETER                 VALUE
 							6160       A          ANGLE                  STEEP
 							6160       A  HORIZ_DIST_DD                    6.2
 							6160       A VERT_HEIGHT_DD                    2.0
@@ -1077,11 +1090,10 @@ metsBankFeaturesTest.createTestData2012 <- function()
 }
 
 
-
-metsBankFeaturesTest.createExpectedResults2012noDrawdown <- function()
+nlaBankFeaturesTest.createExpectedResults2012noDrawdown <- function()
 #
 {
-	tc <- textConnection("   UID        PARAMETER                 RESULT
+	tc <- textConnection("   SITE        PARAMETER                 VALUE
 							6160          BFFFLAT                      0
 							6160       BFFGRADUAL                    0.1
 							6160         BFFSTEEP                    0.9
@@ -1268,11 +1280,10 @@ metsBankFeaturesTest.createExpectedResults2012noDrawdown <- function()
 }
 
 
-
-metsBankFeaturesTest.createExpectedResults2012withDrawdown <- function()
+nlaBankFeaturesTest.createExpectedResults2012withDrawdown <- function()
 #
 {
-	tc <- textConnection("   UID        PARAMETER                 RESULT
+	tc <- textConnection("   SITE        PARAMETER                 VALUE
 					6160          BFFFLAT                      0
 					6160       BFFGRADUAL                    0.1
 					6160         BFFSTEEP                    0.9
@@ -1491,7 +1502,5 @@ metsBankFeaturesTest.createExpectedResults2012withDrawdown <- function()
 	
 	return(fake)		
 }
-
-
 
 # end of file

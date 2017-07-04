@@ -299,7 +299,7 @@ nlaAquaticMacrophytesTest.createExpectedResults2007 <- function()
 							8417    AMNFLOATING                10
 							8417  AMNSUBMERGENT                10
 							8417         AMVALL 0.372575495705233
-							8417    AMVEMERGENT 0.0783510618236211 # added one last digit so character comparison would match
+							8417    AMVEMERGENT 0.078351061823621 # was added one last digit '1' on 6/29 so character comparison would match, not on 7/3
 							8417    AMVFLOATING                 0
 							8417  AMVSUBMERGENT 0.208099869186781
 							8435        AMFCALL                 0
