@@ -89,6 +89,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   names(x)[names(x)==hipwWalls] <- 'hipwWalls'
 
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
+                       ,elev=ifelse(elev<0,0,elev)
                         ,elevXlat=elev*lat
                         ,l_area=log10(area)
                         ,ssiNatBedBld=ifelse(hipwWalls>=0.10,0,(ssfcBedrock + ssfcBoulders)))
@@ -244,6 +245,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   names(x)[names(x)==fcfcOverhang] <- 'fcfcOverhang'
   
     dfIn <- plyr::mutate(x, reservoir = ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
+                 ,elev=ifelse(elev<0,0,elev)
                  ,elevXlon = elev*lon
                  ,l_elev = log10(elev+1)
                  ,l_area = log10(area)
@@ -373,6 +375,7 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   names(x)[names(x)==litcvrq] <- 'litcvrq'
   
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
+                 ,elev=ifelse(elev<0,0,elev)
                  ,elevXlon=elev*lon
                  ,l_elev=log10(elev+1)
                  ,l_area=log10(area))
