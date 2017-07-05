@@ -123,7 +123,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   
   # Calculate the observed indicator value, depending on ecoregion
   dfObs <- dfIn %>%
-    mutate(RVegQ = ifelse(ecoreg %in% c('NAP','SAP','UMW','CPL')
+    plyr::mutate(RVegQ = ifelse(ecoreg %in% c('NAP','SAP','UMW','CPL')
                           ,0.5*(rvfcGndInundated + (rviWoody/2.5))
                           ,ifelse(ecoreg %in% c('NPL','SPL','TPL')
                                   ,0.5*(rvfcGndInundated + ((rvfcUndWoody + rvfcGndWoody)/1.75))
@@ -132,7 +132,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   # Now merge the expected and observed values and calculate O/E  
   dfOE <- subset(dfObs,select=c(sampID,'ecoreg','RVegQ')) %>% 
     merge(dfExp[,c(sampID,'RVegQc3x15')], by=sampID) %>%
-    mutate(RVegQc3OE = RVegQ/RVegQc3x15)
+    plyr::mutate(RVegQc3OE = RVegQ/RVegQc3x15)
   
   # Create data frame containing O/E thresholds by ECO9 region
   tholds <- data.frame(ecoreg = c('NAP','SAP','UMW','CPL','NPL','SPL','TPL','WMT','XER')
@@ -289,7 +289,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   # Now merge the expected and observed values and calculate O/E  
   dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitCvrQ')) %>% 
     merge(dfExp[,c(sampID,'LitCvrQc3x15')], by=sampID) %>%
-    mutate(LitCvrQc3OE = LitCvrQ/LitCvrQc3x15)
+    plyr::mutate(LitCvrQc3OE = LitCvrQ/LitCvrQc3x15)
   
   # Create data frame containing O/E thresholds by ECO9 region
   tholds <- data.frame(ecoreg = c('NAP','SAP','CPL','UMW','NPL','SPL','TPL','WMT','XER')
@@ -414,7 +414,7 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   # Now merge the expected and observed values and calculate O/E  
   dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitRipCvrQ')) %>% 
     merge(dfExp[,c(sampID,'LitRipCvrQc3x15')], by=sampID) %>%
-    mutate(LitRipCvrQc3OE = LitRipCvrQ/LitRipCvrQc3x15)
+    plyr::mutate(LitRipCvrQc3OE = LitRipCvrQ/LitRipCvrQc3x15)
  
   # Create data frame containing O/E thresholds by ECO9 region
   tholds <- data.frame(ecoreg = c('NAP','SAP','UMW','CPL','NPL','SPL','TPL','WMT','XER')
