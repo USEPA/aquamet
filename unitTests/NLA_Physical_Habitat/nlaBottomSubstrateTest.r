@@ -8,6 +8,8 @@
 #          for specific values (e.g. ODOR=NONE, COLOR=BROWN). Case of missing
 #          values for all of a substrate code is not tested as the independent
 #          calculations would be time consuming for now.
+#  7/11/17 cws Split substrate argument into individual classes, to be consistent
+#          with general interface.
 #
 
 
@@ -29,14 +31,34 @@ nlaBottomSubstrateTest.fullData <- function()
 	testData <- nlaBottomSubstrateTest.createTestData()
 	
 	expected <- nlaBottomSubstrateTest.createExpectedResults()
-	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>% 
-	                                   select(SITE, STATION, VALUE)
-	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
-	                                  select(SITE, STATION, VALUE)
-	                            ,substrate=testData %>% 
-	                             dplyr::rename(CLASS=PARAMETER) %>%
-	                             #subset(CLASS %in% c('BS_BEDROCK', 'BS_BOULDERS', 'BS_COBBLE', 'BS_COLOR', 'BS_GRAVEL', 'BS_ORGANIC', 'BS_SAND', 'BS_SILT', 'BS_WOOD')) %>% 
-	                             select(SITE, STATION, CLASS, VALUE)
+	actual <- nlaBottomSubstrate(color = testData %>% subset(PARAMETER %in% 'BS_COLOR') %>% 
+	                                     select(SITE, STATION, VALUE)
+	                            ,odor = testData %>% subset(PARAMETER %in% 'ODOR') %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulders = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
 	                            )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
@@ -58,10 +80,30 @@ nlaBottomSubstrateTest.absentData <- function()
 	actual <- nlaBottomSubstrate(color=NULL
 	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
 	                                  select(SITE, STATION, VALUE)
-	                            ,substrate=testData %>% 
-	                             dplyr::rename(CLASS=PARAMETER) %>%
-	                             #subset(CLASS %in% c('BS_BEDROCK', 'BS_BOULDERS', 'BS_COBBLE', 'BS_COLOR', 'BS_GRAVEL', 'BS_ORGANIC', 'BS_SAND', 'BS_SILT', 'BS_WOOD')) %>% 
-	                             select(SITE, STATION, CLASS, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulders = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
 	                            )
 	
 	diff <- dfCompare(expected %>% subset(METRIC %nin% c('BSFBLACK','BSFBROWN','BSFGRAY','BSFRED','BSFOTHERCOLOR','BSNCOLOR','BSOCOLOR'))
@@ -73,10 +115,30 @@ nlaBottomSubstrateTest.absentData <- function()
 	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>% 
 	                                   select(SITE, STATION, VALUE)
 	                            ,odor=NULL
-	                            ,substrate=testData %>% 
-	                             dplyr::rename(CLASS=PARAMETER) %>%
-	                             #subset(CLASS %in% c('BS_BEDROCK', 'BS_BOULDERS', 'BS_COBBLE', 'BS_COLOR', 'BS_GRAVEL', 'BS_ORGANIC', 'BS_SAND', 'BS_SILT', 'BS_WOOD')) %>% 
-	                             select(SITE, STATION, CLASS, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulders = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
 	                            )
 	
 	diff <- dfCompare(expected %>% subset(METRIC %nin% c('BSFANOXIC','BSFCHEMICAL','BSFH2S','BSFNONEODOR','BSFOIL','BSFOTHERODOR','BSNODOR','BSOODOR'))
@@ -89,7 +151,7 @@ nlaBottomSubstrateTest.absentData <- function()
 	                                   select(SITE, STATION, VALUE)
 	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
 	                                  select(SITE, STATION, VALUE)
-	                            ,substrate=NULL
+	                            # all substrates default to null so are not specified
 	                            )
 	
 	diff <- dfCompare(expected %>% subset(METRIC %in% c('BSFBLACK','BSFBROWN','BSFGRAY','BSFRED','BSFOTHERCOLOR','BSNCOLOR','BSOCOLOR'
@@ -136,9 +198,30 @@ nlaBottomSubstrateTest.partialData <- function()
 	                                   select(SITE, STATION, VALUE)
 	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
 	                                  select(SITE, STATION, VALUE)
-	                            ,substrate=testData %>% 
-	                             dplyr::rename(CLASS=PARAMETER) %>%
-	                             select(SITE, STATION, CLASS, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulders = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
 	                            )
 	
 	diff <- dfCompare(expected 
@@ -154,9 +237,30 @@ nlaBottomSubstrateTest.partialData <- function()
 	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
                                       mutate(VALUE = ifelse(VALUE == 'NONE', NA, VALUE)) %>% 
 	                                  select(SITE, STATION, VALUE)
-	                            ,substrate=testData %>% 
-	                             dplyr::rename(CLASS=PARAMETER) %>%
-	                             select(SITE, STATION, CLASS, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulders = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
 	                            )	
 	expected <- nlaBottomSubstrateTest.createExpectedResults() %>% 
 	            mutate(VALUE=ifelse(SITE==7470,

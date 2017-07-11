@@ -1,6 +1,13 @@
-nlaBottomSubstrate <- function(color=NULL
+nlaBottomSubstrate <- function(bedrock=NULL
+                              ,boulders=NULL
+                              ,color=NULL
+                              ,cobble=NULL
+                              ,gravel=NULL
                               ,odor=NULL
-                              ,substrate=NULL
+                              ,organic=NULL
+                              ,sand=NULL
+                              ,silt=NULL
+                              ,wood=NULL
                               ,substrateCovers=data.frame(VALUE	= c(NA, '0', '1', '2', '3', '4')
                        	                                 ,cover	= c(NA, 0, 0.05, 0.25, 0.575, 0.875)
 					   	                                 ,presence= as.integer(c(NA, 0, 1, 1, 1, 1))
@@ -80,6 +87,8 @@ nlaBottomSubstrate <- function(color=NULL
 #            due to all zeros being treated as ties. The effect of these changes
 #            is to add rows of BSF* odor values that are 0, and change that one
 #            peculiar case of all zero frequencies tying as the mode.
+#    7/11/17 cws Split substrate argument into individual classes, to be consistent
+#            with general interface. Unit test updated as well.
 #
 # Arguments:
 #   df = a data frame containing bottom substrate data.  The data frame must
@@ -109,7 +118,7 @@ nlaBottomSubstrate <- function(color=NULL
 ################################################################################
 
     # Print initial messages
-    intermediateMessage('NLA Bottom Substrate metrics', loc='start')
+    intermediateMessage('NLA bottom substrate metrics', loc='start')
   
     # Standardize arguments, then combine them into single dataframe as expected
     # in the rest of the function
@@ -120,7 +129,7 @@ nlaBottomSubstrate <- function(color=NULL
         if(is.null(args)) return(NULL)
         else if(all(is.na(args))) return(NULL)
         
-        rc <- df %>% mutate(PARAMETER=args[[1]])
+        rc <- df %>% mutate(CLASS=args[[1]])
         return(rc)
         
     }
@@ -128,13 +137,21 @@ nlaBottomSubstrate <- function(color=NULL
     intermediateMessage('.')
     odor <- aquametStandardizeArgument(odor, struct=c(SITE='integer', STATION='character', VALUE='character'))
     intermediateMessage('.')
-    substrate <- aquametStandardizeArgument(substrate, struct=c(SITE='integer', STATION='character', CLASS='character', VALUE='character'))
+    bedrock <- aquametStandardizeArgument(bedrock, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_BEDROCK')
+    boulders <- aquametStandardizeArgument(boulders, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_BOULDERS')
+    cobble <- aquametStandardizeArgument(cobble, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_COBBLE')
+    gravel <- aquametStandardizeArgument(gravel, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_GRAVEL')
+    organic <- aquametStandardizeArgument(organic, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_ORGANIC')
+    sand <- aquametStandardizeArgument(sand, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_SAND')
+    silt <- aquametStandardizeArgument(silt, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_SILT')
+    wood <- aquametStandardizeArgument(wood, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_WOOD')
     intermediateMessage('.')
     substrateCovers <- aquametStandardizeArgument(substrateCovers, struct=c(VALUE='character', cover='double', presence='integer'))
     intermediateMessage('.')
     substrateSizes <- aquametStandardizeArgument(substrateSizes, struct=c(CLASS='character', diam='double', inPopulationEstimate='logical'))
     intermediateMessage('.')
 
+    substrate <- rbind(bedrock, boulders, cobble, gravel, organic, sand, silt, wood)
   	bsData <- nlaBottomSubstrate.setupForParticleCalculations(substrate, substrateCovers, substrateSizes)
   	intermediateMessage('.1')
 	
@@ -182,15 +199,10 @@ nlaBottomSubstrate.setupForParticleCalculations <- function(bsData, substrateCov
   	bsData <- subset(bsData, CLASS %in% substrateSizes$CLASS)
     intermediateMessage('.a')
 
-  	# Set up recodings for presence, cover and characteristic diameter (both
+    # Set up recodings for presence, cover and characteristic diameter (both
   	# actual and logged)
 	diameters <- mutate(substrateSizes, lDiam = log10(diam))
 	
-	preppedData <- merge(merge(bsData, substrateCovers, by='VALUE', all.x=TRUE)
-						,diameters
-						,by.x='CLASS', by.y='CLASS'
-						,all.x=TRUE
-						)
     preppedData <- bsData %>%
                    merge(substrateCovers, by='VALUE', all.x=TRUE) %>% 
                    merge(diameters, by='CLASS', all.x=TRUE)
