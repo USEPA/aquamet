@@ -81,6 +81,7 @@
 #  7/07/17 cws Changed UID to SITE and RESULT to VALUE in normalizedCover,
 #          calcSynCovers, calcSynInfluence, fillinDrawdownData and modalClasses.
 #          Changed PARAMETER to CLASS in normalizedCover.
+#  7/11/17 cws Changed PARAMETER to CLASS in all remaining functions.
 #
 ################################################################################
 
@@ -237,7 +238,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 #
 # ARGUMENTS:
 # coverData		dataframe containing cover data with the following columns:
-#                 SITE, STATION, PARAMETER, VALUE, characteristicCover.
+#                 SITE, STATION, CLASS, VALUE, characteristicCover.
 # maxDrawdown	numeric value containing the maximum horizontal drawdown distance
 #				  to be considered when determining the drawdown cover weighting.
 #				  This value is 10 for littoral Fish Cover, and 15 for Riparian 
@@ -246,15 +247,15 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 #				  missing drawdown cover values when calculating synthetic covers.
 #
 # ASSUMPTIONS:
-# Values of PARAMETER follow the form COVERNAME_DD and COVERNAMEother, where the
+# Values of CLASS follow the form COVERNAME_DD and COVERNAMEother, where the
 #   suffix 'other' can be absent, or _RIP, just not _DD.  That should be easy.
 # Data includes HORIZ_DIST_DD
 # Values of characteristicCover is numeric
-# Values of VALUE is numeric, at least for PARAMETER=='HORIZ_DIST_DD'
+# Values of VALUE is numeric, at least for CLASS=='HORIZ_DIST_DD'
 #
 
 	# Determine proportion for each station:
-	props <- within(subset(coverData, PARAMETER=='HORIZ_DIST_DD')
+	props <- within(subset(coverData, CLASS=='HORIZ_DIST_DD')
 	               ,{VALUE <- as.numeric(VALUE)
 					 prop_dd <- ifelse(VALUE < maxDrawdown, VALUE/maxDrawdown, 1)	# i.e. min(1, as.numeric(VALUE)/15)
 					 prop_lit <- 1 - prop_dd
@@ -269,9 +270,9 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 	#	b) if prop_dd is 0 and cover_lit is not missing, then syn = cover_lit
 	#	c) if both cover_dd and cover_lit are not missing, then syn = cover_dd OR cover_lit
 #print('coverData');print(head(coverData))
-	covers <- dcast(within(subset(coverData, PARAMETER != 'HORIZ_DIST_DD')
-	                      ,{coverType <- gsub('^(.+)_DD$', '\\1', PARAMETER)
-							coverLocation <- ifelse(grepl('_DD$', PARAMETER), 'cover_dd', 'cover_lit')
+	covers <- dcast(within(subset(coverData, CLASS != 'HORIZ_DIST_DD')
+	                      ,{coverType <- gsub('^(.+)_DD$', '\\1', CLASS)
+							coverLocation <- ifelse(grepl('_DD$', CLASS), 'cover_dd', 'cover_lit')
 						   }
 		                  )
 				   ,SITE+STATION+coverType~coverLocation
@@ -300,13 +301,13 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 					    )
 #print('.2')	
 
-	# Reorganize calculation to long format with expected PARAMETER name
+	# Reorganize calculation to long format with expected CLASS name
 	rc <- within(coverProps
-				,{PARAMETER <- paste0(coverType, '_SYN')
+				,{CLASS <- paste0(coverType, '_SYN')
 				  VALUE <- NA
 				  characteristicCover <- ifelse(is.nan(syn), NA, syn)
 				 }
-		        )[c('SITE','STATION','PARAMETER','VALUE','characteristicCover', 'assumptionMade')]
+		        )[c('SITE','STATION','CLASS','VALUE','characteristicCover', 'assumptionMade')]
 #print('.3')	
 
 	return(rc)
@@ -350,20 +351,20 @@ calcSynInfluence <- function(influenceData) {
 #
 # ARGUMENTS:
 # influenceData		dataframe containing influence data with the following columns:
-#                 SITE, STATION, PARAMETER, VALUE, calc.
+#                 SITE, STATION, CLASS, VALUE, calc.
 #
 # ASSUMPTIONS:
-# Values of PARAMETER follow the form INFLUENCENAME_DD and INFLUENCENAMEother, where the
+# Values of CLASS follow the form INFLUENCENAME_DD and INFLUENCENAMEother, where the
 #   suffix 'other' can be absent, or _RIP, just not _DD.  That should be easy.
 # Data includes HORIZ_DIST_DD
 # Values of calc are numeric
-# Values of VALUE is castable to numeric, at least for PARAMETER=='HORIZ_DIST_DD'
+# Values of VALUE is castable to numeric, at least for CLASS=='HORIZ_DIST_DD'
 #
 
 	maxDrawdown <- 15
 	
 	# Determine proportion for each station:
-	props <- within(subset(influenceData, PARAMETER=='HORIZ_DIST_DD')
+	props <- within(subset(influenceData, CLASS=='HORIZ_DIST_DD')
 	               ,{VALUE <- as.numeric(VALUE)
 					 prop_dd <- ifelse(VALUE < maxDrawdown, VALUE/maxDrawdown, 1)	# i.e. min(1, as.numeric(VALUE)/15)
 					 prop_rip <- 1 - prop_dd
@@ -377,9 +378,9 @@ calcSynInfluence <- function(influenceData) {
 	# 	a) if prop_dd is 1 and infl_dd is not missing, then syn = infl_dd
 	#	b) if prop_dd is 0 and infl_rip is not missing, then syn = infl_rip
 	#	c) if both infl_rip and infl_rip are equal, then syn = infl_dd OR infl_rip
-	influences <- dcast(within(subset(influenceData, PARAMETER != 'HORIZ_DIST_DD')
-	                      	  ,{inflType <- gsub('^(.+)_DD$', '\\1', PARAMETER)
-								inflLocation <- ifelse(grepl('_DD$', PARAMETER), 'infl_dd', 'infl_rip')
+	influences <- dcast(within(subset(influenceData, CLASS != 'HORIZ_DIST_DD')
+	                      	  ,{inflType <- gsub('^(.+)_DD$', '\\1', CLASS)
+								inflLocation <- ifelse(grepl('_DD$', CLASS), 'infl_dd', 'infl_rip')
 						   	   }
 		                      )
 				   	   ,SITE+STATION+inflType~inflLocation
@@ -419,13 +420,13 @@ calcSynInfluence <- function(influenceData) {
 					    }
 					   )
 
-	# Reorganize calculation to long format with expected PARAMETER name
+	# Reorganize calculation to long format with expected CLASS name
 	rc <- within(inflProps
-				,{PARAMETER <- paste0(inflType, '_SYN')
+				,{CLASS <- paste0(inflType, '_SYN')
 				  VALUE <- NA
 				  calc <- ifelse(is.nan(syn), NA, syn)
 				 }
-		        )[c('SITE','STATION','PARAMETER','VALUE','calc')]
+		        )[c('SITE','STATION','CLASS','VALUE','calc')]
 
 	return(rc)
 }
@@ -851,13 +852,13 @@ fillinDrawdownData <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
 # as they may not have been sampled.
 #
 # Returns dataframe with adjusted values and potentially additional rows.  Rows
-# with PARAMETER == 'DRAWDOWN' and rows for which we can not fill in a missing 
+# with CLASS == 'DRAWDOWN' and rows for which we can not fill in a missing 
 # value in the input data may not occur in the returned dataframe.
 #
 # ARGUMENTS:
 # df			dataframe with NLA cover/influence data.  Must contain columns SITE,
-#	             STATION, PARAMETER, VALUE.  It is also expected to contain rows
-#   	          with values for PARAMETER=DRAWDOWN and HORIZ_DIST_DD.
+#	             STATION, CLASS, VALUE.  It is also expected to contain rows
+#   	          with values for CLASS=DRAWDOWN and HORIZ_DIST_DD.
 # fillinValue	character value to which unrecorded cover/influence values will 
 #				  be set.
 # fillinHORIZ_DIST_DD	character value to which unrecorded HORIZ_DIST_DD values 
@@ -867,28 +868,28 @@ fillinDrawdownData <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
 #
 
 	# If there's no DRAWDOWN values then there's nothing to do.
-	if('DRAWDOWN' %nin% df$PARAMETER) {
+	if('DRAWDOWN' %nin% df$CLASS) {
 		print("No 'fill-in' of data because DRAWDOWN values not provided")
 		return(df)
 	}
 	
 	
 	# Expand cover/influence data so that all expected rows occur for each site.
-	dfExpanded <- fillinDrawdownData.expansion(df)	#subset(df, PARAMETER != 'DRAWDOWN'))
+	dfExpanded <- fillinDrawdownData.expansion(df)	#subset(df, CLASS != 'DRAWDOWN'))
 	
 	# Filter out the added rows we can't assign a VALUE value to
-	drawdown <- within(subset(df, PARAMETER == 'DRAWDOWN')
+	drawdown <- within(subset(df, CLASS == 'DRAWDOWN')
 					  ,{DRAWDOWN <- ifelse(is.na(VALUE), NA
 								   ,ifelse(grepl('^N', VALUE), 'NO'
 								   ,ifelse(grepl('^Y', VALUE), 'YES'
 															  , NA
 									)))
 						VALUE <- NULL
-						PARAMETER <- NULL
+						CLASS <- NULL
 					   }
 					  )[c('SITE','STATION','DRAWDOWN')]
 	
-	expectedStations <- subset(merge(dfExpanded		#subset(df, PARAMETER != 'DRAWDOWN')
+	expectedStations <- subset(merge(dfExpanded		#subset(df, CLASS != 'DRAWDOWN')
 							        ,drawdown
 								    ,by=c('SITE','STATION'), all.x=TRUE
 									)
@@ -899,7 +900,7 @@ fillinDrawdownData <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
 	# Use value of DRAWDOWN to fill in missing values.
 	dfFilledin <- within(expectedStations
 					    ,VALUE <- ifelse(is.na(VALUE) & DRAWDOWN == 'NO'
-								   	  	 ,ifelse(PARAMETER == 'HORIZ_DIST_DD', fillinHORIZ_DIST_DD
+								   	  	 ,ifelse(CLASS == 'HORIZ_DIST_DD', fillinHORIZ_DIST_DD
 									  									  	 , fillinValue
 									   	  )
 						  				 ,VALUE
@@ -922,23 +923,23 @@ fillinDrawdownData.expansion <- function(df) {
 #
 # ARGUMENTS:	
 # df		dataframe with NLA cover/influence data.  Must contain columns SITE,
-#             STATION, PARAMETER, VALUE.  Must contain all PARAMETER values that
+#             STATION, CLASS, VALUE.  Must contain all CLASS values that
 # 			  are expected (e.g. covers, HORIZ_DIST_DD, DRAWDOWN), though they 
 #		 	  do not need to occur at each station or even at each site.  Must 
-#             NOT contain any additional PARAMETER values.
+#             NOT contain any additional CLASS values.
 #
 # ASSUMPTIONS:
 # 
 
-	expectedParameters <- subset(data.frame(PARAMETER = setdiff(unique(df$PARAMETER), 'DRAWDOWN')
+	expectedParameters <- subset(data.frame(CLASS = setdiff(unique(df$CLASS), 'DRAWDOWN')
 										   ,stringsAsFactors=FALSE
 						   				   )
-			                    ,grepl('_DD$', PARAMETER)
+			                    ,grepl('_DD$', CLASS)
 								)
 	
 	listStations <- lapply(split(df, paste(df$SITE, df$STATION))
 						  ,function(x) { 
-								y <- within(merge(x, expectedParameters, by='PARAMETER', all=TRUE)
+								y <- within(merge(x, expectedParameters, by='CLASS', all=TRUE)
 										   ,{SITE <- unique(x$SITE)
 											 STATION <- unique(x$STATION)
 											}

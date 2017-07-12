@@ -2,12 +2,15 @@
 #
 #  6/28/17 cws created as a common means for standardizing aquamet data arguments
 #  6/29/17 cws Separated unit tests into their own file.
+#  7/11/17 cws Allowing multiple column types in structure checks.  Now SITE can
+#          be either integer or character. Unit tests extended to check this as 
+#          well.
 #
 
 require(RUnit)
 require(dplyr)
 
-aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=c(SITE='integer', VALUE='double'))
+aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='integer', VALUE='double'))
 # Used to standardize argument to aquamet functions. Returns a dataframe with
 # expected column names or NULL.
 #
@@ -19,9 +22,9 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=c(SITE='integ
 #           intended to modify 'arg' in some way, such as renaming columns. The
 #           arguments to this function are ifdf(arg, ...), and the object it 
 #           returns is the 
-# struct    named character vector, specifying the expected column names as the
-#           names of the columns in 'arg', and the vector values as the types of
-#           each column.
+# struct    named list of character vectors, specifying the expected column names
+#           as the names of the columns in 'arg', and the vector values as the 
+#           types of each column.
 #
 {
     if(is.null(arg)) {
@@ -74,11 +77,16 @@ aquametStandardizeArgument.checkStructure <- function(arg, expectedStruct)
     
     # List expected columns with wrong types
     commonColumns <- intersect(names(expectedStruct), names(argStruct))
-    wrongTypeFlag <- argStruct[commonColumns] != expectedStruct[commonColumns]
+    wrongTypeFlag <- lapply(commonColumns
+                           ,function(cname) {
+                                wrong <- argStruct[cname] %nin% expectedStruct[[cname]]
+                            }
+                           ) %>% 
+                     unlist()
     wrongTypeNames <- names(arg[commonColumns])[wrongTypeFlag]
     wrongTypes <- argStruct[commonColumns][wrongTypeFlag]
     expectedTypes <- expectedStruct[commonColumns][wrongTypeFlag]
-    
+
     # Build error message
     errs <- NULL
     argName <- deparse(substitute(arg))
@@ -97,19 +105,24 @@ aquametStandardizeArgument.checkStructure <- function(arg, expectedStruct)
                      )
     }
     if(length(wrongTypeNames) > 0) {
-        errs <- paste(c(errs
-                       ,sprintf("column %s should have type %s rather than %s"
-                             ,wrongTypeNames, expectedTypes, wrongTypes
-                             ) %>%
-                        paste(collapse=', ')
-                       )
-                     ,collapse='; '
-                     )
+        typeerrs <- lapply(wrongTypeNames
+                          ,function(wtn) {
+                                sprintf("column %s should have type %s rather than %s"
+                                       ,wtn
+                                       ,paste(expectedTypes[[wtn]], collapse=' or ')
+                                       ,wrongTypes
+                                       ) %>%
+                                       paste(collapse=', ')
+                           }
+                          )
+                    
+        errs <- paste(c(errs, typeerrs),collapse='; ')
     }
 
     if(!is.null(errs)) {
         errs <- sprintf("Argument %s has errors: %s", argName, errs)
     }
+
     return(errs)
 }
 

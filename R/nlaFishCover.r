@@ -1,8 +1,31 @@
-metsFishCoverNLA <- function(df, createSyntheticCovers=TRUE,
-   fillinDrawdown=TRUE) {
-
+nlaFishCover <- function(aquatic = NULL
+                        ,aquatic_dd = NULL
+                        ,boulders = NULL
+                        ,boulders_dd = NULL
+                        ,brush = NULL
+                        ,brush_dd = NULL
+                        ,ledges = NULL
+                        ,ledges_dd = NULL
+                        ,livetrees = NULL
+                        ,livetrees_dd = NULL
+                        ,overhang = NULL
+                        ,overhang_dd = NULL
+                        ,snags = NULL
+                        ,snags_dd = NULL
+                        ,structures = NULL
+                        ,structures_dd = NULL
+                        ,drawdown = NULL
+                        ,horizontalDistance_dd = NULL
+                        ,createSyntheticCovers=TRUE
+                        ,fillinDrawdown=TRUE
+                        ,coverClassInfo = data.frame(field = c(NA,'0','1','2','3','4')
+						 	                        ,characteristicCover = c(NA,0,0.05,0.25,0.575,0.875)
+						 	                        ,presence = c(NA,0,1,1,1,1)
+						 	                        ,stringsAsFactors=FALSE
+						 	                        )
+                        ) {
 ################################################################################
-# Function: metsFishCoverNLA
+# Function: nlaFishCover
 # Title: Calculate NLA Fish Cover Metrics
 # Programmers: Curt Seeliger
 #              Tom Kincaid
@@ -49,14 +72,14 @@ metsFishCoverNLA <- function(df, createSyntheticCovers=TRUE,
 #            FCIALL_LIT. Unit test updated.
 #   08/07/13 Changed _RIP suffix to _LIT.
 #   08/08/13 Updated unit test to reflect changes in calcSynCovers.  This
-#            affected 8 values at UID=7263, which has no HORIZ_DIST_DD.
+#            affected 8 values at SITE=7263, which has no HORIZ_DIST_DD.
 #   08/12/13 Updated unit test to reflect 9 August changes to calcSynCovers.
 #            Moved parameter suffix determination, done twice in this function,
 #            to metsFishCover.splitParameterNames(). New *_SYN calculations,
 #            which rely on assumptions about the data are included BUT NOT YET
 #            ADDED TO THE UNIT TEST SINCE THAT'S TIME CONSUMING.  The values
 #            look correct based on hand calculations of FC[FP|N|V]_AQUATIC_SYN
-#            for UID 6160, 6189, 6227.
+#            for SITE 6160, 6189, 6227.
 #   08/13/13 cws: Standardized calculations to use coverSuffix as a by-variable.
 #            Notifying user of presence/lack of *_SYN metrics in unit test.
 #   08/26/13 cws: Modified to use 10m as maximal drawdown into littoral region
@@ -70,7 +93,7 @@ metsFishCoverNLA <- function(df, createSyntheticCovers=TRUE,
 #   09/26/13 cws: Added DRAWDOWN fillin to unit test. Based on
 #            projects/metsFishCoverTest.sas which gets most things right but
 #            includes some extra _LIT* values which are NA and absent from R,
-#            and miscalculates 15 FCN*_DD counts in 3 UID, so the SAS
+#            and miscalculates 15 FCN*_DD counts in 3 SITE, so the SAS
 #          results were corrected.
 #   11/06/13 cws: Now including checks of *_SIM values in unit test when filling
 #            in values based on DRAWDOWN (using fillinDrawdownData()).  Still
@@ -85,22 +108,27 @@ metsFishCoverNLA <- function(df, createSyntheticCovers=TRUE,
 #            'filled in', and updated unit test accordingly. Regression test
 #            against 2007 values shows zero differences > 1e-13 and 522
 #            differences due to 2007 counts being 0 and 2012 counts (FCN*) being
-#            NA. These are for 58 UIDs which have no FC data and hence no way
+#            NA. These are for 58 SITEs which have no FC data and hence no way
 #            inside this function to set those values.
 #   12/16/13 cws: Using protectedMean and protectedSum functions in place of
 #            anonymous functions.  Regression test with entire 2007 data passed 
 #            with expected 522 differences in FCN* values (was 0, now NA when 
 #            data is absent).
 #   06/12/14 tmk: Removed calls to the require() function.
+#    7/10/17 cws Renamed from metsFishCoverNLA to nlaFishCover. Using SITE,
+#            METRIC and VALUE column names instead of UID, PARAMETER, RESULT.
+#    7/12/17 cws Updated calling interface to aquamet phab standard, updating
+#            unit tests as well.
+#
 # Arguments:
 #   df = a data frame containing fish cover data.  The data frame must include
 #     columns that are named as follows:
-#       UID - universal ID value, which uniquely identifies the site location, 
+#       SITE - universal ID value, which uniquely identifies the site location, 
 #             date of visit, visit order, habitat type, etc. for which metrics 
 #             will be calculated.  For NLA, site ID, year and visit number are
 #             used for this purpose.
 #       STATION - the subordinate ID value, which identifies the location,
-#               habitat type, order of occurence, etc. within a single UID.
+#               habitat type, order of occurence, etc. within a single SITE.
 #               For NLA, transect is used for this purpose.
 #       PARAMETER - parameter name, which identifies the variables used in
 #                   calculations. In wide data frame format, this argument
@@ -110,7 +138,7 @@ metsFishCoverNLA <- function(df, createSyntheticCovers=TRUE,
 #                   and FC_STRUCTURES.  Each fish cover class occurs at least
 #                   once in the input dataframe (this is because of how NA
 #                   counts are set to 0 at the end of the function.
-#       RESULT - parameter values, which are the values used in calculations.
+#       VALUE - parameter values, which are the values used in calculations.
 #       UNITS - parameter units, which identifies the units in which the
 #               parameter values are recorded.
 #   createSyntheticCovers = a logical value, which specifies whether to create
@@ -123,116 +151,169 @@ metsFishCoverNLA <- function(df, createSyntheticCovers=TRUE,
 #     The default value is TRUE.
 # Output:
 #   A data frame that contains the following columns:
-#     UID - universal ID value
+#     SITE - universal ID value
 #     PARAMETER - metric name
-#     RESULT - metric value
+#     VALUE - metric value
 # Other Functions Required:
 #   intermediateMessage - print messages generated by the metric calculation
 #      functions
 ################################################################################
 
     # Print initial messages
-    cat('Fish Cover calculations:\n')
-    intermediateMessage('Fish Cover mets', loc='start')
+    intermediateMessage('NLA Fish Cover metrics', loc='start')
 
-	# List expected cover type parameters.  HORIZ_DIST_DD is also expected when drawdown
-	# data is included.
-	coverClasses <- c('FC_AQUATIC', 'FC_BOULDERS','FC_BRUSH', 'FC_LEDGES'
-				  	 ,'FC_LIVETREES', 'FC_OVERHANG','FC_SNAGS', 'FC_STRUCTURES'
-				  	 ,'FC_AQUATIC_DD', 'FC_BOULDERS_DD','FC_BRUSH_DD', 'FC_LEDGES_DD'
-				  	 ,'FC_LIVETREES_DD', 'FC_OVERHANG_DD','FC_SNAGS_DD', 'FC_STRUCTURES_DD'
-				  	 )
-	
-    # Create table for converting field values to calculation values
-	coverClassInfo<-data.frame(field = c(NA,'0','1','2','3','4')
-						 	  ,characteristicCover = c(NA,0,0.05,0.25,0.575,0.875)
-						 	  ,presence = c(NA,0,1,1,1,1)
-						 	  ,stringsAsFactors=FALSE
-						 	  )
-	
+	# Standardize arguments, then combine them into single dataframe as expected
+    # in the rest of the function
+    addClass <- function(df, ...) {
+        
+        args <- list(...)
+        
+        if(is.null(args)) return(NULL)
+        else if(all(is.na(args))) return(NULL)
+        
+        rc <- df %>% mutate(CLASS=args[[1]])
+        return(rc)
+        
+    }
+    aquatic <- aquatic %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_AQUATIC')
+    intermediateMessage('.')
+    aquatic_dd <- aquatic_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_AQUATIC_DD')
+    intermediateMessage('.')
+    boulders <- boulders %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BOULDERS')
+    intermediateMessage('.')
+    boulders_dd <- boulders_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BOULDERS_DD')
+    intermediateMessage('.')
+    brush <- brush %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BRUSH')
+    intermediateMessage('.')
+    brush_dd <- brush_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BRUSH_DD')
+    intermediateMessage('.')
+    ledges <- ledges %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LEDGES')
+    intermediateMessage('.')
+    ledges_dd <- ledges_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LEDGES_DD')
+    intermediateMessage('.')
+    livetrees <- livetrees %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LIVETREES')
+    intermediateMessage('.')
+    livetrees_dd <- livetrees_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LIVETREES_DD')
+    intermediateMessage('.')
+    overhang <- overhang %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_OVERHANG')
+    intermediateMessage('.')
+    overhang_dd <- overhang_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_OVERHANG_DD')
+    intermediateMessage('.')
+    snags <- snags %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_SNAGS')
+    intermediateMessage('.')
+    snags_dd <- snags_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_SNAGS_DD')
+    intermediateMessage('.')
+    structures <- structures %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_STRUCTURES')
+    intermediateMessage('.')
+    structures_dd <- structures_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_STRUCTURES_DD')
+    intermediateMessage('.')
+    horizontalDistance_dd <- horizontalDistance_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'HORIZ_DIST_DD')
+    intermediateMessage('.')
+    drawdown <- drawdown %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'DRAWDOWN')
+    intermediateMessage('.')
+    
+    df <- rbind(aquatic, aquatic_dd, boulders, boulders_dd, brush, brush_dd
+               ,ledges, ledges_dd, livetrees, livetrees_dd, overhang, overhang_dd
+               ,snags, snags_dd, structures, structures_dd
+               ,horizontalDistance_dd, drawdown
+               )
     intermediateMessage('.1')
 
 	
 	# Fill in unrecorded cover and HORIZ_DIST_DD based on DRAWDOWN.
 	if(fillinDrawdown) {
+		if(!all(c('HORIZ_DIST_DD','DRAWDOWN') %in% df$CLASS)) {
+		    intermediateMessage('.Done early',loc = 'end')
+		    return("Data for both horizontalDistance_dd and drawdown are required to fill-in missing cover values.  Either provide that data or set fillinDrawdown to FALSE")
+		}
 		intermediateMessage('.fill')
-		tt <- subset(df, PARAMETER %in% c(coverClasses,'HORIZ_DIST_DD','DRAWDOWN'))
-		df <- fillinDrawdownData(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
+		df <- fillinDrawdownData(df, fillinValue='0', fillinHORIZ_DIST_DD='0')
 	} else {
 		df <- df
 	}
+    intermediateMessage('.2')
 
 	
 	# Filter out any unnecessary data
-	fcData <- subset(df, PARAMETER %in% coverClasses & !is.na(RESULT))
-	hdData <- subset(df, PARAMETER %in% 'HORIZ_DIST_DD' & !is.na(RESULT))
+	fcData <- subset(df, CLASS %nin% c('HORIZ_DIST_DD','DRAWDOWN') & !is.na(VALUE))
+	hdData <- subset(df, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+    intermediateMessage('.3')
 	
 	
 	# Assign numeric values for cover classes and assign cover types to
 	# specific groups.
 	fcDataCalcs <- merge(fcData
 					    ,coverClassInfo
-						,by.x='RESULT'
+						,by.x='VALUE'
 						,by.y='field'
 						,all.x=TRUE
 						,sort=FALSE
 					  	)
+    intermediateMessage('.4')
 						
 	
 	# Simulate cover values from riparian and drawdown cover values if requested. 
 	# Values of HORIZ_DIST_DD are used for these calculations
 	if(createSyntheticCovers) {
+		if('HORIZ_DIST_DD' %nin% df$CLASS) {
+    		intermediateMessage('.Done early', loc = 'end')
+		    return("Data for both horizontalDistance_dd is required to calculate synthetic drawdown cover values.  Either provide that data or set createSyntheticCovers to FALSE")
+		}
+        intermediateMessage('.synth')
 		
-		horizDist <- within(subset(hdData, PARAMETER %in% 'HORIZ_DIST_DD' & !is.na(RESULT))
+		horizDist <- within(subset(hdData, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
 						   ,{characteristicCover <- NA
 							 presence <- NA
 						    }
 				           )
-						   
+        intermediateMessage('.s1')
 		synValues <- calcSynCovers(rbind(fcDataCalcs,horizDist), 10, assumptions=FALSE)
-		synValues$PARAMETER <- gsub('(_SYN)$','_SIM', synValues$PARAMETER)
+		synValues$CLASS <- gsub('(_SYN)$','_SIM', synValues$CLASS)
+        intermediateMessage('.s2')
 								
 		# Make the resulting dataframe look like the data we're calculating metrics with.
-		newValues <- within(synValues[c('UID','STATION','PARAMETER','RESULT','characteristicCover')]
-						   ,{SAMPLE_TYPE<-'PHAB'
-							 FORM_TYPE <- ''
-						  	 FLAG <- as.character(NA)
-							 presence <- ifelse(is.na(characteristicCover),	NA
-							 	  	 	,ifelse(characteristicCover > 0, 	1, 	0
-										 ))
-							}
+		newValues <- mutate(synValues[c('SITE','STATION','CLASS','VALUE','characteristicCover')]
+						   # ,SAMPLE_TYPE = 'PHAB'
+						   # ,FORM_TYPE = ''
+						   # ,FLAG = as.character(NA)
+						   ,presence = ifelse(is.na(characteristicCover),	NA
+							 	  	  ,ifelse(characteristicCover > 0, 	1, 	0
+									   ))
 						   )
-							
+        intermediateMessage('.s3')
+        
 		fcDataCalcs <- rbind(fcDataCalcs, newValues)
 	}				
+    intermediateMessage('.5')
 	
 
-	# Classify PARAMETERs by cover location: riparian, drawdown or synthetic
+	# Classify CLASSs by cover location: riparian, drawdown or synthetic
 	# This classification will be used to create suffixes for the metrics later on
 	# For 2007, all locations will be riparian
-	splitParams <- metsFishCover.splitParameterNames(fcDataCalcs$PARAMETER)
-	fcDataCalcs <- within(fcDataCalcs
-						 ,{coverSuffix <- ifelse(splitParams$suffix=='', '_LIT', splitParams$suffix)
-						   PARAMETER <- splitParams$base
-						  }
+	splitParams <- nlaFishCover.splitParameterNames(fcDataCalcs$CLASS)
+    intermediateMessage('.6')
+	fcDataCalcs <- mutate(fcDataCalcs
+						 ,coverSuffix = ifelse(splitParams$suffix == '', '_LIT', splitParams$suffix)
+						 ,CLASS = splitParams$base
 				         )
 						 
-	intermediateMessage('.a')
+	intermediateMessage('.7')
 
 	
-	fcMets <- metsFishCover.calculateMets(fcDataCalcs)
+	fcMets <- nlaFishCover.calculateMets(fcDataCalcs)
+    intermediateMessage('.8')
 
 	
 	# When not calculating synthetic cover values, rename the _LIT metrics back to 2007 names (no suffix). 	
 	fcMets <- within(fcMets
-					,{PARAMETER <- paste0(PARAMETER, coverSuffix)
+					,{METRIC <- paste0(METRIC, coverSuffix)
 					  coverSuffix <- NULL
 					 }
 					)
 	
 	if(!createSyntheticCovers) {
 		fcMets <- within(fcMets
-						,PARAMETER <- ifelse(grepl('_LIT$', PARAMETER), substr(PARAMETER, 1, nchar(PARAMETER)-4), PARAMETER)
+						,METRIC <- ifelse(grepl('_LIT$', METRIC), substr(METRIC, 1, nchar(METRIC)-4), METRIC)
 						)
 	}
 	
@@ -242,24 +323,25 @@ metsFishCoverNLA <- function(df, createSyntheticCovers=TRUE,
 }
 
 
-metsFishCover.calculateMets <- function(fcDataCalcs)
+nlaFishCover.calculateMets <- function(fcDataCalcs)
 #
 {
 	# Calculate mets for individual cover types - counts, means, presence, sd
-	indivCovers <- metsFishCover.indivCovers(fcDataCalcs)
+	indivCovers <- nlaFishCover.indivCovers(fcDataCalcs)
+  	intermediateMessage('.m1')
 
-#	fcMeans <- subset(indivCovers, grepl('^FCFC', PARAMETER))
+#	fcMeans <- subset(indivCovers, grepl('^FCFC', CLASS))
 
-	fcIndices <- metsFishCover.groupIndices(fcDataCalcs)
-  	intermediateMessage('.6')
+	fcIndices <- nlaFishCover.groupIndices(fcDataCalcs)
+  	intermediateMessage('.m2')
 	
     
     # Determine fish cover presence at each station, then calculate mean
     # presence and count for site.
     pp <- aggregate(list(any=fcDataCalcs$characteristicCover)
-                   ,list(UID = fcDataCalcs$UID
+                   ,list(SITE = fcDataCalcs$SITE
                         ,STATION = fcDataCalcs$STATION
-                        ,PARAMETER = fcDataCalcs$PARAMETER
+                        ,CLASS = fcDataCalcs$CLASS
 						,coverSuffix = fcDataCalcs$coverSuffix
                         )
                    ,function(x) { (if(is.na(x)) return(NA)		# recode cover to P/A
@@ -270,7 +352,7 @@ metsFishCover.calculateMets <- function(fcDataCalcs)
                    )
 				   
 	fcExists <- aggregate(list(fcExists = pp$any)
-                   		 ,list(UID = pp$UID
+                   		 ,list(SITE = pp$SITE
                          	  ,STATION = pp$STATION
 							  ,coverSuffix = pp$coverSuffix
 							  )
@@ -278,33 +360,34 @@ metsFishCover.calculateMets <- function(fcDataCalcs)
                    		 )
 						 
 
-	meanAll <- aggregate(list(RESULT = fcExists$fcExists)
-                   		,list(UID = fcExists$UID
+	meanAll <- aggregate(list(VALUE = fcExists$fcExists)
+                   		,list(SITE = fcExists$SITE
 							 ,coverSuffix = fcExists$coverSuffix
 							 )
                    		,protectedMean, na.rm=TRUE
                    		)
-	meanAll$PARAMETER <- 'FCFPALL'
+	meanAll$METRIC <- 'FCFPALL'
 
 
-    nAll <- aggregate(list(RESULT = fcExists$fcExists)
-                   	 ,list(UID = fcExists$UID, coverSuffix = fcExists$coverSuffix)
+    nAll <- aggregate(list(VALUE = fcExists$fcExists)
+                   	 ,list(SITE = fcExists$SITE, coverSuffix = fcExists$coverSuffix)
                      ,count
                      )
-	nAll$PARAMETER <- 'FCNALL'
+	nAll$METRIC <- 'FCNALL'
 	
-    intermediateMessage('.7')
+  	intermediateMessage('.m3')
 
 
     # combine results into a dataframe.  
 	all <- rbind(indivCovers, fcIndices, meanAll, nAll)
+  	intermediateMessage('.m4')
 
     return(all)
 }
 
 
-metsFishCover.splitParameterNames <- function(parameters)
-# Splits the PARAMETER value into the base and suffix portions,
+nlaFishCover.splitParameterNames <- function(parameters)
+# Splits the CLASS value into the base and suffix portions,
 # e.g. 'FC_BOULDERS_DD' becomes 'FC_BOULDERS' and '_DD'.  Returns
 # named list of two character vectors, base and suffix with
 # these values, in the same order as the input vector
@@ -330,7 +413,7 @@ metsFishCover.splitParameterNames <- function(parameters)
 }
 
 
-metsFishCover.indivCovers <- function(fcDataCalcs)
+nlaFishCover.indivCovers <- function(fcDataCalcs)
 # Calculate simple mets for individual cover types
 # ARGUMENTS:
 # fcDataCalcs	dataframe with fish cover data that is augmented with 
@@ -340,149 +423,147 @@ metsFishCover.indivCovers <- function(fcDataCalcs)
 	# Calculate presence mean of each type of fish cover
 	# Convert field results to calculable values
 	intermediateMessage('.indivCovers')
-	tt<-aggregate(list(RESULT = fcDataCalcs$presence)
-				 ,list(UID = fcDataCalcs$UID
-					  ,PARAMETER = fcDataCalcs$PARAMETER
+	tt<-aggregate(list(VALUE = fcDataCalcs$presence)
+				 ,list(SITE = fcDataCalcs$SITE
+					  ,CLASS = fcDataCalcs$CLASS
 					  ,coverSuffix = fcDataCalcs$coverSuffix
 					  )
 				 ,protectedMean, na.rm=TRUE
 				 )
-#	allFP <- expand.data.frame(tt, c('UID','PARAMETER','coverSuffix'))
-	meanPresence <- within(tt, PARAMETER <- gsub('^FC_(.+)$', 'FCFP\\1', PARAMETER))
-	intermediateMessage('.2')
-#print(dcast(subset(fcDataCalcs, UID==7263), STATION+coverSuffix~PARAMETER, value.var='characteristicCover'))	
-#print(dcast(subset(meanPresence, UID==7263), PARAMETER~coverSuffix, value.var='RESULT'))	
-#print(subset(meanPresence, UID==7263))	
-	
+	meanPresence <- mutate(tt
+	                      ,METRIC = gsub('^FC_(.+)$', 'FCFP\\1', CLASS)
+	                      ,CLASS = NULL
+	                      )
+	intermediateMessage('.i1')
+
 	
 	# Calculate cover counts of each type of fish cover
-	tt<-aggregate(list(RESULT = fcDataCalcs$characteristicCover)
-				 ,list(UID = fcDataCalcs$UID
-					  ,PARAMETER = fcDataCalcs$PARAMETER
+	tt<-aggregate(list(VALUE = fcDataCalcs$characteristicCover)
+				 ,list(SITE = fcDataCalcs$SITE
+					  ,CLASS = fcDataCalcs$CLASS
 					  ,coverSuffix = fcDataCalcs$coverSuffix
 					  )
 				 ,count
 				 )
-	allCounts <- expand.data.frame(tt, c('UID','PARAMETER','coverSuffix'))
+	allCounts <- expand.data.frame(tt, c('SITE','CLASS','coverSuffix'))
 	nCover <- within(allCounts
-					,{PARAMETER <- gsub('^FC_(.+)$', 'FCN\\1', PARAMETER)
-					  RESULT <- ifelse(is.na(RESULT), 0L, RESULT)
+					,{METRIC <- gsub('^FC_(.+)$', 'FCN\\1', CLASS)
+					  VALUE <- ifelse(is.na(VALUE), 0L, VALUE)
+					  CLASS <- NULL
 					 }
 					)
-	intermediateMessage('.3')
+	intermediateMessage('.i2')
 	
 	
 	# Calculate cover standard deviation of each type of fish cover
-	tt<-aggregate(list(RESULT = fcDataCalcs$characteristicCover)
-				 ,list(UID = fcDataCalcs$UID
-					  ,PARAMETER = fcDataCalcs$PARAMETER
+	tt<-aggregate(list(VALUE = fcDataCalcs$characteristicCover)
+				 ,list(SITE = fcDataCalcs$SITE
+					  ,CLASS = fcDataCalcs$CLASS
 					  ,coverSuffix = fcDataCalcs$coverSuffix
 					  )
 				 ,sd, na.rm=TRUE
 				 )
-#	allV <- expand.data.frame(tt, c('UID','PARAMETER','coverSuffix'))
-	sdCover <- within(tt,{PARAMETER <- gsub('^FC_(.+)$', 'FCV\\1', PARAMETER)})
-	intermediateMessage('.4')
+#	allV <- expand.data.frame(tt, c('SITE','CLASS','coverSuffix'))
+	sdCover <- within(tt,{METRIC <- gsub('^FC_(.+)$', 'FCV\\1', CLASS)}) %>%
+	           mutate(CLASS = NULL)
+	intermediateMessage('.i3')
 	
 	
 	# Calculate cover mean of each type of fish cover
 	# Convert field results to calculable values.
-	fcMeans<-aggregate(list(RESULT = fcDataCalcs$characteristicCover)
-					  ,list(UID = fcDataCalcs$UID
-						   ,PARAMETER = fcDataCalcs$PARAMETER
+	fcMeans<-aggregate(list(VALUE = fcDataCalcs$characteristicCover)
+					  ,list(SITE = fcDataCalcs$SITE
+						   ,CLASS = fcDataCalcs$CLASS
 						   ,coverSuffix = fcDataCalcs$coverSuffix
 					  	   )
 					  ,protectedMean, na.rm=TRUE
 					  )
-#	allFC <- expand.data.frame(fcMeans, c('UID','PARAMETER','coverSuffix'))
-	meanCover <- within(fcMeans, PARAMETER <- gsub('^FC_(.+)$', 'FCFC\\1', PARAMETER))
+#	allFC <- expand.data.frame(fcMeans, c('SITE','CLASS','coverSuffix'))
+	meanCover <- within(fcMeans, METRIC <- gsub('^FC_(.+)$', 'FCFC\\1', CLASS)) %>%
+	             mutate(CLASS = NULL)
 	
-	intermediateMessage('.5')
-	
+	intermediateMessage('.i4')
+#print(str(meanPresence));print(str(nCover));print(str(sdCover));print(str(meanCover))
 	rc <- rbind(meanPresence, nCover, sdCover, meanCover)
+	intermediateMessage('.i5')
 	return(rc)
 }
 
 
-metsFishCover.groupIndices <- function(fcDataCalcs)
+nlaFishCover.groupIndices <- function(fcDataCalcs)
 # Calculate cover indices: total, large, natural and riparian vegetation
 # grouped cover 
 #
 # ARGUMENTS:
 # fcMeans	dataframe with mean cover for each cover type at a site, with columns 
-#             UID, PARAMETER, RESULT, coverSuffix.
+#             SITE, CLASS, VALUE, coverSuffix.
 {
 
-	fcMeans<-aggregate(list(RESULT = fcDataCalcs$characteristicCover)
-					  ,list(UID = fcDataCalcs$UID
-						   ,PARAMETER = fcDataCalcs$PARAMETER
+	fcMeans<-aggregate(list(VALUE = fcDataCalcs$characteristicCover)
+					  ,list(SITE = fcDataCalcs$SITE
+						   ,CLASS = fcDataCalcs$CLASS
 						   ,coverSuffix = fcDataCalcs$coverSuffix
 						   )
 					  ,protectedMean, na.rm=TRUE
 					  )
-	
+	intermediateMessage('.g1')
 	fcMeans<-within(fcMeans
-				   ,{isBig <- grepl('^FC_(BOULDERS|LEDGES|OVERHANG|STRUCTURES)', PARAMETER) 
-					 isNatural <- !grepl('^FC_STRUCTURES', PARAMETER)
-					 isRipVegetation <-grepl('^FC_(BRUSH|LIVETREES|SNAGS)', PARAMETER)
+				   ,{isBig <- grepl('^FC_(BOULDERS|LEDGES|OVERHANG|STRUCTURES)', CLASS) 
+					 isNatural <- !grepl('^FC_STRUCTURES', CLASS)
+					 isRipVegetation <-grepl('^FC_(BRUSH|LIVETREES|SNAGS)', CLASS)
 				    }
 				   )
+	intermediateMessage('.g2')
 				   
-	fciAll <- aggregate(list(RESULT = fcMeans$RESULT)
-					   ,list(UID = fcMeans$UID
+	fciAll <- aggregate(list(VALUE = fcMeans$VALUE)
+					   ,list(SITE = fcMeans$SITE
 			                ,coverSuffix = fcMeans$coverSuffix
 					        )
 					   ,protectedSum, na.rm=TRUE
 					   )
-	fciAll$PARAMETER <- 'FCIALL'
-#print(dcast(subset(fcDataCalcs, UID==1000057), STATION+coverSuffix~PARAMETER, value.var='characteristicCover'))	
-#print(dcast(subset(fcMeans, UID==1000057), PARAMETER~coverSuffix, value.var='RESULT'))	
-#print(subset(fciAll, UID==1000057))	
+	fciAll$METRIC <- 'FCIALL'
+	intermediateMessage('.g3')
 
 
 	tt <- subset(fcMeans, isBig)
-	fciBig <- aggregate(list(RESULT = tt$RESULT)
-					   ,list(UID = tt$UID
+	fciBig <- aggregate(list(VALUE = tt$VALUE)
+					   ,list(SITE = tt$SITE
 				 		    ,coverSuffix = tt$coverSuffix
 							)
 #					   ,sum, na.rm=TRUE
 					   ,protectedSum, na.rm=TRUE
 					   )
-	fciBig$PARAMETER <- 'FCIBIG'
+	fciBig$METRIC <- 'FCIBIG'
+	intermediateMessage('.g4')
 	
 	
 	tt <- subset(fcMeans, isNatural)
-	fciNatural <- aggregate(list(RESULT = tt$RESULT)
-						   ,list(UID = tt$UID
+	fciNatural <- aggregate(list(VALUE = tt$VALUE)
+						   ,list(SITE = tt$SITE
 								,coverSuffix = tt$coverSuffix
 				   				)
 #						   ,sum, na.rm=TRUE
 						   ,protectedSum, na.rm=TRUE
 						   )
-	fciNatural$PARAMETER <- 'FCINATURAL'
+	fciNatural$METRIC <- 'FCINATURAL'
+	intermediateMessage('.g5')
 	
 	
 	tt <- subset(fcMeans, isRipVegetation)
-	fciRipVeg <- aggregate(list(RESULT = tt$RESULT)
-						  ,list(UID = tt$UID
+	fciRipVeg <- aggregate(list(VALUE = tt$VALUE)
+						  ,list(SITE = tt$SITE
 							   ,coverSuffix = tt$coverSuffix
 				  			   )
 #						  ,sum, na.rm=TRUE
 						  ,protectedSum, na.rm=TRUE
 						  )
-	fciRipVeg$PARAMETER <- 'FCIRIPVEG'
-#print(dcast(subset(fcDataCalcs, UID==1000057), STATION+coverSuffix~PARAMETER, value.var='characteristicCover'))	
-#print(dcast(subset(fcMeans, UID==1000057), PARAMETER~coverSuffix, value.var='RESULT'))	
-#print(subset(fciRipVeg, UID==1000057))	
-	
-	intermediateMessage('.i')
-	
-	groupIndices <- rbind(fciAll, fciBig, fciNatural, fciRipVeg)[c('UID','PARAMETER','RESULT', 'coverSuffix')]
-	intermediateMessage('.j')
+	fciRipVeg$METRIC <- 'FCIRIPVEG'
+	intermediateMessage('.g6')
+
+	groupIndices <- rbind(fciAll, fciBig, fciNatural, fciRipVeg)[c('SITE','METRIC','VALUE', 'coverSuffix')]
+	intermediateMessage('.g7')
 	
 	return(groupIndices)
 }
-
-
 
 # end of file

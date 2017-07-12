@@ -1,15 +1,19 @@
-# metsFishCoverNLA.r
+# nlaFishCoverNLA.r
 # RUnit tests
+#
+#  7/10/17 cws renamed functions from metsFishCoverNLA* to nlaFishCover, changed
+#          from UID & RESULT to SITE and VALUE.
+#
 
 
-metsFishCover.splitParameterNamesTest <- function()
-# Unit test for metsFishCover.splitParameterNames
+nlaFishCover.splitParameterNamesTest <- function()
+# Unit test for nlaFishCover.splitParameterNames
 {
 	testParams <- c('FC_a_DD','FC_b_LIT','FC_c_SYN','FC_c_SIM','FC_c_SYN0','FC_d')
 	expected <- list(base=c('FC_a','FC_b','FC_c','FC_c','FC_c','FC_d')
 	                ,suffix=c('_DD','_LIT','_SYN','_SIM','_SYN0','')
 			        )
-	actual <- metsFishCover.splitParameterNames(testParams)
+	actual <- nlaFishCover.splitParameterNames(testParams)
 	
 	checkEquals(expected, actual, 'Incorrect splitting of parameter names')
 	
@@ -17,87 +21,172 @@ metsFishCover.splitParameterNamesTest <- function()
 
 
 
-metsFishCoverTest <- function()
-# unit test for metsFishCover
+nlaFishCoverTest <- function()
+# unit test for nlaFishCover
 {
-	metsFishCoverTest.2007()	
-	metsFishCoverTest.withDrawDown()	
-	metsFishCoverTest.withDrawDownAndFillin()
+	nlaFishCoverTest.2007()	
+	nlaFishCoverTest.withDrawDown()	
+	nlaFishCoverTest.withDrawDownAndFillin()
 }
 
 
 
-metsFishCoverTest.2007 <- function()
+nlaFishCoverTest.2007 <- function()
 # Tests fish cover calculation with 2007 data
 # The complex testing here is due to the precision differences between
 # calculated and retrieved values, requiring separate tests for presence (names)
 # type and value of the metrics.
 {
-	testData <- metsFishCoverTest.createTestData2007()
-	expected <- metsFishCoverTest.expectedResults2007()
-	actual <- metsFishCoverNLA(testData, createSyntheticCovers=FALSE, fillinDrawdown=FALSE)
-	
+	testData <- nlaFishCoverTest.createTestData2007() #%>% mutate(SITE=as.integer(SITE), VALUE=as.character(VALUE))
+	expected <- nlaFishCoverTest.expectedResults2007()
+	actual <- nlaFishCover(aquatic = testData %>% subset(PARAMETER=='FC_AQUATIC') %>% select(SITE, STATION, VALUE)
+                          ,aquatic_dd = NULL
+                          ,boulders = testData %>% subset(PARAMETER=='FC_BOULDERS') %>% select(SITE, STATION, VALUE)
+                          ,boulders_dd = NULL
+                          ,brush = testData %>% subset(PARAMETER=='FC_BRUSH') %>% select(SITE, STATION, VALUE)
+                          ,brush_dd = NULL
+                          ,ledges = testData %>% subset(PARAMETER=='FC_LEDGES') %>% select(SITE, STATION, VALUE)
+                          ,ledges_dd = NULL
+                          ,livetrees = testData %>% subset(PARAMETER=='FC_LIVETREES') %>% select(SITE, STATION, VALUE)
+                          ,livetrees_dd = NULL
+                          ,overhang = testData %>% subset(PARAMETER=='FC_OVERHANG') %>% select(SITE, STATION, VALUE)
+                          ,overhang_dd = NULL
+                          ,snags = testData %>% subset(PARAMETER=='FC_SNAGS') %>% select(SITE, STATION, VALUE)
+                          ,snags_dd = NULL
+                          ,structures = testData %>% subset(PARAMETER=='FC_STRUCTURES') %>% select(SITE, STATION, VALUE)
+                          ,structures_dd = NULL
+	                      ,createSyntheticCovers=FALSE
+	                      ,fillinDrawdown=FALSE
+	                      )
+
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns in 2007")
-	checkEquals(sort(unique(expected$PARAMETER)), sort(unique(actual$PARAMETER)), "Incorrect naming of metrics in 2007")
+	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics in 2007")
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics in 2007")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-15)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-15)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics in 2007")
 	
+	# Test case when fillinDrawdown is TRUE, but data for drawdown and horizontal 
+	# distance of drawdown is absent
+	actual <- nlaFishCover(aquatic = testData %>% subset(PARAMETER=='FC_AQUATIC') %>% select(SITE, STATION, VALUE)
+                          ,boulders = testData %>% subset(PARAMETER=='FC_BOULDERS') %>% select(SITE, STATION, VALUE)
+                          ,brush = testData %>% subset(PARAMETER=='FC_BRUSH') %>% select(SITE, STATION, VALUE)
+                          ,ledges = testData %>% subset(PARAMETER=='FC_LEDGES') %>% select(SITE, STATION, VALUE)
+                          ,livetrees = testData %>% subset(PARAMETER=='FC_LIVETREES') %>% select(SITE, STATION, VALUE)
+                          ,overhang = testData %>% subset(PARAMETER=='FC_OVERHANG') %>% select(SITE, STATION, VALUE)
+                          ,snags = testData %>% subset(PARAMETER=='FC_SNAGS') %>% select(SITE, STATION, VALUE)
+                          ,structures = testData %>% subset(PARAMETER=='FC_STRUCTURES') %>% select(SITE, STATION, VALUE)
+	                      ,fillinDrawdown=TRUE
+	                      ,createSyntheticCovers=FALSE
+	                      )
+	expected <- "Data for both horizontalDistance_dd and drawdown are required to fill-in missing cover values.  Either provide that data or set fillinDrawdown to FALSE"
+	checkEquals(expected, actual, "Incorrect response when attempting to fill-in drawdown values without that data")
+	
+	actual <- nlaFishCover(aquatic = testData %>% subset(PARAMETER=='FC_AQUATIC') %>% select(SITE, STATION, VALUE)
+                          ,boulders = testData %>% subset(PARAMETER=='FC_BOULDERS') %>% select(SITE, STATION, VALUE)
+                          ,brush = testData %>% subset(PARAMETER=='FC_BRUSH') %>% select(SITE, STATION, VALUE)
+                          ,ledges = testData %>% subset(PARAMETER=='FC_LEDGES') %>% select(SITE, STATION, VALUE)
+                          ,livetrees = testData %>% subset(PARAMETER=='FC_LIVETREES') %>% select(SITE, STATION, VALUE)
+                          ,overhang = testData %>% subset(PARAMETER=='FC_OVERHANG') %>% select(SITE, STATION, VALUE)
+                          ,snags = testData %>% subset(PARAMETER=='FC_SNAGS') %>% select(SITE, STATION, VALUE)
+                          ,structures = testData %>% subset(PARAMETER=='FC_STRUCTURES') %>% select(SITE, STATION, VALUE)
+	                      ,fillinDrawdown=FALSE
+                          ,createSyntheticCovers=TRUE
+	                      )
+	expected <- "Data for both horizontalDistance_dd is required to calculate synthetic drawdown cover values.  Either provide that data or set createSyntheticCovers to FALSE"
+	checkEquals(expected, actual, "Incorrect response when attempting to fill-in drawdown values without that data")
 }
 
 
 
-metsFishCoverTest.withDrawDown <- function()
+nlaFishCoverTest.withDrawDown <- function()
 # Tests fish cover calculation with drawdown data, but do NOT fill in drawdown values.
 # The complex testing here is due to the precision differences between
 # calculated and retrieved values, requiring separate tests for presence (names)
 # type and value of the metrics.
 {
-	testData <- metsFishCoverTest.createTestDataWithDrawDown()
-	expected <- metsFishCoverTest.expectedResultsWithDrawDownAndNoFillin()
-	expected$RESULT <- as.numeric(expected$RESULT)
-	actual <- metsFishCoverNLA(testData, fillinDrawdown=FALSE)
+	testData <- nlaFishCoverTest.createTestDataWithDrawDown()
+	expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin()
+	expected$VALUE <- as.numeric(expected$VALUE)
+	actual <- nlaFishCover(aquatic =       testData %>% subset(PARAMETER=='FC_AQUATIC') %>% select(SITE, STATION, VALUE)
+                          ,aquatic_dd =    testData %>% subset(PARAMETER=='FC_AQUATIC_DD') %>% select(SITE, STATION, VALUE)
+                          ,boulders =      testData %>% subset(PARAMETER=='FC_BOULDERS') %>% select(SITE, STATION, VALUE)
+                          ,boulders_dd =   testData %>% subset(PARAMETER=='FC_BOULDERS_DD') %>% select(SITE, STATION, VALUE)
+                          ,brush =         testData %>% subset(PARAMETER=='FC_BRUSH') %>% select(SITE, STATION, VALUE)
+                          ,brush_dd =      testData %>% subset(PARAMETER=='FC_BRUSH_DD') %>% select(SITE, STATION, VALUE)
+                          ,ledges =        testData %>% subset(PARAMETER=='FC_LEDGES') %>% select(SITE, STATION, VALUE)
+                          ,ledges_dd =     testData %>% subset(PARAMETER=='FC_LEDGES_DD') %>% select(SITE, STATION, VALUE)
+                          ,livetrees =     testData %>% subset(PARAMETER=='FC_LIVETREES') %>% select(SITE, STATION, VALUE)
+                          ,livetrees_dd =  testData %>% subset(PARAMETER=='FC_LIVETREES_DD') %>% select(SITE, STATION, VALUE)
+                          ,overhang =      testData %>% subset(PARAMETER=='FC_OVERHANG') %>% select(SITE, STATION, VALUE)
+                          ,overhang_dd =   testData %>% subset(PARAMETER=='FC_OVERHANG_DD') %>% select(SITE, STATION, VALUE)
+                          ,snags =         testData %>% subset(PARAMETER=='FC_SNAGS') %>% select(SITE, STATION, VALUE)
+                          ,snags_dd =      testData %>% subset(PARAMETER=='FC_SNAGS_DD') %>% select(SITE, STATION, VALUE)
+                          ,structures =    testData %>% subset(PARAMETER=='FC_STRUCTURES') %>% select(SITE, STATION, VALUE)
+                          ,structures_dd = testData %>% subset(PARAMETER=='FC_STRUCTURES_DD') %>% select(SITE, STATION, VALUE)
+                          ,horizontalDistance_dd = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+                          ,drawdown =              testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
+                          ,fillinDrawdown=FALSE
+                          )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
-	checkEquals(sort(unique(expected$PARAMETER)), sort(unique(actual$PARAMETER)), "Incorrect naming of metrics with drawdown")
+	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown")
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 	
 }
 
 
 
-metsFishCoverTest.withDrawDownAndFillin <- function()
+nlaFishCoverTest.withDrawDownAndFillin <- function()
 # Tests fish cover calculation with drawdown data, and filling in drawdown values.
 {
-	testData <- metsFishCoverTest.createTestDataWithDrawDown()
-	expected <- metsFishCoverTest.expectedResultsWithDrawDownAndFillin()
-	actual <- metsFishCoverNLA(testData)
+	testData <- nlaFishCoverTest.createTestDataWithDrawDown()
+	expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndFillin()
+	actual <- nlaFishCover(aquatic =       testData %>% subset(PARAMETER=='FC_AQUATIC') %>% select(SITE, STATION, VALUE)
+                          ,aquatic_dd =    testData %>% subset(PARAMETER=='FC_AQUATIC_DD') %>% select(SITE, STATION, VALUE)
+                          ,boulders =      testData %>% subset(PARAMETER=='FC_BOULDERS') %>% select(SITE, STATION, VALUE)
+                          ,boulders_dd =   testData %>% subset(PARAMETER=='FC_BOULDERS_DD') %>% select(SITE, STATION, VALUE)
+                          ,brush =         testData %>% subset(PARAMETER=='FC_BRUSH') %>% select(SITE, STATION, VALUE)
+                          ,brush_dd =      testData %>% subset(PARAMETER=='FC_BRUSH_DD') %>% select(SITE, STATION, VALUE)
+                          ,ledges =        testData %>% subset(PARAMETER=='FC_LEDGES') %>% select(SITE, STATION, VALUE)
+                          ,ledges_dd =     testData %>% subset(PARAMETER=='FC_LEDGES_DD') %>% select(SITE, STATION, VALUE)
+                          ,livetrees =     testData %>% subset(PARAMETER=='FC_LIVETREES') %>% select(SITE, STATION, VALUE)
+                          ,livetrees_dd =  testData %>% subset(PARAMETER=='FC_LIVETREES_DD') %>% select(SITE, STATION, VALUE)
+                          ,overhang =      testData %>% subset(PARAMETER=='FC_OVERHANG') %>% select(SITE, STATION, VALUE)
+                          ,overhang_dd =   testData %>% subset(PARAMETER=='FC_OVERHANG_DD') %>% select(SITE, STATION, VALUE)
+                          ,snags =         testData %>% subset(PARAMETER=='FC_SNAGS') %>% select(SITE, STATION, VALUE)
+                          ,snags_dd =      testData %>% subset(PARAMETER=='FC_SNAGS_DD') %>% select(SITE, STATION, VALUE)
+                          ,structures =    testData %>% subset(PARAMETER=='FC_STRUCTURES') %>% select(SITE, STATION, VALUE)
+                          ,structures_dd = testData %>% subset(PARAMETER=='FC_STRUCTURES_DD') %>% select(SITE, STATION, VALUE)
+                          ,horizontalDistance_dd = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+                          ,drawdown =              testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
+                          )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
-	checkEquals(sort(unique(expected$PARAMETER)), sort(unique(actual$PARAMETER)), "Incorrect naming of metrics with drawdown")
+	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown")
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-9)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-9)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 	
 }
 
 
 
-metsFishCoverTest.createTestData2007 <- function()
+nlaFishCoverTest.createTestData2007 <- function()
 # This data is based on NLA2007 data for the following VISIT_ID:
 #	7469	Full complement of data stations A - J (as expected)
 #	7472	Incomplete data at A, B; else full complement
@@ -109,10 +198,10 @@ metsFishCoverTest.createTestData2007 <- function()
 #	8905	Incomplete data at B, C, I, J, plus extra station K
 #	
 #fc07 <- dbFetch(nla07, 'tblRESULTS', where="PARAMETER in ('FC_AQUATIC', 'FC_BOULDERS','FC_BRUSH', 'FC_LEDGES','FC_LIVETREES', 'FC_OVERHANG','FC_SNAGS', 'FC_STRUCTURES')")
-#tt<-subset(fc07, VISIT_ID %in% c(7469,7797,8905,7472, 7545,7546,8152, 7723), select=c(VISIT_ID,STATION_NO,PARAMETER,RESULT,UNITS))
+#tt<-subset(fc07, VISIT_ID %in% c(7469,7797,8905,7472, 7545,7546,8152, 7723), select=c(VISIT_ID,STATION_NO,PARAMETER,VALUE,UNITS))
 #tt <- tt[order(tt$VISIT_ID,tt$STATION_NO,tt$PARAMETER),]	
 {
-	tc <- textConnection("UID     STATION   PARAMETER   RESULT   UNITS
+	tc <- textConnection("SITE     STATION   PARAMETER   VALUE   UNITS
 				          7469          A    FC_AQUATIC      4 X         
 				          7469          A   FC_BOULDERS      0 X         
 				          7469          A      FC_BRUSH      0 X         
@@ -633,15 +722,15 @@ metsFishCoverTest.createTestData2007 <- function()
 
 
 
-metsFishCoverTest.expectedResults2007 <- function()
+nlaFishCoverTest.expectedResults2007 <- function()
 # Values expected based on test data.  These were taken directly from tblPHABMET_LONG
 # in the 2007 NLA databse.
 #phab <- sqlFetch(nla07, 'tblPHABMET_LONG', stringsAsFactors=FALSE) 
 #tt<-subset(phab, VISIT_ID %in% c(7469,7797,8905,7472, 7545,7546,8152, 7723) & grepl('^fc', PARAMETER))
-#tt <- tt[order(tt$VISIT_ID,tt$PARAMETER), c('VISIT_ID','PARAMETER','RESULT')]	
+#tt <- tt[order(tt$VISIT_ID,tt$PARAMETER), c('VISIT_ID','PARAMETER','VALUE')]	
 {
 	
-	tc <- textConnection("   UID      PARAMETER              RESULT
+	tc <- textConnection("  SITE         METRIC               VALUE
 						  	7469    FCFPAQUATIC                   1
 						  	7472    FCFPAQUATIC                   1
 						  	7545    FCFPAQUATIC                   1
@@ -985,7 +1074,7 @@ metsFishCoverTest.expectedResults2007 <- function()
                			   )
 
 	longMets <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-#	wideMets <- within(dcast(longMets, UID~PARAMETER, value.var='RESULT')
+#	wideMets <- within(dcast(longMets, SITE~PARAMETER, value.var='VALUE')
 #					  ,{FCNALL <- as.integer(FCNALL)
 #						FCNAQUATIC <- as.integer(FCNAQUATIC)
 #						FCNBOULDERS <- as.integer(FCNBOULDERS)
@@ -1003,8 +1092,8 @@ metsFishCoverTest.expectedResults2007 <- function()
 
 
 
-metsFishCoverTest.createTestDataWithDrawDown <- function()
-# This data is based on NLA2012 data for the following UIDs:
+nlaFishCoverTest.createTestDataWithDrawDown <- function()
+# This data is based on NLA2012 data for the following SITEs:
 #	6160	Full complement of data stations A - J (as expected), and DRAWDOWN all YES
 #	6189	Full complement of data stations A - J but no drawdown data, and DRAWDOWN all NO
 #	6227	Incomplete drawdown data at C,D,E,F,G; else full complement, and DRAWDOWN never missing
@@ -1019,10 +1108,10 @@ metsFishCoverTest.createTestDataWithDrawDown <- function()
 # NOTE: DRAWDOWN values appended at the end rather than interleaved.
 #phab12 <- fetchNLATable('tblPHAB')
 #fc12 <- subset(phab12, PARAMETER %in% coverClasses) 
-#tt<-subset(fc12, UID %in% c(6160,6189,6227,6235,6281,6449,6683,7263,7913,1000057))
-#tt <- tt[order(tt$UID,tt$STATION,tt$PARAMETER),]	
+#tt<-subset(fc12, SITE %in% c(6160,6189,6227,6235,6281,6449,6683,7263,7913,1000057))
+#tt <- tt[order(tt$SITE,tt$STATION,tt$PARAMETER),]	
 {
-	tc <- textConnection("	 UID SAMPLE_TYPE STATION        PARAMETER RESULT FLAG  FORM_TYPE
+	tc <- textConnection("	SITE SAMPLE_TYPE STATION        PARAMETER VALUE FLAG  FORM_TYPE
 							6160        PHAB       A       FC_AQUATIC      1 NA   PHAB_FRONT
 							6160        PHAB       A    FC_AQUATIC_DD      2 NA   PHAB_FRONT
 							6160        PHAB       A      FC_BOULDERS      0 NA   PHAB_FRONT
@@ -2086,10 +2175,10 @@ metsFishCoverTest.createTestDataWithDrawDown <- function()
 
 
 
-metsFishCoverTest.expectedResultsWithDrawDown <- function()
+nlaFishCoverTest.expectedResultsWithDrawDown <- function()
 # Expected results for test data with drawdown values using 10 m maximum riparian drawdown
 {
-	tc <- textConnection("	 UID           PARAMETER                      RESULT
+	tc <- textConnection("	SITE              METRIC                       VALUE
 							6160      FCFPAQUATIC_DD  1.000000000000000000000000
 							6227      FCFPAQUATIC_DD  0.400000000000000022204460
 							6281      FCFPAQUATIC_DD  0.000000000000000000000000
@@ -3440,17 +3529,17 @@ metsFishCoverTest.expectedResultsWithDrawDown <- function()
 
 
 
-metsFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
+nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
 # Expected results for test data with drawdown values which were NOT 'filled in' based
 # on the value of the DRAWDOWN parameter.  These values were calculated with SAS on
 # 14 Nov 2013, which erred in 15 cases by including _SIM metrics (with NA values) where
-# there is no data to create them (e.g. UID 7913 is missing all data for LEDGES
+# there is no data to create them (e.g. SITE 7913 is missing all data for LEDGES
 # LIVETREES and STRUCTURES and so SAS does not include FC[FP|FC|V]LEDGES_[DD|LIT]
 # but rows of FC[FP|FC|V]LEDGES_SIM = NA are included.  This is a bug in the %calcSimCover
 # macro, but I don't have time to debug it now.)  These 15 rows are removed from the
 # expected output.
 {
-	tc <- textConnection("   UID          PARAMETER       RESULT
+	tc <- textConnection("  SITE             METRIC                       VALUE
 							6160     FCFPAQUATIC_DD  1.000000000000000000000000
 							6160    FCFPAQUATIC_LIT  1.000000000000000000000000
 							6160    FCFPAQUATIC_SIM  1.000000000000000000000000
@@ -4444,14 +4533,14 @@ metsFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
 
 
 
-metsFishCoverTest.expectedResultsWithDrawDownAndFillin <- function()
+nlaFishCoverTest.expectedResultsWithDrawDownAndFillin <- function()
 # Expected results for test data with drawdown values which were 'filled in' based
 # on the value of the DRAWDOWN parameter.  These values were calculated with SAS on
-# 26 Sept 2013, which erred for UID 6235 by calculating a FCN*_DD values as 10 
+# 26 Sept 2013, which erred for SITE 6235 by calculating a FCN*_DD values as 10 
 # instead of 9 and by including a total of 15 missing littoral values (the R 
 # function does not include those values) for6234, 7913 and 1000057.
 {
-	tc <- textConnection("   UID          PARAMETER       RESULT
+	tc <- textConnection("  SITE             METRIC        VALUE
 							6160     FCFPAQUATIC_DD  1.000000000
 							6160    FCFPAQUATIC_LIT  1.000000000
 							6160    FCFPAQUATIC_SIM  1.000000000
@@ -5608,11 +5697,11 @@ metsFishCoverTest.expectedResultsWithDrawDownAndFillin <- function()
 					
 
 
-metsFishCoverTest.expectedResultsWithDrawDownWith15mRiparian <- function()
+nlaFishCoverTest.expectedResultsWithDrawDownWith15mRiparian <- function()
 # Expected results for test data with drawdown values.
 # Using 15m maximum riparian drawdown.  DEPRECATED
 {
-	tc <- textConnection("	UID           PARAMETER                               RESULT
+	tc <- textConnection("	SITE           METRIC                                  VALUE
 							6160    FCFCAQUATIC_LIT           0.110000000000000000555112
 							6160     FCFCAQUATIC_DD           0.257500000000000006661338
 							6160    FCFCAQUATIC_SYN0          0.196266666666666672602659

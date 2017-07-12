@@ -3,6 +3,8 @@
 #          interpolatePercentileTest
 #  7/07/17 cws Changed UID to SITE and RESULT to VALUE in normalizedCoverTest,
 #          calcSynCoversTest, calcSynInfluenceTest, fillinDrawdownDataTest and modalClassesTest.
+#  7/11/17 cws Changed PARAMETER to CLASS in all remaining functions.
+#
 # RUnit tests
 
 calcSynCoversTest <- function()
@@ -13,7 +15,7 @@ calcSynCoversTest <- function()
 	expected <- calcSynCoversTest.expected()
 	actual <- calcSynCovers(testData, 15, FALSE)
 	
-	diffs <- dfCompare(expected, actual, c('SITE','STATION','PARAMETER'), zeroFudge=1e-15)
+	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 #	return(diffs)
 	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers without assumptions")
 	
@@ -22,7 +24,7 @@ calcSynCoversTest <- function()
 	expected <- calcSynCoversTest.expectedWithAssumptions()
 	actual <- calcSynCovers(testData, 15, TRUE)
 	
-	diffs <- dfCompare(expected, actual, c('SITE','STATION','PARAMETER'), zeroFudge=1e-15)
+	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 #	return(diffs)
 	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers with assumptions")
 	
@@ -32,7 +34,7 @@ calcSynCoversTest <- function()
 calcSynCoversTest.testData <- function()
 # Unit test for calcSynCovers 
 {
-	tc <- textConnection("SITE	STATION	PARAMETER		VALUE	characteristicCover
+	tc <- textConnection("SITE	STATION	CLASS		VALUE	characteristicCover
 						  1		A		FC_X			0		0			# Data with no missing or absent values
 						  1		A		FC_X_DD			1		0.05
 						  1		A		FC_Y			2		0.25
@@ -113,7 +115,7 @@ calcSynCoversTest.testData <- function()
 
 calcSynCoversTest.expected <- function()
 {
-	tc <- textConnection("  SITE STATION PARAMETER    characteristicCover
+	tc <- textConnection("  SITE STATION CLASS    characteristicCover
 							1       A  FC_X_SYN 0.000000000000000
 							1       A  FC_Y_SYN 0.250000000000000
 							1       B  FC_X_SYN 0.291666666666667
@@ -158,13 +160,13 @@ calcSynCoversTest.expected <- function()
 calcSynCoversTest.expectedWithAssumptions <- function()
 {
 	expected <-	within(calcSynCoversTest.expected()
-					  ,{characteristicCover <- ifelse(SITE==2 & STATION=='A' & PARAMETER=='FC_X_SYN', 0
-			  			 					  ,ifelse(SITE==3 & STATION=='A' & PARAMETER=='FC_X_SYN', 0.575
-							 				  ,ifelse(SITE==5 & STATION=='A' & PARAMETER=='FC_X_SYN', 0.875, characteristicCover
+					  ,{characteristicCover <- ifelse(SITE==2 & STATION=='A' & CLASS=='FC_X_SYN', 0
+			  			 					  ,ifelse(SITE==3 & STATION=='A' & CLASS=='FC_X_SYN', 0.575
+							 				  ,ifelse(SITE==5 & STATION=='A' & CLASS=='FC_X_SYN', 0.875, characteristicCover
 											   )))
-						assumptionMade <- ifelse((SITE==2 & STATION=='A' & PARAMETER=='FC_X_SYN') | 
-									   	 		 (SITE==3 & STATION=='A' & PARAMETER=='FC_X_SYN') | 
-										 		 (SITE==5 & STATION=='A' & PARAMETER=='FC_X_SYN'), TRUE, FALSE
+						assumptionMade <- ifelse((SITE==2 & STATION=='A' & CLASS=='FC_X_SYN') | 
+									   	 		 (SITE==3 & STATION=='A' & CLASS=='FC_X_SYN') | 
+										 		 (SITE==5 & STATION=='A' & CLASS=='FC_X_SYN'), TRUE, FALSE
 							 					)
 					   }
 			  		  )
@@ -181,7 +183,7 @@ calcSynInfluenceTest <- function()
 	expected$calc <- as.numeric(expected$calc)
 	actual <- calcSynInfluence(testData)
 	
-	diffs <- dfCompare(expected, actual, c('SITE','STATION','PARAMETER'), zeroFudge=1e-15)
+	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 #	return(diffs)
 	checkEquals(NULL, diffs, "Incorrect calculation of synthesized influence without assumptions")
 	
@@ -190,7 +192,7 @@ calcSynInfluenceTest <- function()
 #	expected <- calcSynCoversTest.expectedWithAssumptions()
 #	actual <- calcSynCovers(testData, 15, TRUE)
 #	
-#	diffs <- dfCompare(expected, actual, c('SITE','STATION','PARAMETER'), zeroFudge=1e-15)
+#	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 ##	return(diffs)
 #	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers with assumptions")
 	
@@ -200,7 +202,7 @@ calcSynInfluenceTest <- function()
 calcSynInfluenceTest.testData <- function()
 # Unit test for calcSynCovers 
 {
-	tc <- textConnection("SITE	STATION	PARAMETER		VALUE	calc
+	tc <- textConnection("SITE	STATION	CLASS		VALUE	calc
 						  1		A		HI_X			0		0.0			# Data with no missing or absent values, and HORIZ_DIST_DD between 0 and 15
 						  1		A		HI_X_DD			0		0.0
 						  1		A		HI_Y			0		0.0
@@ -331,7 +333,7 @@ calcSynInfluenceTest.testData <- function()
 
 calcSynInfluenceTest.expected <- function()
 {
-	tc <- textConnection("SITE STATION PARAMETER VALUE                     calc
+	tc <- textConnection("SITE STATION CLASS VALUE                     calc
 							1       A  HI_X_SYN     NA 0.0000000000000000000000
 							1       A  HI_Y_SYN     NA 1.0000000000000000000000
 							1       B  HI_X_SYN     NA 0.5000000000000000000000
@@ -388,13 +390,13 @@ calcSynInfluenceTest.expected <- function()
 calcSynInfluenceTest.expectedWithAssumptions <- function()
 {
 	expected <-	within(calcSynCoversTest.expected()
-					  ,{characteristicCover <- ifelse(SITE==2 & STATION=='A' & PARAMETER=='FC_X_SYN', 0
-			  			 					  ,ifelse(SITE==3 & STATION=='A' & PARAMETER=='FC_X_SYN', 0.575
-							 				  ,ifelse(SITE==5 & STATION=='A' & PARAMETER=='FC_X_SYN', 0.875, characteristicCover
+					  ,{characteristicCover <- ifelse(SITE==2 & STATION=='A' & CLASS=='FC_X_SYN', 0
+			  			 					  ,ifelse(SITE==3 & STATION=='A' & CLASS=='FC_X_SYN', 0.575
+							 				  ,ifelse(SITE==5 & STATION=='A' & CLASS=='FC_X_SYN', 0.875, characteristicCover
 											   )))
-						assumptionMade <- ifelse((SITE==2 & STATION=='A' & PARAMETER=='FC_X_SYN') | 
-									   	 		 (SITE==3 & STATION=='A' & PARAMETER=='FC_X_SYN') | 
-										 		 (SITE==5 & STATION=='A' & PARAMETER=='FC_X_SYN'), TRUE, FALSE
+						assumptionMade <- ifelse((SITE==2 & STATION=='A' & CLASS=='FC_X_SYN') | 
+									   	 		 (SITE==3 & STATION=='A' & CLASS=='FC_X_SYN') | 
+										 		 (SITE==5 & STATION=='A' & CLASS=='FC_X_SYN'), TRUE, FALSE
 							 					)
 					   }
 			  		  )
@@ -554,16 +556,16 @@ fillinDrawdownDataTest <- function()
 	testData <- fillinDrawdownDataTest.createTestData()
 	
 	# Test expansion separately
-	tt <- testData	#subset(testData, PARAMETER %in% c('X','X_DD','Y','Y_DD','HORIZ_DIST_DD'))
+	tt <- testData	#subset(testData, CLASS %in% c('X','X_DD','Y','Y_DD','HORIZ_DIST_DD'))
 	actualExpansion <- fillinDrawdownData.expansion(tt)
 	expectedExpansion <- fillinDrawdownDataTest.createExpectedExpansion()
-	diff <- dfCompare(expectedExpansion, actualExpansion, c('SITE','STATION','PARAMETER'))
+	diff <- dfCompare(expectedExpansion, actualExpansion, c('SITE','STATION','CLASS'))
 	checkEquals(NULL, diff, "Incorrect expansion of test data")
 	
 	# Test entire function, using different values for the fill-in values.
 	actualFillin <- fillinDrawdownData(testData, fillinValue='F', fillinHORIZ_DIST_DD='X')
 	expectedFillin <- fillinDrawdownDataTest.createExpectedFillin()
-	diff <- dfCompare(expectedFillin, actualFillin, c('SITE','STATION','PARAMETER'))
+	diff <- dfCompare(expectedFillin, actualFillin, c('SITE','STATION','CLASS'))
 	checkEquals(NULL, diff, "Incorrect filling in of test data")
 	
 }
@@ -572,7 +574,7 @@ fillinDrawdownDataTest <- function()
 fillinDrawdownDataTest.createTestData <- function()
 # Test data for unit test
 {
-	tc <- textConnection("SITE	STATION	PARAMETER	VALUE
+	tc <- textConnection("SITE	STATION	CLASS	VALUE
 							1	A		X				0		# SITE 1 has no missing cover or HORIZ_DIST_DD values
 							1	A		X_DD			0
 							1	A		Y				1
@@ -674,7 +676,7 @@ fillinDrawdownDataTest.createTestData <- function()
 fillinDrawdownDataTest.createExpectedExpansion <- function()
 # expected expansion of test data for unit test
 {
-	tc <- textConnection("SITE	STATION	PARAMETER	VALUE
+	tc <- textConnection("SITE	STATION	CLASS	VALUE
 					1	A		X				0		# SITE 1 has no missing cover or HORIZ_DIST_DD values
 					1	A		X_DD			0
 					1	A		Y				1
@@ -788,7 +790,7 @@ fillinDrawdownDataTest.createExpectedExpansion <- function()
 	
 	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	rm(tc)
-#	rc <- subset(rc, PARAMETER != 'DRAWDOWN')
+#	rc <- subset(rc, CLASS != 'DRAWDOWN')
 	return(rc)
 }
 
@@ -796,7 +798,7 @@ fillinDrawdownDataTest.createExpectedExpansion <- function()
 fillinDrawdownDataTest.createExpectedFillin <- function()
 # expected expansion of test data for unit test
 {
-	tc <- textConnection("SITE	STATION	PARAMETER	VALUE
+	tc <- textConnection("SITE	STATION	CLASS	VALUE
 					1	A		X				0		# SITE 1 has no missing cover or HORIZ_DIST_DD values
 					1	A		X_DD			0
 					1	A		Y				1
@@ -910,7 +912,7 @@ fillinDrawdownDataTest.createExpectedFillin <- function()
 	
 	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	rm(tc)
-#	rc <- subset(rc, PARAMETER != 'DRAWDOWN')
+#	rc <- subset(rc, CLASS != 'DRAWDOWN')
 	return(rc)
 }
 
@@ -2148,19 +2150,19 @@ nWadeableStationsPerTransectTest <- function() {
   fakeThal <- rbind(data.frame(SITE=rep('std. stream A-K', 101)
                               ,TRANSECT=c(rep(LETTERS[1:10], each=10), 'K')
                               ,STATION=c(rep(0:9, 10), 0)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('std. stream A-J', 100)
                               ,TRANSECT=rep(LETTERS[1:10], each=10)
                               ,STATION=rep(0:9, 10)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('narrow stream A-J', 150)
                               ,TRANSECT=rep(LETTERS[1:10], each=15)
                               ,STATION=rep(0:14, 10)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('stream w 2 long transects', 106)
@@ -2168,7 +2170,7 @@ nWadeableStationsPerTransectTest <- function() {
                                          ,rep(c('I','J'), each=13)
                                          )
                               ,STATION=c(rep(0:9, 8), 0:12, 0:12)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('stream w 2 short transects', 98)
@@ -2176,7 +2178,7 @@ nWadeableStationsPerTransectTest <- function() {
                                          ,rep(c('I','J'), each=9)
                                          )
                               ,STATION=c(rep(0:9, 8), 0:8, 0:8)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('stream w two modes', 100)
@@ -2184,7 +2186,7 @@ nWadeableStationsPerTransectTest <- function() {
                                          ,rep(LETTERS[6:10], each=9)
                                          )
                               ,STATION=c(rep(0:10, 5), rep(0:8, 5))
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    )

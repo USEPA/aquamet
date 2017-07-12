@@ -13,10 +13,10 @@ nlaBottomSubstrate <- function(bedrock=NULL
 					   	                                 ,presence= as.integer(c(NA, 0, 1, 1, 1, 1))
                        	                                 ,stringsAsFactors=FALSE
                        	                                 )
-                              ,substrateSizes=data.frame(CLASS=c('BS_BEDROCK', 'BS_BOULDERS'
-                                                                ,'BS_COBBLE',  'BS_GRAVEL'
-                                                                ,'BS_SAND',    'BS_SILT'
-                                                                ,'BS_ORGANIC', 'BS_WOOD'
+                              ,substrateSizes=data.frame(CLASS=c('BEDROCK', 'BOULDERS'
+                                                                ,'COBBLE',  'GRAVEL'
+                                                                ,'SAND',    'SILT'
+                                                                ,'ORGANIC', 'WOOD'
                                                                 )
                                                         ,diam=c(gmean(c(4000,8000)), gmean(c(250,4000))
                        	                                       ,gmean(c(64,250)),    gmean(c(2,64))
@@ -88,7 +88,9 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #            is to add rows of BSF* odor values that are 0, and change that one
 #            peculiar case of all zero frequencies tying as the mode.
 #    7/11/17 cws Split substrate argument into individual classes, to be consistent
-#            with general interface. Unit test updated as well.
+#            with general interface. Unit test updated as well. Removed BS_ prefix
+#            from substrate class values. Changed name of interior function
+#            addParameter to addClass.
 #
 # Arguments:
 #   df = a data frame containing bottom substrate data.  The data frame must
@@ -122,7 +124,7 @@ nlaBottomSubstrate <- function(bedrock=NULL
   
     # Standardize arguments, then combine them into single dataframe as expected
     # in the rest of the function
-    addParameter <- function(df, ...) {
+    addClass <- function(df, ...) {
         
         args <- list(...)
         
@@ -137,14 +139,14 @@ nlaBottomSubstrate <- function(bedrock=NULL
     intermediateMessage('.')
     odor <- aquametStandardizeArgument(odor, struct=c(SITE='integer', STATION='character', VALUE='character'))
     intermediateMessage('.')
-    bedrock <- aquametStandardizeArgument(bedrock, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_BEDROCK')
-    boulders <- aquametStandardizeArgument(boulders, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_BOULDERS')
-    cobble <- aquametStandardizeArgument(cobble, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_COBBLE')
-    gravel <- aquametStandardizeArgument(gravel, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_GRAVEL')
-    organic <- aquametStandardizeArgument(organic, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_ORGANIC')
-    sand <- aquametStandardizeArgument(sand, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_SAND')
-    silt <- aquametStandardizeArgument(silt, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_SILT')
-    wood <- aquametStandardizeArgument(wood, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BS_WOOD')
+    bedrock <- aquametStandardizeArgument(bedrock, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BEDROCK')
+    boulders <- aquametStandardizeArgument(boulders, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BOULDERS')
+    cobble <- aquametStandardizeArgument(cobble, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'COBBLE')
+    gravel <- aquametStandardizeArgument(gravel, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'GRAVEL')
+    organic <- aquametStandardizeArgument(organic, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'ORGANIC')
+    sand <- aquametStandardizeArgument(sand, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'SAND')
+    silt <- aquametStandardizeArgument(silt, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'SILT')
+    wood <- aquametStandardizeArgument(wood, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'WOOD')
     intermediateMessage('.')
     substrateCovers <- aquametStandardizeArgument(substrateCovers, struct=c(VALUE='character', cover='double', presence='integer'))
     intermediateMessage('.')
@@ -223,7 +225,7 @@ nlaBottomSubstrate.indivPresence <- function(bsPresence)
                    		) 
                    ,mean, na.rm=TRUE
                    )
-  	meanPresence <- within(tt, METRIC <- gsub('^BS_(.+)$', 'BSFP\\1', CLASS)) %>% 
+  	meanPresence <- within(tt, METRIC <- paste0('BSFP', CLASS)) %>% # gsub('^BS_(.+)$', 'BSFP\\1', CLASS)) %>% 
   	                select(SITE, METRIC, VALUE)
 
 	return(meanPresence)
@@ -283,7 +285,7 @@ nlaBottomSubstrate.indivCover <- function(bsData)
                       	) 
                    ,mean, na.rm=TRUE
                    )
-	meanCover <- within(tt, METRIC <- gsub('^BS_(.+)$', 'BSFC\\1', CLASS)) %>%
+	meanCover <- within(tt, METRIC <- paste0('BSFC', CLASS)) %>% # gsub('^BS_(.+)$', 'BSFC\\1', CLASS)) %>%
 	             select(SITE, METRIC, VALUE)
 	intermediateMessage('.b')
 	
@@ -293,7 +295,7 @@ nlaBottomSubstrate.indivCover <- function(bsData)
                       	) 
                    ,sd, na.rm=TRUE
                    )
-	sdCover <- within(tt, METRIC <- gsub('^BS_(.+)$', 'BSV\\1', CLASS)) %>%
+	sdCover <- within(tt, METRIC <- paste0('BSV', CLASS)) %>% # gsub('^BS_(.+)$', 'BSV\\1', CLASS)) %>%
 	           select(SITE, METRIC, VALUE)
   	intermediateMessage('.c')
 
@@ -304,7 +306,7 @@ nlaBottomSubstrate.indivCover <- function(bsData)
                       	) 
                    ,count
                    )
-	nCover <- within(tt, METRIC <- gsub('^BS_(.+)$', 'BSN\\1', CLASS)) %>%
+	nCover <- within(tt, METRIC <- paste0('BSN', CLASS)) %>% # gsub('^BS_(.+)$', 'BSN\\1', CLASS)) %>%
 	          select(SITE, METRIC, VALUE)
   	intermediateMessage('.d')
 

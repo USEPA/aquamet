@@ -13,16 +13,36 @@ aquametStandardizeArgument.checkStructureTest <- function(arg, struct)
 {
     testdata <- data.frame(SITE=1:10, VALUE=runif(10))
     
+    # test cases when argument structure is as expected
     expected <- NULL
     actual <- aquametStandardizeArgument.checkStructure(testdata, c(SITE='integer', VALUE='double'))
-    checkEquals(expected, actual, "Incorrect response when argument matches structure")
+    checkEquals(expected, actual, "Incorrect response when argument matches structure when allowing only one column type, specified as a vector")
+    actual <- aquametStandardizeArgument.checkStructure(testdata, list(SITE='integer', VALUE='double'))
+    checkEquals(expected, actual, "Incorrect response when argument matches structure when allowing only one column type, specified as a list")
+    actual <- aquametStandardizeArgument.checkStructure(testdata, list(SITE=c('integer','character'), VALUE=c('double','character')))
+    checkEquals(expected, actual, "Incorrect response when argument matches structure allowing multiple types - 1")
+    actual <- aquametStandardizeArgument.checkStructure(testdata %>% mutate(SITE=as.character(SITE), VALUE=as.character(VALUE)), list(SITE=c('integer','character'), VALUE=c('double','character')))
+    checkEquals(expected, actual, "Incorrect response when argument matches structure allowing multiple types - 2")
     
+    # Test cases when argument has columns of wrong type
     expected <- 'Argument testdata %>% mutate(SITE = paste(\"X\", SITE)) has errors: column SITE should have type integer rather than character'
     actual <- aquametStandardizeArgument.checkStructure(testdata %>% mutate(SITE=paste('X', SITE))
                                         ,c(SITE='integer', VALUE='double')
                                         )
-    checkEquals(expected, actual, "Incorrect response when argument does not match structure by column type")
+    checkEquals(expected, actual, "Incorrect response when argument does not match structure by column type, specified as a vector")
+    actual <- aquametStandardizeArgument.checkStructure(testdata %>% mutate(SITE=paste('X', SITE))
+                                        ,list(SITE='integer', VALUE='double')
+                                        )
+    checkEquals(expected, actual, "Incorrect response when argument does not match structure by column type, specified as a list")
+    actual <- aquametStandardizeArgument.checkStructure(testdata %>% mutate(SITE=paste('X', SITE))
+                                        ,list(SITE=c('integer','double'), VALUE=c('double','character'))
+                                        )
+    checkEquals("Argument testdata %>% mutate(SITE = paste(\"X\", SITE)) has errors: column SITE should have type integer or double rather than character"
+               ,actual
+               ,"Incorrect response when argument does not match structure allowing multiple types"
+               )
     
+    # Test cases when argument has unexpected columns in some manner
     expected <- 'Argument testdata has errors: missing column VALUEQQ; unexpected column VALUE' 
     actual <- aquametStandardizeArgument.checkStructure(testdata, c(SITE='integer', VALUEQQ='double'))
     checkEquals(expected, actual, "Incorrect response when argument does not match structure by column name")
