@@ -21,7 +21,37 @@ nlaHumanImpactTest.2007 <- function()
 {
 	testData <- nlaHumanImpactTest.createTestData2007()
 	expected <- nlaHumanImpactTest.expectedResults2007()
-	actual <- nlaHumanImpact(testData, data2007=TRUE, fillinDrawdown=FALSE)
+	actual <- nlaHumanImpact(buildings =     testData %>% subset(CLASS=='HI_BUILDINGS') %>% select(SITE, STATION, VALUE)
+                            ,buildings_dd =  testData %>% subset(CLASS=='HI_BUILDINGS_DD') %>% select(SITE, STATION, VALUE)
+                            ,commercial =    testData %>% subset(CLASS=='HI_COMMERCIAL') %>% select(SITE, STATION, VALUE)
+                            ,commercial_dd = testData %>% subset(CLASS=='HI_COMMERCIAL_DD') %>% select(SITE, STATION, VALUE)
+                            ,crops =         testData %>% subset(CLASS=='HI_CROPS') %>% select(SITE, STATION, VALUE)
+                            ,crops_dd =      testData %>% subset(CLASS=='HI_CROPS_DD') %>% select(SITE, STATION, VALUE)
+                            ,docks =         testData %>% subset(CLASS=='HI_DOCKS') %>% select(SITE, STATION, VALUE)
+                            ,docks_dd =      testData %>% subset(CLASS=='HI_DOCKS_DD') %>% select(SITE, STATION, VALUE)
+                            ,landfill =      testData %>% subset(CLASS=='HI_LANDFILL') %>% select(SITE, STATION, VALUE)
+                            ,landfill_dd =   testData %>% subset(CLASS=='HI_LANDFILL_DD') %>% select(SITE, STATION, VALUE)
+                            ,lawn =          testData %>% subset(CLASS=='HI_LAWN') %>% select(SITE, STATION, VALUE)
+                            ,lawn_dd =       testData %>% subset(CLASS=='HI_LAWN_DD') %>% select(SITE, STATION, VALUE)
+                            ,orchard =       testData %>% subset(CLASS=='HI_ORCHARD') %>% select(SITE, STATION, VALUE)
+                            ,orchard_dd =    testData %>% subset(CLASS=='HI_ORCHARD_DD') %>% select(SITE, STATION, VALUE)
+                            ,other =         testData %>% subset(CLASS=='HI_OTHER') %>% select(SITE, STATION, VALUE)
+                            ,other_dd =      testData %>% subset(CLASS=='HI_OTHER_DD') %>% select(SITE, STATION, VALUE)
+                            ,park =          testData %>% subset(CLASS=='HI_PARK') %>% select(SITE, STATION, VALUE)
+                            ,park_dd =       testData %>% subset(CLASS=='HI_PARK_DD') %>% select(SITE, STATION, VALUE)
+                            ,pasture =       testData %>% subset(CLASS=='HI_PASTURE') %>% select(SITE, STATION, VALUE)
+                            ,pasture_dd =    testData %>% subset(CLASS=='HI_PASTURE_DD') %>% select(SITE, STATION, VALUE)
+                            ,powerlines =    testData %>% subset(CLASS=='HI_POWERLINES') %>% select(SITE, STATION, VALUE)
+                            ,powerlines_dd = testData %>% subset(CLASS=='HI_POWERLINES_DD') %>% select(SITE, STATION, VALUE)
+                            ,roads =         testData %>% subset(CLASS=='HI_ROADS') %>% select(SITE, STATION, VALUE)
+                            ,roads_dd =      testData %>% subset(CLASS=='HI_ROADS_DD') %>% select(SITE, STATION, VALUE)
+                            ,walls =         testData %>% subset(CLASS=='HI_WALLS') %>% select(SITE, STATION, VALUE)
+                            ,walls_dd =      testData %>% subset(CLASS=='HI_WALLS_DD') %>% select(SITE, STATION, VALUE)
+                            ,drawdown =      NULL#testData %>% subset(CLASS=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
+                            ,horizontalDistance_dd = NULL#testData %>% subset(CLASS=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+	                        ,data2007=TRUE
+	                        ,fillinDrawdown=FALSE
+	                        )
 
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns in 2007")
 	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics in 2007")
@@ -31,7 +61,7 @@ nlaHumanImpactTest.2007 <- function()
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics in 2007")
 	
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-15)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics")
+	checkTrue(is.null(diff), "Incorrect calculation of metrics with 2007-like data")
 }
 
 
@@ -42,7 +72,37 @@ nlaHumanImpactTest.withDrawDown <- function()
 	testData <- nlaHumanImpactTest.createTestDataWithDrawDown()
 	expected <- nlaHumanImpactTest.expectedResultsWithDrawDownNoFillin()
 	expected$VALUE <- as.numeric(expected$VALUE)
-	actual <- nlaHumanImpact(testData, data2007=FALSE, fillinDrawdown=FALSE)
+	actual <- nlaHumanImpact(buildings =     testData %>% subset(CLASS=='HI_BUILDINGS') %>% select(SITE, STATION, VALUE)
+                            ,buildings_dd =  testData %>% subset(CLASS=='HI_BUILDINGS_DD') %>% select(SITE, STATION, VALUE)
+                            ,commercial =    testData %>% subset(CLASS=='HI_COMMERCIAL') %>% select(SITE, STATION, VALUE)
+                            ,commercial_dd = testData %>% subset(CLASS=='HI_COMMERCIAL_DD') %>% select(SITE, STATION, VALUE)
+                            ,crops =         testData %>% subset(CLASS=='HI_CROPS') %>% select(SITE, STATION, VALUE)
+                            ,crops_dd =      testData %>% subset(CLASS=='HI_CROPS_DD') %>% select(SITE, STATION, VALUE)
+                            ,docks =         testData %>% subset(CLASS=='HI_DOCKS') %>% select(SITE, STATION, VALUE)
+                            ,docks_dd =      testData %>% subset(CLASS=='HI_DOCKS_DD') %>% select(SITE, STATION, VALUE)
+                            ,landfill =      testData %>% subset(CLASS=='HI_LANDFILL') %>% select(SITE, STATION, VALUE)
+                            ,landfill_dd =   testData %>% subset(CLASS=='HI_LANDFILL_DD') %>% select(SITE, STATION, VALUE)
+                            ,lawn =          testData %>% subset(CLASS=='HI_LAWN') %>% select(SITE, STATION, VALUE)
+                            ,lawn_dd =       testData %>% subset(CLASS=='HI_LAWN_DD') %>% select(SITE, STATION, VALUE)
+                            ,orchard =       testData %>% subset(CLASS=='HI_ORCHARD') %>% select(SITE, STATION, VALUE)
+                            ,orchard_dd =    testData %>% subset(CLASS=='HI_ORCHARD_DD') %>% select(SITE, STATION, VALUE)
+                            ,other =         testData %>% subset(CLASS=='HI_OTHER') %>% select(SITE, STATION, VALUE)
+                            ,other_dd =      testData %>% subset(CLASS=='HI_OTHER_DD') %>% select(SITE, STATION, VALUE)
+                            ,park =          testData %>% subset(CLASS=='HI_PARK') %>% select(SITE, STATION, VALUE)
+                            ,park_dd =       testData %>% subset(CLASS=='HI_PARK_DD') %>% select(SITE, STATION, VALUE)
+                            ,pasture =       testData %>% subset(CLASS=='HI_PASTURE') %>% select(SITE, STATION, VALUE)
+                            ,pasture_dd =    testData %>% subset(CLASS=='HI_PASTURE_DD') %>% select(SITE, STATION, VALUE)
+                            ,powerlines =    testData %>% subset(CLASS=='HI_POWERLINES') %>% select(SITE, STATION, VALUE)
+                            ,powerlines_dd = testData %>% subset(CLASS=='HI_POWERLINES_DD') %>% select(SITE, STATION, VALUE)
+                            ,roads =         testData %>% subset(CLASS=='HI_ROADS') %>% select(SITE, STATION, VALUE)
+                            ,roads_dd =      testData %>% subset(CLASS=='HI_ROADS_DD') %>% select(SITE, STATION, VALUE)
+                            ,walls =         testData %>% subset(CLASS=='HI_WALLS') %>% select(SITE, STATION, VALUE)
+                            ,walls_dd =      testData %>% subset(CLASS=='HI_WALLS_DD') %>% select(SITE, STATION, VALUE)
+                            ,drawdown =      testData %>% subset(CLASS=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
+                            ,horizontalDistance_dd = testData %>% subset(CLASS=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+	                        ,data2007=FALSE
+                            ,fillinDrawdown=FALSE
+                            )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
 	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawDown")
@@ -62,7 +122,37 @@ nlaHumanImpactTest.withDrawDownAndFillin <- function()
 	testData <- nlaHumanImpactTest.createTestDataWithDrawDown()
 	expected <- nlaHumanImpactTest.expectedResultsWithDrawDown()
 	expected$VALUE <- as.numeric(expected$VALUE)
-	actual <- nlaHumanImpact(testData, data2007=FALSE)
+	actual <- nlaHumanImpact(buildings =     testData %>% subset(CLASS=='HI_BUILDINGS') %>% select(SITE, STATION, VALUE)
+                            ,buildings_dd =  testData %>% subset(CLASS=='HI_BUILDINGS_DD') %>% select(SITE, STATION, VALUE)
+                            ,commercial =    testData %>% subset(CLASS=='HI_COMMERCIAL') %>% select(SITE, STATION, VALUE)
+                            ,commercial_dd = testData %>% subset(CLASS=='HI_COMMERCIAL_DD') %>% select(SITE, STATION, VALUE)
+                            ,crops =         testData %>% subset(CLASS=='HI_CROPS') %>% select(SITE, STATION, VALUE)
+                            ,crops_dd =      testData %>% subset(CLASS=='HI_CROPS_DD') %>% select(SITE, STATION, VALUE)
+                            ,docks =         testData %>% subset(CLASS=='HI_DOCKS') %>% select(SITE, STATION, VALUE)
+                            ,docks_dd =      testData %>% subset(CLASS=='HI_DOCKS_DD') %>% select(SITE, STATION, VALUE)
+                            ,landfill =      testData %>% subset(CLASS=='HI_LANDFILL') %>% select(SITE, STATION, VALUE)
+                            ,landfill_dd =   testData %>% subset(CLASS=='HI_LANDFILL_DD') %>% select(SITE, STATION, VALUE)
+                            ,lawn =          testData %>% subset(CLASS=='HI_LAWN') %>% select(SITE, STATION, VALUE)
+                            ,lawn_dd =       testData %>% subset(CLASS=='HI_LAWN_DD') %>% select(SITE, STATION, VALUE)
+                            ,orchard =       testData %>% subset(CLASS=='HI_ORCHARD') %>% select(SITE, STATION, VALUE)
+                            ,orchard_dd =    testData %>% subset(CLASS=='HI_ORCHARD_DD') %>% select(SITE, STATION, VALUE)
+                            ,other =         testData %>% subset(CLASS=='HI_OTHER') %>% select(SITE, STATION, VALUE)
+                            ,other_dd =      testData %>% subset(CLASS=='HI_OTHER_DD') %>% select(SITE, STATION, VALUE)
+                            ,park =          testData %>% subset(CLASS=='HI_PARK') %>% select(SITE, STATION, VALUE)
+                            ,park_dd =       testData %>% subset(CLASS=='HI_PARK_DD') %>% select(SITE, STATION, VALUE)
+                            ,pasture =       testData %>% subset(CLASS=='HI_PASTURE') %>% select(SITE, STATION, VALUE)
+                            ,pasture_dd =    testData %>% subset(CLASS=='HI_PASTURE_DD') %>% select(SITE, STATION, VALUE)
+                            ,powerlines =    testData %>% subset(CLASS=='HI_POWERLINES') %>% select(SITE, STATION, VALUE)
+                            ,powerlines_dd = testData %>% subset(CLASS=='HI_POWERLINES_DD') %>% select(SITE, STATION, VALUE)
+                            ,roads =         testData %>% subset(CLASS=='HI_ROADS') %>% select(SITE, STATION, VALUE)
+                            ,roads_dd =      testData %>% subset(CLASS=='HI_ROADS_DD') %>% select(SITE, STATION, VALUE)
+                            ,walls =         testData %>% subset(CLASS=='HI_WALLS') %>% select(SITE, STATION, VALUE)
+                            ,walls_dd =      testData %>% subset(CLASS=='HI_WALLS_DD') %>% select(SITE, STATION, VALUE)
+                            ,drawdown =      testData %>% subset(CLASS=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
+                            ,horizontalDistance_dd = testData %>% subset(CLASS=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+	                        ,data2007=FALSE
+                            ,fillinDrawdown=TRUE
+                            )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown and DD fill-in")
 	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawDown and DD fill-in")
@@ -916,7 +1006,6 @@ nlaHumanImpactTest.createTestData2007 <- function()
 }
 
 
-
 nlaHumanImpactTest.expectedResults2007 <- function()
 # Values expected based on test data.  These were taken directly from tblPHABMET_LONG
 # in the 2007 NLA databse.
@@ -1234,7 +1323,6 @@ nlaHumanImpactTest.expectedResults2007 <- function()
 
 	return(longMets)
 }
-
 
 
 nlaHumanImpactTest.createTestDataWithDrawDown <- function()
@@ -3156,7 +3244,6 @@ nlaHumanImpactTest.createTestDataWithDrawDown <- function()
 }
 
 
-	
 nlaHumanImpactTest.expectedResultsWithDrawDownNoFillin <- function()
 # Returns dataframe of expected calculations based on the test data.
 {

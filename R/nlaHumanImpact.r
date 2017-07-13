@@ -1,4 +1,40 @@
-nlaHumanImpact <- function(df, data2007=FALSE, fillinDrawdown=TRUE) {
+nlaHumanImpact <- function(buildings = NULL
+                          ,buildings_dd = NULL
+                          ,commercial = NULL
+                          ,commercial_dd = NULL
+                          ,crops = NULL
+                          ,crops_dd = NULL
+                          ,docks = NULL
+                          ,docks_dd = NULL
+                          ,landfill = NULL
+                          ,landfill_dd = NULL
+                          ,lawn = NULL
+                          ,lawn_dd = NULL
+                          ,orchard = NULL
+                          ,orchard_dd = NULL
+                          ,other = NULL
+                          ,other_dd = NULL
+                          ,park = NULL
+                          ,park_dd = NULL
+                          ,pasture = NULL
+                          ,pasture_dd = NULL
+                          ,powerlines = NULL
+                          ,powerlines_dd = NULL
+                          ,roads = NULL
+                          ,roads_dd = NULL
+                          ,walls = NULL
+                          ,walls_dd = NULL
+                          ,drawdown = NULL
+                          ,horizontalDistance_dd = NULL                             # required for calculation of synthetic values mimicking 2007 metrics
+                          ,data2007=FALSE                                           # if TRUE, synthetic values mimicking 2007 metrics will not be calculated, and _RIParian metric names will lose that suffix
+                          ,fillinDrawdown=TRUE
+                          ,proximityWeights = data.frame(proximity=c('0', 'P', 'C') # Define weighing influence proximity values 
+                          	                            ,calc=     c(0.0, 0.5, 1.0)
+                          	                            ,circa=    c(0,   0,   1)
+                          	                            ,present=  c(0,   1,   1)
+                                                        ,stringsAsFactors=FALSE
+                          	                            )
+                          ) {
 
 ################################################################################
 # Function: nlaHumanImpact
@@ -62,6 +98,9 @@ nlaHumanImpact <- function(df, data2007=FALSE, fillinDrawdown=TRUE) {
 #   12/16/13 cws: Regression test with entire 2007 data passed with expected 855
 #            differences in HIN* values (was 0, now NA when data is absent).
 #   06/12/14 tmk: Removed calls to the require() function.
+#    7/12/17 cws Updated calling interface to aquamet phab standard, updating
+#            unit tests as well.
+#
 # Arguments:
 #   df = a data frame containing human influence data.  The data frame must
 #     include columns that are named as follows:
@@ -97,92 +136,83 @@ nlaHumanImpact <- function(df, data2007=FALSE, fillinDrawdown=TRUE) {
 #      functions
 ################################################################################
 
-  # Print initial messages
-  cat('Human Influence calculations:\n')
+    # Print initial messages
 	intermediateMessage('NLA human influence metrics', loc='start')
+    
+    addParameter <- function(df, ...) {
+        
+        args <- list(...)
+        if(is.null(args)) return(NULL)
+        else if(all(is.na(args))) return(NULL)
+        
+        rc <- df %>% mutate(CLASS = args[[1]])
+        return(rc)
+    }
+    buildings <-     buildings %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'HI_BUILDINGS')
+    buildings_dd <-  buildings_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),  'HI_BUILDINGS_DD')
+    commercial <-    commercial %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),    'HI_COMMERCIAL')
+    commercial_dd <- commercial_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'HI_COMMERCIAL_DD')
+    crops <-         crops %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),         'HI_CROPS')
+    crops_dd <-      crops_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),      'HI_CROPS_DD')
+    docks <-         docks %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),         'HI_DOCKS')
+    docks_dd <-      docks_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),      'HI_DOCKS_DD')
+    landfill <-      landfill %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),      'HI_LANDFILL')
+    landfill_dd <-   landfill_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),   'HI_LANDFILL_DD')
+    lawn <-          lawn %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),          'HI_LAWN')
+    lawn_dd <-       lawn_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),       'HI_LAWN_DD')
+    orchard <-       orchard %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),       'HI_ORCHARD')
+    orchard_dd <-    orchard_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),    'HI_ORCHARD_DD')
+    other <-         other %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),         'HI_OTHER')
+    other_dd <-      other_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),      'HI_OTHER_DD')
+    park <-          park %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),          'HI_PARK')
+    park_dd <-       park_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),       'HI_PARK_DD')
+    pasture <-       pasture %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),       'HI_PASTURE')
+    pasture_dd <-    pasture_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),    'HI_PASTURE_DD')
+    powerlines <-    powerlines %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),    'HI_POWERLINES')
+    powerlines_dd <- powerlines_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'HI_POWERLINES_DD')
+    roads <-         roads %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),         'HI_ROADS')
+    roads_dd <-      roads_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),      'HI_ROADS_DD')
+    walls <-         walls %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),         'HI_WALLS')
+    walls_dd <-      walls_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),      'HI_WALLS_DD')
+    drawdown <-      drawdown %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),      'DRAWDOWN')
+    horizontalDistance_dd <- horizontalDistance_dd %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'HORIZ_DIST_DD')
 
-	# Expected parameters
-	if(data2007) {
-    	intermediateMessage('.2007data')
-	  	impactClasses <- c('HI_BUILDINGS', 'HI_COMMERCIAL'
-			  			  ,'HI_CROPS', 'HI_DOCKS', 'HI_LANDFILL'
-			  			  ,'HI_LAWN', 'HI_ORCHARD', 'HI_PARK'
-		  				  ,'HI_PASTURE', 'HI_POWERLINES', 'HI_ROADS'
-		  				  ,'HI_WALLS'
-  						  ,'HI_BUILDINGS_DD', 'HI_COMMERCIAL_DD'
-						  ,'HI_CROPS_DD', 'HI_DOCKS_DD', 'HI_LANDFILL_DD'
-						  ,'HI_LAWN_DD', 'HI_ORCHARD_DD', 'HI_PARK_DD'
-						  ,'HI_PASTURE_DD', 'HI_POWERLINES_DD', 'HI_ROADS_DD'
-						  ,'HI_WALLS_DD'
-						  )
-		hiTypes <- data.frame(CLASS=impactClasses
-							 ,isAg=c(FALSE, FALSE
-									,TRUE, FALSE, FALSE
-							 		,FALSE, TRUE, FALSE
-							 		,TRUE, FALSE, FALSE
-							 		,FALSE
-							 		,FALSE, FALSE
-							 		,TRUE, FALSE, FALSE
-							 		,FALSE, TRUE, FALSE
-							 		,TRUE, FALSE, FALSE
-							 		,FALSE
-							 		)
-						  	 )
-	} else {
-    	intermediateMessage('.2012+data')
-		impactClasses <- c('HI_BUILDINGS', 'HI_COMMERCIAL'
-						  ,'HI_CROPS', 'HI_DOCKS', 'HI_LANDFILL'
-						  ,'HI_LAWN', 'HI_ORCHARD', 'HI_OTHER', 'HI_PARK'				# HI_OTHER is new
-						  ,'HI_PASTURE', 'HI_POWERLINES', 'HI_ROADS'
-						  ,'HI_WALLS'
-						  ,'HI_BUILDINGS_DD', 'HI_COMMERCIAL_DD'
-						  ,'HI_CROPS_DD', 'HI_DOCKS_DD', 'HI_LANDFILL_DD'
-						  ,'HI_LAWN_DD', 'HI_ORCHARD_DD', 'HI_OTHER_DD', 'HI_PARK_DD'	# HI_OTHER_DD is new
-						  ,'HI_PASTURE_DD', 'HI_POWERLINES_DD', 'HI_ROADS_DD'
-						  ,'HI_WALLS_DD'
-				  		  )
-		hiTypes <- data.frame(CLASS=impactClasses
-							 ,isAg=c(FALSE, FALSE
-									,TRUE, FALSE, FALSE
-									,FALSE, TRUE, FALSE, FALSE
-									,TRUE, FALSE, FALSE
-									,FALSE
-									,FALSE, FALSE
-									,TRUE, FALSE, FALSE
-									,FALSE, TRUE, FALSE, FALSE
-									,TRUE, FALSE, FALSE
-									,FALSE
-				)
-		)
-	}
-	
-  	# Define weighing influence proximity values 
-  	weights0CP <- data.frame(proximity=c('0', 'P', 'C')
-                          	,calc=     c(0.0, 0.5, 1.0)
-                          	,circa=    c(0,   0,   1)
-                          	,present=  c(0,   1,   1)
-                          	)
-
+    df <- rbind(buildings, buildings_dd, commercial, commercial_dd
+               ,crops, crops_dd, docks, docks_dd
+               ,landfill, landfill_dd, lawn, lawn_dd
+               ,orchard, orchard_dd, other, other_dd
+               ,park, park_dd, pasture, pasture_dd
+               ,powerlines, powerlines_dd, roads, roads_dd
+               ,walls, walls_dd
+               ,drawdown, horizontalDistance_dd
+               )
+	intermediateMessage('.1')
+    
+	impactClasses <- setdiff(df$CLASS, c('DRAWDOWN','HORIZ_DIST_DD'))
+	agClasses <- c('HI_CROPS','HI_CROPS_DD','HI_ORCHARD','HI_ORCHARD_DD','HI_PASTURE','HI_PASTURE_DD')
+	hiTypes <- data.frame(CLASS=impactClasses
+	                     ,isAg=impactClasses %in% agClasses
+	                     ,stringsAsFactors=FALSE
+	                     )
 
 	# Fill in unrecorded cover and HORIZ_DIST_DD based on DRAWDOWN.
 	if(fillinDrawdown) {
-		intermediateMessage('.fill')
+		intermediateMessage('.drawdownFillin')
 		tt <- subset(df, CLASS %in% c(impactClasses,'HORIZ_DIST_DD','DRAWDOWN'))
 		dfStart <- fillinDrawdownData(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
 	} else {
-		print("No 'fill-in' of drawdown data will be attempted")
+		intermediateMessage(".NoDrawdownFillin'")
 		dfStart <- df
 	}
-	intermediateMessage('.1')
-	
+	intermediateMessage('.2')
 
   	hiData <- subset(dfStart, CLASS %in% impactClasses & !is.na(VALUE))
-	intermediateMessage('.2')
+	intermediateMessage('.3')
 	
   
   	# Convert proximity classes to numeric values and characterize influence
   	# types
-  	hiData <- merge(hiData, weights0CP
+  	hiData <- merge(hiData, proximityWeights
                    ,by.x='VALUE'
                    ,by.y='proximity'
                    ,all.x=TRUE
@@ -194,13 +224,16 @@ nlaHumanImpact <- function(df, data2007=FALSE, fillinDrawdown=TRUE) {
                    ,all.x=TRUE
                    ,sort=FALSE
                    )
-	intermediateMessage('.3')
+	intermediateMessage('.4')
 				   
 
 	# Create synthetic influence values if not 2007esque data
 	if(!data2007) {
-		
-		intermediateMessage('.syn')
+		if('HORIZ_DIST_DD' %nin% dfStart$CLASS) {
+		    intermediateMessage('.Done early',loc = 'end')
+		    return('Synthesizing 2007-esque values requires values for the drawdown horizontal distance (argument horizontalDistance_dd)')
+		}
+		intermediateMessage('.Synthesizing')
 		horizDist <- within(subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
 						   ,{calc <- NA
 							 circa <- NA
@@ -209,41 +242,26 @@ nlaHumanImpact <- function(df, data2007=FALSE, fillinDrawdown=TRUE) {
 							}
 						   )
 
-		intermediateMessage('.synA')
+		intermediateMessage('.a')
 		synValues <- calcSynInfluence(rbind(hiData,horizDist))
-		intermediateMessage('.synB')
+		intermediateMessage('.b')
 		
 		# Make the resulting dataframe look like the data we're calculating metrics with.
-		# THIS IS POORLY FACTORED; IDENTIFYING AG INFLUENCES SHOULD ONLY BE DONE ONCE
-		newValues <- within(merge(synValues[c('SITE','STATION','CLASS','VALUE','calc')]
-								 ,data.frame(CLASS = c('HI_BUILDINGS_SYN', 'HI_COMMERCIAL_SYN'
-						  								  ,'HI_CROPS_SYN', 'HI_DOCKS_SYN', 'HI_LANDFILL_SYN'
-						  								  ,'HI_LAWN_SYN', 'HI_ORCHARD_SYN', 'HI_OTHER_SYN', 'HI_PARK_SYN'
-						  								  ,'HI_PASTURE_SYN', 'HI_POWERLINES_SYN', 'HI_ROADS_SYN'
-						  								  ,'HI_WALLS_SYN'
-				  		  								  )
-								  			,isAg=c(FALSE, FALSE
-												   ,TRUE, FALSE, FALSE
-												   ,FALSE, TRUE, FALSE, FALSE
-												   ,TRUE, FALSE, FALSE
-												   ,FALSE
-												   )
-						   					,stringsAsFactors=FALSE
-											)
+		newValues <- within(merge(synValues
+		                         ,hiTypes %>% 
+		                          subset(grepl('^.+_DD$', CLASS)) %>% 
+		                          mutate(CLASS = sub('^(.+)_DD$', '\\1_SYN', CLASS)) # 
 								 ,'CLASS'
 								 ,all.x=TRUE
 						 		 )
-						   ,{SAMPLE_TYPE<-'PHAB'
-							 FORM_TYPE <- ''
-							 FLAG <- as.character(NA)
-							 circa <- ifelse(calc >= (1.0 - 1e-15), TRUE, FALSE)
+						   ,{circa <- ifelse(calc >= (1.0 - 1e-15), TRUE, FALSE)
 							 present <- ifelse(calc > (1e-15), TRUE, FALSE)
 							}
 						   )
-						   
-		intermediateMessage('.synC')
+
+		intermediateMessage('.c')
 		hiData <- rbind(hiData, newValues)
-		intermediateMessage('.synD')
+		intermediateMessage('.d')
 	}
 
 
@@ -290,18 +308,17 @@ nlaHumanImpact <- function(df, data2007=FALSE, fillinDrawdown=TRUE) {
 nlaHumanImpact.calculateMets <- function(hiData)
 # Do all the calculationy stuff
 {
-	intermediateMessage('.w')
+	intermediateMessage('.WeightedIndividual')
 	weightedIndividualInfluence <- nlaHumanImpact.weightedIndividualInfluence(hiData)
-	intermediateMessage('.a')
+	intermediateMessage('.Presence')
 	anyPresence <- nlaHumanImpact.anyPresence(hiData)
-	intermediateMessage('.o')
+	intermediateMessage('.Overall')
 	overallInfluence <- nlaHumanImpact.overallInfluence(hiData)
-	intermediateMessage('.c')
+	intermediateMessage('.Circa')
 	circaInfluence <- nlaHumanImpact.circaInfluence(hiData)
-	intermediateMessage('.g')
+	intermediateMessage('.WeightedGroup')
 	weightedGroupInfluence <- nlaHumanImpact.weightedGroupInfluence(hiData)
 	intermediateMessage('.X')
-#print(str(weightedIndividualInfluence));print(str(anyPresence));print(str(overallInfluence));print(str(circaInfluence));print(str(weightedGroupInfluence));
 	all <- rbind(weightedIndividualInfluence, anyPresence, overallInfluence
 			   	,circaInfluence, weightedGroupInfluence
 			   	)
@@ -332,7 +349,7 @@ nlaHumanImpact.weightedIndividualInfluence <- function(hiData)
 					   	    }
 						   )
 						 
-  	intermediateMessage('.1')
+  	intermediateMessage('.a')
 
 	# Determine sample sizes for individual influence classes
 	tt <- aggregate(list(VALUE = hiData$calc)
@@ -347,7 +364,7 @@ nlaHumanImpact.weightedIndividualInfluence <- function(hiData)
 	                        ,METRIC = gsub('^HI_(.+)$', 'HIN\\1', CLASS)
 	                        ,CLASS = NULL
 	                        )
-	intermediateMessage('.5')
+	intermediateMessage('.b')
 	
 	rc <- rbind(separateMeans, separateCounts)
 	
@@ -366,7 +383,6 @@ nlaHumanImpact.overallInfluence <- function(hiData)
 							 ,coverSuffix = hiData$coverSuffix
 							 ,isAg = hiData$isAg
 							 )
-#						,mean, na.rm=TRUE
 						,protectedMean, na.rm=TRUE	# mean of all NA is NaN, should be NA
 						)
 	hiiAll <- aggregate(list(VALUE = hiMeans$VALUE)
@@ -374,7 +390,8 @@ nlaHumanImpact.overallInfluence <- function(hiData)
                        ,protectedSum, na.rm=TRUE	# sum of all NA is 0, should be NA
                        )
     hiiAll$METRIC <- 'HIIALL'
- 
+    intermediateMessage('.a')
+
   
     tt <- aggregate(list(VALUE = hiMeans$VALUE)
                    ,list('SITE'=hiMeans$SITE, coverSuffix=hiMeans$coverSuffix, isAg=hiMeans$isAg)
@@ -386,7 +403,7 @@ nlaHumanImpact.overallInfluence <- function(hiData)
 				     }
 		            )
 
-    intermediateMessage('.2')
+    intermediateMessage('.b')
 
 	hiiOverall <- rbind(hiiAll, hiiSep)
 	
@@ -408,7 +425,6 @@ nlaHumanImpact.circaInfluence <- function(hiData)
 								  ,coverSuffix = hiData$coverSuffix
 								  ,isAg = hiData$isAg
 								  )
-#                             ,mean, na.rm=TRUE
 				 			 ,protectedMean, na.rm=TRUE	# mean of all NA is NaN, should be NA
 							 )
     hiiAllCirca <- aggregate(list(VALUE = hiCircaMeans$x)
@@ -418,6 +434,7 @@ nlaHumanImpact.circaInfluence <- function(hiData)
                             ,protectedSum, na.rm=TRUE	# sum of all NA is 0, should be NA
 							)
     hiiAllCirca$METRIC <- 'HIIALLCIRCA'
+    intermediateMessage('.a')
 
   
     tt <- aggregate(list(VALUE = hiCircaMeans$x)
@@ -434,7 +451,7 @@ nlaHumanImpact.circaInfluence <- function(hiData)
 		          	     )
 						 
     hiiOverallCirca <- rbind(hiiAllCirca, hiiSepCirca)
-    intermediateMessage('.3')
+    intermediateMessage('.b')
 	
 	return(hiiOverallCirca)
 }
@@ -459,6 +476,7 @@ nlaHumanImpact.anyPresence <- function(hiData)
                       ,protectedMean, na.rm=TRUE	# mean of all NA is NaN, should be NA
                       )
 	hiAny$METRIC <- 'HIFPANY'
+    intermediateMessage('.a')
 
 
   	tt <- aggregate(hiData$circa
@@ -477,7 +495,7 @@ nlaHumanImpact.anyPresence <- function(hiData)
   	hiAnyCirca$METRIC <- 'HIFPANYCIRCA'
 
   	hiAny <- rbind(hiAny, hiAnyCirca)
-  	intermediateMessage('.4')
+  	intermediateMessage('.b')
 
 	return(hiAny)
 }
@@ -501,7 +519,7 @@ nlaHumanImpact.weightedGroupInfluence <- function(hiData)
 						)
 	agCount$METRIC <- 'HINAG'
 
-  	intermediateMessage('.6')
+  	intermediateMessage('.a')
 
 
   	# Calculate mean nonagricultural influence
@@ -518,7 +536,7 @@ nlaHumanImpact.weightedGroupInfluence <- function(hiData)
 						   )
 	nonagCount$METRIC <- 'HINNONAG'
 
-  	intermediateMessage('.7')
+  	intermediateMessage('.b')
 
 
   	# Calculate mean total human influence
@@ -534,13 +552,10 @@ nlaHumanImpact.weightedGroupInfluence <- function(hiData)
 				 	 	 )
 	totCount$METRIC <- 'HINALL'
 
-  	intermediateMessage('.8')
+  	intermediateMessage('.c')
 
-  	
 	rc <- rbind(agMean, agCount, nonagMean, nonagCount, totMean, totCount)
-
   	return(rc)
-	
 }
 
 # end of file
