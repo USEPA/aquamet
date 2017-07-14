@@ -12,13 +12,14 @@ nlaLittoralZoneTest <- function()
 }
 
 
-
 nlaLittoralZoneTest.2007 <- function()
 # unit test for nlaLittoralZone using 2007 data
 {
 	testData <- nlaLittoralZoneTest.createTestData2007()
 	expected <- nlaLittoralZoneTest.createExpectedResults2007()
-	actual <- nlaLittoralZone(testData, data2007=TRUE)
+	actual <- nlaLittoralZone(testData %>% select(SITE, STATION, VALUE)
+	                         ,data2007=TRUE
+	                         )
 
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -26,11 +27,10 @@ nlaLittoralZoneTest.2007 <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 	
 }
-
 
 
 nlaLittoralZoneTest.2012 <- function()
@@ -38,7 +38,7 @@ nlaLittoralZoneTest.2012 <- function()
 {
 	testData <- nlaLittoralZoneTest.createTestData2012()
 	expected <- nlaLittoralZoneTest.createExpectedResults2012()
-	actual <- nlaLittoralZone(testData)
+	actual <- nlaLittoralZone(testData %>% select(SITE, STATION, VALUE), data2007=FALSE)
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -46,11 +46,10 @@ nlaLittoralZoneTest.2012 <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 	
 }
-
 
 
 nlaLittoralZoneTest.createTestData2007 <- function()
@@ -65,7 +64,7 @@ nlaLittoralZoneTest.createTestData2007 <- function()
 # 8859	8N, 2O
 # 8884	5N, 5 absent stations
 {
-	tc <- textConnection("   UID    STATION   PARAMETER  RESULT
+	tc <- textConnection("   SITE    STATION   PARAMETER  VALUE
 							8020          A SURFACE_FILM      N
 							8020          B SURFACE_FILM      N
 							8020          C SURFACE_FILM      N
@@ -161,12 +160,11 @@ nlaLittoralZoneTest.createTestData2007 <- function()
 }
 
 
-
 nlaLittoralZoneTest.createExpectedResults2007 <- function()
 #
 {
 	
-	tc <- textConnection("   UID	  PARAMETER RESULT
+	tc <- textConnection("   SITE	  METRIC VALUE
 							8020       LZFPFILM      0
 							8020 LZIFILMVARIETY      0
 							8020        LZOFILM      N
@@ -202,8 +200,6 @@ nlaLittoralZoneTest.createExpectedResults2007 <- function()
 	return(fake)		
 }
 
-
-
 nlaLittoralZoneTest.createTestData2012 <- function()
 # Selected data from 2012 study:
 # 6160		all NONE
@@ -216,7 +212,7 @@ nlaLittoralZoneTest.createTestData2012 <- function()
 # 8324		2 Algal and 1 OTHER_ALGAL and 6 NONE
 # 1000118	10 OTHER_FLOATING
 {
-	tc <- textConnection("   UID STATION    PARAMETER                       RESULT
+	tc <- textConnection("   SITE STATION    PARAMETER                       VALUE
 							6160       A SURFACE_FILM                         NONE
 							6160       B SURFACE_FILM                         NONE
 							6160       C SURFACE_FILM                         NONE
@@ -308,12 +304,11 @@ nlaLittoralZoneTest.createTestData2012 <- function()
 }
 
 
-
 nlaLittoralZoneTest.createExpectedResults2012 <- function()
 #
 {
 	
-	tc <- textConnection("   UID    PARAMETER	RESULT
+	tc <- textConnection("   SITE    METRIC	VALUE
 							6160 	LZFPALGAE        0
 							6160  	LZFPFILM         0
 							6160  	LZFPNONE         1
@@ -384,7 +379,5 @@ nlaLittoralZoneTest.createExpectedResults2012 <- function()
 	
 	return(fake)		
 }
-
-
 
 # end of file
