@@ -1,7 +1,7 @@
-metsLittoralZone <- function(df, data2007=FALSE) {
+nlaLittoralZone <- function(df, data2007=FALSE) {
 
 ################################################################################
-# Function: metsLittoralZone
+# Function: nlaLittoralZone
 # Title: Calculate NLA Littoral Zone Metrics
 # Programmers: Curt Seeliger
 #              Tom Kincaid
@@ -28,6 +28,8 @@ metsLittoralZone <- function(df, data2007=FALSE) {
 #            multiple modal values.
 #   01/30/14 cws: Removed commented out code.
 #   06/12/14 tmk: Removed calls to the require() function.
+#    7/14/17 cws Renamed metsLittoralZone to nlaLittoralZone.
+#
 # Arguments:
 #   df = a data frame containing littoral zone data.  The data frame must
 #     include columns that are named as follows:
@@ -56,30 +58,29 @@ metsLittoralZone <- function(df, data2007=FALSE) {
 ################################################################################
 
   # Print initial messages
-  cat('Littoral Zone calculations:\n')
-  intermediateMessage('Littoral Zone mets', loc='start')
+  intermediateMessage('NLA littoral zone metrics', loc='start')
 
-	lzData <- metsLittoralZone.prepareInput(df, data2007)
+	lzData <- nlaLittoralZone.prepareInput(df, data2007)
     intermediateMessage('.1')
 
 
     # Determine mode(s) of the surface film type
-	modeFilm <- metsLittoralZone.modeFilm(lzData, data2007)
+	modeFilm <- nlaLittoralZone.modeFilm(lzData, data2007)
 	intermediateMessage('.2')
 
 
     # Determine fractional presence of any type of film other than None
-	presences <- metsLittoralZone.fractionalPresences(lzData, data2007)
+	presences <- nlaLittoralZone.fractionalPresences(lzData, data2007)
     intermediateMessage('.3')
 
 
     # Determine mean number of any type of film other than None occuring
     # at a station
-	variety <- metsLittoralZone.filmVariety(lzData, data2007)
+	variety <- nlaLittoralZone.filmVariety(lzData, data2007)
     intermediateMessage('.4')
 
 
-    # Assemble mets and send 'em back.
+    # Assemble nla and send 'em back.
     lz <- rbind(modeFilm, presences, variety)
     intermediateMessage(' Done.', loc='end')
 
@@ -87,7 +88,7 @@ metsLittoralZone <- function(df, data2007=FALSE) {
 }
 
 
-metsLittoralZone.prepareInput <- function(df, data2007)
+nlaLittoralZone.prepareInput <- function(df, data2007)
 # Prepare Littoral zone data for subsequent calculations.
 # Returns standardized dataframe with columns UID, PARAMETER, RESULT.
 {
@@ -115,7 +116,7 @@ metsLittoralZone.prepareInput <- function(df, data2007)
 }
 
 
-metsLittoralZone.modeFilm <- function(df, data2007)
+nlaLittoralZone.modeFilm <- function(df, data2007)
 # Determine most common film type.  Returns dataframe with
 # columns UID, PARAMETER, RESULT
 {
@@ -149,7 +150,7 @@ metsLittoralZone.modeFilm <- function(df, data2007)
 }
 
 
-metsLittoralZone.fractionalPresences <- function(df, data2007)
+nlaLittoralZone.fractionalPresences <- function(df, data2007)
 # Determines fractional presences of film types, including 'any' film other 
 # than NONE. Returns dataframe with columns UID, PARAMETER, RESULT.
 {
@@ -205,7 +206,7 @@ metsLittoralZone.fractionalPresences <- function(df, data2007)
 }
 
 
-metsLittoralZone.filmVariety <- function(df, data2007)
+nlaLittoralZone.filmVariety <- function(df, data2007)
 # Determines variety of film types, including 'any' film other 
 # than NONE. Returns dataframe with columns UID, PARAMETER, RESULT.
 #

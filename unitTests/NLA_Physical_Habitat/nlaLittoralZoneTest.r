@@ -1,22 +1,24 @@
-# metsLittoralZone.r
+# nlaLittoralZone.r
 # RUnit tests
+#
+#    7/14/17 cws Renamed metsLittoralZone to nlaLittoralZone.
+#
 
-
-metsLittoralZoneTest <- function()
-# unit test for metsLittoralZone
+nlaLittoralZoneTest <- function()
+# unit test for nlaLittoralZone
 {
-	metsLittoralZoneTest.2007()
-	metsLittoralZoneTest.2012()
+	nlaLittoralZoneTest.2007()
+	nlaLittoralZoneTest.2012()
 }
 
 
 
-metsLittoralZoneTest.2007 <- function()
-# unit test for metsLittoralZone using 2007 data
+nlaLittoralZoneTest.2007 <- function()
+# unit test for nlaLittoralZone using 2007 data
 {
-	testData <- metsLittoralZoneTest.createTestData2007()
-	expected <- metsLittoralZoneTest.createExpectedResults2007()
-	actual <- metsLittoralZone(testData, data2007=TRUE)
+	testData <- nlaLittoralZoneTest.createTestData2007()
+	expected <- nlaLittoralZoneTest.createExpectedResults2007()
+	actual <- nlaLittoralZone(testData, data2007=TRUE)
 
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -31,12 +33,12 @@ metsLittoralZoneTest.2007 <- function()
 
 
 
-metsLittoralZoneTest.2012 <- function()
-# unit test for metsLittoralZone using 2012 data
+nlaLittoralZoneTest.2012 <- function()
+# unit test for nlaLittoralZone using 2012 data
 {
-	testData <- metsLittoralZoneTest.createTestData2012()
-	expected <- metsLittoralZoneTest.createExpectedResults2012()
-	actual <- metsLittoralZone(testData)
+	testData <- nlaLittoralZoneTest.createTestData2012()
+	expected <- nlaLittoralZoneTest.createExpectedResults2012()
+	actual <- nlaLittoralZone(testData)
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -51,7 +53,7 @@ metsLittoralZoneTest.2012 <- function()
 
 
 
-metsLittoralZoneTest.createTestData2007 <- function()
+nlaLittoralZoneTest.createTestData2007 <- function()
 # Selected data from 2007 study:
 # 8020	Has 2 extra stations of data.  All are N
 # 8188	No N, all 10 stations are O
@@ -160,7 +162,7 @@ metsLittoralZoneTest.createTestData2007 <- function()
 
 
 
-metsLittoralZoneTest.createExpectedResults2007 <- function()
+nlaLittoralZoneTest.createExpectedResults2007 <- function()
 #
 {
 	
@@ -202,7 +204,7 @@ metsLittoralZoneTest.createExpectedResults2007 <- function()
 
 
 
-metsLittoralZoneTest.createTestData2012 <- function()
+nlaLittoralZoneTest.createTestData2012 <- function()
 # Selected data from 2012 study:
 # 6160		all NONE
 # 6233		1 Algal, 9 NONE
@@ -307,7 +309,7 @@ metsLittoralZoneTest.createTestData2012 <- function()
 
 
 
-metsLittoralZoneTest.createExpectedResults2012 <- function()
+nlaLittoralZoneTest.createExpectedResults2012 <- function()
 #
 {
 	
