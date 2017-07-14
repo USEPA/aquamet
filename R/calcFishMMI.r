@@ -1,5 +1,5 @@
 #' @export
-#' @title Calculate only fish metrics necessary for NRSA MMI
+#' @title Calculate NRSA Fish MMI
 #' 
 #' @description This is a function that calculates 
 #' the fish MMI as used for the National Rivers and Streams 
@@ -57,7 +57,7 @@
 #' that site. 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
-calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='WSAREA'){
+calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='LWSAREA'){
   
   necTraits <- c(sampID,ecoreg,lwsarea)
   if(any(necTraits %nin% names(inMets))){
@@ -69,7 +69,7 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='WSAREA')
   
   # Rename variables 
   names(inMets)[names(inMets)==ecoreg] <- 'ECO9'
-  names(inMets)[names(inMets)==lwsarea] <- 'WSAREA'
+  names(inMets)[names(inMets)==lwsarea] <- 'LWSAREA'
 
   # Combine all values in sampID into one sampID in df
   for(i in 1:length(sampID)){
@@ -112,7 +112,7 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='WSAREA')
                          ,stringsAsFactors=F)
  
   
- matchMets <- reshape2::melt(inMets,id.vars=c('SAMPID','ECO9','WSAREA'),measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
+ matchMets <- reshape2::melt(inMets,id.vars=c('SAMPID','ECO9','LWSAREA'),measure.vars=names(inMets)[names(inMets) %in% unique(metnames$PARAMETER)]
                              ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
    merge(metnames,by=c('PARAMETER','ECO9')) %>%
    mutate(PARAMETER=as.character(PARAMETER))
@@ -160,7 +160,7 @@ calcFishMMI <- function(inMets, sampID='UID', ecoreg='ECOREG', lwsarea='WSAREA')
  # Now merge fish data with watershed regression info and adjust necessary metrics
  fish.ws <- merge(matchMets,wsMets,by=c('ECO9','PARAMETER'),all.x=T) %>%
    plyr::mutate(RESULT=as.numeric(RESULT)) %>%
-   plyr::mutate(RESULT_WS=ifelse(is.na(int),NA,int+slope*WSAREA),RESULT_NEW=ifelse(is.na(slope),RESULT,round(RESULT-RESULT_WS,3))
+   plyr::mutate(RESULT_WS=ifelse(is.na(int),NA,int+slope*LWSAREA),RESULT_NEW=ifelse(is.na(slope),RESULT,round(RESULT-RESULT_WS,3))
           ,PARAMETER=ifelse(is.na(slope),PARAMETER,paste(PARAMETER,'WS',sep='_'))) %>%
    dplyr::select(-RESULT,-RESULT_WS) %>% plyr::rename(c('RESULT_NEW'='RESULT'))
   

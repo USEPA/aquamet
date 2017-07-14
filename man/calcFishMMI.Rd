@@ -2,9 +2,10 @@
 % Please edit documentation in R/calcFishMMI.r
 \name{calcFishMMI}
 \alias{calcFishMMI}
-\title{Calculate only fish metrics necessary for NRSA MMI}
+\title{Calculate NRSA Fish MMI}
 \usage{
-calcFishMMI(inMets, sampID = "UID", ecoreg = "ECOREG", lwsarea = "WSAREA")
+calcFishMMI(inMets, sampID = "UID", ecoreg = "ECOREG",
+  lwsarea = "LWSAREA")
 }
 \arguments{
 \item{inMets}{A data frame containing, at minimum, the variables 
