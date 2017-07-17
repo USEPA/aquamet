@@ -10,6 +10,7 @@
 #          calculations would be time consuming for now.
 #  7/11/17 cws Split substrate argument into individual classes, to be consistent
 #          with general interface.
+#  7/17/17 cws Changed boulders argument to boulder, so all the classes are singular.
 #
 
 
@@ -38,7 +39,7 @@ nlaBottomSubstrateTest.fullData <- function()
 	                            ,bedrock = testData %>% 
 	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
 	                                       select(SITE, STATION, VALUE)
-	                            ,boulders = testData %>% 
+	                            ,boulder = testData %>% 
 	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
 	                                        select(SITE, STATION, VALUE)
 	                            ,cobble = testData %>% 
@@ -83,7 +84,7 @@ nlaBottomSubstrateTest.absentData <- function()
 	                            ,bedrock = testData %>% 
 	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
 	                                       select(SITE, STATION, VALUE)
-	                            ,boulders = testData %>% 
+	                            ,boulder = testData %>% 
 	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
 	                                        select(SITE, STATION, VALUE)
 	                            ,cobble = testData %>% 
@@ -118,7 +119,7 @@ nlaBottomSubstrateTest.absentData <- function()
 	                            ,bedrock = testData %>% 
 	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
 	                                       select(SITE, STATION, VALUE)
-	                            ,boulders = testData %>% 
+	                            ,boulder = testData %>% 
 	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
 	                                        select(SITE, STATION, VALUE)
 	                            ,cobble = testData %>% 
@@ -201,7 +202,7 @@ nlaBottomSubstrateTest.partialData <- function()
 	                            ,bedrock = testData %>% 
 	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
 	                                       select(SITE, STATION, VALUE)
-	                            ,boulders = testData %>% 
+	                            ,boulder = testData %>% 
 	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
 	                                        select(SITE, STATION, VALUE)
 	                            ,cobble = testData %>% 
@@ -240,7 +241,7 @@ nlaBottomSubstrateTest.partialData <- function()
 	                            ,bedrock = testData %>% 
 	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
 	                                       select(SITE, STATION, VALUE)
-	                            ,boulders = testData %>% 
+	                            ,boulder = testData %>% 
 	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
 	                                        select(SITE, STATION, VALUE)
 	                            ,cobble = testData %>% 

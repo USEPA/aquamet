@@ -1,5 +1,5 @@
 nlaBottomSubstrate <- function(bedrock=NULL
-                              ,boulders=NULL
+                              ,boulder=NULL
                               ,color=NULL
                               ,cobble=NULL
                               ,gravel=NULL
@@ -91,6 +91,7 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #            with general interface. Unit test updated as well. Removed BS_ prefix
 #            from substrate class values. Changed name of interior function
 #            addParameter to addClass.
+#    7/17/17 cws Changed boulders argument to boulder, so all the classes are singular.
 #
 # Arguments:
 #   df = a data frame containing bottom substrate data.  The data frame must
@@ -140,7 +141,7 @@ nlaBottomSubstrate <- function(bedrock=NULL
     odor <- aquametStandardizeArgument(odor, struct=c(SITE='integer', STATION='character', VALUE='character'))
     intermediateMessage('.')
     bedrock <- aquametStandardizeArgument(bedrock, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BEDROCK')
-    boulders <- aquametStandardizeArgument(boulders, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BOULDERS')
+    boulder <- aquametStandardizeArgument(boulder, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'BOULDERS')
     cobble <- aquametStandardizeArgument(cobble, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'COBBLE')
     gravel <- aquametStandardizeArgument(gravel, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'GRAVEL')
     organic <- aquametStandardizeArgument(organic, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), 'ORGANIC')
@@ -153,7 +154,7 @@ nlaBottomSubstrate <- function(bedrock=NULL
     substrateSizes <- aquametStandardizeArgument(substrateSizes, struct=c(CLASS='character', diam='double', inPopulationEstimate='logical'))
     intermediateMessage('.')
 
-    substrate <- rbind(bedrock, boulders, cobble, gravel, organic, sand, silt, wood)
+    substrate <- rbind(bedrock, boulder, cobble, gravel, organic, sand, silt, wood)
   	bsData <- nlaBottomSubstrate.setupForParticleCalculations(substrate, substrateCovers, substrateSizes)
   	intermediateMessage('.1')
 	
