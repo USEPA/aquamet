@@ -1,5 +1,7 @@
 # nlaBankFeaturesTest.r
 # RUnit tests
+#  7/18/17 cws Corrected to expect metrics values in METRICS column
+#
 
 
 nlaBankFeatures.fillinDistancesTest <- function()
@@ -83,8 +85,6 @@ nlaBankFeaturesTest.2007 <- function()
 {
 	testData <- nlaBankFeaturesTest.createTestData2007()
 	expected <- nlaBankFeaturesTest.createExpectedResults2007()
-#testData$subid <- testData$STATION
-#names(testData) <- tolower(names(testData))
 	actual <- nlaBankFeatures(angle = testData %>% subset(PARAMETER=='ANGLE') %>% select(SITE,STATION,VALUE)
                              ,drawdown = testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE,STATION,VALUE)
                              ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% select(SITE,STATION,VALUE)
@@ -92,17 +92,13 @@ nlaBankFeaturesTest.2007 <- function()
                              ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% select(SITE,STATION,VALUE)
                              ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% select(SITE,STATION,VALUE)
                              )
-#names(actual) <- toupper(names(actual))
-#actual <- melt(actual, 'SITE', variable.name='PARAMETER', value.name='VALUE')
-#actual$PARAMETER <- as.character(actual$PARAMETER)
-	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('SITE','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
@@ -126,7 +122,7 @@ nlaBankFeaturesTest.2012withDrawdown <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('SITE','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
@@ -151,7 +147,7 @@ nlaBankFeaturesTest.2012noDrawdown <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('SITE','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
@@ -416,7 +412,7 @@ nlaBankFeaturesTest.createTestData2007 <- function()
 nlaBankFeaturesTest.createExpectedResults2007 <- function()
 #
 {
-	tc <- textConnection("   SITE     PARAMETER              VALUE
+	tc <- textConnection("   SITE       METRIC              VALUE
 							7468       BFFFLAT   0.111111111111111
 							7468    BFFGRADUAL   0.333333333333333
 							7468      BFFSTEEP   0.333333333333333
@@ -1093,7 +1089,7 @@ nlaBankFeaturesTest.createTestData2012 <- function()
 nlaBankFeaturesTest.createExpectedResults2012noDrawdown <- function()
 #
 {
-	tc <- textConnection("   SITE        PARAMETER                 VALUE
+	tc <- textConnection("  SITE           METRIC                  VALUE
 							6160          BFFFLAT                      0
 							6160       BFFGRADUAL                    0.1
 							6160         BFFSTEEP                    0.9
@@ -1283,7 +1279,7 @@ nlaBankFeaturesTest.createExpectedResults2012noDrawdown <- function()
 nlaBankFeaturesTest.createExpectedResults2012withDrawdown <- function()
 #
 {
-	tc <- textConnection("   SITE        PARAMETER                 VALUE
+	tc <- textConnection("   SITE     METRIC                    VALUE
 					6160          BFFFLAT                      0
 					6160       BFFGRADUAL                    0.1
 					6160         BFFSTEEP                    0.9

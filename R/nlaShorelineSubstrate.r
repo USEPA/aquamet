@@ -7,7 +7,25 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 	                             ,sand = NULL
 	                             ,silt = NULL
 	                             ,wood = NULL
-	                             ) {
+                                 ,substrateCovers=data.frame(VALUE	= c(NA, '0', '1', '2', '3', '4')
+                       	                                    ,cover	= c(NA, 0, 0.05, 0.25, 0.575, 0.875)
+					   	                                    ,presence= as.integer(c(NA, 0, 1, 1, 1, 1))
+                       	                                    ,stringsAsFactors=FALSE
+                       	                                    )
+                                 ,substrateSizes=data.frame(CLASS=c('BEDROCK', 'BOULDERS'
+                                                                   ,'COBBLE',  'GRAVEL'
+                                                                   ,'SAND',    'SILT'
+                                                                   ,'ORGANIC', 'WOOD'
+                                                                   )
+                                                           ,diam=c(gmean(c(4000,8000)), gmean(c(250,4000))
+                       	                                          ,gmean(c(64,250)),    gmean(c(2,64))
+                       	                                          ,gmean(c(0.06,2)),    gmean(c(0.001,0.06))
+                       	                                          ,NA,                  NA
+                       	                                          )
+                                                           ,inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE)
+                                                           ,stringsAsFactors=FALSE
+                                                           )
+                                 ) {
 
 ################################################################################
 # Function: nlaShorelineSubstrate
@@ -54,7 +72,9 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 #   06/12/14 tmk: Removed calls to the require() function.
 #    7/17/17 cws Renamed from metsShorelineSubstrate and updated to new calling
 #            interface, changing UID, and RESULT to SITE and VALUE, and changing
-#            output column PARAMETER to METRIC
+#            output column PARAMETER to METRIC.  Added arguments substrateCovers
+#            and substrateSizes, just like nlaBottomSubstrate; code will need
+#            some serious cleanup.
 #
 # Arguments:
 #   df = a data frame containing shoreline substrate data.  The data frame must
@@ -98,78 +118,51 @@ nlaShorelineSubstrate <- function(bedrock = NULL
         return(rc)
     }
 
-    bedrock <- bedrock %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_BEDROCK')
-	boulder <- boulder %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_BOULDERS')
-	cobble <- cobble %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_COBBLE')
-	gravel <- gravel %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_GRAVEL')
-	organic <- organic %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_ORGANIC')
-	other <- other %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_OTHER')
-	sand <- sand %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_SAND')
-	silt <- silt %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_SILT')
-	wood <- wood %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SS_WOOD')
+    bedrock <- bedrock %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'BEDROCK')
+	boulder <- boulder %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'BOULDERS')
+	cobble <- cobble %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'COBBLE')
+	gravel <- gravel %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'GRAVEL')
+	organic <- organic %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'ORGANIC')
+	other <- other %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'OTHER')
+	sand <- sand %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SAND')
+	silt <- silt %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SILT')
+	wood <- wood %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'WOOD')
 	
-	df <- rbind(bedrock, boulder, cobble, gravel, organic, other, sand, silt, wood)
+	substrateCovers <- substrateCovers %>% aquametStandardizeArgument(struct = list(VALUE='character', cover='double', presence = 'integer'))
+	substrateSizes <- substrateSizes %>% aquametStandardizeArgument(struct = list(CLASS='character', diam='double', inPopulationEstimate='logical'))
 	
-    ssData <- subset(df
-                  ,CLASS %in% c('SS_BEDROCK', 'SS_BOULDERS', 'SS_COBBLE'
-                                   ,'SS_GRAVEL', 'SS_SAND', 'SS_SILT'
-                                   ,'SS_ORGANIC', 'SS_OTHER', 'SS_WOOD'
-                                   )
-                  )
+	if(is.null(substrateSizes)) {
+	    return("  This function requires substrate class size information as an argument.  You might consider using the default values by removing the value from your call.")
+	} else if (nrow(substrateSizes) == 0) {
+	    return("  This function requires substrate class size information as an argument.  You might consider using the default values by removing the value from your call.")
+	}
+	
+	ssData <- rbind(bedrock, boulder, cobble, gravel, organic, other, sand, silt, wood)
+	
+    intermediateMessage('.1')
 
-  intermediateMessage('.1')
 
-  # Set up recodings for presence, cover and characteristic diameter (both
-  # actual and logged)
-  presence04 <- data.frame(field=c(NA,'0','1','2','3','4')
-                          ,calc=c(NA,0,1,1,1,1)
-                          ,stringsAsFactors=FALSE
-                          )
-
-  cover04<-data.frame(field=c(NA,'0','1','2','3','4')
-                     ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-                     ,stringsAsFactors=FALSE
-                     )
-
-  tt<-data.frame(class=c('SS_BEDROCK',       'SS_BOULDERS'
-                        ,'SS_COBBLE',        'SS_GRAVEL'
-                        ,'SS_SAND',          'SS_SILT'
-                        ,'SS_ORGANIC',       'SS_WOOD',           'SS_OTHER'
-                        )
-                ,diam=c(gmean(c(4000,8000)), gmean(c(250,4000))
-                       ,gmean(c(64,250)),    gmean(c(2,64))
-                       ,gmean(c(0.06,2)),    gmean(c(0.001,0.06))
-                       ,NA,                  NA,                  NA
-                       )
-                ,stringsAsFactors=FALSE
-                       )
-  diameters <- aggregate(list(lDiam = tt$diam)
-                        ,list('class'=tt$class, 'diam'=tt$diam)
-                        ,log10
-                        )
-  intermediateMessage('.2')
-
-  
   # Calculate fractional presence of each substrate class
-  ssPresence <- merge(ssData, presence04
-                     ,by.x='VALUE', by.y='field'
-                     ,all.x=TRUE)
-  tt <- aggregate(list(VALUE = ssPresence$calc)
+  ssPresence <- merge(ssData, substrateCovers
+                     ,by.x='VALUE', by.y='VALUE'
+                     ,all.x=TRUE
+                     )
+  tt <- aggregate(list(VALUE = ssPresence$presence)
                  ,list('SITE'=ssPresence$SITE
                       ,'CLASS'=ssPresence$CLASS
                       ) 
                  ,mean, na.rm=TRUE
                  )
   meanPresence <- within(tt
-				        ,METRIC <- ifelse(CLASS == 'SS_BEDROCK', 'SSFPBEDROCK'
-							      ,ifelse(CLASS == 'SS_BOULDERS', 'SSFPBOULDERS'
-								  ,ifelse(CLASS == 'SS_COBBLE', 'SSFPCOBBLE'
-								  ,ifelse(CLASS == 'SS_GRAVEL', 'SSFPGRAVEL'
-								  ,ifelse(CLASS == 'SS_SAND', 'SSFPSAND'
-								  ,ifelse(CLASS == 'SS_SILT', 'SSFPSILT'
-								  ,ifelse(CLASS == 'SS_ORGANIC', 'SSFPORGANIC'
-								  ,ifelse(CLASS == 'SS_WOOD', 'SSFPWOOD'
-								  ,ifelse(CLASS == 'SS_OTHER', 'SSFPOTHER', 'SSFPUNKNOWN'
+				        ,METRIC <- ifelse(CLASS == 'BEDROCK', 'SSFPBEDROCK'
+							      ,ifelse(CLASS == 'BOULDERS', 'SSFPBOULDERS'
+								  ,ifelse(CLASS == 'COBBLE', 'SSFPCOBBLE'
+								  ,ifelse(CLASS == 'GRAVEL', 'SSFPGRAVEL'
+								  ,ifelse(CLASS == 'SAND', 'SSFPSAND'
+								  ,ifelse(CLASS == 'SILT', 'SSFPSILT'
+								  ,ifelse(CLASS == 'ORGANIC', 'SSFPORGANIC'
+								  ,ifelse(CLASS == 'WOOD', 'SSFPWOOD'
+								  ,ifelse(CLASS == 'OTHER', 'SSFPOTHER', 'SSFPUNKNOWN'
 								   )))))))))
 					    ) %>% 
                   select(SITE, METRIC, VALUE)
@@ -182,7 +175,7 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   #     ssiSiteVariety = total number of substrate classes present in site
   # The number of substrate classes at a station is the sum of their presences.
   # Note: SS_OTHER is not included in site variety index
-  tt <- aggregate(list(sum=ssPresence$calc)
+  tt <- aggregate(list(sum=ssPresence$presence)
                  ,list('SITE'=ssPresence$SITE
                       ,'STATION'=ssPresence$STATION
                       )
@@ -208,8 +201,9 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 
 
   # Normalize covers of all shore substrate classes. 
-  sscover <- merge(ssData, cover04, by.x='VALUE', by.y='field', all.x=TRUE)
-  sscover <- normalizedCover(sscover, 'calc', 'normCover')
+  sscover <- merge(ssData, substrateCovers, by.x='VALUE', by.y='VALUE', all.x=TRUE) %>% merge(substrateSizes, by='CLASS', all.x=TRUE)
+  sscover <- normalizedCover(sscover, 'cover', 'normCover')
+  intermediateMessage('.')
   
   # calculate mean cover of each substrate class
   tt <- aggregate(list(VALUE = sscover$normCover)
@@ -220,15 +214,15 @@ nlaShorelineSubstrate <- function(bedrock = NULL
                  )
 #
   meanCover <- within(tt
-					 ,METRIC <- ifelse(CLASS == 'SS_BEDROCK', 'SSFCBEDROCK'
-					 		   ,ifelse(CLASS == 'SS_BOULDERS', 'SSFCBOULDERS'
-							   ,ifelse(CLASS == 'SS_COBBLE', 'SSFCCOBBLE'
-							   ,ifelse(CLASS == 'SS_GRAVEL', 'SSFCGRAVEL'
-							   ,ifelse(CLASS == 'SS_SAND', 'SSFCSAND'
-							   ,ifelse(CLASS == 'SS_SILT', 'SSFCSILT'
-							   ,ifelse(CLASS == 'SS_ORGANIC', 'SSFCORGANIC'
-							   ,ifelse(CLASS == 'SS_WOOD', 'SSFCWOOD'
-							   ,ifelse(CLASS == 'SS_OTHER', 'SSFCOTHER', 'SSFCUNKNOWN'
+					 ,METRIC <- ifelse(CLASS == 'BEDROCK', 'SSFCBEDROCK'
+					 		   ,ifelse(CLASS == 'BOULDERS', 'SSFCBOULDERS'
+							   ,ifelse(CLASS == 'COBBLE', 'SSFCCOBBLE'
+							   ,ifelse(CLASS == 'GRAVEL', 'SSFCGRAVEL'
+							   ,ifelse(CLASS == 'SAND', 'SSFCSAND'
+							   ,ifelse(CLASS == 'SILT', 'SSFCSILT'
+							   ,ifelse(CLASS == 'ORGANIC', 'SSFCORGANIC'
+							   ,ifelse(CLASS == 'WOOD', 'SSFCWOOD'
+							   ,ifelse(CLASS == 'OTHER', 'SSFCOTHER', 'SSFCUNKNOWN'
 							    )))))))))
 					 ) %>% 
                   select(SITE, METRIC, VALUE)
@@ -243,15 +237,15 @@ nlaShorelineSubstrate <- function(bedrock = NULL
                  ,sd, na.rm=TRUE
                  )
   sdCover <- within(tt
-				   ,{METRIC <- ifelse(CLASS == 'SS_BEDROCK', 'SSVBEDROCK'
-						      ,ifelse(CLASS == 'SS_BOULDERS', 'SSVBOULDERS'
-							  ,ifelse(CLASS == 'SS_COBBLE', 'SSVCOBBLE'
-							  ,ifelse(CLASS == 'SS_GRAVEL', 'SSVGRAVEL'
-							  ,ifelse(CLASS == 'SS_SAND', 'SSVSAND'
-							  ,ifelse(CLASS == 'SS_SILT', 'SSVSILT'
-							  ,ifelse(CLASS == 'SS_ORGANIC', 'SSVORGANIC'
-							  ,ifelse(CLASS == 'SS_WOOD', 'SSVWOOD'
-							  ,ifelse(CLASS == 'SS_OTHER', 'SSVOTHER', 'SSVUNKNOWN'
+				   ,{METRIC <- ifelse(CLASS == 'BEDROCK', 'SSVBEDROCK'
+						      ,ifelse(CLASS == 'BOULDERS', 'SSVBOULDERS'
+							  ,ifelse(CLASS == 'COBBLE', 'SSVCOBBLE'
+							  ,ifelse(CLASS == 'GRAVEL', 'SSVGRAVEL'
+							  ,ifelse(CLASS == 'SAND', 'SSVSAND'
+							  ,ifelse(CLASS == 'SILT', 'SSVSILT'
+							  ,ifelse(CLASS == 'ORGANIC', 'SSVORGANIC'
+							  ,ifelse(CLASS == 'WOOD', 'SSVWOOD'
+							  ,ifelse(CLASS == 'OTHER', 'SSVOTHER', 'SSVUNKNOWN'
 							   )))))))))
 					   
 				    }
@@ -273,15 +267,15 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 			  ,VALUE <- ifelse(is.na(VALUE), 0, VALUE)
 			  )
   countSubstrates <- within(tt
-						   ,{METRIC <- ifelse(CLASS == 'SS_BEDROCK', 'SSNBEDROCK'
-									  ,ifelse(CLASS == 'SS_BOULDERS', 'SSNBOULDERS'
-									  ,ifelse(CLASS == 'SS_COBBLE', 'SSNCOBBLE'
-									  ,ifelse(CLASS == 'SS_GRAVEL', 'SSNGRAVEL'
-									  ,ifelse(CLASS == 'SS_SAND', 'SSNSAND'
-									  ,ifelse(CLASS == 'SS_SILT', 'SSNSILT'
-									  ,ifelse(CLASS == 'SS_ORGANIC', 'SSNORGANIC'
-									  ,ifelse(CLASS == 'SS_WOOD', 'SSNWOOD'
-									  ,ifelse(CLASS == 'SS_OTHER', 'SSNOTHER', 'SSNUNKNOWN'
+						   ,{METRIC <- ifelse(CLASS == 'BEDROCK', 'SSNBEDROCK'
+									  ,ifelse(CLASS == 'BOULDERS', 'SSNBOULDERS'
+									  ,ifelse(CLASS == 'COBBLE', 'SSNCOBBLE'
+									  ,ifelse(CLASS == 'GRAVEL', 'SSNGRAVEL'
+									  ,ifelse(CLASS == 'SAND', 'SSNSAND'
+									  ,ifelse(CLASS == 'SILT', 'SSNSILT'
+									  ,ifelse(CLASS == 'ORGANIC', 'SSNORGANIC'
+									  ,ifelse(CLASS == 'WOOD', 'SSNWOOD'
+									  ,ifelse(CLASS == 'OTHER', 'SSNOTHER', 'SSNUNKNOWN'
 									   )))))))))
 						    }
 						   ) %>% 
@@ -299,23 +293,25 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   # the normalization includes non-mineral substrates, but the following
   # calculations do not take them into account as they have no meaningful 
   # diameter.
-  mineralCover <- subset(sscover
-                        ,CLASS %in% c('SS_BEDROCK','SS_BOULDERS','SS_COBBLE'
-                                         ,'SS_GRAVEL', 'SS_SAND', 'SS_SILT'
-                                         )
+  mineralCover <- subset(sscover, inPopulationEstimate
+                        # ,CLASS %in% c('BEDROCK','BOULDERS','COBBLE'
+                        #                  ,'GRAVEL', 'SAND', 'SILT'
+                        #                  )
                         ,select=names(sscover)[names(sscover) != 'normCover']
                   )
-  mineralCover <- normalizedCover(mineralCover, 'calc', 'normCover')
+  mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
   
-  tt <- merge(mineralCover, diameters
-             ,by.x='CLASS', by.y='class'
-             ,all.x=TRUE
-             )
-  tt$wtLDiam <- tt$lDiam * tt$normCover
+  # tt <- merge(mineralCover, substrateSizes
+  #            ,by.x='CLASS', by.y='CLASS'
+  #            ,all.x=TRUE
+  #            ) %>%
+  #       mutate(lDiam = log10(diam))
+  #  tt$wtLDiam <- tt$lDiam * tt$normCover
+    mineralCover <- mineralCover %>% mutate(lDiam = log10(diam), wtLDiam = lDiam * normCover)
 
-  diamSubstrate <- aggregate(list(meanLDiam = tt$wtLDiam)
-                            ,list('SITE'=tt$SITE
-                                 ,'STATION'=tt$STATION
+  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtLDiam)
+                            ,list('SITE'=mineralCover$SITE
+                                 ,'STATION'=mineralCover$STATION
                                  ) 
                             ,mean, na.rm=TRUE
                             )
@@ -429,7 +425,6 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   return(ssMets)
 
 }
-
 
 
 # end of file
