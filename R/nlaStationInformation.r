@@ -45,7 +45,9 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
 #            frequencies requires use of other data values to determine the 
 #            total number of stations sampled. Since 2012, false/NO values are
 #            explicitely coded. Since these codings require different handling,
-#            this function is changed to expect both Y/YES and N/NO values.
+#            this function is changed to expect both Y/YES and N/NO values. Two
+#            additional sites with NA values were added in the 2012 data to 
+#            exercise the cases where NA values occur.
 #
 # Arguments:
 #   df = a data frame containing station information data.  The data frame must
@@ -107,7 +109,10 @@ nlaStationInformation.islandStations <- function(df)
 {
     intermediateMessage('.1')
     siIsland <- df %>% 
-                mutate(atIsland = ifelse(grepl('^Y.*',VALUE), TRUE, FALSE)) %>% 
+                mutate(atIsland = ifelse(is.na(VALUE)       , NA
+                                 ,ifelse(grepl('^Y.*',VALUE), TRUE, FALSE
+                                  ))
+                      ) %>% 
                 group_by(SITE) %>% 
                 summarise(VALUE=protectedMean(atIsland, na.rm = TRUE)) %>% 
                 mutate(METRIC = 'SIFPISLAND') %>% 

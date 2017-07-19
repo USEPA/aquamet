@@ -1,12 +1,28 @@
 # aquametStandardizeArgumentTest.r
 #
 #  6/29/17 cws Tests moved here from aquametStandardizeArgument.r
+#  7/19/17 cws Updated aquametStandardizeArgument.checkStructureTest to reflect 
+#          refactoring of error message generation
 #
 
 require(RUnit)
 require(dplyr)
 
-aquametStandardizeArgument.checkStructureTest <- function(arg, struct)
+aquametStandardizeArgument.checkLegalTest <- function()
+# unit test for aquametStandardizeArgument.checkLegal
+{
+    DEACTIVATED("Not yet implemented")    
+}
+
+
+aquametStandardizeArgument.checkRangeTest <- function()
+# unit test for aquametStandardizeArgument.checkRange
+{
+    DEACTIVATED("Not yet implemented")    
+}
+
+
+aquametStandardizeArgument.checkStructureTest <- function()
 # Checks the provided argument for expected structure.  Returns NULL on success,
 # or a character string describing the error if one is found.
 #
@@ -25,7 +41,7 @@ aquametStandardizeArgument.checkStructureTest <- function(arg, struct)
     checkEquals(expected, actual, "Incorrect response when argument matches structure allowing multiple types - 2")
     
     # Test cases when argument has columns of wrong type
-    expected <- 'Argument testdata %>% mutate(SITE = paste(\"X\", SITE)) has errors: column SITE should have type integer rather than character'
+    expected <- 'column SITE should have type integer rather than character'
     actual <- aquametStandardizeArgument.checkStructure(testdata %>% mutate(SITE=paste('X', SITE))
                                         ,c(SITE='integer', VALUE='double')
                                         )
@@ -37,21 +53,21 @@ aquametStandardizeArgument.checkStructureTest <- function(arg, struct)
     actual <- aquametStandardizeArgument.checkStructure(testdata %>% mutate(SITE=paste('X', SITE))
                                         ,list(SITE=c('integer','double'), VALUE=c('double','character'))
                                         )
-    checkEquals("Argument testdata %>% mutate(SITE = paste(\"X\", SITE)) has errors: column SITE should have type integer or double rather than character"
+    checkEquals("column SITE should have type integer or double rather than character"
                ,actual
                ,"Incorrect response when argument does not match structure allowing multiple types"
                )
     
     # Test cases when argument has unexpected columns in some manner
-    expected <- 'Argument testdata has errors: missing column VALUEQQ; unexpected column VALUE' 
+    expected <- 'missing column VALUEQQ; unexpected column VALUE' 
     actual <- aquametStandardizeArgument.checkStructure(testdata, c(SITE='integer', VALUEQQ='double'))
     checkEquals(expected, actual, "Incorrect response when argument does not match structure by column name")
     
-    expected <- 'Argument testdata has errors: missing column FOO'
+    expected <- 'missing column FOO'
     actual <- aquametStandardizeArgument.checkStructure(testdata, c(SITE='integer', VALUE='double', FOO='character'))
     checkEquals(expected, actual, "Incorrect response when argument is missing an expected column")
     
-    expected <- 'Argument testdata %>% mutate(FOO = 1:10) has errors: unexpected column FOO'
+    expected <- 'unexpected column FOO'
     actual <- aquametStandardizeArgument.checkStructure(testdata %>% mutate(FOO=1:10), c(SITE='integer', VALUE='double'))
     checkEquals(expected, actual, "Incorrect response when argument has an unexpected column")
 }
@@ -79,7 +95,15 @@ aquametStandardizeArgumentTest <- function()
                  )
     checkTrue(class(actual) == 'try-error', "Incorrect with data arg not matching expected structure")
     
+    actual <- try(aquametStandardizeArgument(testdata %>% mutate(SITE=paste('X', SITE))
+                                            ,struct=list(SITE=c('integer','character'), VALUE='double')
+                                            )
+                 ,silent=TRUE
+                 )
+    checkEquals(expected, actual, "Incorrect with data arg matching expected structure with more than one possible type")
+ 
     
+    # Test case with nondata argument.   
     actual <- try(aquametStandardizeArgument('not data'), silent=TRUE)
     checkTrue(class(actual) == 'try-error', "Incorrect with non-data and default arguments")
     

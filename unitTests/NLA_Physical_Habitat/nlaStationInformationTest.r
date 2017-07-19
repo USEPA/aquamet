@@ -264,6 +264,8 @@ nlaStationInformationTest.createTestData2012 <- function()
 # 6794		10 stations of data, ISLAND all absent, DEPTH_AT_STATION has 10 value0
 # 7830		7 stations of data, ISLAND 6 NO, 1 YES, DEPTH_AT_STATION has 7 values
 # 8762		10 stations of data, ISLAND 7 NO, 3 YES, DEPTH_AT_STATION has 10 values
+# 1         7 stations of data, ISLAND is NA for all
+# 2         7 stations of data, ISLAND is NA for 5
 {
 	tc <- textConnection("   SITE STATION        PARAMETER VALUE
 							6160       A DEPTH_AT_STATION    3.6
@@ -373,6 +375,21 @@ nlaStationInformationTest.createTestData2012 <- function()
 						 1000158       H           ISLAND      N
 						 1000158       I           ISLAND      N
 						 1000158       J           ISLAND      N
+                               1       A           ISLAND     NA
+                               1       B           ISLAND     NA
+                               1       C           ISLAND     NA
+                               1       D           ISLAND     NA
+                               1       E           ISLAND     NA
+                               1       F           ISLAND     NA
+                               1       G           ISLAND     NA
+                               2       A           ISLAND     NA
+                               2       B           ISLAND     NA
+                               2       C           ISLAND     NA
+                               2       D           ISLAND     NA
+                               2       E           ISLAND     NA
+                               2       F           ISLAND     YES
+                               2       G           ISLAND     NO
+
 					")
 	
 	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
@@ -422,6 +439,8 @@ nlaStationInformationTest.createExpectedResults2012 <- function()
 							8762   SIVDEPTH  0.239443799947573	# was 0.2394437999000000039107
 							8762   SIXDEPTH  1.02				# was 1.0200000000000000177636
 						 1000158 SIFPISLAND  0
+						       1 SIFPISLAND  NA
+						       2 SIFPISLAND  0.5
 					")
 	
 	fake <- read.table(tc, header=TRUE, colClasses=c('integer','character','character')
