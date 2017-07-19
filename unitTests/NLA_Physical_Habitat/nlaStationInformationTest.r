@@ -1,5 +1,14 @@
 # nlaStationInformation.r
 # RUnit tests
+#
+#  7/18/17 cws Created from metsStationInformation.r
+#  7/19/17 cws Modified test for 2007 data to update input for isIsland argument
+#          reflecting changes in the metrics calculation. This means making
+#          false values of ISLAND explicitly present in the test with 2007 data.
+#          It also results in a change in values for 2012 data for sites 6683 
+#          and 6794 for which there is no ISLAND data; previously these resolved 
+#          to 0 but are now absent.
+#
 
 
 nlaStationInformationTest <- function()
@@ -16,7 +25,18 @@ nlaStationInformationTest.2007 <- function()
 {
 	testData <- nlaStationInformationTest.createTestData2007()
 	expected <- nlaStationInformationTest.createExpectedResults2007()
-	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER == 'ISLAND') %>% select(SITE,STATION,VALUE)
+	# actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER == 'ISLAND') %>% select(SITE,STATION,VALUE)
+	#                                ,stationDepth = testData %>% 
+	#                                                subset(PARAMETER == 'DEPTH_AT_STATION' & !is.na(UNITS)) %>% 
+	#                                                mutate(VALUE = ifelse(toupper(UNITS) %in% 'FT', as.numeric(VALUE) * 0.3048, VALUE)) %>% 
+	#                                                select(SITE,STATION,VALUE)
+	#                                )
+	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER == 'ISLAND') %>% 
+	                                           merge(testData %>% select(SITE, STATION) %>% unique() 
+	                                                ,by=c('SITE','STATION'), all=TRUE
+	                                                ) %>%
+	                                           mutate(VALUE = ifelse(is.na(VALUE), 'NO', 'YES')) %>%
+	                                           select(SITE,STATION,VALUE)
 	                               ,stationDepth = testData %>% 
 	                                               subset(PARAMETER == 'DEPTH_AT_STATION' & !is.na(UNITS)) %>% 
 	                                               mutate(VALUE = ifelse(toupper(UNITS) %in% 'FT', as.numeric(VALUE) * 0.3048, VALUE)) %>% 
@@ -28,9 +48,9 @@ nlaStationInformationTest.2007 <- function()
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
-	
+#return(actual)	
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-return(diff)
+#return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
@@ -52,6 +72,7 @@ nlaStationInformationTest.2012 <- function()
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-9)
+return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
@@ -384,11 +405,11 @@ nlaStationInformationTest.createExpectedResults2012 <- function()
 							6362   SINDEPTH  1
 							6362   SIVDEPTH  NA
 							6362   SIXDEPTH  1
-							6683 SIFPISLAND  0					# added to SAS results
+						#	6683 SIFPISLAND  0					# added to SAS results, then removed from expected results after updating calling interface, see history comments.
 							6683   SINDEPTH  1
 							6683   SIVDEPTH  NA
 							6683   SIXDEPTH  1.1				# was 1.1000000000000000888178
-							6794 SIFPISLAND  0					# added to SAS results
+						#	6794 SIFPISLAND  0					# added to SAS results, then removed from expected results after updating calling interface, see history comments.
 							6794   SINDEPTH  10
 							6794   SIVDEPTH  0.424918292799399	# was 0.4249182927999999859203
 							6794   SIXDEPTH  0.55				# was 0.5500000000000000444089

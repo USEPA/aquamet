@@ -36,6 +36,17 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
 #            for these sites.  There are 60 differences in SI[NVX]DEPTH due 
 #            solely to floating point precision differences.
 #   06/12/14 tmk: Removed calls to the require() function.
+#   07/18/17 cws Updated calling interface after creating this from 
+#            metsStationInformation.
+#    7/19/17 cws Changed SIFPISLAND calculation to use only those values. Previous
+#            code was based on calculation for 2007 coding of ISLAND, which
+#            contained only true ('X') values, leaving both unrecorded values
+#            and false values to be recorded as absences. Calcualtion of 
+#            frequencies requires use of other data values to determine the 
+#            total number of stations sampled. Since 2012, false/NO values are
+#            explicitely coded. Since these codings require different handling,
+#            this function is changed to expect both Y/YES and N/NO values.
+#
 # Arguments:
 #   df = a data frame containing station information data.  The data frame must
 #     include columns that are named as follows:
@@ -81,8 +92,8 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
     stationDepth <- stationDepth %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('double','character')), 'DEPTH_AT_STATION')
     df <- rbind(isIsland, stationDepth)
 
-	island <- nlaStationInformation.islandStations(df)
-	stationDepths <- nlaStationInformation.stationDepths(df)
+	island <- nlaStationInformation.islandStations(isIsland)
+	stationDepths <- nlaStationInformation.stationDepths(stationDepth)
 	
 	rc <- within(rbind(island, stationDepths), VALUE <- as.character(VALUE))
 
@@ -91,48 +102,55 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
 	return(rc)
 }
 
-
 nlaStationInformation.islandStations <- function(df)
 # calculate mets for stations at islands
 {
-	# Standardize values by converting to 2007-esque organization:
-	# Y,YES becomes X, otherwise they are NA
-	standardized <- within(df
-						  ,VALUE <- ifelse(CLASS=='ISLAND' & 
-										    (VALUE=='X' | grepl('^Y.*',VALUE))
-				  						   ,'X'
-										   ,NA
-						   				   )
-						  )
-
-	# Determine number of stations in each lake
-    ss <- aggregate(list(nSta = standardized$STATION)
-                   ,list(SITE = standardized$SITE)
-                   ,function(x) { count(unique(x)) }
-                   )
-
     intermediateMessage('.1')
-
-
-  	# Count islands in each site, and determine their fractional presence
-  	IslData <- subset(standardized, CLASS=='ISLAND')
-
-  	nn <- aggregate(list(nIsl = I(IslData$VALUE))
-                   ,list(SITE = IslData$SITE)
-                   ,count
-                   )
-
-    siIsland <- merge(ss, nn, by='SITE', all=TRUE, sort=FALSE)
-    siIsland <- within(siIsland
-					  ,{VALUE <- ifelse(is.na(nIsl), 0, nIsl / nSta)
-					    METRIC <- 'SIFPISLAND'
-					    nIsl <- NULL
-					    nSta <- NULL
-				  	   }
-		  			  )
+    siIsland <- df %>% 
+                mutate(atIsland = ifelse(grepl('^Y.*',VALUE), TRUE, FALSE)) %>% 
+                group_by(SITE) %>% 
+                summarise(VALUE=protectedMean(atIsland, na.rm = TRUE)) %>% 
+                mutate(METRIC = 'SIFPISLAND') %>% 
+                as.data.frame()
     intermediateMessage('.2')
-
-	return(siIsland)
+# 	# Standardize values by converting to 2007-esque organization:
+# 	# Y,YES becomes X, otherwise they are NA
+# 	standardized <- within(df
+# 						  ,VALUE <- ifelse(CLASS=='ISLAND' & 
+# 										    (VALUE=='X' | grepl('^Y.*',VALUE))
+# 				  						   ,'X'
+# 										   ,NA
+# 						   				   )
+# 						  )
+# 
+# 	# Determine number of stations in each lake
+#     ss <- aggregate(list(nSta = standardized$STATION)
+#                    ,list(SITE = standardized$SITE)
+#                    ,function(x) { count(unique(x)) }
+#                    )
+# 
+#     intermediateMessage('.1')
+# 
+# 
+#   	# Count islands in each site, and determine their fractional presence
+#   	IslData <- subset(standardized, CLASS=='ISLAND')
+# 
+#   	nn <- aggregate(list(nIsl = I(IslData$VALUE))
+#                    ,list(SITE = IslData$SITE)
+#                    ,count
+#                    )
+# 
+#     siIsland <- merge(ss, nn, by='SITE', all=TRUE, sort=FALSE)
+#     siIsland <- within(siIsland
+# 					  ,{VALUE <- ifelse(is.na(nIsl), 0, nIsl / nSta)
+# 					    METRIC <- 'SIFPISLAND'
+# 					    nIsl <- NULL
+# 					    nSta <- NULL
+# 				  	   }
+# 		  			  )
+#     intermediateMessage('.2')
+# 
+ 	return(siIsland)
 }
 
 
