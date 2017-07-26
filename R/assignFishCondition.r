@@ -113,16 +113,17 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
   
   # Need to account for cases where no missing MMI_FISH
   cond.mmi.1 <- merge(inMMI.1,cond.tholds,by='ECO9',all.x=T) %>%
-    mutate(FISH_MMI_COND = ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good' 
+    plyr::mutate(FISH_MMI_COND = ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good' 
                           , ifelse(MMI_FISH < fp, 'Poor'
                           , ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA)))) %>%
-    mutate(FISH_MMI_COND=ifelse(!is.na(FISH_MMI_COND), FISH_MMI_COND
+    plyr::mutate(FISH_MMI_COND=ifelse(!is.na(FISH_MMI_COND), FISH_MMI_COND
                          , ifelse(is.na(MMI_FISH) & is.na(TOTLNIND), 'Not Assessed'
                          , ifelse(is.na(MMI_FISH) & TOTLNIND==0 & WSAREA > 2, 'Poor'
-                                  , 'Not Assessed'))))
+                                  , 'Not Assessed')))) %>%
+    dplyr::select(-gf, -fp)
   
   condOut <- subset(cond.mmi.1, select = c(sampID, 'FISH_MMI_COND')) %>%
-    merge(inMMI, by = c(sampID))
+    merge(inMMI, by = c(sampID)) 
   
   return(cond.mmi.1)
   

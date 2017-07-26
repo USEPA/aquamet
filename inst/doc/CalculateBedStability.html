@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2017-05-30" />
+<meta name="date" content="2017-07-14" />
 
 <title>Calculating Relative Bed Stability</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Calculating Relative Bed Stability</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2017-05-30</em></h4>
+<h4 class="date"><em>2017-07-14</em></h4>
 
 
 
@@ -86,16 +86,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2>2.1 Channel morphology metrics</h2>
 <p>Several channel morphology metrics are required as inputs for <code>nrsaBedStability()</code>. These include mean and standard deviation for depth, for wadeable and boatable sites separately, mean bankfull height and width, and mean wetted width. To run the <code>nrsaChannelMorphology()</code> function, all data inputs are required. Boatable inputs for bankfull height and width, wetted width, and incised height are recorded in the channel/riparian transect data, and depth measurements come from thalweg data. Wadeable inputs for bankfull height and width and incised height come from channel/riparian cross-section data, and depth and wetted width come from thalweg profile data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(aquamet)
-<span class="kw">library</span>(stringr)</code></pre></div>
-<pre><code>## Warning: package 'stringr' was built under R version 3.3.3</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(plyr)</code></pre></div>
-<pre><code>## Warning: package 'plyr' was built under R version 3.3.3</code></pre>
-<pre><code>## 
-## Attaching package: 'plyr'</code></pre>
-<pre><code>## The following objects are masked from 'package:aquamet':
-## 
-##     count, rename</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(bankgeomEx)</code></pre></div>
+<span class="kw">library</span>(stringr)
+<span class="kw">library</span>(plyr)
+
+<span class="kw">head</span>(bankgeomEx)</code></pre></div>
 <pre><code>##       SITE TRANSECT BANK SAMPLE_TYPE PARAMETER VALUE UNITS FLAG
 ## 5587 10002        I   LF  PHAB_CHANW  UNDERCUT   0.6     M     
 ## 5588 10002        I NONE  PHAB_CHANW   BANKHGT   1.9     M     

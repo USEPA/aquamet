@@ -117,3 +117,17 @@ head(outMMI)
 
 ```
 Again, note that there are missing values for the metrics and metric scores not included in the MMI for a given site. If there is a mix of ecoregions in the input dataset, there will be these missing values for some metrics and metric scores.
+
+# 4 Assign NRSA fish condition
+
+Using the output from \code{calcFishMMI()}, we can now assign fish assemblage condition to these sites using the
+\code{assignFishCondition()} function. Additional variables, including watershed area (km2) and total number of individuals 
+collected would be required to assign condition only if we had missing MMI values. Since we do not, we do not need to add
+these variables. See the example for \code{assignFishCondition} to see examples for that scenario.
+
+```{r fish condition}
+outCond <- assignFishCondition(outMMI, sampID='UID', ecoreg='ECO9', mmi='MMI_FISH')
+
+outCond
+
+```

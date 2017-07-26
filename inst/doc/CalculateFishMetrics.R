@@ -59,3 +59,9 @@ outMMI <- calcFishMMI(outMets.1, sampID='UID', ecoreg='ECO9', lwsarea='LWSAREA')
 head(outMMI)
 
 
+## ----fish condition------------------------------------------------------
+outCond <- assignFishCondition(outMMI, sampID='UID', ecoreg='ECO9', mmi='MMI_FISH')
+
+outCond
+
+
