@@ -57,6 +57,8 @@
 #' 
 #' \item{RVegQ}{Observed riparian vegetation complexity index}
 #' 
+#' \item{RVegQc3x15}{Expected riparian vegetation complexity index}
+#' 
 #' \item{RVegQc3OE}{Riparian vegetation complexity indicator 
 #' value, O/E score}
 #' 
@@ -144,7 +146,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   dfOut <- merge(dfOE,tholds,by='ecoreg') %>%
   plyr::mutate(RVEG_COND=ifelse(is.na(RVegQc3OE),'Not Assessed',ifelse(RVegQc3OE>gf,'Good'
                         ,ifelse(RVegQc3OE>fp,'Fair','Poor')))) %>%
-  subset(select=c(sampID,'RVegQ','RVegQc3OE','RVEG_COND'))  
+  subset(select=c(sampID,'RVegQ','RVegQc3x15','RVegQc3OE','RVEG_COND'))  
   
 }
 
@@ -210,6 +212,8 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' \item{sampID}{The variables in the argument \emph{sampID}}
 #' 
 #' \item{LitCvrQ}{Observed littoral vegetation complexity index}
+#' 
+#' \item{LitCvrQc3x15}{Expected littoral vegetation complexity index}
 #' 
 #' \item{LitCvrQc3OE}{Littoral vegetation complexity indicator 
 #' value, O/E score}
@@ -301,7 +305,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   dfOut <- merge(dfOE,tholds,by='ecoreg') %>%
     plyr::mutate(LITCVR_COND=ifelse(is.na(LitCvrQc3OE),'Not Assessed',ifelse(LitCvrQc3OE>gf,'Good'
                                                                       ,ifelse(LitCvrQc3OE>fp,'Fair','Poor')))) %>%
-    subset(select=c(sampID,'LitCvrQ','LitCvrQc3OE','LITCVR_COND'))
+    subset(select=c(sampID,'LitCvrQ','LitCvrQc3x15','LitCvrQc3OE','LITCVR_COND'))
   
   
 }
@@ -346,8 +350,11 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' \itemize{
 #' \item{sampID}{The variables in the argument \emph{sampID}}
 #' 
-#' \item{LitRipCvrQ}{Combined observed riparian and littoral vegetation
+#' \item{LitRipCvrQ}{Observed combined riparian and littoral vegetation
 #' complexity index}
+#' 
+#' \item{LitRipCvrQc3x15}{Expected combined riparian and littoral
+#' vegetation complexity index}
 #' 
 #' \item{LitRipCvrQc3OE}{Littoral and riparian vegetation complexity 
 #' Observed/Expected (O/E) value}
@@ -426,7 +433,7 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   dfOut <- merge(dfOE,tholds,by='ecoreg') %>%
     plyr::mutate(LITRIPCVR_COND=ifelse(is.na(LitRipCvrQc3OE),'Not Assessed',ifelse(LitRipCvrQc3OE>gf,'Good'
                                                                           ,ifelse(LitRipCvrQc3OE>fp,'Fair','Poor')))) %>%
-    subset(select=c(sampID,'LitRipCvrQ','LitRipCvrQc3OE','LITRIPCVR_COND'))
+    subset(select=c(sampID,'LitRipCvrQ','LitRipCvrQc3x15','LitRipCvrQc3OE','LITRIPCVR_COND'))
   
   
 }

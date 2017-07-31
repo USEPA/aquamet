@@ -60,6 +60,8 @@ A data frame containing:
 
 \item{RVegQ}{Observed riparian vegetation complexity index}
 
+\item{RVegQc3x15}{Expected riparian vegetation complexity index}
+
 \item{RVegQc3OE}{Riparian vegetation complexity indicator 
 value, O/E score}
 

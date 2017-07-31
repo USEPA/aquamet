@@ -39,8 +39,11 @@ A data frame containing:
 \itemize{
 \item{sampID}{The variables in the argument \emph{sampID}}
 
-\item{LitRipCvrQ}{Combined observed riparian and littoral vegetation
+\item{LitRipCvrQ}{Observed combined riparian and littoral vegetation
 complexity index}
+
+\item{LitRipCvrQc3x15}{Expected combined riparian and littoral
+vegetation complexity index}
 
 \item{LitRipCvrQc3OE}{Littoral and riparian vegetation complexity 
 Observed/Expected (O/E) value}

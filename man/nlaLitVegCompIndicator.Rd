@@ -63,6 +63,8 @@ A data frame containing:
 
 \item{LitCvrQ}{Observed littoral vegetation complexity index}
 
+\item{LitCvrQc3x15}{Expected littoral vegetation complexity index}
+
 \item{LitCvrQc3OE}{Littoral vegetation complexity indicator 
 value, O/E score}
 
