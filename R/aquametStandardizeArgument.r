@@ -63,20 +63,25 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='in
         argName <- deparse(substitute(arg))
         rc <- aquametStandardizeArgument.checkStructure(arg, struct)
         if(is.character(rc)) {
-            msg <- sprintf("You blockhead, argument %s has a structure problem: %s", argName, rc)
+            msg <- sprintf("You blockhead, argument <<%s>> has a structure problem: %s", argName, rc)
             stop(msg)
             rc <- NULL
         }
         
         rc <- aquametStandardizeArgument.checkRange(arg, rangeLimits)
         if(is.character(rc)) {
-            msg <- sprintf("Warning for argument %s: %s", argName, rc)
-            print(msg)
+            if(!is.na(rc['error'])) {
+                msg <- sprintf("You blockhead, argument <<%s>> can not be range checked: ", argName, rc['error'])
+                stop(msg)
+            } else if(!is.na(rc['warning'])) {
+                msg <- sprintf("Warning for argument <<%s>> while performing range check: %s", argName, rc)
+                print(msg)
+            }
         }
 
         rc <- aquametStandardizeArgument.checkLegal(arg, legalValues)
         if(is.character(rc)) {
-            msg <- sprintf("You blockhead, argument %s has illegal values: %s", argName, rc)
+            msg <- sprintf("You blockhead, argument <<%s>> failed the check for illegal values: %s", argName, rc)
             stop(msg)
             rc <- NULL
         }
@@ -95,27 +100,128 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='in
 
 aquametStandardizeArgument.checkLegal <- function(arg, expectedLegal)
 # Checks the provided argument for expected structure.  Returns NULL on success,
-# or a character string describing the error if one is found.
+# or a character string describing the legal value problems if any are found.
 #
 {
-    if(length(expectedLegal) == 0) return(NULL)
+    if(length(expectedLegal) == 0) 
+        return(NULL)
+    if(!is.list(expectedLegal)) 
+        return("Legal value specification must be a named list")
+    if(length(names(expectedLegal)) == 0 | any(names(expectedLegal) == '')) 
+        return("Legal value specification elements must all be named")
 
 
     # Make sure specified columns exist
-    if(names(arg))
+    unexpectedCols <- setdiff(names(expectedLegal), names(arg))
+    if(length(unexpectedCols) > 0) {
+        return(sprintf("Legal values include specification for columns not in the data: %s"
+                      ,paste(unexpectedCols, collapse=', ')
+                      )
+              )
+    }
     
-    return(NULL)
+    errs <- NULL
+    for(el in names(expectedLegal)) {
+        legalValues <- expectedLegal[[el]]
+        if(is.null(legalValues)) next
+
+        illegalValues <- setdiff(arg[[el]], legalValues)
+        if(length(illegalValues) > 0)
+            errs <- c(errs
+                     ,sprintf("Column %s is expected to have values <%s>, but has illegal values <%s>"
+                             ,el
+                             ,paste(legalValues, collapse=',')
+                             ,paste(illegalValues, collapse=',')
+                             )
+                     )
+    }
+
+    if(!is.null(errs)) errs <- paste(errs, collapse='.  ')
+    return(errs)
 }
 
 
 aquametStandardizeArgument.checkRange <- function(arg, expectedRange)
 # Checks the provided argument for expected structure.  Returns NULL on success,
-# or a character string describing the error if one is found.
+# or a named character vector with one or two elements: 'error' describes problems 
+# making continued processing questionable, and 'warning' describing the range 
+# problems if any are found. If one of these elements is not returned or is NA
+# or '', then no such issues were detected.
 #
 {
+    # sanity checks
     if(length(expectedRange) == 0) return(NULL)
+    if(!is.list(expectedRange)) 
+        return(c(error="Range value specification must be a named list"))
+    if(length(names(expectedRange)) == 0 | any(names(expectedRange) == '')) 
+        return(c(error="Range value specification elements must all be named"))
 
-    return(NULL)
+    # Make sure specified columns exist
+    unexpectedCols <- setdiff(names(expectedRange), names(arg))
+    if(length(unexpectedCols) > 0) {
+        return(c(error=sprintf("Range values include specification for columns not in the data: %s"
+                              ,paste(unexpectedCols, collapse=', ')
+                              ))
+              )
+    }
+    
+    # Make sure specified columns are either integer or numeric
+    badTypes <- lapply(names(expectedRange)
+                      ,function(nn) {
+                          return(typeof(arg[[nn]]) %nin% c('integer','double'))
+                       }
+                      ) %>% unlist()
+    if(any(badTypes)) {
+        return(c(error=sprintf("Range checks on column %s require it to be either integer or double"
+                              ,paste(names(expectedRange)[badTypes], collapse=', ')
+                              ))
+              )
+    }
+
+    # make sure range specifications have exactly two values
+    badRanges <- lapply(expectedRange
+                       ,function(el) {
+                           return(length(el) %nin% c(0,2))
+                        }
+                       ) %>% unlist()
+    if(any(badRanges)) {
+        return(c(error=sprintf("Range specifications for %s must either be NULL or have two values - low, high"
+                              ,paste(names(expectedRange)[badRanges], collapse=', ')
+                              ))
+              )
+    }
+
+    errs <- NULL
+    for(nn in names(expectedRange)) {
+
+        rangeValues <- expectedRange[[nn]]
+        if(is.null(rangeValues)) next
+
+        if(is.na(rangeValues[1])) {
+            tooLow <- 0
+            tooLowText <- "unspecified minimum"
+        } else {
+            tooLow <- protectedSum(arg[[nn]] < rangeValues[1], na.rm=TRUE)
+            tooLowText <- sprintf("%s values below %s", tooLow, rangeValues[1])
+        }
+        
+        if(is.na(rangeValues[2])) {
+            tooHigh <- 0
+            tooHighText <- "unspecified maximum"
+        } else {
+            tooHigh <- protectedSum(arg[[nn]] > rangeValues[2], na.rm=TRUE)
+            tooHighText <- sprintf("%s values above %s", tooHigh, rangeValues[2])
+        }
+        
+        if(tooLow > 0 | tooHigh > 0) {
+            errs <- c(errs
+                     ,sprintf("Column %s has %s, and %s",nn, tooLowText, tooHighText)
+                     )
+        }
+    }
+
+    if(!is.null(errs)) errs <- c(warning = paste(errs, collapse='.  '))
+    return(errs)
 }
 
 
