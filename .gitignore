@@ -7,3 +7,4 @@ aquamet.r
 .gitignore.gz
 aquamet.Rproj
 testResults_*.html
+inst/doc
