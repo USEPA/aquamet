@@ -91,7 +91,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   names(x)[names(x)==hipwWalls] <- 'hipwWalls'
 
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
-                       ,elev=ifelse(elev<0,0,elev)
+    #                   ,elev=ifelse(elev<0,0,elev)
                         ,elevXlat=elev*lat
                         ,l_area=log10(area)
                         ,ssiNatBedBld=ifelse(hipwWalls>=0.10,0,(ssfcBedrock + ssfcBoulders)))

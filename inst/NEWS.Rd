@@ -1,7 +1,20 @@
 \name{NEWS}
 \title{aquamet News}
 
+\section{CHANGES IN aquamet VERSION 2.4.6 (Released 2017-08-30)}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item Added functions to calculate NLA physical habitat indicators. 
+      
+    }
+  }
 
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item None.
+    }
+  }
+}
 \section{CHANGES IN aquamet VERSION 2.4 (Released 2016-11-01)}{
   \subsection{NEW FEATURES}{
     \itemize{
