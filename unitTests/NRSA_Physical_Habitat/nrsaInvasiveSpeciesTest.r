@@ -8,6 +8,8 @@
 #          expect f_none values in response.
 #  2/26/16 cws moved nrsaInvasiveSpecies.singleSpeciesTest and 
 #          nrsaInvasiveSpecies.ip_scoreTest here from nrsaInvasiveSpecies.r.
+#  6/28/17 cws Updated nrsaInvasiveSpecies.ip_scoreTest() so row names in actual
+#          response match expected.
 #
 
 nrsaInvasiveSpeciesTest <- function()
@@ -640,6 +642,8 @@ nrsaInvasiveSpecies.ip_scoreTest <- function()
                           ,stringsAsFactors=FALSE
                           )
     actual <- nrsaInvasiveSpecies.ip_score(testData)
+    row.names(actual) <- NULL
+
     checkEquals(expected, actual, "Incorrect ip_score results")
 }
 

@@ -1,12 +1,10 @@
 .Rproj.user
+aquamet.r
 .Rhistory
 .RData
-<<<<<<< HEAD
-=======
 .Rbuildignore.gz
 .Rhistory.gz
 .gitignore.gz
 aquamet.Rproj
-testResults_aquamet.html
->>>>>>> remoteAquamet/master
+testResults_*.html
 inst/doc

@@ -1,22 +1,69 @@
-# metsStationInformation.r
+# nlaStationInformation.r
 # RUnit tests
+#
+#  7/18/17 cws Created from metsStationInformation.r
+#  7/19/17 cws Modified test for 2007 data to update input for isIsland argument
+#          reflecting changes in the metrics calculation. This means making
+#          false values of ISLAND explicitly present in the test with 2007 data.
+#          It also results in a change in values for 2012 data for sites 6683 
+#          and 6794 for which there is no ISLAND data; previously these resolved 
+#          to 0 but are now absent.
+#
 
 
-metsStationInformationTest <- function()
-# unit test for metsStationInformation
+nlaStationInformationTest <- function()
+# unit test for nlaStationInformation
 {
-	metsStationInformationTest.2007()
-	metsStationInformationTest.2012()
+	nlaStationInformationTest.2007()
+	nlaStationInformationTest.2012()
 }
 
 
-
-metsStationInformationTest.2007 <- function()
-# Unit test for metsLittoralMacrohabitat using 2007 data
+nlaStationInformationTest.2007 <- function()
+# Unit test for nlaLittoralMacrohabitat using 2007 data. This differs from 2012
+# data in having depths in both feet and meters, and ISLAND is either X or absent.
 {
-	testData <- metsStationInformationTest.createTestData2007()
-	expected <- metsStationInformationTest.createExpectedResults2007()
-	actual <- metsStationInformation(testData)
+	testData <- nlaStationInformationTest.createTestData2007()
+	expected <- nlaStationInformationTest.createExpectedResults2007()
+	# actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER == 'ISLAND') %>% select(SITE,STATION,VALUE)
+	#                                ,stationDepth = testData %>% 
+	#                                                subset(PARAMETER == 'DEPTH_AT_STATION' & !is.na(UNITS)) %>% 
+	#                                                mutate(VALUE = ifelse(toupper(UNITS) %in% 'FT', as.numeric(VALUE) * 0.3048, VALUE)) %>% 
+	#                                                select(SITE,STATION,VALUE)
+	#                                )
+	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER == 'ISLAND') %>% 
+	                                           merge(testData %>% select(SITE, STATION) %>% unique() 
+	                                                ,by=c('SITE','STATION'), all=TRUE
+	                                                ) %>%
+	                                           mutate(VALUE = ifelse(is.na(VALUE), 'NO', 'YES')) %>%
+	                                           select(SITE,STATION,VALUE)
+	                               ,stationDepth = testData %>% 
+	                                               subset(PARAMETER == 'DEPTH_AT_STATION' & !is.na(UNITS)) %>% 
+	                                               mutate(VALUE = ifelse(toupper(UNITS) %in% 'FT', as.numeric(VALUE) * 0.3048, VALUE)) %>% 
+	                                               select(SITE,STATION,VALUE)
+	                               )
+	
+	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
+	
+	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
+	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
+	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
+#return(actual)	
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+#return(diff)
+	checkTrue(is.null(diff), "Incorrect calculation of metrics")
+}
+
+
+nlaStationInformationTest.2012 <- function()
+# Unit test for nlaLittoralMacrohabitat using 2012 data.  All depths are in meters,
+# and ISLAND is N, NO or YES.
+{
+	testData <- nlaStationInformationTest.createTestData2012()
+	expected <- nlaStationInformationTest.createExpectedResults2012()
+	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER=='ISLAND') %>% select(SITE,STATION,VALUE)
+	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE)
+	                               )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -24,36 +71,17 @@ metsStationInformationTest.2007 <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-9)
+return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
 
-
-metsStationInformationTest.2012 <- function()
-# Unit test for metsLittoralMacrohabitat using 2007 data
-{
-	testData <- metsStationInformationTest.createTestData2012()
-	expected <- metsStationInformationTest.createExpectedResults2012()
-	actual <- metsStationInformation(testData)
-	
-	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
-	
-	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
-	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
-	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
-	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-9)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics")
-}
-
-
-
-metsStationInformationTest.createTestData2007 <- function()
+nlaStationInformationTest.createTestData2007 <- function()
 # Test data from 2007 data.  UNITS is used to allow depth to be expressed in ft or m
 # and island presence is coded as X, and absence is coded by the absence of a record. 
 #
-# UID	Description
+# SITE	Description
 # 7468	9 stations with data; UNITS has 1 M, 8 m; zero ISLAND
 # 7474	10 stations with data; UNITS has 3 ft, 1 FT, 6 m; zero ISLAND
 # 7481	10 stations with data; UNITS all ft; zero ISLAND
@@ -65,7 +93,7 @@ metsStationInformationTest.createTestData2007 <- function()
 # 8022	10 stations with data; UNITS has 1 ft, 2 FT, 4 m, 2 M, 1 NA; zero ISLAND
 #
 {
-	tc <- textConnection("   UID STATION        PARAMETER RESULT UNITS
+	tc <- textConnection("   SITE STATION        PARAMETER VALUE UNITS
 							7468       A DEPTH_AT_STATION     15 M         
 							7474       A DEPTH_AT_STATION     12 FT        
 							7481       A DEPTH_AT_STATION      6 ft        
@@ -171,11 +199,10 @@ metsStationInformationTest.createTestData2007 <- function()
 }
 
 
-
-metsStationInformationTest.createExpectedResults2007 <- function()
+nlaStationInformationTest.createExpectedResults2007 <- function()
 #
 {
-	tc <- textConnection("   UID  PARAMETER             RESULT
+	tc <- textConnection("   SITE  METRIC             VALUE
 							7468 SIFPISLAND                  0
 							7468   SINDEPTH                  9
 							7468   SIVDEPTH    4.5467021015237
@@ -217,18 +244,17 @@ metsStationInformationTest.createExpectedResults2007 <- function()
 	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	close(tc)
 	
-	fake$RESULT <- as.character(fake$RESULT)
+	fake$VALUE <- as.character(fake$VALUE)
 	return(fake)		
 	
 }
 
 
-
-metsStationInformationTest.createTestData2012 <- function()
+nlaStationInformationTest.createTestData2012 <- function()
 # Test data from 2012 data.  UNITS is absent and thus depths are assumed to be 
 # in meters, and island presence is coded as N, NO, Y, YES. 
 #
-# UID		Description
+# SITE		Description
 # 6160		10 stations of data, ISLAND 10 NO, DEPTH_AT_STATION has 10 values
 # 6293		10 stations of data, ISLAND 2 NO, DEPTH_AT_STATION has 10 values
 # 6319		10 stations of data, ISLAND 8 NO, DEPTH_AT_STATION has 10 values
@@ -238,8 +264,10 @@ metsStationInformationTest.createTestData2012 <- function()
 # 6794		10 stations of data, ISLAND all absent, DEPTH_AT_STATION has 10 value0
 # 7830		7 stations of data, ISLAND 6 NO, 1 YES, DEPTH_AT_STATION has 7 values
 # 8762		10 stations of data, ISLAND 7 NO, 3 YES, DEPTH_AT_STATION has 10 values
+# 1         7 stations of data, ISLAND is NA for all
+# 2         7 stations of data, ISLAND is NA for 5
 {
-	tc <- textConnection("   UID STATION        PARAMETER RESULT
+	tc <- textConnection("   SITE STATION        PARAMETER VALUE
 							6160       A DEPTH_AT_STATION    3.6
 							6160       A           ISLAND     NO
 							6160       B DEPTH_AT_STATION    2.3
@@ -347,6 +375,21 @@ metsStationInformationTest.createTestData2012 <- function()
 						 1000158       H           ISLAND      N
 						 1000158       I           ISLAND      N
 						 1000158       J           ISLAND      N
+                               1       A           ISLAND     NA
+                               1       B           ISLAND     NA
+                               1       C           ISLAND     NA
+                               1       D           ISLAND     NA
+                               1       E           ISLAND     NA
+                               1       F           ISLAND     NA
+                               1       G           ISLAND     NA
+                               2       A           ISLAND     NA
+                               2       B           ISLAND     NA
+                               2       C           ISLAND     NA
+                               2       D           ISLAND     NA
+                               2       E           ISLAND     NA
+                               2       F           ISLAND     YES
+                               2       G           ISLAND     NO
+
 					")
 	
 	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
@@ -356,14 +399,13 @@ metsStationInformationTest.createTestData2012 <- function()
 }
 
 
-
-metsStationInformationTest.createExpectedResults2012 <- function()
+nlaStationInformationTest.createExpectedResults2012 <- function()
 # Based on SAS calculations and modified to reduce floating point precision and
 # to add SIFPISLAND values of 0 to sites where ISLAND is totally absent (6683,
 # 6794).  These actually 'should' be missing values, but this is consistent  
 # with 2007 calculation method.
 {
-	tc <- textConnection("   UID  PARAMETER  RESULT
+	tc <- textConnection("   SITE  METRIC  VALUE
 							6160 SIFPISLAND  0
 							6160   SINDEPTH  10
 							6160   SIVDEPTH  0.999388702046295	# was 0.9993887019999999621334
@@ -380,11 +422,11 @@ metsStationInformationTest.createExpectedResults2012 <- function()
 							6362   SINDEPTH  1
 							6362   SIVDEPTH  NA
 							6362   SIXDEPTH  1
-							6683 SIFPISLAND  0					# added to SAS results
+						#	6683 SIFPISLAND  0					# added to SAS results, then removed from expected results after updating calling interface, see history comments.
 							6683   SINDEPTH  1
 							6683   SIVDEPTH  NA
 							6683   SIXDEPTH  1.1				# was 1.1000000000000000888178
-							6794 SIFPISLAND  0					# added to SAS results
+						#	6794 SIFPISLAND  0					# added to SAS results, then removed from expected results after updating calling interface, see history comments.
 							6794   SINDEPTH  10
 							6794   SIVDEPTH  0.424918292799399	# was 0.4249182927999999859203
 							6794   SIXDEPTH  0.55				# was 0.5500000000000000444089
@@ -397,6 +439,8 @@ metsStationInformationTest.createExpectedResults2012 <- function()
 							8762   SIVDEPTH  0.239443799947573	# was 0.2394437999000000039107
 							8762   SIXDEPTH  1.02				# was 1.0200000000000000177636
 						 1000158 SIFPISLAND  0
+						       1 SIFPISLAND  NA
+						       2 SIFPISLAND  0.5
 					")
 	
 	fake <- read.table(tc, header=TRUE, colClasses=c('integer','character','character')
@@ -406,7 +450,6 @@ metsStationInformationTest.createExpectedResults2012 <- function()
 	
 	return(fake)		
 }
-
 
 
 # end of file

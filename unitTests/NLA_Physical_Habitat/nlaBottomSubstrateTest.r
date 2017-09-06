@@ -1,25 +1,66 @@
-# metsBottomSubstrate.r
+# nlaBottomSubstrate.r
 # RUnit tests
+#
+#  7/07/17 cws Renamed from metsBottomSubstrate.r to nlaBottomSubstrate.r and
+#          modified for updated calling interface of nlaBottomSubstrate. Removed
+#          stubs for undeveloped functions.  Added test cases for absent arguments.
+#  7/10/17 cws Extended unit test to include absent arguments and missing values
+#          for specific values (e.g. ODOR=NONE, COLOR=BROWN). Case of missing
+#          values for all of a substrate code is not tested as the independent
+#          calculations would be time consuming for now.
+#  7/11/17 cws Split substrate argument into individual classes, to be consistent
+#          with general interface.
+#  7/17/17 cws Changed boulders argument to boulder, so all the classes are singular.
+#
 
 
-metsBottomSubstrateTest <- function()
-# unit test for metsBottomSubstrate.
+nlaBottomSubstrateTest <- function()
+# unit test for nlaBottomSubstrate.
 # Test with 2012 data is not performed because the only difference between the
 # years is the coding of odor and color, and the code (and 2007 test data) are
 # modified to use the 2012 coding.
 {
-	metsBottomSubstrateTest.2007()
-#	metsBottomSubstrateTest.2012()
+    nlaBottomSubstrateTest.fullData()       # all arguments present with all codes
+    nlaBottomSubstrateTest.absentData()     # some arguments present
+    nlaBottomSubstrateTest.partialData()    # all arguments present but not all codes
+#    nlaBottomSubstrateTest.miscodedData()   # all arguments present but codes are not expected.
 }
 
-
-
-metsBottomSubstrateTest.2007 <- function()
-#
-{
-	testData <- metsBottomSubstrateTest.createTestData2007()
-	expected <- metsBottomSubstrateTest.createExpectedResults2007()
-	actual <- metsBottomSubstrate(testData)
+nlaBottomSubstrateTest.fullData <- function()
+# Test case with full data
+{ 
+	testData <- nlaBottomSubstrateTest.createTestData()
+	
+	expected <- nlaBottomSubstrateTest.createExpectedResults()
+	actual <- nlaBottomSubstrate(color = testData %>% subset(PARAMETER %in% 'BS_COLOR') %>% 
+	                                     select(SITE, STATION, VALUE)
+	                            ,odor = testData %>% subset(PARAMETER %in% 'ODOR') %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulder = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -27,35 +68,258 @@ metsBottomSubstrateTest.2007 <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
+}
+
+nlaBottomSubstrateTest.absentData <- function()
+# Test cases with absent arguments
+{	
+	testData <- nlaBottomSubstrateTest.createTestData()
+	expected <- nlaBottomSubstrateTest.createExpectedResults()
+
+	actual <- nlaBottomSubstrate(color=NULL
+	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
+	                                  select(SITE, STATION, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulder = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            )
+	
+	diff <- dfCompare(expected %>% subset(METRIC %nin% c('BSFBLACK','BSFBROWN','BSFGRAY','BSFRED','BSFOTHERCOLOR','BSNCOLOR','BSOCOLOR'))
+	                 ,actual
+	                 ,c('SITE','METRIC'), zeroFudge=1e-14
+	                 )
+	checkTrue(is.null(diff), "Incorrect calculation of metrics when color is NULL")
+	
+	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>% 
+	                                   select(SITE, STATION, VALUE)
+	                            ,odor=NULL
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulder = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            )
+	
+	diff <- dfCompare(expected %>% subset(METRIC %nin% c('BSFANOXIC','BSFCHEMICAL','BSFH2S','BSFNONEODOR','BSFOIL','BSFOTHERODOR','BSNODOR','BSOODOR'))
+	                 ,actual
+	                 ,c('SITE','METRIC'), zeroFudge=1e-14
+	                 )
+	checkTrue(is.null(diff), "Incorrect calculation of metrics when odor is NULL")
+	
+	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>% 
+	                                   select(SITE, STATION, VALUE)
+	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
+	                                  select(SITE, STATION, VALUE)
+	                            # all substrates default to null so are not specified
+	                            )
+	
+	diff <- dfCompare(expected %>% subset(METRIC %in% c('BSFBLACK','BSFBROWN','BSFGRAY','BSFRED','BSFOTHERCOLOR','BSNCOLOR','BSOCOLOR'
+	                                                   ,'BSFANOXIC','BSFCHEMICAL','BSFH2S','BSFNONEODOR','BSFOIL','BSFOTHERODOR','BSNODOR','BSOODOR'
+	                                                   )
+	                                     )
+	                 ,actual
+	                 ,c('SITE','METRIC'), zeroFudge=1e-14
+	                 )
+	checkTrue(is.null(diff), "Incorrect calculation of metrics when substrate is NULL")
+	
 	
 }
 
+nlaBottomSubstrateTest.partialData <- function()
+# Test cases with arguments do not have all values present.
+{	
+	testData <- nlaBottomSubstrateTest.createTestData()
 
+	# Test case when data have no BROWN color
+	expected <- nlaBottomSubstrateTest.createExpectedResults() %>% 
+	            subset(!(SITE %in% c(7470,7519,7545) & 
+	                     METRIC %in% c('BSFBLACK','BSFBROWN','BSFGRAY','BSFRED','BSFOTHERCOLOR','BSNCOLOR','BSOCOLOR')
+	                    )
+	                  ) %>%
+	            mutate(VALUE=ifelse(SITE==7472,
+    	                            ifelse(METRIC=='BSFGRAY',  1
+	                               ,ifelse(METRIC=='BSFBROWN', 0
+	                               ,ifelse(METRIC=='BSNCOLOR', 3
+	                               ,ifelse(METRIC=='BSOCOLOR', 'GRAY', VALUE
+	                                ))))
+	                        ,ifelse(SITE==7498,
+	                                ifelse(METRIC=='BSFBLACK', 0.75
+	                               ,ifelse(METRIC=='BSFBROWN', 0
+	                               ,ifelse(METRIC=='BSFGRAY',  0.25
+	                               ,ifelse(METRIC=='BSNCOLOR', 4, VALUE
+	                                ))))
+	                        ,VALUE
+	                        ))
+	                  )
 
-metsBottomSubstrateTest.2012 <- function()
-{
-	testData <- metsBottomSubstrateTest.createTestData2012()
-	expected <- metsBottomSubstrateTest.createExpectedResults2012()
-	actual <- metsBottomSubstrate(testData)
+	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>%
+	                                   mutate(VALUE = ifelse(VALUE == 'BROWN', NA, VALUE)) %>% 
+	                                   select(SITE, STATION, VALUE)
+	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
+	                                  select(SITE, STATION, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulder = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            )
 	
-	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
+	diff <- dfCompare(expected 
+	                ,actual
+	                ,c('SITE','METRIC'), zeroFudge=1e-14
+	                )
+	checkTrue(is.null(diff), "Incorrect calculation of metrics when color BROWN is all absent")
 	
-	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
-	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
-	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
+
+	# Test case when data have no NONE odor
+	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>%
+	                                   select(SITE, STATION, VALUE)
+	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
+                                      mutate(VALUE = ifelse(VALUE == 'NONE', NA, VALUE)) %>% 
+	                                  select(SITE, STATION, VALUE)
+	                            ,bedrock = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_BEDROCK')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,boulder = testData %>% 
+	                                        subset(PARAMETER %in% c('BS_BOULDERS')) %>% 
+	                                        select(SITE, STATION, VALUE)
+	                            ,cobble = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_COBBLE')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,gravel = testData %>% 
+	                                      subset(PARAMETER %in% c('BS_GRAVEL')) %>% 
+	                                      select(SITE, STATION, VALUE)
+	                            ,organic = testData %>% 
+	                                       subset(PARAMETER %in% c('BS_ORGANIC')) %>% 
+	                                       select(SITE, STATION, VALUE)
+	                            ,sand = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SAND')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,silt = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_SILT')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            ,wood = testData %>% 
+	                                    subset(PARAMETER %in% c('BS_WOOD')) %>% 
+	                                    select(SITE, STATION, VALUE)
+	                            )	
+	expected <- nlaBottomSubstrateTest.createExpectedResults() %>% 
+	            mutate(VALUE=ifelse(SITE==7470,
+    	                            ifelse(METRIC=='BSFNONEODOR',  0        # was 1 
+	                               ,ifelse(METRIC=='BSNODOR', 0             # was 10 
+	                               ,ifelse(METRIC=='BSOODOR', '', VALUE     # was NONE
+	                                )))
+	                        ,ifelse(SITE==7472,
+	                                ifelse(METRIC=='BSFNONEODOR', 0         # was 2/9
+	                               ,ifelse(METRIC=='BSNODOR', 7, VALUE      # was 9
+	                                ))
+	                        ,ifelse(SITE==7498,
+	                                ifelse(METRIC=='BSFNONEODOR', 0         # was 0.6
+	                               ,ifelse(METRIC=='BSNODOR', 2             # was 5
+	                               ,ifelse(METRIC=='BSOODOR', 'ANOXIC', VALUE  # was NONE
+	                                )))
+	                        ,ifelse(SITE==7519,
+	                                ifelse(METRIC=='BSFNONEODOR', 0         # was 10/11
+	                               ,ifelse(METRIC=='BSNODOR', 1             # was 11
+	                               ,ifelse(METRIC=='BSOODOR', 'H2S', VALUE  # was 9
+	                                )))
+	                        ,ifelse(SITE==7545,
+	                                ifelse(METRIC=='BSFNONEODOR', 0         # was 1
+	                               ,ifelse(METRIC=='BSNODOR', 0             # was 10
+	                               ,ifelse(METRIC=='BSOODOR', '', VALUE     # was NONE
+	                                )))
+	                        ,VALUE
+	                        )))))
+	                  )
+	diff <- dfCompare(expected 
+	                 ,actual
+	                 ,c('SITE','METRIC'), zeroFudge=1e-14
+	                 )
+	checkTrue(is.null(diff), "Incorrect calculation of metrics when odor NONE is all missing")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 	
+	# Test case when data have no SAND substrate is not implemented, would require
+	# complex independent calcualtions.
+# 	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>%
+# 	                                   select(SITE, STATION, VALUE)
+# 	                            ,odor=testData %>% subset(PARAMETER %in% 'ODOR') %>% 
+# 	                                  select(SITE, STATION, VALUE)
+# 	                            ,substrate=testData %>% 
+# 	                             dplyr::rename(CLASS=PARAMETER) %>%
+#                                  mutate(VALUE = ifelse(VALUE == 'BS_SAND', NA, VALUE)) %>% 
+# 	                             select(SITE, STATION, CLASS, VALUE)
+# 	                            )	
+# 
+# 	diff <- dfCompare(expected 
+# 	                 ,actual
+# 	                 ,c('SITE','METRIC'), zeroFudge=1e-14
+# 	                 )
+# 	checkTrue(is.null(diff), "Incorrect calculation of metrics when substrate lacks BS_SAND")
 }
 
-
-
-metsBottomSubstrateTest.createTestData2007 <- function()
+nlaBottomSubstrateTest.createTestData <- function()
 # Returns dataframe with test input using 2007 sites
-#	UID		Description
+#	SITE		Description
 #	7470	10 stations, each with all expected parameters 
 #	7472	10 stations, some parameters missing from 5 stations
 #	7498	5 stations with data, 5 have no data
@@ -64,7 +328,7 @@ metsBottomSubstrateTest.createTestData2007 <- function()
 #           case where substrate cover is NA but should probably be '0'.
 #
 {
-	tc <- textConnection("   UID STATION   PARAMETER RESULT
+	tc <- textConnection("   SITE STATION   PARAMETER VALUE
 							7470       A  BS_BEDROCK      0
 							7470       A BS_BOULDERS      0
 							7470       A   BS_COBBLE      0
@@ -428,22 +692,22 @@ metsBottomSubstrateTest.createTestData2007 <- function()
 	
 	# Modify 2007 data to use 2012 conventions
 	fake <- within(fake
-				  ,{RESULT <- ifelse(PARAMETER=='BS_COLOR'
-							  	 ,ifelse(RESULT == 'BL', 'BLACK',
-								  ifelse(RESULT == 'BR', 'BROWN',
-								  ifelse(RESULT == 'GY', 'GRAY',
-								  ifelse(RESULT == 'O',  'OTHER',
-								  ifelse(RESULT == 'RD', 'RED', 'UNKNOWNCOLOR'
+				  ,{VALUE <- ifelse(PARAMETER=='BS_COLOR'
+							  	 ,ifelse(VALUE == 'BL', 'BLACK',
+								  ifelse(VALUE == 'BR', 'BROWN',
+								  ifelse(VALUE == 'GY', 'GRAY',
+								  ifelse(VALUE == 'O',  'OTHER',
+								  ifelse(VALUE == 'RD', 'RED', 'UNKNOWNCOLOR'
 								  )))))
 							 ,ifelse(PARAMETER == 'BS_ODOR'
-								 ,ifelse(RESULT == 'A', 'ANOXIC',
-								  ifelse(RESULT == 'C', 'CHEMICAL',
-								  ifelse(RESULT == 'H', 'H2S',
-							  	  ifelse(RESULT == 'N', 'NONE',
-								  ifelse(RESULT == 'O', 'OTHER',
-							 	  ifelse(RESULT == 'P', 'OIL', 'UNKNOWNODOR'
+								 ,ifelse(VALUE == 'A', 'ANOXIC',
+								  ifelse(VALUE == 'C', 'CHEMICAL',
+								  ifelse(VALUE == 'H', 'H2S',
+							  	  ifelse(VALUE == 'N', 'NONE',
+								  ifelse(VALUE == 'O', 'OTHER',
+							 	  ifelse(VALUE == 'P', 'OIL', 'UNKNOWNODOR'
 								  ))))))
-							 ,RESULT
+							 ,VALUE
 							 ))
 					PARAMETER <- ifelse(PARAMETER=='BS_ODOR', 'ODOR', PARAMETER)
 				   }
@@ -453,13 +717,12 @@ metsBottomSubstrateTest.createTestData2007 <- function()
 }
 
 
-
-metsBottomSubstrateTest.createExpectedResults2007 <- function()
+nlaBottomSubstrateTest.createExpectedResults <- function()
 # Expected values taken from 2007 database and edited to correct
 # for floating point issues and change in how counts of absent data
 # are handled (changed from 0 to NA).
 {
-	tc <- textConnection("   UID      PARAMETER               RESULT
+	tc <- textConnection("  SITE         METRIC                VALUE
 							7470       BS16LDIA   -0.351820729134696
 							7470       BS25LDIA   -0.351820729134696
 							7470       BS50LDIA   -0.175910364567348
@@ -758,59 +1021,27 @@ metsBottomSubstrateTest.createExpectedResults2007 <- function()
 	
 	# Modify 2007 data to use 2012 coding
 	fake <- within(fake
-				  ,RESULT <- ifelse(PARAMETER=='BSOCOLOR'
+				  ,VALUE <- ifelse(METRIC=='BSOCOLOR'
 								   ,gsub('BL', 'BLACK', 
 								 	gsub('BR', 'BROWN',
 									gsub('GY', 'GRAY',
 									gsub('O',  'OTHER',
-									gsub('RD', 'RED', RESULT
+									gsub('RD', 'RED', VALUE
 									)))))
-							,ifelse(PARAMETER=='BSOODOR'
+							,ifelse(METRIC=='BSOODOR'
 								   ,gsub('A', 'ANOXIC',
 									gsub('C', 'CHEMICAL',
 									gsub('H', 'H2S',
 									gsub('N', 'NONE',
 									gsub('O', 'OTHER',
-									gsub('P', 'OIL', RESULT
+									gsub('P', 'OIL', VALUE
 									))))))
-							,RESULT
+							,VALUE
 							))
 				  )
 	
 	return(fake)		
 	
 }
-
-
-
-metsBottomSubstrateTest.createTestData2012 <- function()
-# wait to fill this in until we need to
-{
-	tc <- textConnection("   UID STATION     PARAMETER RESULT
-					")
-	
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	close(tc)
-	
-	return(fake)		
-	
-}
-
-
-
-metsBottomSubstrateTest.createExpectedResults2012 <- function()
-# wait to fill this in until we need to
-{
-	tc <- textConnection("   UID      PARAMETER RESULT
-					")
-	
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	close(tc)
-	
-	return(fake)		
-	
-}
-
-
 
 # end of file

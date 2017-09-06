@@ -1,22 +1,36 @@
-# metsLittoralMacrohabitat
+# nlaLittoralMacrohabitat
 # RUnit tests
+#   07/14/17 cws Renamed metsLittoralMacrohabitat to nlaLittoralMacrohabitat.
+#            Changed UID to SITE, RESULT to VALUE, and output uses METRIC instead
+#            of PARAMETER. Removed stubs for 2012 data, as that year did not
+#            include this data.  Extended test to include cases where some data
+#            are absent.
+#
 
-
-metsLittoralMacrohabitatTest <- function()
-# unit test for metsLittoralMacrohabitat
+nlaLittoralMacrohabitatTest <- function()
+# unit test for nlaLittoralMacrohabitat
 {
-	metsLittoralMacrohabitatTest.2007()
-	metsLittoralMacrohabitatTest.2012()
+	nlaLittoralMacrohabitatTest.2007()
 }
 
 
 
-metsLittoralMacrohabitatTest.2007 <- function()
-# Unit test for metsLittoralMacrohabitat using 2007 data
+nlaLittoralMacrohabitatTest.2007 <- function()
+# Unit test for nlaLittoralMacrohabitat using 2007 data
 {
-	testData <- metsLittoralMacrohabitatTest.createTestData2007()
-	expected <- metsLittoralMacrohabitatTest.createExpectedResults2007()
-	actual <- metsLittoralMacrohabitat(testData)
+	testData <- nlaLittoralMacrohabitatTest.createTestData2007()
+	
+	# Test with full data
+	expected <- nlaLittoralMacrohabitatTest.createExpectedResults2007()
+	actual <- nlaLittoralMacrohabitat(artificial = testData %>% subset(PARAMETER=='COVER_ARTIFICIAL') %>% select(SITE, STATION, VALUE)
+                                     ,boulders = testData %>% subset(PARAMETER=='COVER_BOULDERS') %>% select(SITE, STATION, VALUE)
+                                     ,coverExtent = testData %>% subset(PARAMETER=='COVER_CLASS') %>% select(SITE, STATION, VALUE)
+                                     ,humanDisturbance = testData %>% subset(PARAMETER=='HUMAN_DISTURBANCE') %>% select(SITE, STATION, VALUE)
+                                     ,noCover = testData %>% subset(PARAMETER=='COVER_NONE') %>% select(SITE, STATION, VALUE)
+                                     ,substrate = testData %>% subset(PARAMETER=='DOM_SUBSTRATE') %>% select(SITE, STATION, VALUE)
+                                     ,vegetation = testData %>% subset(PARAMETER=='COVER_VEG') %>% select(SITE, STATION, VALUE)
+                                     ,woody = testData %>% subset(PARAMETER=='COVER_WOODY') %>% select(SITE, STATION, VALUE)
+                                     )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -24,35 +38,89 @@ metsLittoralMacrohabitatTest.2007 <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")	
+	
+	# Test with absent cover type ARTIFICIAL
+	actual <- nlaLittoralMacrohabitat(artificial = NULL #testData %>% subset(PARAMETER=='COVER_ARTIFICIAL') %>% select(SITE, STATION, VALUE)
+                                     ,boulders = testData %>% subset(PARAMETER=='COVER_BOULDERS') %>% select(SITE, STATION, VALUE)
+                                     ,coverExtent = testData %>% subset(PARAMETER=='COVER_CLASS') %>% select(SITE, STATION, VALUE)
+                                     ,humanDisturbance = testData %>% subset(PARAMETER=='HUMAN_DISTURBANCE') %>% select(SITE, STATION, VALUE)
+                                     ,noCover = testData %>% subset(PARAMETER=='COVER_NONE') %>% select(SITE, STATION, VALUE)
+                                     ,substrate = testData %>% subset(PARAMETER=='DOM_SUBSTRATE') %>% select(SITE, STATION, VALUE)
+                                     ,vegetation = testData %>% subset(PARAMETER=='COVER_VEG') %>% select(SITE, STATION, VALUE)
+                                     ,woody = testData %>% subset(PARAMETER=='COVER_WOODY') %>% select(SITE, STATION, VALUE)
+                                     )
+	expected <- nlaLittoralMacrohabitatTest.createExpectedResults2007() %>%
+	            subset(METRIC %nin% 'LMFPARTIFICIAL') %>%
+	            mutate(VALUE = ifelse(SITE==7494,
+	                                  ifelse(METRIC=='LMFPBOULDERS',  3/6       # Now there are only 6 stations with cover data rather than 10
+	                                 ,ifelse(METRIC=='LMFPVEG',       3/6
+	                                 ,ifelse(METRIC=='LMFPWOODY',     3/6
+	                                 ,ifelse(METRIC=='LMNCOVERTYPES', 6, VALUE
+	                                  ))))
+	                          ,ifelse(SITE==7508,
+	                                  ifelse(METRIC=='LMFPBOULDERS',  1/8       # Now there are only 8 stations with cover data rather than 10
+	                                 ,ifelse(METRIC=='LMFPVEG',       7/8
+	                                 ,ifelse(METRIC=='LMFPWOODY',     3/8
+	                                 ,ifelse(METRIC=='LMNCOVERTYPES', 8, VALUE
+	                                  ))))
+	                          ,ifelse(SITE==8645,
+	                                  ifelse(METRIC=='LMFPBOULDERS',  1/8       # Now there are only 8 stations with cover data rather than 10
+	                                 ,ifelse(METRIC=='LMFPVEG',       8/8
+	                                 ,ifelse(METRIC=='LMNCOVERTYPES', 8, VALUE
+	                                  )))
+	                          ,VALUE    
+	                           )))
+	                  )
+	diff <- dfCompare(expected
+	                 ,actual
+	                 ,c('SITE','METRIC'), zeroFudge=1e-14
+	                 )
+	checkTrue(is.null(diff), "Incorrect calculation of metrics")	
+	
+	# Test with absent substrate
+	actual <- nlaLittoralMacrohabitat(artificial = testData %>% subset(PARAMETER=='COVER_ARTIFICIAL') %>% select(SITE, STATION, VALUE)
+                                     ,boulders = testData %>% subset(PARAMETER=='COVER_BOULDERS') %>% select(SITE, STATION, VALUE)
+                                     ,coverExtent = testData %>% subset(PARAMETER=='COVER_CLASS') %>% select(SITE, STATION, VALUE)
+                                     ,humanDisturbance = testData %>% subset(PARAMETER=='HUMAN_DISTURBANCE') %>% select(SITE, STATION, VALUE)
+                                     ,noCover = testData %>% subset(PARAMETER=='COVER_NONE') %>% select(SITE, STATION, VALUE)
+                                     ,substrate = NULL #testData %>% subset(PARAMETER=='DOM_SUBSTRATE') %>% select(SITE, STATION, VALUE)
+                                     ,vegetation = testData %>% subset(PARAMETER=='COVER_VEG') %>% select(SITE, STATION, VALUE)
+                                     ,woody = testData %>% subset(PARAMETER=='COVER_WOODY') %>% select(SITE, STATION, VALUE)
+                                     )
+	expected <- nlaLittoralMacrohabitatTest.createExpectedResults2007() %>%
+	            subset(METRIC %nin% c('LMFPBEDROCK','LMFPCOBBLE','LMFPMUD','LMFPSAND','LMNSUBSTRATE','LMOSUBSTRATE'))
+	diff <- dfCompare(expected
+	                 ,actual
+	                 ,c('SITE','METRIC'), zeroFudge=1e-14
+	                 )
+	checkTrue(is.null(diff), "Incorrect calculation of metrics")	
+	
+	# Test with absent humanDisturbance
+	actual <- nlaLittoralMacrohabitat(artificial = testData %>% subset(PARAMETER=='COVER_ARTIFICIAL') %>% select(SITE, STATION, VALUE)
+                                     ,boulders = testData %>% subset(PARAMETER=='COVER_BOULDERS') %>% select(SITE, STATION, VALUE)
+                                     ,coverExtent = testData %>% subset(PARAMETER=='COVER_CLASS') %>% select(SITE, STATION, VALUE)
+                                     ,humanDisturbance = NULL # testData %>% subset(PARAMETER=='HUMAN_DISTURBANCE') %>% select(SITE, STATION, VALUE)
+                                     ,noCover = testData %>% subset(PARAMETER=='COVER_NONE') %>% select(SITE, STATION, VALUE)
+                                     ,substrate = testData %>% subset(PARAMETER=='DOM_SUBSTRATE') %>% select(SITE, STATION, VALUE)
+                                     ,vegetation = testData %>% subset(PARAMETER=='COVER_VEG') %>% select(SITE, STATION, VALUE)
+                                     ,woody = testData %>% subset(PARAMETER=='COVER_WOODY') %>% select(SITE, STATION, VALUE)
+                                     )
+	expected <- nlaLittoralMacrohabitatTest.createExpectedResults2007() %>%
+	            subset(METRIC %nin% c('LMNHUMAN','LMPWHUMAN'))
+	diff <- dfCompare(expected
+	                 ,actual
+	                 ,c('SITE','METRIC'), zeroFudge=1e-14
+	                 )
+	checkTrue(is.null(diff), "Incorrect calculation of metrics")	
+	
 }
 
 
-
-metsLittoralMacrohabitatTest.2012 <- function()
-# Unit test for metsLittoralMacrohabitat using 2007 data
-{
-	testData <- metsLittoralMacrohabitatTest.createTestData2012()
-	expected <- metsLittoralMacrohabitatTest.createExpectedResults2012()
-	actual <- metsLittoralMacrohabitat(testData)
-	
-#	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
-#	
-#	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
-#	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
-#	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
-#	
-#	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
-	
-	checkTrue(is.null(actual), "Incorrect calculation of metrics")
-}
-
-
-
-metsLittoralMacrohabitatTest.createTestData2007 <- function()
+nlaLittoralMacrohabitatTest.createTestData2007 <- function()
 # Unit test data based on 2007 data
-#	UID		Description
+#	SITE		Description
 #	7469 - 10 DOM_SUBSTRATE='M', no B, C or S 
 #	7474 - All 3 COVER_CLASS values present in 10 stations
 #	7478 - 10 HUMAN_DISTURBANCE='MODERATE'
@@ -71,7 +139,7 @@ metsLittoralMacrohabitatTest.createTestData2007 <- function()
 #	8806 - COVER_CLASS has 2 modes and no other values
 #	8860 - 10 COVER_CLASS = 'PATCHY COVER'
 {
-	tc <- textConnection("   UID STATION         PARAMETER             RESULT
+	tc <- textConnection("   SITE STATION         PARAMETER             VALUE
 					7469       A       COVER_CLASS 'CONTINUOUS COVER'
 					7469       A         COVER_VEG                  X
 					7469       A     DOM_SUBSTRATE                  M
@@ -680,11 +748,10 @@ metsLittoralMacrohabitatTest.createTestData2007 <- function()
 }
 
 
-
-metsLittoralMacrohabitatTest.createExpectedResults2007 <- function()
+nlaLittoralMacrohabitatTest.createExpectedResults2007 <- function()
 #
 {
-	tc <- textConnection("   UID      PARAMETER                           RESULT
+	tc <- textConnection("   SITE      METRIC                           VALUE
 					7469 LMFPARTIFICIAL                               NA
 					7469    LMFPBEDROCK                                0
 					7469   LMFPBOULDERS                               NA
@@ -1010,44 +1077,12 @@ metsLittoralMacrohabitatTest.createExpectedResults2007 <- function()
 	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	close(tc)
 	
-	fake <- within(subset(fake, PARAMETER != 'LMFPFILL')
-			,{RESULT <- ifelse(grepl('^LMN.+', PARAMETER) & RESULT==0, NA, RESULT)		#### TEMPORARY WHILE DEVELOPING UNIT TEST
+	fake <- within(subset(fake, METRIC != 'LMFPFILL')
+			,{VALUE <- ifelse(grepl('^LMN.+', METRIC) & VALUE==0, NA, VALUE)		#### TEMPORARY WHILE DEVELOPING UNIT TEST
 			}
 	)
 	return(fake)		
 	
 }
-
-
-
-metsLittoralMacrohabitatTest.createTestData2012 <- function()
-{
-	
-	tc <- textConnection("   UID      STATION   PARAMETER  RESULT
-					")
-	
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	close(tc)
-	
-	fake <- subset(data.frame(UID=1, STATION='A', PARAMETER='A', RESULT='1', stringsAsFactors=FALSE), FALSE)
-	return(fake)		
-}
-
-
-
-metsLittoralMacrohabitatTest.createExpectedResults2012 <- function()
-{
-	
-	tc <- textConnection("   UID      PARAMETER                           RESULT
-					")
-	
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	close(tc)
-	
-	fake <- subset(data.frame(UID=1, PARAMETER='A', RESULT='1', stringsAsFactors=FALSE), FALSE)
-	return(fake)				
-}
-
-
 
 # end of file

@@ -1,6 +1,10 @@
 # sharedSupport.r
 # 10/21/15 cws Changed UID to SITE in nWadeableStationsPerTransectTest and
 #          interpolatePercentileTest
+#  7/07/17 cws Changed UID to SITE and RESULT to VALUE in normalizedCoverTest,
+#          calcSynCoversTest, calcSynInfluenceTest, fillinDrawdownDataTest and modalClassesTest.
+#  7/11/17 cws Changed PARAMETER to CLASS in all remaining functions.
+#
 # RUnit tests
 
 calcSynCoversTest <- function()
@@ -11,7 +15,7 @@ calcSynCoversTest <- function()
 	expected <- calcSynCoversTest.expected()
 	actual <- calcSynCovers(testData, 15, FALSE)
 	
-	diffs <- dfCompare(expected, actual, c('UID','STATION','PARAMETER'), zeroFudge=1e-15)
+	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 #	return(diffs)
 	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers without assumptions")
 	
@@ -20,18 +24,17 @@ calcSynCoversTest <- function()
 	expected <- calcSynCoversTest.expectedWithAssumptions()
 	actual <- calcSynCovers(testData, 15, TRUE)
 	
-	diffs <- dfCompare(expected, actual, c('UID','STATION','PARAMETER'), zeroFudge=1e-15)
+	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 #	return(diffs)
 	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers with assumptions")
 	
 }
 
 
-
 calcSynCoversTest.testData <- function()
 # Unit test for calcSynCovers 
 {
-	tc <- textConnection("UID	STATION	PARAMETER		RESULT	characteristicCover
+	tc <- textConnection("SITE	STATION	CLASS		VALUE	characteristicCover
 						  1		A		FC_X			0		0			# Data with no missing or absent values
 						  1		A		FC_X_DD			1		0.05
 						  1		A		FC_Y			2		0.25
@@ -110,10 +113,9 @@ calcSynCoversTest.testData <- function()
 }
 
 
-
 calcSynCoversTest.expected <- function()
 {
-	tc <- textConnection("  UID STATION PARAMETER    characteristicCover
+	tc <- textConnection("  SITE STATION CLASS    characteristicCover
 							1       A  FC_X_SYN 0.000000000000000
 							1       A  FC_Y_SYN 0.250000000000000
 							1       B  FC_X_SYN 0.291666666666667
@@ -148,30 +150,28 @@ calcSynCoversTest.expected <- function()
 	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	rm(tc)
 	
-	rc$RESULT <- as.numeric(NA)
+	rc$VALUE <- as.numeric(NA)
 	rc$assumptionMade <- FALSE
 	
 	return(rc)
 }
 
 
-
 calcSynCoversTest.expectedWithAssumptions <- function()
 {
 	expected <-	within(calcSynCoversTest.expected()
-					  ,{characteristicCover <- ifelse(UID==2 & STATION=='A' & PARAMETER=='FC_X_SYN', 0
-			  			 					  ,ifelse(UID==3 & STATION=='A' & PARAMETER=='FC_X_SYN', 0.575
-							 				  ,ifelse(UID==5 & STATION=='A' & PARAMETER=='FC_X_SYN', 0.875, characteristicCover
+					  ,{characteristicCover <- ifelse(SITE==2 & STATION=='A' & CLASS=='FC_X_SYN', 0
+			  			 					  ,ifelse(SITE==3 & STATION=='A' & CLASS=='FC_X_SYN', 0.575
+							 				  ,ifelse(SITE==5 & STATION=='A' & CLASS=='FC_X_SYN', 0.875, characteristicCover
 											   )))
-						assumptionMade <- ifelse((UID==2 & STATION=='A' & PARAMETER=='FC_X_SYN') | 
-									   	 		 (UID==3 & STATION=='A' & PARAMETER=='FC_X_SYN') | 
-										 		 (UID==5 & STATION=='A' & PARAMETER=='FC_X_SYN'), TRUE, FALSE
+						assumptionMade <- ifelse((SITE==2 & STATION=='A' & CLASS=='FC_X_SYN') | 
+									   	 		 (SITE==3 & STATION=='A' & CLASS=='FC_X_SYN') | 
+										 		 (SITE==5 & STATION=='A' & CLASS=='FC_X_SYN'), TRUE, FALSE
 							 					)
 					   }
 			  		  )
 	return(expected)
 }
-
 
 
 calcSynInfluenceTest <- function()
@@ -183,7 +183,7 @@ calcSynInfluenceTest <- function()
 	expected$calc <- as.numeric(expected$calc)
 	actual <- calcSynInfluence(testData)
 	
-	diffs <- dfCompare(expected, actual, c('UID','STATION','PARAMETER'), zeroFudge=1e-15)
+	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 #	return(diffs)
 	checkEquals(NULL, diffs, "Incorrect calculation of synthesized influence without assumptions")
 	
@@ -192,18 +192,17 @@ calcSynInfluenceTest <- function()
 #	expected <- calcSynCoversTest.expectedWithAssumptions()
 #	actual <- calcSynCovers(testData, 15, TRUE)
 #	
-#	diffs <- dfCompare(expected, actual, c('UID','STATION','PARAMETER'), zeroFudge=1e-15)
+#	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 ##	return(diffs)
 #	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers with assumptions")
 	
 }
 
 
-
 calcSynInfluenceTest.testData <- function()
 # Unit test for calcSynCovers 
 {
-	tc <- textConnection("UID	STATION	PARAMETER		RESULT	calc
+	tc <- textConnection("SITE	STATION	CLASS		VALUE	calc
 						  1		A		HI_X			0		0.0			# Data with no missing or absent values, and HORIZ_DIST_DD between 0 and 15
 						  1		A		HI_X_DD			0		0.0
 						  1		A		HI_Y			0		0.0
@@ -332,10 +331,9 @@ calcSynInfluenceTest.testData <- function()
 }
 
 
-
 calcSynInfluenceTest.expected <- function()
 {
-	tc <- textConnection("UID STATION PARAMETER RESULT                     calc
+	tc <- textConnection("SITE STATION CLASS VALUE                     calc
 							1       A  HI_X_SYN     NA 0.0000000000000000000000
 							1       A  HI_Y_SYN     NA 1.0000000000000000000000
 							1       B  HI_X_SYN     NA 0.5000000000000000000000
@@ -382,30 +380,28 @@ calcSynInfluenceTest.expected <- function()
 	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	rm(tc)
 	
-	rc$RESULT <- as.numeric(NA)
+	rc$VALUE <- as.numeric(NA)
 #	rc$assumptionMade <- FALSE
 	
 	return(rc)
 }
 
 
-
 calcSynInfluenceTest.expectedWithAssumptions <- function()
 {
 	expected <-	within(calcSynCoversTest.expected()
-					  ,{characteristicCover <- ifelse(UID==2 & STATION=='A' & PARAMETER=='FC_X_SYN', 0
-			  			 					  ,ifelse(UID==3 & STATION=='A' & PARAMETER=='FC_X_SYN', 0.575
-							 				  ,ifelse(UID==5 & STATION=='A' & PARAMETER=='FC_X_SYN', 0.875, characteristicCover
+					  ,{characteristicCover <- ifelse(SITE==2 & STATION=='A' & CLASS=='FC_X_SYN', 0
+			  			 					  ,ifelse(SITE==3 & STATION=='A' & CLASS=='FC_X_SYN', 0.575
+							 				  ,ifelse(SITE==5 & STATION=='A' & CLASS=='FC_X_SYN', 0.875, characteristicCover
 											   )))
-						assumptionMade <- ifelse((UID==2 & STATION=='A' & PARAMETER=='FC_X_SYN') | 
-									   	 		 (UID==3 & STATION=='A' & PARAMETER=='FC_X_SYN') | 
-										 		 (UID==5 & STATION=='A' & PARAMETER=='FC_X_SYN'), TRUE, FALSE
+						assumptionMade <- ifelse((SITE==2 & STATION=='A' & CLASS=='FC_X_SYN') | 
+									   	 		 (SITE==3 & STATION=='A' & CLASS=='FC_X_SYN') | 
+										 		 (SITE==5 & STATION=='A' & CLASS=='FC_X_SYN'), TRUE, FALSE
 							 					)
 					   }
 			  		  )
 	return(expected)
 }
-
 
 
 countTest <- function() {
@@ -431,7 +427,6 @@ countTest <- function() {
     checkEquals(51-5, count(f), "Error: count() fails with vector of factors")
     checkEquals(0, count(mi), "Error: count() fails with vector all missing")
 }
-
 
 
 dfCompareTest <- function() {
@@ -498,7 +493,6 @@ dfCompareTest <- function() {
 }
 
 
-
 expand.data.frameTest <- function()
 # unit test for expand.data.frame
 {
@@ -556,34 +550,32 @@ expand.data.frameTest <- function()
 }
 
 
-
 fillinDrawdownDataTest <- function()
 # Unit test for fillinDrawdownData
 {
 	testData <- fillinDrawdownDataTest.createTestData()
 	
 	# Test expansion separately
-	tt <- testData	#subset(testData, PARAMETER %in% c('X','X_DD','Y','Y_DD','HORIZ_DIST_DD'))
+	tt <- testData	#subset(testData, CLASS %in% c('X','X_DD','Y','Y_DD','HORIZ_DIST_DD'))
 	actualExpansion <- fillinDrawdownData.expansion(tt)
 	expectedExpansion <- fillinDrawdownDataTest.createExpectedExpansion()
-	diff <- dfCompare(expectedExpansion, actualExpansion, c('UID','STATION','PARAMETER'))
+	diff <- dfCompare(expectedExpansion, actualExpansion, c('SITE','STATION','CLASS'))
 	checkEquals(NULL, diff, "Incorrect expansion of test data")
 	
 	# Test entire function, using different values for the fill-in values.
 	actualFillin <- fillinDrawdownData(testData, fillinValue='F', fillinHORIZ_DIST_DD='X')
 	expectedFillin <- fillinDrawdownDataTest.createExpectedFillin()
-	diff <- dfCompare(expectedFillin, actualFillin, c('UID','STATION','PARAMETER'))
+	diff <- dfCompare(expectedFillin, actualFillin, c('SITE','STATION','CLASS'))
 	checkEquals(NULL, diff, "Incorrect filling in of test data")
 	
 }
 
 
-
 fillinDrawdownDataTest.createTestData <- function()
 # Test data for unit test
 {
-	tc <- textConnection("UID	STATION	PARAMETER	RESULT
-							1	A		X				0		# UID 1 has no missing cover or HORIZ_DIST_DD values
+	tc <- textConnection("SITE	STATION	CLASS	VALUE
+							1	A		X				0		# SITE 1 has no missing cover or HORIZ_DIST_DD values
 							1	A		X_DD			0
 							1	A		Y				1
 							1	A		Y_DD			0
@@ -607,7 +599,7 @@ fillinDrawdownDataTest.createTestData <- function()
 							1	D		Y_DD			3
 							1	D		HORIZ_DIST_DD	NA
 							1	D		DRAWDOWN		NA
-							2	A		X				0		# UID 2 has missing cover values
+							2	A		X				0		# SITE 2 has missing cover values
 							2	A		X_DD			0
 							2	A		Y				1
 							2	A		Y_DD			NA
@@ -631,7 +623,7 @@ fillinDrawdownDataTest.createTestData <- function()
 							2	D		Y_DD			NA
 							2	D		HORIZ_DIST_DD	NA
 							2	D		DRAWDOWN		NA
-							3	A		X				0		# UID 3 has absent cover values
+							3	A		X				0		# SITE 3 has absent cover values
 							3	A		X_DD			0
 							3	A		Y				1
 							3	A		HORIZ_DIST_DD	NA			# and one missing HORIZ_DIST_DD value
@@ -651,7 +643,7 @@ fillinDrawdownDataTest.createTestData <- function()
 							3	D		Y				0
 							3	D		HORIZ_DIST_DD	NA
 							3	D		DRAWDOWN		NA
-							4	A		X				0		# UID 4 has absent cover values AND absent DRAWDOWN values
+							4	A		X				0		# SITE 4 has absent cover values AND absent DRAWDOWN values
 							4	A		X_DD			0
 							4	A		Y				1
 							4	A		HORIZ_DIST_DD	0
@@ -667,7 +659,7 @@ fillinDrawdownDataTest.createTestData <- function()
 							4	D		X_DD			2
 							4	D		Y				0
 							4	D		HORIZ_DIST_DD	NA
-                            100 A       X               3		# This is a copy of UID 1000100 in Human Impact mets unit test
+                            100 A       X               3		# This is a copy of SITE 1000100 in Human Impact mets unit test
                             100 A       DRAWDOWN        NO
                             100 B       DRAWDOWN        NO
                             100 C       DRAWDOWN        NO
@@ -681,12 +673,11 @@ fillinDrawdownDataTest.createTestData <- function()
 }
 
 
-
 fillinDrawdownDataTest.createExpectedExpansion <- function()
 # expected expansion of test data for unit test
 {
-	tc <- textConnection("UID	STATION	PARAMETER	RESULT
-					1	A		X				0		# UID 1 has no missing cover or HORIZ_DIST_DD values
+	tc <- textConnection("SITE	STATION	CLASS	VALUE
+					1	A		X				0		# SITE 1 has no missing cover or HORIZ_DIST_DD values
 					1	A		X_DD			0
 					1	A		Y				1
 					1	A		Y_DD			0
@@ -710,7 +701,7 @@ fillinDrawdownDataTest.createExpectedExpansion <- function()
 					1	D		Y_DD			3
 					1	D		HORIZ_DIST_DD	NA
 					1	D		DRAWDOWN		NA
-					2	A		X				0		# UID 2 has missing cover values
+					2	A		X				0		# SITE 2 has missing cover values
 					2	A		X_DD			0
 					2	A		Y				1
 					2	A		Y_DD			NA
@@ -734,7 +725,7 @@ fillinDrawdownDataTest.createExpectedExpansion <- function()
 					2	D		Y_DD			NA
 					2	D		HORIZ_DIST_DD	NA
 					2	D		DRAWDOWN		NA
-					3	A		X				0		# UID 3 has absent cover values
+					3	A		X				0		# SITE 3 has absent cover values
 					3	A		X_DD			0
 					3	A		Y				1
 					3	A		Y_DD			NA			# filled in row
@@ -758,7 +749,7 @@ fillinDrawdownDataTest.createExpectedExpansion <- function()
 					3	D		Y_DD			NA			# filled in row
 					3	D		HORIZ_DIST_DD	NA
 					3	D		DRAWDOWN		NA
-					4	A		X				0		# UID 4 has absent cover values AND absent DRAWDOWN values
+					4	A		X				0		# SITE 4 has absent cover values AND absent DRAWDOWN values
 					4	A		X_DD			0
 					4	A		Y				1
 					4	A		Y_DD			NA			# filled in row
@@ -778,7 +769,7 @@ fillinDrawdownDataTest.createExpectedExpansion <- function()
 					4	D		Y				0
 					4	D		Y_DD			NA			# filled in row
 					4	D		HORIZ_DIST_DD	NA
-					100	A		X				3			# UID 100 is based on unit test data for 1000100 in HI mets.
+					100	A		X				3			# SITE 100 is based on unit test data for 1000100 in HI mets.
 					100	A		X_DD			NA
 					100	A		Y_DD			NA
 					100	A		HORIZ_DIST_DD	NA
@@ -799,17 +790,16 @@ fillinDrawdownDataTest.createExpectedExpansion <- function()
 	
 	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	rm(tc)
-#	rc <- subset(rc, PARAMETER != 'DRAWDOWN')
+#	rc <- subset(rc, CLASS != 'DRAWDOWN')
 	return(rc)
 }
-
 
 
 fillinDrawdownDataTest.createExpectedFillin <- function()
 # expected expansion of test data for unit test
 {
-	tc <- textConnection("UID	STATION	PARAMETER	RESULT
-					1	A		X				0		# UID 1 has no missing cover or HORIZ_DIST_DD values
+	tc <- textConnection("SITE	STATION	CLASS	VALUE
+					1	A		X				0		# SITE 1 has no missing cover or HORIZ_DIST_DD values
 					1	A		X_DD			0
 					1	A		Y				1
 					1	A		Y_DD			0
@@ -833,7 +823,7 @@ fillinDrawdownDataTest.createExpectedFillin <- function()
 					1	D		Y_DD			3
 					1	D		HORIZ_DIST_DD	NA
 					1	D		DRAWDOWN		NA
-					2	A		X				0		# UID 2 has missing cover values
+					2	A		X				0		# SITE 2 has missing cover values
 					2	A		X_DD			0
 					2	A		Y				1
 					2	A		Y_DD			F			# value changed from NA
@@ -857,7 +847,7 @@ fillinDrawdownDataTest.createExpectedFillin <- function()
 					2	D		Y_DD			NA
 					2	D		HORIZ_DIST_DD	NA
 					2	D		DRAWDOWN		NA
-					3	A		X				0		# UID 3 has absent cover values
+					3	A		X				0		# SITE 3 has absent cover values
 					3	A		X_DD			0
 					3	A		Y				1
 					3	A		Y_DD			F			# filled in row, gets filled in because DRAWDOWN noted as zero
@@ -881,7 +871,7 @@ fillinDrawdownDataTest.createExpectedFillin <- function()
 					3	D		Y_DD			NA			# filled in row
 					3	D		HORIZ_DIST_DD	NA
 					3	D		DRAWDOWN		NA
-					4	A		X				0		# UID 4 has absent cover values AND absent DRAWDOWN values
+					4	A		X				0		# SITE 4 has absent cover values AND absent DRAWDOWN values
 					4	A		X_DD			0
 					4	A		Y				1
 					4	A		Y_DD			NA			# filled in row
@@ -901,7 +891,7 @@ fillinDrawdownDataTest.createExpectedFillin <- function()
 					4	D		Y				0
 					4	D		Y_DD			NA			# filled in row
 					4	D		HORIZ_DIST_DD	NA
-					100	A		X				3			# UID 100 is based on unit test data for 1000100 in HI mets.
+					100	A		X				3			# SITE 100 is based on unit test data for 1000100 in HI mets.
 					100	A		X_DD			F
 					100	A		Y_DD			F
 					100	A		HORIZ_DIST_DD	X
@@ -922,10 +912,9 @@ fillinDrawdownDataTest.createExpectedFillin <- function()
 	
 	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	rm(tc)
-#	rc <- subset(rc, PARAMETER != 'DRAWDOWN')
+#	rc <- subset(rc, CLASS != 'DRAWDOWN')
 	return(rc)
 }
-
 
 
 firstTest <- function() {
@@ -977,7 +966,6 @@ firstTest <- function() {
 }
 
 
-
 idrTest <- function() {
 # tests idr()
 
@@ -989,7 +977,6 @@ idrTest <- function() {
 }
 
 
-
 iqrTest <- function() {
 # tests idr()
 
@@ -999,7 +986,6 @@ iqrTest <- function() {
     checkTrue(is.na(iqr(as.integer(rep(NA, 43)))), "Error: idr fails with all NA")
     checkEquals(0, iqr(1.2), "Error: idr fails with single value")
 }
-
 
 
 interpolatePercentileTest <- function() {
@@ -1037,7 +1023,6 @@ interpolatePercentileTest <- function() {
               ,"Error: interpolatePercentile() results are incorrect"
               )
 }
-
 
 
 interpolatePercentileTest.testData <- function() {
@@ -1478,9 +1463,7 @@ interpolatePercentileTest.testData <- function() {
 }
 
 
-
 interpolatePercentileTest.expectedResults <- function() {
-
 # Creates the results dataframe used by interpolatePercentileTest()
 # Values taken from WEMAP
 # 2002 WAZP99-0590 1    Has FN and others but no SA
@@ -1501,10 +1484,8 @@ interpolatePercentileTest.expectedResults <- function() {
 }
 
 
-
 is.subsetTest <- function() {
 # Tests is.subset
-
 
   # Test numbers in various guises: as numbers
   checkEquals(TRUE, is.subset(c(1,2,4,8), rep(1:10))
@@ -1531,7 +1512,6 @@ is.subsetTest <- function() {
              )
 
 }
-
 
 
 lagTest <- function() {
@@ -1562,7 +1542,6 @@ lagTest <- function() {
                 )
 
 }
-
 
 
 lastTest <- function() {
@@ -1612,7 +1591,6 @@ lastTest <- function() {
 }
 
 
-
 leadTest <- function() {
 # Tests the lead() function
 
@@ -1641,7 +1619,6 @@ leadTest <- function() {
                 )
 
 }
-
 
 
 modalClassTest <- function() {
@@ -1709,12 +1686,11 @@ modalClassTest <- function() {
 }
 
 
-
 modalClassesTest <- function() {
 # unit test for modalClasses
 
 	testData <- data.frame(expand.grid(CLASSES = LETTERS
-									  ,UID = c('allTies','oneMode', 'twoModes', 'charWt'
+									  ,SITE = c('allTies','oneMode', 'twoModes', 'charWt'
 											  ,'someMissingWts', 'allMissingWts'
 											  ,'someMissingClasses'
 									          )
@@ -1731,14 +1707,14 @@ modalClassesTest <- function() {
 						  ,stringsAsFactors=FALSE
 						  )
 	testData <- within(testData
-					  ,CLASSES <- ifelse(UID=='someMissingClasses' & 
+					  ,CLASSES <- ifelse(SITE=='someMissingClasses' & 
 									     CLASSES %in% c('A','E','I','O','U')
 										,NA
 										,CLASSES
 										)
 					  )
 					  
-	expected <- data.frame(UID = c('allTies','oneMode', 'twoModes', 'charWt'
+	expected <- data.frame(SITE = c('allTies','oneMode', 'twoModes', 'charWt'
 								  ,'someMissingWts', 'allMissingWts'
 								  ,'someMissingClasses'
 								  )
@@ -1754,11 +1730,10 @@ modalClassesTest <- function() {
 						  )
 
 	actual <- modalClasses(testData, 'CLASSES', 'WEIGHT', delim='+')
-	diff <- dfCompare(expected, actual, c('UID'))
+	diff <- dfCompare(expected, actual, c('SITE'))
 	checkEquals(NULL, diff, "Incorrect class mode determination")
 	
 }
-
 
 
 modalCountTest <- function() {
@@ -1786,7 +1761,6 @@ modalCountTest <- function() {
              ,'Error: modalCount broken for factors with multiple modes'
              )
 }
-
 
 
 modalvalueTest <- function() {
@@ -1817,7 +1791,6 @@ modalvalueTest <- function() {
                 )
 
 }
-
 
 
 modalValuesTest <- function() {
@@ -1897,14 +1870,13 @@ modalValuesTest <- function() {
 }
 
 
-
 normalizedCoverTest <- function() {
 # tests normalizedCover()
 
   # Set up parameter values that will be reused in each of the uids of the test
   # data.
   baseData <- data.frame(
-    'PARAMETER'= rep(c('cat1', 'cat2', 'cat3', 'cat4', 'cat1NA'
+    'CLASS'= rep(c('cat1', 'cat2', 'cat3', 'cat4', 'cat1NA'
                       ,'catAllNA','cat1NaN','catAllNaN'
                       )
                     ,each=10
@@ -1927,7 +1899,7 @@ normalizedCoverTest <- function() {
   # calculated means.
   # Note that while mean(NA) is NA, but mean(NA, na.rm=TRUE) is NaN.
   parameterMeans <- data.frame(
-     PARAMETER=c('cat1', 'cat2', 'cat3', 'cat4', 'cat1NA'
+     CLASS=c('cat1', 'cat2', 'cat3', 'cat4', 'cat1NA'
                 ,'catAllNA','cat1NaN','catAllNaN'
                 )
     ,expected=c(0.39, 0.44, 0.32, 0.39, 0.35555556
@@ -1941,7 +1913,7 @@ normalizedCoverTest <- function() {
                )
   )
 
-  tt1 <- aggregate(baseData$cover, list('PARAMETER'=baseData$PARAMETER)
+  tt1 <- aggregate(baseData$cover, list('CLASS'=baseData$CLASS)
                   ,mean, na.rm=TRUE
                   )
   tt2 <- aggregate(baseData$cover, list('STATION'=baseData$STATION)
@@ -1951,14 +1923,14 @@ normalizedCoverTest <- function() {
   # Compare expected and actual means.
   testParam<-NULL
 
-  tt<-subset(merge(tt1,parameterMeans, by=c('PARAMETER'))
+  tt<-subset(merge(tt1,parameterMeans, by=c('CLASS'))
             ,abs(x-expected)> 10^-8      | 
              is.na(x)!=is.na(expected)   | 
              is.nan(x)!=is.nan(expected)
             )
   checkEquals(0, nrow(tt)
              ,paste("Error: normalizedCoverTest baseData has unexpected parameter means:"
-                   ,paste(tt$PARAMETER
+                   ,paste(tt$CLASS
                          ,paste(' calc:',tt$x, sep='')
                          ,paste(' expected:',tt$expected, sep='')
                          ,collapse='; '
@@ -1978,36 +1950,36 @@ normalizedCoverTest <- function() {
               )
 
 
-  # Build the test dataframe from baseData, first 1 parameter per UID, then
-  # 4 parameters per UID.
-  dfTest1  <- baseData[baseData$PARAMETER %in% c('cat1'),]
-  dfTest1$UID='test1'
-  dfTest1b <- baseData[baseData$PARAMETER %in% c('cat1NA'),]
-  dfTest1b$UID='test1b'
-  dfTest1c <- baseData[baseData$PARAMETER %in% c('cat1NaN'),]
-  dfTest1c$UID='test1c'
-  dfTest1d <- baseData[baseData$PARAMETER %in% c('catAllNA'),]
-  dfTest1d$UID='test1d'
-  dfTest1e <- baseData[baseData$PARAMETER %in% c('catAllNaN'),]
-  dfTest1e$UID='test1e'
+  # Build the test dataframe from baseData, first 1 parameter per SITE, then
+  # 4 parameters per SITE.
+  dfTest1  <- baseData[baseData$CLASS %in% c('cat1'),]
+  dfTest1$SITE='test1'
+  dfTest1b <- baseData[baseData$CLASS %in% c('cat1NA'),]
+  dfTest1b$SITE='test1b'
+  dfTest1c <- baseData[baseData$CLASS %in% c('cat1NaN'),]
+  dfTest1c$SITE='test1c'
+  dfTest1d <- baseData[baseData$CLASS %in% c('catAllNA'),]
+  dfTest1d$SITE='test1d'
+  dfTest1e <- baseData[baseData$CLASS %in% c('catAllNaN'),]
+  dfTest1e$SITE='test1e'
 
-  dfTest4  <- baseData[baseData$PARAMETER %in% c('cat1','cat2','cat3','cat4'),]
-  dfTest4$UID='test4'
-  dfTest4b <- baseData[baseData$PARAMETER %in% 
+  dfTest4  <- baseData[baseData$CLASS %in% c('cat1','cat2','cat3','cat4'),]
+  dfTest4$SITE='test4'
+  dfTest4b <- baseData[baseData$CLASS %in% 
                        c('cat1','cat2','cat3','cat1NA'),]
-  dfTest4b$UID='test4b'
-  dfTest4c <- baseData[baseData$PARAMETER %in% 
+  dfTest4b$SITE='test4b'
+  dfTest4c <- baseData[baseData$CLASS %in% 
                        c('cat1','cat2','cat3','cat1NaN'),]
-  dfTest4c$UID='test4c'
-  dfTest4d <- baseData[baseData$PARAMETER %in% 
+  dfTest4c$SITE='test4c'
+  dfTest4d <- baseData[baseData$CLASS %in% 
                        c('cat1','cat2','cat3','catAllNA'),]
-  dfTest4d$UID='test4d'
-  dfTest4e <- baseData[baseData$PARAMETER %in% 
+  dfTest4d$SITE='test4d'
+  dfTest4e <- baseData[baseData$CLASS %in% 
                        c('cat1','cat2','cat3','catAllNaN'),]
-  dfTest4e$UID='test4e'
-  dfTest4f <- baseData[baseData$PARAMETER %in% 
+  dfTest4e$SITE='test4e'
+  dfTest4f <- baseData[baseData$CLASS %in% 
                        c('cat1','cat1NA','cat3','cat1NaN'),]
-  dfTest4f$UID='test4f'
+  dfTest4f$SITE='test4f'
 
   dfTest<-rbind(dfTest1, dfTest1b, dfTest1c, dfTest1d, dfTest1e
                ,dfTest4, dfTest4b, dfTest4c, dfTest4d, dfTest4e, dfTest4f
@@ -2019,7 +1991,7 @@ normalizedCoverTest <- function() {
   # the case where the cover categories are incomplete (i.e. must sum to 100% 
   # or less).  Expected results are for means of test data, with na.rm=TRUE.
   expectedCompleteResults <- as.data.frame(rbind(
-       c('UID'='test1', 'PARAMETER'='cat1', 'expected'=0.7)
+       c('SITE'='test1', 'CLASS'='cat1', 'expected'=0.7)
       ,c('test1b', 'cat1NA', 6/9)
       ,c('test1c', 'cat1NaN', 6/9)
       ,c('test1d', 'catAllNA', NaN)       # mean(NA * 1/sum(NA)) isn't a number
@@ -2062,7 +2034,7 @@ normalizedCoverTest <- function() {
     as.numeric(expectedCompleteResults$expected)
 
   expectedIncompleteResults <- as.data.frame(rbind(
-       c('UID'='test1', 'PARAMETER'='cat1', 'expected'=0.39)
+       c('SITE'='test1', 'CLASS'='cat1', 'expected'=0.39)
       ,c('test1b', 'cat1NA', 0.3555555556)
       ,c('test1c', 'cat1NaN', 0.3555555556)
       ,c('test1d', 'catAllNA', NaN)       # mean(NA * 1/sum(NA)) isn't a number
@@ -2107,14 +2079,14 @@ normalizedCoverTest <- function() {
   # Make the normalization calculations
   tt <- normalizedCover(dfTest, 'cover', 'normCover')
   testResultsComplete <- aggregate(tt$normCover
-                                  ,list('UID'=tt$UID, 'PARAMETER'=tt$PARAMETER)
+                                  ,list('SITE'=tt$SITE, 'CLASS'=tt$CLASS)
                                   ,mean, na.rm=TRUE
                                   )
 
   tt <- normalizedCover(dfTest, 'cover', 'normCover', allowTotalBelow100=TRUE)
   testResultsIncomplete <- aggregate(tt$normCover
-                                    ,list('UID'=tt$UID
-                                         ,'PARAMETER'=tt$PARAMETER
+                                    ,list('SITE'=tt$SITE
+                                         ,'CLASS'=tt$CLASS
                                          )
                                     ,mean, na.rm=TRUE
                                     )
@@ -2122,7 +2094,7 @@ normalizedCoverTest <- function() {
   # Merge calculations and expected values for the test and accumulate detected
   # errors for both normalization types.
   tt<-subset(merge(expectedCompleteResults, testResultsComplete
-                  ,by=c('UID','PARAMETER')
+                  ,by=c('SITE','CLASS')
                   ,all=TRUE
                   )
             ,abs(x-expected)> 10^-8      | 
@@ -2141,7 +2113,7 @@ normalizedCoverTest <- function() {
   }
 
   tt<-subset(merge(expectedIncompleteResults, testResultsIncomplete
-                  ,by=c('UID','PARAMETER')
+                  ,by=c('SITE','CLASS')
                   ,all=TRUE
                   )
             ,abs(x-expected)> 10^-8      | 
@@ -2171,7 +2143,6 @@ normalizedCoverTest <- function() {
 }
 
 
-
 nWadeableStationsPerTransectTest <- function() {
 
 # tests nWadeableStationsPerTransect()
@@ -2179,19 +2150,19 @@ nWadeableStationsPerTransectTest <- function() {
   fakeThal <- rbind(data.frame(SITE=rep('std. stream A-K', 101)
                               ,TRANSECT=c(rep(LETTERS[1:10], each=10), 'K')
                               ,STATION=c(rep(0:9, 10), 0)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('std. stream A-J', 100)
                               ,TRANSECT=rep(LETTERS[1:10], each=10)
                               ,STATION=rep(0:9, 10)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('narrow stream A-J', 150)
                               ,TRANSECT=rep(LETTERS[1:10], each=15)
                               ,STATION=rep(0:14, 10)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('stream w 2 long transects', 106)
@@ -2199,7 +2170,7 @@ nWadeableStationsPerTransectTest <- function() {
                                          ,rep(c('I','J'), each=13)
                                          )
                               ,STATION=c(rep(0:9, 8), 0:12, 0:12)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('stream w 2 short transects', 98)
@@ -2207,7 +2178,7 @@ nWadeableStationsPerTransectTest <- function() {
                                          ,rep(c('I','J'), each=9)
                                          )
                               ,STATION=c(rep(0:9, 8), 0:8, 0:8)
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    ,data.frame(SITE=rep('stream w two modes', 100)
@@ -2215,7 +2186,7 @@ nWadeableStationsPerTransectTest <- function() {
                                          ,rep(LETTERS[6:10], each=9)
                                          )
                               ,STATION=c(rep(0:10, 5), rep(0:8, 5))
-                              ,PARAMETER='foo'
+                              ,CLASS='foo'
                               ,stringsAsFactors=FALSE
                               )
                    )
@@ -2265,7 +2236,6 @@ nWadeableStationsPerTransectTest <- function() {
 }
 
 
-
 protectedMeanTest <- function() {
 # unit test for protectedMean
 
@@ -2310,7 +2280,6 @@ protectedMeanTest <- function() {
 	checkIdentical(nNA, protectedMean(incalculableInput, na.rm=TRUE, nan.rm=TRUE, inf.rm=TRUE),	"Calculation removing NA, NaN, Inf and with incalculable input")
 	
 }
-
 
 
 protectedSumTest <- function() {
@@ -2359,7 +2328,6 @@ protectedSumTest <- function() {
 }
 
 
-
 renameTest <- function(verbose=FALSE) {   
     dfTest<-data.frame(idx1=c('one','two','two','three')
                       ,idx2=c(1,1,2,3)
@@ -2394,7 +2362,6 @@ renameTest <- function(verbose=FALSE) {
                )
 
 }
-
 
 
 uidCreateSeparateTest <- function(verbose=FALSE) { 
@@ -2451,7 +2418,5 @@ uidCreateSeparateTest <- function(verbose=FALSE) {
            )
 
 }
-
-
 
 # end of file

@@ -1,41 +1,51 @@
-# metsShorelineSubstrate.r
+# nlaShorelineSubstrate.r
 # RUnit tests
+#
+#    7/17/17 cws Renamed from metsShorelineSubstrate and updated to new calling
+#            interface, changing UID, and RESULT to SITE and VALUE, and changing
+#            output column PARAMETER to METRIC.
+#
 
-
-metsShorelineSubstrateTest <- function()
-# Unit test for metsShorelineSubstrate
+nlaShorelineSubstrateTest <- function()
+# Unit test for nlaShorelineSubstrate
 {
-	metsShorelineSubstrateTest.2007()
+	nlaShorelineSubstrateTest.2007()
 	
 }
 
 
-
-metsShorelineSubstrateTest.2007 <- function()
-# Unit test for metsShorelineSubstrate using 2007 data.
+nlaShorelineSubstrateTest.2007 <- function()
+# Unit test for nlaShorelineSubstrate using 2007 data.
 {
-	testData <- metsShorelineSubstrateTest.createTestData2007()
-	expected <- metsShorelineSubstrateTest.expectedResults2007()
-	actual <- metsShorelineSubstrate(testData)
+	testData <- nlaShorelineSubstrateTest.createTestData2007()
+	expected <- nlaShorelineSubstrateTest.expectedResults2007()
+	actual <- nlaShorelineSubstrate(bedrock = testData %>% subset(PARAMETER == 'SS_BEDROCK') %>% select(SITE, STATION, VALUE)
+	                               ,boulder = testData %>% subset(PARAMETER == 'SS_BOULDERS') %>% select(SITE, STATION, VALUE)
+	                               ,cobble = testData %>% subset(PARAMETER == 'SS_COBBLE') %>% select(SITE, STATION, VALUE)
+	                               ,gravel = testData %>% subset(PARAMETER == 'SS_GRAVEL') %>% select(SITE, STATION, VALUE)
+	                               ,organic = testData %>% subset(PARAMETER == 'SS_ORGANIC') %>% select(SITE, STATION, VALUE)
+	                               ,other = testData %>% subset(PARAMETER == 'SS_OTHER') %>% select(SITE, STATION, VALUE)
+	                               ,sand = testData %>% subset(PARAMETER == 'SS_SAND') %>% select(SITE, STATION, VALUE)
+	                               ,silt = testData %>% subset(PARAMETER == 'SS_SILT') %>% select(SITE, STATION, VALUE)
+	                               ,wood = testData %>% subset(PARAMETER == 'SS_WOOD') %>% select(SITE, STATION, VALUE)
+	                               )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
-	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 #	return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 	
 }
 
 
-
-metsShorelineSubstrateTest.createTestData2007 <- function()
-# Creates data from 2007 study for metsShorelineSubstrate unit test.
+nlaShorelineSubstrateTest.createTestData2007 <- function()
+# Creates data from 2007 study for nlaShorelineSubstrate unit test.
 #
-#	UID		Description
+#	SITE		Description
 #	7469	All values recorded at all stations
 #	7533	Some values recorded at all stations, some values totally absent
 #	7611	All values recorded at some stations
@@ -45,7 +55,7 @@ metsShorelineSubstrateTest.createTestData2007 <- function()
 #	7784	All values recorded only at one station
 #	7961	All values recorded at all stations, using one moved station
 {
-	tc <- textConnection("   UID    STATION   PARAMETER RESULT UNITS
+	tc <- textConnection("   SITE    STATION   PARAMETER VALUE UNITS
 							7469          A  SS_BEDROCK      0 X         
 							7469          A SS_BOULDERS      0 X         
 							7469          A   SS_COBBLE      0 X         
@@ -537,16 +547,15 @@ metsShorelineSubstrateTest.createTestData2007 <- function()
 }
 
 
-
-metsShorelineSubstrateTest.expectedResults2007 <- function()
-# Creates expected RESULTs from the calculation with 2007 data.  The values
-# are identical to the 2007 RESULTs except for:
+nlaShorelineSubstrateTest.expectedResults2007 <- function()
+# Creates expected VALUEs from the calculation with 2007 data.  The values
+# are identical to the 2007 VALUEs except for:
 #	removed trailing zeros
 # 	changed ssfcSilt at 7684 from 0.074638962569997 to 0.0746389625699971
 #   changed ssiSiteVariety at 7533, 7682, 7961 from NA to 4, 6 and 5 respectively.   
 #
 {
-	tc <- textConnection("   UID      PARAMETER                    RESULT
+	tc <- textConnection("   SITE      METRIC                       VALUE
 							7469       SS16LDIA        -0.351820729134696
 							7469       SS25LDIA        -0.351820729134696
 							7469       SS50LDIA        -0.351820729134696
@@ -617,7 +626,7 @@ metsShorelineSubstrateTest.expectedResults2007 <- function()
 							7533       SSFPSAND                       0.2
 							7533       SSFPSILT                       0.9
 							#7533       SSFPWOOD                        NA
-							7533 SSISITEVARIETY                         4	# SAS RESULT IS NA
+							7533 SSISITEVARIETY                         4	# SAS VALUE IS NA
 							7533  SSISTAVARIETY                       2.6
 							7533     SSNBEDROCK                        10
 							7533    SSNBOULDERS                        10
@@ -711,7 +720,7 @@ metsShorelineSubstrateTest.expectedResults2007 <- function()
 							7682       SSFPSAND                     0.875
 							7682       SSFPSILT                         1
 							7682       SSFPWOOD                         1
-							7682 SSISITEVARIETY                         6	# SAS RESULT IS NA
+							7682 SSISITEVARIETY                         6	# SAS VALUE IS NA
 							7682  SSISTAVARIETY          4.33333333333333
 							7682     SSNBEDROCK                         9
 							7682    SSNBOULDERS                         9
@@ -899,7 +908,7 @@ metsShorelineSubstrateTest.expectedResults2007 <- function()
 							7961       SSFPSAND                       0.2
 							7961       SSFPSILT                       0.9
 							#7961       SSFPWOOD                        NA
-							7961 SSISITEVARIETY                         5	# SAS RESULT IS NA
+							7961 SSISITEVARIETY                         5	# SAS VALUE IS NA
 							7961  SSISTAVARIETY                       3.5
 							7961     SSNBEDROCK                        10
 							7961    SSNBOULDERS                        10
@@ -930,7 +939,6 @@ metsShorelineSubstrateTest.expectedResults2007 <- function()
 			
 	return(fake)			
 }
-
 
 
 # end of file

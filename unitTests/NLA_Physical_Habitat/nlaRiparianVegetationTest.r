@@ -1,27 +1,42 @@
-# metsRiparianVegetationNLA.r
+# nlaRiparianVegetationTest.r
 # RUnit tests
 #  6/02/17 cws Renamed to include NLA in all the test function names.
+#            Changed UID to SITE, RESULT to VALUE, PARAMETER to CLASS for input
+#            and METRIC for output.
+#  7/17/17 cws Updated to test with new calling interface.
+#
 
-metsRiparianVegetationNLATest <- function()
-# unit test for metsRiparianVegetation
+nlaRiparianVegetationTest <- function()
+# unit test for nlaRiparianVegetation
 #
 # The complex testing here is due to the precision differences between
 # calculated and retrieved values, requiring separate tests for presence (names)
 # type and value of the metrics.
 {
-	metsRiparianVegetationNLATest.2007()
-	metsRiparianVegetationNLATest.withDrawDown()
-	metsRiparianVegetationNLATest.withDrawDownAndFillin()
+	nlaRiparianVegetationTest.2007()
+	nlaRiparianVegetationTest.withDrawDown()
+	nlaRiparianVegetationTest.withDrawDownAndFillin()
 }
 
 
-
-metsRiparianVegetationNLATest.2007 <- function()
+nlaRiparianVegetationTest.2007 <- function()
 # Unit test with 2007 data
 {		
-	testData <- metsRiparianVegetationNLATest.createTestData2007()
-	expected <- metsRiparianVegetationNLATest.expectedResults2007()
-	actual <- metsRiparianVegetationNLA(testData, createSyntheticCovers=FALSE)
+	testData <- nlaRiparianVegetationTest.createTestData2007()
+	expected <- nlaRiparianVegetationTest.expectedResults2007()
+	actual <- nlaRiparianVegetation(bigTrees = testData %>% subset(CLASS == 'C_BIGTREES') %>% select(SITE, STATION, VALUE)
+                                   ,smallTrees = testData %>% subset(CLASS == 'C_SMALLTREES') %>% select(SITE, STATION, VALUE)
+                                   ,canopyType = testData %>% subset(CLASS == 'CANOPY') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverBare = testData %>% subset(CLASS == 'GC_BARE') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverInundated = testData %>% subset(CLASS == 'GC_INUNDATED') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverNonwoody = testData %>% subset(CLASS == 'GC_NONWOODY') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverWoody = testData %>% subset(CLASS == 'GC_WOODY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryNonwoody = testData %>% subset(CLASS == 'U_NONWOODY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryWoody = testData %>% subset(CLASS == 'U_WOODY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryType = testData %>% subset(CLASS == 'UNDERSTORY') %>% select(SITE, STATION, VALUE)
+                                   ,drawdown = testData %>% subset(CLASS == 'DRAWDOWN') %>% select(SITE, STATION, VALUE)
+	                               ,createSyntheticCovers=FALSE
+	                               )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -29,72 +44,98 @@ metsRiparianVegetationNLATest.2007 <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
-#	return(diff)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 }
 
 
-
-metsRiparianVegetationNLATest.withDrawDown <- function()
+nlaRiparianVegetationTest.withDrawDown <- function()
 # Unit test with 2012 data, but do NOT fill in unrecorded drawdown values
 {
-	testData <- metsRiparianVegetationNLATest.createTestDataWithDrawDown()
-	expected <- metsRiparianVegetationNLATest.expectedResultsWithDrawDownAndNoFillin()
-	expected$RESULT <- as.numeric(expected$RESULT)
-	actual <- metsRiparianVegetationNLA(testData, fillinDrawdown=FALSE)
+	testData <- nlaRiparianVegetationTest.createTestDataWithDrawDown()
+	expected <- nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin()
+	expected$VALUE <- as.numeric(expected$VALUE)
+	actual <- nlaRiparianVegetation(bigTrees = testData %>% subset(CLASS == 'C_BIGTREES') %>% select(SITE, STATION, VALUE)
+                                   ,bigTrees_dd = testData %>% subset(CLASS == 'C_BIGTREES_DD') %>% select(SITE, STATION, VALUE)
+                                   ,smallTrees = testData %>% subset(CLASS == 'C_SMALLTREES') %>% select(SITE, STATION, VALUE)
+                                   ,smallTrees_dd= testData %>% subset(CLASS == 'C_SMALLTREES_DD') %>% select(SITE, STATION, VALUE)
+                                   ,canopyType = testData %>% subset(CLASS == 'CANOPY') %>% select(SITE, STATION, VALUE)
+                                   ,canopyType_dd= testData %>% subset(CLASS == 'CANOPY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverBare = testData %>% subset(CLASS == 'GC_BARE') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverBare_dd= testData %>% subset(CLASS == 'GC_BARE_DD') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverInundated = testData %>% subset(CLASS == 'GC_INUNDATED') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverInundated_dd= testData %>% subset(CLASS == 'GC_INUNDATED_DD') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverNonwoody = testData %>% subset(CLASS == 'GC_NONWOODY') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverNonwoody_dd= testData %>% subset(CLASS == 'GC_NONWOODY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverWoody = testData %>% subset(CLASS == 'GC_WOODY') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverWoody_dd= testData %>% subset(CLASS == 'GC_WOODY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,understoryNonwoody = testData %>% subset(CLASS == 'U_NONWOODY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryNonwoody_dd= testData %>% subset(CLASS == 'U_NONWOODY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,understoryWoody = testData %>% subset(CLASS == 'U_WOODY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryWoody_dd= testData %>% subset(CLASS == 'U_WOODY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,understoryType = testData %>% subset(CLASS == 'UNDERSTORY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryType_dd= testData %>% subset(CLASS == 'UNDERSTORY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,drawdown = testData %>% subset(CLASS == 'DRAWDOWN') %>% select(SITE, STATION, VALUE)
+                                   ,horizontalDistance_dd = testData %>% subset(CLASS == 'HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+	                               ,fillinDrawdown=FALSE
+	                               )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
-	checkEquals(sort(unique(expected$PARAMETER)), sort(unique(actual$PARAMETER)), "Incorrect naming of metrics with drawdown")
+	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown")
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
-#	xx <- within(merge(within(expected, inExp<-TRUE), within(actual, inAct<-TRUE), c('UID','PARAMETER'), all=TRUE, suffix=c('.exp','.act'))
-#				,{sameDiff <- abs(RESULT.exp - RESULT.act) < 1e-14
-#				  sameNA <- is.na(RESULT.exp) == is.na(RESULT.act)
-#				  inExp <- ifelse(is.na(inExp), FALSE, TRUE)
-#				  inAct <- ifelse(is.na(inAct), FALSE, TRUE)
-#			  	 }
-#				)
-	
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 }
 
 
-
-metsRiparianVegetationNLATest.withDrawDownAndFillin <- function()
+nlaRiparianVegetationTest.withDrawDownAndFillin <- function()
 # Unit test with 2012 data using the option to fill in unrecorded drawdown values.
 {
-	testData <- metsRiparianVegetationNLATest.createTestDataWithDrawDown()
-	expected <- metsRiparianVegetationNLATest.expectedResultsWithDrawDown()
-	expected$RESULT <- as.numeric(expected$RESULT)
-	actual <- metsRiparianVegetationNLA(testData)
+	testData <- nlaRiparianVegetationTest.createTestDataWithDrawDown()
+	expected <- nlaRiparianVegetationTest.expectedResultsWithDrawDown()
+	expected$VALUE <- as.numeric(expected$VALUE)
+	actual <- nlaRiparianVegetation(bigTrees = testData %>% subset(CLASS == 'C_BIGTREES') %>% select(SITE, STATION, VALUE)
+                                   ,bigTrees_dd = testData %>% subset(CLASS == 'C_BIGTREES_DD') %>% select(SITE, STATION, VALUE)
+                                   ,smallTrees = testData %>% subset(CLASS == 'C_SMALLTREES') %>% select(SITE, STATION, VALUE)
+                                   ,smallTrees_dd= testData %>% subset(CLASS == 'C_SMALLTREES_DD') %>% select(SITE, STATION, VALUE)
+                                   ,canopyType = testData %>% subset(CLASS == 'CANOPY') %>% select(SITE, STATION, VALUE)
+                                   ,canopyType_dd= testData %>% subset(CLASS == 'CANOPY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverBare = testData %>% subset(CLASS == 'GC_BARE') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverBare_dd= testData %>% subset(CLASS == 'GC_BARE_DD') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverInundated = testData %>% subset(CLASS == 'GC_INUNDATED') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverInundated_dd= testData %>% subset(CLASS == 'GC_INUNDATED_DD') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverNonwoody = testData %>% subset(CLASS == 'GC_NONWOODY') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverNonwoody_dd= testData %>% subset(CLASS == 'GC_NONWOODY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverWoody = testData %>% subset(CLASS == 'GC_WOODY') %>% select(SITE, STATION, VALUE)
+                                   ,groundcoverWoody_dd= testData %>% subset(CLASS == 'GC_WOODY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,understoryNonwoody = testData %>% subset(CLASS == 'U_NONWOODY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryNonwoody_dd= testData %>% subset(CLASS == 'U_NONWOODY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,understoryWoody = testData %>% subset(CLASS == 'U_WOODY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryWoody_dd= testData %>% subset(CLASS == 'U_WOODY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,understoryType = testData %>% subset(CLASS == 'UNDERSTORY') %>% select(SITE, STATION, VALUE)
+                                   ,understoryType_dd= testData %>% subset(CLASS == 'UNDERSTORY_DD') %>% select(SITE, STATION, VALUE)
+                                   ,drawdown = testData %>% subset(CLASS == 'DRAWDOWN') %>% select(SITE, STATION, VALUE)
+                                   ,horizontalDistance_dd = testData %>% subset(CLASS == 'HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+                                   )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown and DD fill-in")
-	checkEquals(sort(unique(expected$PARAMETER)), sort(unique(actual$PARAMETER)), "Incorrect naming of metrics with drawdown and DD fill-in")
+	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown and DD fill-in")
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown and DD fill-in")
 	
-#	xx <- within(merge(within(expected, inExp<-TRUE), within(actual, inAct<-TRUE), c('UID','PARAMETER'), all=TRUE, suffix=c('.exp','.act'))
-#				,{sameDiff <- abs(RESULT.exp - RESULT.act) < 1e-14
-#				  sameNA <- is.na(RESULT.exp) == is.na(RESULT.act)
-#				  inExp <- ifelse(is.na(inExp), FALSE, TRUE)
-#				  inAct <- ifelse(is.na(inAct), FALSE, TRUE)
-#			  	 }
-#				)
-
-	diff <- dfCompare(expected, actual, c('UID','PARAMETER'), zeroFudge=1e-14)
+	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown and DD fill-in")
 }
 
 
-
-metsRiparianVegetationNLATest.createTestData2007 <- function()
+nlaRiparianVegetationTest.createTestData2007 <- function()
 # This data is based on NLA2007 data for the following VISIT_ID:
 #	7469	full complement of data, stations A-J (normal)
 #	7472	partial data, stations A-J
@@ -108,7 +149,7 @@ metsRiparianVegetationNLATest.createTestData2007 <- function()
 #tt<-subset(rv07, VISIT_ID %in% c(7469,7472,7492,7518,7611,7723,7784,7797), select=c(VISIT_ID,STATION_NO,PARAMETER,RESULT,UNITS))
 #tt <- tt[order(tt$VISIT_ID,tt$STATION_NO,tt$PARAMETER),]	
 {
-	tc <- textConnection("   UID    STATION    PARAMETER RESULT UNITS
+	tc <- textConnection("   SITE    STATION    CLASS VALUE UNITS
 							7469          A   C_BIGTREES      1 X         
 							7469          A C_SMALLTREES      3 X         
 							7469          A       CANOPY      C X         
@@ -739,15 +780,14 @@ metsRiparianVegetationNLATest.createTestData2007 <- function()
 }
 
 
-
-metsRiparianVegetationNLATest.expectedResults2007 <- function()
+nlaRiparianVegetationTest.expectedResults2007 <- function()
 # Values expected based on test data.  These were taken directly from tblPHABMET_LONG
 # in the 2007 NLA databse.
 #phab <- sqlFetch(nla07, 'tblPHABMET_LONG', stringsAsFactors=FALSE) 
 #tt<-subset(phab, VISIT_ID %in% c(7469,7472,7492,7518,7611,7723,7784,7797) & grepl('^rv', PARAMETER))
 #tt <- tt[order(tt$VISIT_ID,tt$PARAMETER), c('VISIT_ID','PARAMETER','RESULT')]	
 {
-	tc <- textConnection("   UID         PARAMETER              RESULT
+	tc <- textConnection("  SITE            METRIC               VALUE
 							7469        RVFCCANBIG                0.13
 							7469      RVFCCANSMALL               0.205
 							7469       RVFCGNDBARE                   0
@@ -1167,27 +1207,12 @@ metsRiparianVegetationNLATest.expectedResults2007 <- function()
 						)
 	
 	longMets <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-#	wideMets <- dcast(longMets, UID~PARAMETER, value.var='RESULT')
-#	wideMets <- within(dcast(longMets, UID~metric, value.var='RESULT')
-#					  ,{RVNCANBIG <- as.integer(RVNCANBIG)
-#						RVNCANOPY <- as.integer(RVNCANOPY)
-#						RVNCANSMALL <- as.integer(RVNCANSMALL)
-#						RVNGNDBARE <- as.integer(RVNGNDBARE)
-#						RVNGNDINUNDATED <- as.integer(RVNGNDINUNDATED)
-#						RVNGNDNONW <- as.integer(RVNGNDNONW)
-#						RVNGNDWOODY <- as.integer(RVNGNDWOODY)
-#						RVNUNDERSTORY <- as.integer(RVNUNDERSTORY)
-#						RVNUNDNONW <- as.integer(RVNUNDNONW)
-#						RVNUNDWOODY <- as.integer(RVNUNDWOODY)
-#					   }
-#			   		  )
-	
+
 	return(longMets)
 }
 
 
-
-metsRiparianVegetationNLATest.createTestDataWithDrawDown <- function()
+nlaRiparianVegetationTest.createTestDataWithDrawDown <- function()
 # This data is based on NLA2012 data for the following UIDs:
 #	6362	data exists only at station J, HORIZ_DIST_DD present
 #	6396	full data exists at stations A-J
@@ -1199,7 +1224,7 @@ metsRiparianVegetationNLATest.createTestDataWithDrawDown <- function()
 #	7431	Missing DD at all stations, missing some LIT data
 #	1000222	Full LIT and nearly full DD data for stations A,B,C,I,J; otherwise missing.
 {
-	tc <- textConnection("	 UID SAMPLE_TYPE STATION       PARAMETER RESULT FLAG  FORM_TYPE
+	tc <- textConnection("	 SITE SAMPLE_TYPE STATION       CLASS VALUE FLAG  FORM_TYPE
 							6362        PHAB       J      C_BIGTREES      0 NA    PHAB_BACK
 							6362        PHAB       J   C_BIGTREES_DD      0 NA    PHAB_BACK
 						    6362        PHAB       J    C_SMALLTREES      0 NA    PHAB_BACK
@@ -2497,11 +2522,10 @@ metsRiparianVegetationNLATest.createTestDataWithDrawDown <- function()
 }
 
 
-
-metsRiparianVegetationNLATest.expectedResultsWithDrawDownAndNoFillin <- function()
+nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
 #
 {
-	tc <- textConnection("	 UID             PARAMETER                      RESULT
+	tc <- textConnection("	 SITE             METRIC                      VALUE
 							6362         RVFCCANBIG_DD  0.000000000000000000000000
 							6362        RVFCCANBIG_RIP  0.000000000000000000000000
 							6362        RVFCCANBIG_SYN  0.000000000000000000000000
@@ -3806,13 +3830,12 @@ metsRiparianVegetationNLATest.expectedResultsWithDrawDownAndNoFillin <- function
 }
 
 
-
-metsRiparianVegetationNLATest.expectedResultsWithDrawDown <- function()
+nlaRiparianVegetationTest.expectedResultsWithDrawDown <- function()
 # These values were calculated metsRiparianVegetationTest.sas on 20 Nov 2013,
 # with the exception of 91 zero values which I did not have time to correct in 
 # the SAS program -- these rows are appended at the end.
 {
-	tc <- textConnection("	 UID             PARAMETER                      RESULT
+	tc <- textConnection("	 SITE             METRIC                      VALUE
 							6362         RVFCCANBIG_DD  0.000000000000000000000000
 							6362        RVFCCANBIG_RIP  0.000000000000000000000000
 							6362        RVFCCANBIG_SYN  0.000000000000000000000000
@@ -5117,7 +5140,5 @@ metsRiparianVegetationNLATest.expectedResultsWithDrawDown <- function()
 	return(rc)
 	
 }
-
-
 
 # end of file
