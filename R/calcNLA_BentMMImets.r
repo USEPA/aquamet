@@ -1,16 +1,16 @@
 #' @export
 #' 
-#' @title Calculate benthic MMI metrics used in NRSA MMIs 
+#' @title Calculate benthic MMI metrics used in NLA MMIs 
 #' @description This function calculates only the benthic
 #' metrics in the corresponding MMI used in the National
-#' Rivers and Streams Assessment (NRSA), based on the 
-#' aggregated Omernik ecoregions included in the input 
+#' Lakes Assessment (NLA), based on 
+#' Omernik ecoregions aggregated to 5 bioregions included in the input 
 #' data frame. 
 #' @param inCts A data frame containing, at minimum, the variables 
 #' specified in the arguments for sampID, dist, ct, taxa_id, and
 #' ecoreg. It is assumed that the data have been aggregated
 #' to the taxonomic levels used in WSA/NRSA already. This can
-#' be done using the function \emph{calcNRSA_BentMMImets()}.
+#' be done using the function \emph{calcNLA_BentMMImets()}.
 #' @param inTaxa a data frame containing taxonomic information, 
 #' including variables for PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, 
 #' and TRIBE, as well as autecology traits with names that match those 
@@ -25,9 +25,9 @@
 #' the default is \emph{IS_DISTINCT}.
 #' @param ct A string with the name of the count variable. If not 
 #' specified, the default is \emph{TOTAL}.
-#' @param ecoreg A string with the name of the ecoregion variable. 
-#' Valid values that correspond to regions used in NRSA are
-#' CPL, NAP, NPL, SAP, sPL, TPL, UMW, WMT, and XER.
+#' @param ecoreg A string with the name of the aggregated bioregion variable. 
+#' Valid values that correspond to regions used in NLA are
+#' CPL, EHIGH, PLAINS, UMW, and WMTNS.
 #' @param taxa_id A string with the name of the taxon ID variable 
 #' in \emph{inCts} that matches that in \emph{inTaxa}. The default 
 #' value is \emph{TAXA_ID}.
@@ -48,29 +48,21 @@
 #' the benthic macroinvertebrate metrics used in the MMI as additional variables.
 #' The metrics generated, by aggregated ecoregion, are:
 #' 
-#'  CPL: NOINPIND, HPRIME, SHRDNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
+#'  CPL: NOINPTAX, CHIRDOM5PIND, PREDNTAX, SPWLNTAX, EPT_NTAX, NTOLPIND
 #'      
-#'  NAP: EPT_PTAX, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, NTOLPTAX
-#'      
-#'  NPL: EPT_PTAX, HPRIME, SCRPNTAX, BURRPTAX, EPHENTAX, NTOLNTAX 
-#'      
-#'  SAP: EPHEPTAX, HPRIME, SCRPNTAX, BURRPTAX, EPT_NTAX, TOLRPTAX
-#'      
-#'  SPL: EPT_PIND, HPRIME, SCRPNTAX, BURRPTAX, EPT_NTAX, INTLNTAX
+#'  EHIGH: NOINPTAX, CHIRDOM5PIND, COGANTAX, CLNGNTAX, EPOTNTAX, TL23NTAX
 #'  
-#'  TPL: EPT_PIND, HPRIME, SCRPNTAX, CLNGNTAX, EPHENTAX, STOLPTAX
-#'      
-#'  UMW: CHIRPTAX, HPRIME, SHRDNTAX, BURRPTAX, EPT_NTAX, STOLPTAX
-#'      
-#'  WMT: EPT_PTAX, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
-#'      
-#'  XER: NOINPIND, DOM5PIND, SCRPNTAX, CLNGPTAX, EPT_NTAX, TOLRPTAX
+#'  PLAINS: DIPTPTAX, CHIRDOM5PIND, PREDNTAX, CLMBPTAX, EPOTNTAX, TL23PIND
+#'  
+#'  UMW: NOINPIND, CHIRDOM3PIND, SHRDPIND, CLNGNTAX, CRUSNTAX, TL23PTAX
+#'  
+#'  WMTNS: DIPTPIND, HPRIME, SCRPNTAX, CLNGNTAX, EPT_NTAX, TL23PTAX
 #'
 #' Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
 #' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
-calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
+calcNLA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
                   ,dist="IS_DISTINCT",ct="TOTAL",taxa_id='TAXA_ID'
                   ,ffg='FFG',habit='HABIT',ptv='PTV'){
   if(is.null(inTaxa)) {
@@ -87,7 +79,7 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
   }
   
   ecoCk <- unique(inCts[,ecoreg])
-  ecos <- c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER')
+  ecos <- c('CPL','EHIGH','PLAINS','UMW','WMTNS')
   if(any(ecoCk %nin% ecos)){
     msgEco <- which(ecoCk %nin% ecos)
     print(paste("These ecoregions are not valid: "
@@ -95,18 +87,13 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
     return(NULL)
   }
   
-  metnames <- data.frame(ECO=c(rep('CPL',6),rep('NAP',6),rep('NPL',6),rep('SAP',6),rep('SPL',6),rep('TPL',6)
-                                          ,rep('UMW',6),rep('WMT',6),rep('XER',6))
-                         ,METRIC=c('NOINPIND','HPRIME','SHRDNTAX','CLNGPTAX','EPT_NTAX','TOLRPTAX'
-                                   ,'EPT_PTAX','DOM5PIND','SCRPNTAX','CLNGPTAX','EPT_NTAX','NTOLPTAX'
-                                   ,'EPT_PTAX','HPRIME','SCRPNTAX','BURRPTAX','EPHENTAX','NTOLNTAX'
-                                   ,'EPHEPTAX','HPRIME','SCRPNTAX','BURRPTAX','EPT_NTAX','TOLRPTAX'
-                                   ,'EPT_PIND','HPRIME','SCRPNTAX','BURRPTAX','EPT_NTAX','INTLNTAX'
-                                   ,'EPT_PIND','HPRIME','SCRPNTAX','CLNGNTAX','EPHENTAX','STOLPTAX'
-                                   ,'CHIRPTAX','HPRIME','SHRDNTAX','BURRPTAX','EPT_NTAX','STOLPTAX'
-                                   ,'EPT_PTAX','DOM5PIND','SCRPNTAX','CLNGPTAX','EPT_NTAX','TOLRPTAX'
-                                   ,'NOINPIND','DOM5PIND','SCRPNTAX','CLNGPTAX','EPT_NTAX','TOLRPTAX')
-                         ,METTYPE=rep(c('TAX','DOM','FFG','HAB','TAX','TOL'),9)
+  metnames <- data.frame(ECO_BIO=c(rep('CPL',6),rep('EHIGH',6),rep('PLAINS',6),rep('UMW',6),rep('WMTNS',6))
+                         ,PARAMETER=c('NOINPTAX','CHIRDOM5PIND','PREDNTAX','SPWLNTAX','EPT_NTAX','NTOLPIND'
+                                      ,'NOINPTAX','CHIRDOM5PIND','COGANTAX','CLNGNTAX','EPOTNTAX','TL23NTAX'
+                                      ,'DIPTPTAX','CHIRDOM5PIND','PREDNTAX','CLMBPTAX','EPOTNTAX','TL23PIND'
+                                      ,'NOINPIND','CHIRDOM3PIND','SHRDPIND','CLNGNTAX','CRUSNTAX','TL23PTAX'
+                                      ,'DIPTPIND','HPRIME','SCRPNTAX','CLNGNTAX','EPT_NTAX','TL23PTAX')
+                         ,METTYPE=rep(c('TAX','DOM','FFG','HAB','TAX','TOL'),5)
                          ,stringsAsFactors=FALSE)
   
   # Calculate all metrics associated with any ecoregion, then only keep those that
@@ -143,17 +130,20 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
     subset(!is.na(FINAL_CT) & FINAL_CT>0)
   
   inTaxa.1 <- mutate(inTaxa, EPT_=ifelse(ORDER %in% c('PLECOPTERA','EPHEMEROPTERA','TRICHOPTERA'),1,NA)
-                     ,EPHE=ifelse(ORDER %in% c('EPHEMEROPTERA'),1,NA)
-                     ,CHIR=ifelse(FAMILY %in% c('CHIRONOMIDAE'),1,NA)
+                     ,EPOT=ifelse(ORDER %in% c('EPHEMEROPTERA','ODONATA','PLECOPTERA','TRICHOPTERA'),1,NA)
+                     ,DIPT=ifelse(ORDER %in% c('DIPTERA'),1,NA)
                      ,NOIN=ifelse(CLASS %nin% c('INSECTA'),1,NA)
+                     ,CRUS=ifelse(CLASS %in% c('MALACOSTRACA','MAXILLOPODA','BRANCHIOPODA'
+                                               ,'CEPHALOCARIDA','OSTRACODA','REMIPEDIA'),1,NA)
+                     ,COGA=ifelse(stringr::str_detect(FFG,'CG'), 1, NA)
+                     ,PRED=ifelse(stringr::str_detect(FFG,'PR'), 1, NA)
                      ,SHRD=ifelse(stringr::str_detect(FFG,'SH'), 1, NA)
                      ,SCRP=ifelse(stringr::str_detect(FFG,'SC'), 1, NA)
-                     ,BURR=ifelse(stringr::str_detect(HABIT,'BU'), 1, NA)
+                     ,CLMB=ifelse(stringr::str_detect(HABIT,'CB'), 1, NA)
                      ,CLNG=ifelse(stringr::str_detect(HABIT,'CN'), 1, NA)
-                     ,TOLR=ifelse(PTV >= 7, 1, NA)
-                     ,INTL=ifelse(PTV <= 3, 1, NA)
+                     ,SPWL=ifelse(stringr::str_detect(HABIT,'SP'), 1, NA)
+                     ,TL23=ifelse(PTV >= 2 & PTV < 4, 1, NA)
                      ,NTOL=ifelse(PTV < 6, 1, NA)
-                     ,STOL=ifelse(PTV >= 8, 1, NA)
   )
   
   # Drop non-target taxa if included in taxalist
@@ -161,7 +151,7 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
     inTaxa.1 <- subset(inTaxa.1,is.na(NON_TARGET)|NON_TARGET=='')
   }
   
-  params<-c('EPT_','EPHE','CHIR','NOIN','SCRP','SHRD','BURR','CLNG','TOLR','INTL','NTOL','STOL')
+  params<-c('EPT_','EPOT','DIPT','NOIN','CRUS','COGA','PRED','SCRP','SHRD','CLMB','CLNG','SPWL','TL23','NTOL')
   
   taxalong <- reshape2::melt(inTaxa.1[,c('TAXA_ID',params)],id.vars=c('TAXA_ID'),variable.name='TRAIT',na.rm=TRUE)
   taxalong$TRAIT <- as.character(taxalong$TRAIT)
@@ -188,14 +178,33 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
     merge(samples,by='SAMPID')
 
   shanMet <- ShanDiversity(inCts.1)
-  domMet <- Dominance(inCts.1,5) %>%
-    mutate(DOM5PIND=ifelse(is.na(DOM5PIND),100,DOM5PIND))
   
-  outAll <- merge(outWide,shanMet,by='SAMPID')
-  outAll <- merge(outAll,domMet,by='SAMPID')
+  chiroIn <- merge(inCts,inTaxa[,c('TAXA_ID','FAMILY')],by="TAXA_ID") %>%
+    subset(FAMILY=='CHIRONOMIDAE', select=c('SAMPID','TAXA_ID','FINAL_CT','IS_DISTINCT')) %>%
+    plyr::ddply('SAMPID', mutate, TOTLDIST=sum(IS_DISTINCT*FINAL_CT))
+  
+    dom1Met <- Dominance(chiroIn, topN=1) %>%
+      plyr::rename(c('DOM1PIND'='CHIRDOM1PIND'))
+  
+    dom3Met <- Dominance(chiroIn, topN=3) %>%
+      plyr::rename(c("DOM3PIND"="CHIRDOM3PIND")) 
+  
+    dom5Met <- Dominance(chiroIn, topN=5) %>%
+      plyr::rename(c("DOM5PIND"="CHIRDOM5PIND"))
+
+  
+  outAll <- merge(outWide,shanMet,by='SAMPID') %>%
+    merge(dom1Met,by='SAMPID',all.x=T) %>% 
+    merge(dom3Met,by='SAMPID',all.x=T) %>%
+    merge(dom5Met,by='SAMPID',all.x=T) %>%
+    mutate(CHIRDOM1PIND=ifelse(is.na(CHIRDOM1PIND),0,CHIRDOM1PIND)
+           ,CHIRDOM3PIND=ifelse(is.na(CHIRDOM3PIND) & CHIRDOM1PIND>0
+                                ,100,ifelse(is.na(CHIRDOM3PIND) & CHIRDOM1PIND==0,0,CHIRDOM3PIND))
+           ,CHIRDOM5PIND=ifelse(is.na(CHIRDOM5PIND) & CHIRDOM3PIND>0, 100
+                                ,ifelse(is.na(CHIRDOM5PIND) & CHIRDOM3PIND==0, 0, CHIRDOM5PIND)))
   
   outLong.1 <- reshape2::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg)) %>%
-  merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC'))
+  merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO_BIO','PARAMETER'))
   
   ckMetnum <- as.data.frame(table(SAMPID=outLong.1$SAMPID)) %>% 
     dplyr::filter(Freq!=6)

@@ -99,7 +99,7 @@ calcBentTaxMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
                      ,HEMI=ifelse(ORDER %in% c('HEMIPTERA'),1,NA)
                      ,MITE=ifelse(ORDER %in% c('TROMBIDIFORMES','SARCOPTIFORMES'),1,NA)
                      ,ODON=ifelse(ORDER %in% c('ODONATA'),1,NA)
-                     ,OLLE=ifelse(CLASS %in% c('OLIGOCHAETA','HIRUDINEA'),1,NA)
+                     ,OLLE=ifelse(CLASS %in% c('OLIGOCHAETA','HIRUDINEA','CLITELLATA'),1,NA)
                      ,ORTH=ifelse(SUBFAMILY %in% c('ORTHOCLADIINAE'),1,NA)
                      ,TANY=ifelse(TRIBE %in% c('TANYTARSINI'),1,NA)
                      ,TUBINAID=ifelse(FAMILY %in% c('TUBIFICIDAE','NAIDIDAE'),1,NA)

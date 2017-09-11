@@ -42,7 +42,7 @@
 #' Valid values that correspond to regions used in NRSA are
 #' CPL, NAP, NPL, SAP, sPL, TPL, UMW, WMT, and XER.
 #' @param totlnind A string with the name of the variable with the 
-#' total individuals each sample. 
+#' total individuals in each sample. 
 #' @return A data frame containing the variables in sampID, as well as
 #' the scored metrics, the benthic MMI, and the condition class for each
 #' sites. The variable names are COMP_PT, DIVS_PT, FEED_PT, HABT_PT,

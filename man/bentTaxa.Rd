@@ -31,8 +31,8 @@
   }
 }
 \note{
-  Unless a data frame name is provided for argument inTaxa to the invertMet
-  function, this dataset provides the inTaxa data frame.
+  Unless a data frame name is provided for argument inTaxa to invertebrate
+  metric functions, this dataset provides the inTaxa data frame.
 }
 \examples{
 data(bentTaxa)
