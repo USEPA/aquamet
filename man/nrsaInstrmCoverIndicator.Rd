@@ -4,13 +4,8 @@
 \alias{nrsaInstrmCoverIndicator}
 \title{Calculate NRSA Instream Cover physical habitat indicator}
 \usage{
-<<<<<<< HEAD
 nrsaInstrmCoverIndicator(x, sampID = "UID", ecoreg, protocol, xfc_nat, lat,
   lon, slope, xwidth, elev, area)
-=======
-nrsaInstrmCoverIndicator(x, sampID = "UID", ecoreg, protocol, lat, lon, slope,
-  xwidth, elev, area, xfc_nat)
->>>>>>> a672e8d18edb78951118872f408c28d6356f9c8a
 }
 \arguments{
 \item{x}{A data frame containing, at minimum, the variables 
@@ -51,13 +46,10 @@ CPL, EHIGH, PLAINS, UMW, and WMTNS.}
 physical habitat protocol used. The expected values of this variable are 
 'BOATABLE' and 'WADEABLE'.}
 
-<<<<<<< HEAD
 \item{xfc_nat}{A string with the name of the variable for log10(mean areal 
 natural fish cover + 0.01). Typically, the version used from NRSA physical 
 habitat metrics is XFC_NAT.}
 
-=======
->>>>>>> a672e8d18edb78951118872f408c28d6356f9c8a
 \item{lat}{A string with the name of the variable for latitude, assumed to 
 be in decimal degrees using NAD83.}
 
@@ -74,13 +66,6 @@ For NRSA, the variable used is XWIDTH.}
 the variable used is ELEV_PT.}
 
 \item{area}{A string with the name of the variable for watershed area in km2}
-<<<<<<< HEAD
-=======
-
-\item{xfc_nat}{A string with the name of the variable for log10(mean areal 
-natural fish cover + 0.01). Typically, the version used from NRSA physical 
-habitat metrics is XFC_NAT.}
->>>>>>> a672e8d18edb78951118872f408c28d6356f9c8a
 }
 \value{
 A data frame containing the variables in \emph{sampID} and 
