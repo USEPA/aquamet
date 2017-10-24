@@ -116,7 +116,7 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
   samps <- unique(subset(dfIn,select=c(sampID,'ecoreg','protocol','lrbs')))
 
   expParam.base <- subset(expParam,select=c('ecoreg','protocol','intercept','error','oe')) %>%
-    merge(samps,by=c('ecoreg','protocol'))
+    merge(samps,by=c('ecoreg','protocol'),all.y=T)
   
   expParam.mod <- subset(expParam,select=c('ecoreg','protocol','lat','lon','elev','l_area','l_width','l_slope')) %>%
     reshape2::melt(id.vars=c('ecoreg','protocol'),value.name='coef',na.rm=T) %>%
@@ -172,8 +172,9 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
   names(x)[names(x)==w1_hall] <- 'w1_hall'
  
   outMets <- mutate(x, w1_hall=as.numeric(w1_hall) 
-                   ,RIPDIST_COND = ifelse(w1_hall<0.33, 'Low', ifelse(w1_hall>=0.33 & w1_hall<1.5, 'Moderate'
-                                                                      , ifelse(w1_hall>=1.5, 'High', 'Not Assessed')))) %>%
+                   ,RIPDIST_COND = ifelse(is.na(w1_hall),'Not Assessed'
+                                          ,ifelse(w1_hall<0.33, 'Low'
+                                                  , ifelse(w1_hall>=0.33 & w1_hall<1.5, 'Moderate','High')))) %>%
     subset(select=c(sampID, 'RIPDIST_COND'))
   
   return(outMets)
@@ -298,7 +299,7 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, lat, lon
   samps <- unique(subset(dfIn,select=c(sampID,'ecoreg','protocol','l_xfc_nat')))
   
   expParam.base <- subset(expParam,select=c('ecoreg','protocol','intercept','error')) %>%
-    merge(samps,by=c('ecoreg','protocol'))
+    merge(samps,by=c('ecoreg','protocol'),all.y=T)
   
   expParam.mod <- subset(expParam,select=c('ecoreg','protocol','lat','lon','elev','l_area','l_width','l_slope')) %>%
     reshape2::melt(id.vars=c('ecoreg','protocol'),value.name='coef',na.rm=T) %>%
@@ -444,16 +445,16 @@ nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, l
   samps <- unique(subset(dfIn,select=c(sampID,'ecoreg','protocol','l_xcmgw')))
   
   expParam.base <- subset(expParam,select=c('ecoreg','protocol','intercept','error','oe')) %>%
-    merge(samps,by=c('ecoreg','protocol'))
+    merge(samps,by=c('ecoreg','protocol'),all.y=T)
   
   expParam.mod <- subset(expParam,select=c('ecoreg','protocol','lat','lon','elev','l_area','l_width','l_slope')) %>%
     reshape2::melt(id.vars=c('ecoreg','protocol'),value.name='coef',na.rm=T) %>%
     merge(dfIn,by=c('ecoreg','protocol','variable')) %>%
-    ddply(c(sampID,'ecoreg','protocol'),summarise,sumVal=sum(coef*value)) %>%
-    mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
+    plyr::ddply(c(sampID,'ecoreg','protocol'),summarise,sumVal=sum(coef*value)) %>%
+    plyr::mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
   
   dfIn.1 <- merge(expParam.base,expParam.mod,by=c(sampID,'ecoreg','protocol'),all.x=T) %>%
-    mutate(sumVal=ifelse(is.na(sumVal),0,sumVal), inputMsg=ifelse(is.na(inputMsg),'N',inputMsg))
+    plyr::mutate(sumVal=ifelse(is.na(sumVal),0,sumVal), inputMsg=ifelse(is.na(inputMsg),'N',inputMsg))
   
   # For ecoregions that use dirty models
   dfOut <- plyr::mutate(dfIn.1, RfE_ripveg=ifelse(inputMsg=='Y',NA,sumVal + intercept)
