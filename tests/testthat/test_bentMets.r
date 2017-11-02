@@ -1,7 +1,7 @@
 library(testthat)
 library(aquamet)
 
-context("Test benthic metric and MMI calculations")
+context("Test NRSA benthic metric and MMI calculations")
 
 #   # Must first create input dataset using WSA taxonomy and traits
 #   bentCts <- merge(bentCts_test,dplyr::select(bentTaxa, -SAMPLE_TYPE),by=c('TARGET_TAXON','TAXA_ID'))

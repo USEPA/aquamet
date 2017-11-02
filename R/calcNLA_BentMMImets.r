@@ -66,7 +66,7 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
                   ,dist="IS_DISTINCT",ct="TOTAL",taxa_id='TAXA_ID'
                   ,ffg='FFG',habit='HABIT',ptv='PTV'){
   if(is.null(inTaxa)) {
-    inTaxa <- bentTaxa
+    inTaxa <- bentTaxa_nla
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
   }
   
@@ -172,7 +172,7 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
                         PIND=round(sum(FINAL_CT/TOTLNIND)*100,2),
                         PTAX=round(sum(IS_DISTINCT/TOTLNTAX)*100,2), .progress='tk')  
 
-  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT'))
+  outLong <- reshape2::melt(outMet,id.vars=c('SAMPID','TOTLNTAX','TRAIT')) 
   outLong$variable <- paste(outLong$TRAIT,outLong$variable,sep='') 
   outWide <-reshape2::dcast(outLong,SAMPID+TOTLNTAX~variable,value.var='value')  %>%
     merge(samples,by='SAMPID')
@@ -204,7 +204,8 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
                                 ,ifelse(is.na(CHIRDOM5PIND) & CHIRDOM3PIND==0, 0, CHIRDOM5PIND)))
   
   outLong.1 <- reshape2::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg)) %>%
-  merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO_BIO','PARAMETER'))
+    merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO_BIO','PARAMETER'),all.y=T) %>%
+    plyr::mutate(value=ifelse(is.na(value),0,value))
   
   ckMetnum <- as.data.frame(table(SAMPID=outLong.1$SAMPID)) %>% 
     dplyr::filter(Freq!=6)

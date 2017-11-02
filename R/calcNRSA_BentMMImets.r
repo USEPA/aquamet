@@ -195,7 +195,8 @@ calcNRSA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
   outAll <- merge(outAll,domMet,by='SAMPID')
   
   outLong.1 <- reshape2::melt(outAll,id.vars=c(sampID,'SAMPID',ecoreg)) %>%
-  merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC'))
+    merge(metnames,by.x=c(ecoreg,'variable'),by.y=c('ECO','METRIC')) %>%
+    plyr::mutate(value=ifelse(is.na(value),0,value))
   
   ckMetnum <- as.data.frame(table(SAMPID=outLong.1$SAMPID)) %>% 
     dplyr::filter(Freq!=6)
