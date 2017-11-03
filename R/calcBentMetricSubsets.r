@@ -41,7 +41,7 @@
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
 
-calcBentTaxMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                              ct="TOTAL",taxa_id='TAXA_ID'){
 
   ctVars <- c(sampID,dist,ct,taxa_id)
@@ -51,6 +51,7 @@ calcBentTaxMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
     return(NULL)
   }
   
+
   inCts <- subset(inCts,select=c(sampID,ct,dist,taxa_id))
   # Rename ct and dist to FINAL_CT and IS_DISTINCT
   names(inCts)[names(inCts)==ct] <- 'FINAL_CT'
@@ -62,13 +63,20 @@ calcBentTaxMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
+  # Run quick check to make sure all taxa in counts are in the taxalist
+  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
+  if(nrow(checkTaxa)!=nrow(inCts)){
+    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
+    return("Not all taxa in counts match up to taxa in taxalist")
+  }
+  
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
   # NON_TARGET taxa are included in the table provided by NRSA, we need to exclude
   # them from our calculations.
-  if(is.null(inTaxa)) {
-    inTaxa <- bentTaxa
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
-  }
+  # if(is.null(inTaxa)) {
+  #   inTaxa <- bentTaxa
+  inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  # }
 
   ## This code assumes that the following are columns in the taxa file: PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, TRIBE, HABIT, FFG, PTV, 
   ##    	TARGET_TAXON, 
@@ -240,7 +248,7 @@ calcBentTaxMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
 #' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
-calcBentFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ct="TOTAL",taxa_id='TAXA_ID',ffg='FFG'){
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
@@ -260,13 +268,20 @@ calcBentFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
+  # Run quick check to make sure all taxa in counts are in the taxalist
+  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
+  if(nrow(checkTaxa)!=nrow(inCts)){
+    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
+    return("Not all taxa in counts match up to taxa in taxalist")
+  }
+  
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
   # NON_TARGET taxa are included in the table provided by NRSA, we need to exclude
   # them from our calculations.
-  if(is.null(inTaxa)) {
-    inTaxa <- bentTaxa
+  # if(is.null(inTaxa)) {
+  #   inTaxa <- bentTaxa
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
-  }
+  # }
   
   if(ffg %nin% names(inTaxa)){
     return(paste("Input taxa list does not contain variable",ffg,"."))
@@ -400,7 +415,7 @@ calcBentFFGmets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
 #' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
-calcBentHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id='TAXA_ID',habit='HABIT'){
 
   ctVars <- c(sampID,dist,ct,taxa_id)
@@ -421,13 +436,20 @@ calcBentHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINC
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
+  # Run quick check to make sure all taxa in counts are in the taxalist
+  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
+  if(nrow(checkTaxa)!=nrow(inCts)){
+    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
+    return("Not all taxa in counts match up to taxa in taxalist")
+  }
+  
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
   # NON_TARGET taxa are included in the table provided by NRSA, we need to exclude
   # them from our calculations.
-  if(is.null(inTaxa)) {
-    inTaxa <- bentTaxa
+  # if(is.null(inTaxa)) {
+  #   inTaxa <- bentTaxa
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
-  }
+  # }
   
   if(habit %nin% names(inTaxa)){
     return(paste("Input taxa list does not contain variable",habit,"."))
@@ -551,7 +573,7 @@ calcBentHabitMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINC
 #' included in this package.  
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
-calcBentTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id='TAXA_ID',ptv='PTV'){
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(inCts))){
@@ -571,13 +593,20 @@ calcBentTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
+  # Run quick check to make sure all taxa in counts are in the taxalist
+  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
+  if(nrow(checkTaxa)!=nrow(inCts)){
+    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
+    return("Not all taxa in counts match up to taxa in taxalist")
+  }
+  
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
   # NON_TARGET taxa are included in the table provided by NRSA, we need to exclude
   # them from our calculations.
-  if(is.null(inTaxa)) {
-    inTaxa <- bentTaxa
+  # if(is.null(inTaxa)) {
+  #   inTaxa <- bentTaxa
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
-  }
+  # }
   
   if(ptv %nin% names(inTaxa)){
     return(paste("Input taxa list does not contain variable",ptv,"."))
@@ -720,7 +749,7 @@ calcBentTolMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT"
 #' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 
-calcBentDominMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcBentDominMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
                           ct="TOTAL",taxa_id="TAXA_ID"){
 
   ctVars <- c(sampID,dist,ct,taxa_id)
@@ -741,13 +770,20 @@ calcBentDominMets <- function(inCts, inTaxa=NULL, sampID="UID", dist="IS_DISTINC
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
+  # Run quick check to make sure all taxa in counts are in the taxalist
+  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
+  if(nrow(checkTaxa)!=nrow(inCts)){
+    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
+    return("Not all taxa in counts match up to taxa in taxalist")
+  }
+
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
   # NON_TARGET taxa are included in the table provided by NRSA, we need to exclude
   # them from our calculations.
-  if(is.null(inTaxa)) {
-    inTaxa <- bentTaxa
+  # if(is.null(inTaxa)) {
+  #   inTaxa <- bentTaxa
     inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
-  }
+  # }
   
   if('FAMILY' %nin% names(inTaxa)){
     print("Missing variable ORDER from input taxa list. Will not calculate chironomid dominance metrics.")

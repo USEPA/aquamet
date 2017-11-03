@@ -16,7 +16,8 @@
 #' and TRIBE, as well as autecology traits with names that match those 
 #' in the arguments ffg, habit, and ptv. In addition, there
 #' should be a variable with the name in argument taxa_id that matches 
-#' with all of those in the inCts data frame
+#' with all of those in the inCts data frame. The default is the
+#' bentTaxa_nla data frame included in this package.
 #' @param sampID A character vector containing the names of all 
 #' variables in inCts that specify a unique sample. If not specified, 
 #' the default is \emph{UID}
@@ -62,13 +63,20 @@
 #' included in this package.
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
-calcNLA_BentMMImets <- function(inCts,inTaxa=NULL, sampID="UID",ecoreg=NULL
+calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=NULL
                   ,dist="IS_DISTINCT",ct="TOTAL",taxa_id='TAXA_ID'
                   ,ffg='FFG',habit='HABIT',ptv='PTV'){
-  if(is.null(inTaxa)) {
-    inTaxa <- bentTaxa_nla
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+
+    # Run quick check to make sure all taxa in counts are in the taxalist
+  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
+  if(nrow(checkTaxa)!=nrow(inCts)){
+    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
+    return("Not all taxa in counts match up to taxa in taxalist")
   }
+  # if(is.null(inTaxa)) {
+  #   inTaxa <- bentTaxa_nla
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+  # }
   
   ctVars <- c(sampID,dist,ct,taxa_id,ecoreg)
   if(any(ctVars %nin% names(inCts))){

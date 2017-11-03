@@ -25,7 +25,7 @@ context("Test NRSA benthic metric and MMI calculations")
  
 test_that("Data prep correct",
 {
-  testOut <- prepBentCts_WSA(inCts=bentCts_test,inTaxa=bentTaxa
+  testOut <- prepBentCts_WSA(inCts=bentCts_test,inTaxa=bentTaxa_nrsa
                              ,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                              ,ct='TOTAL300'
                              ,taxa_id='TAXA_ID')
@@ -40,7 +40,7 @@ test_that("Data prep correct",
 
 test_that("Benthic Taxonomy metric values correct",
           {
-            testOut <- calcBentTaxMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+            testOut <- calcBentTaxMets(indf_test,inTaxa=bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                         ,dist='IS_DISTINCT',ct='TOTAL')
             testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                            ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -53,7 +53,7 @@ test_that("Benthic Taxonomy metric values correct",
 
 test_that("Benthic FFG metric values correct",
 {
-  testOut <- calcBentFFGmets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+  testOut <- calcBentFFGmets(indf_test,inTaxa=bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                               ,dist='IS_DISTINCT',ct='TOTAL',ffg='FFG_WSA')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -67,7 +67,7 @@ test_that("Benthic FFG metric values correct",
 
 test_that("Benthic Habit metric values correct",
 {
-  testOut <- calcBentHabitMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+  testOut <- calcBentHabitMets(indf_test,inTaxa=bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                          ,dist='IS_DISTINCT',ct='TOTAL',habit='HABIT_WSA')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -80,7 +80,7 @@ test_that("Benthic Habit metric values correct",
 
 test_that("Benthic tolerance metric values correct",
 {
-  testOut <- calcBentTolMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+  testOut <- calcBentTolMets(indf_test,inTaxa=bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                            ,dist='IS_DISTINCT',ct='TOTAL',ptv='PTV_WSA')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -94,7 +94,7 @@ test_that("Benthic tolerance metric values correct",
 
 test_that("Benthic dominance and diversity metric values correct",
 {
-  testOut <- calcBentDominMets(indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+  testOut <- calcBentDominMets(indf_test,inTaxa=bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                          ,dist='IS_DISTINCT',ct='TOTAL')
   testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                  ,variable.name='PARAMETER',value.name='RESULT') %>%
@@ -106,7 +106,7 @@ test_that("Benthic dominance and diversity metric values correct",
 
 test_that("All benthic metric values correct",
           {
-            testOut <- calcAllBentMets(indf=indf_test,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+            testOut <- calcAllBentMets(indf=indf_test,inTaxa=bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                        ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
                                        ,habit='HABIT_WSA',ptv='PTV_WSA')
             testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
