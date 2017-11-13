@@ -4,8 +4,8 @@
 \alias{calcBentDominMets}
 \title{Calculate dominance and diversity benthic metrics}
 \usage{
-calcBentDominMets(inCts, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID")
+calcBentDominMets(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
+  ct = "TOTAL", taxa_id = "TAXA_ID")
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 

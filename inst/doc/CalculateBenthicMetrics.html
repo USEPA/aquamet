@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2017-07-14" />
+<meta name="date" content="2017-11-03" />
 
 <title>Calculating Macroinvertebrate Metrics</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Calculating Macroinvertebrate Metrics</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2017-07-14</em></h4>
+<h4 class="date"><em>2017-11-03</em></h4>
 
 
 
@@ -98,30 +98,37 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 5 10000       BERWW          P    3759     5           1
 ## 6 10000       BERWW          P    4309     4           1</code></pre>
 <p>This example dataset contains all of the necessary variables required to calculate all of the macroinvertebrates metrics. For this dataset, the combination of <code>UID</code>, <code>SAMPLE_TYPE</code>, and <code>SAMPLE_CAT</code> identifies individual samples, <code>TAXA_ID</code> identifies the taxon and links to same field in the taxalist, <code>TOTAL</code> is the count for the taxon, and <code>IS_DISTINCT</code> is the distinctness, which 0 indicating non-distinct within the sample and 1 distinct.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(bentTaxa)</code></pre></div>
-<pre><code>##   PUBLICATION_DATE TAXA_ID TARGET_TAXON NON_TARGET     PHYLUM   CLASS
-## 1       2016-05-11    3405       ABEDUS            ARTHROPODA INSECTA
-## 2       2016-05-11    3406  ABLABESMYIA            ARTHROPODA INSECTA
-## 3       2016-05-11    3407   ACENTRELLA            ARTHROPODA INSECTA
-## 4       2016-05-11    3408    ACERPENNA            ARTHROPODA INSECTA
-## 5       2016-05-11    3409      ACILIUS            ARTHROPODA INSECTA
-## 6       2016-05-11    3410       ACNEUS            ARTHROPODA INSECTA
-##           ORDER         FAMILY   SUBFAMILY        TRIBE       GENUS
-## 1     HEMIPTERA BELOSTOMATIDAE                               ABEDUS
-## 2       DIPTERA   CHIRONOMIDAE TANYPODINAE PENTANEURINI ABLABESMYIA
-## 3 EPHEMEROPTERA       BAETIDAE                           ACENTRELLA
-## 4 EPHEMEROPTERA       BAETIDAE                            ACERPENNA
-## 5    COLEOPTERA     DYTISCIDAE                              ACILIUS
-## 6    COLEOPTERA    PSEPHENIDAE                               ACNEUS
-##        FFG FFG_WSA HABIT HABIT_WSA PTV PTV_WSA VOLTINISM ITISTSN
-## 1 CF,CG,PR            CB            NA      NA   grthan1  103717
-## 2       PR      PR    SP        SP 5.6     5.6            128079
-## 3       CG      CG    SW        SW 4.0     4.0   grthan1  100801
-## 4       CG      CG    SW        SW 3.6     3.6   grthan1  568546
-## 5       PR            SW            NA      NA         1  112074
-## 6                     CN            NA      NA            114082</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(bentTaxa_nrsa)</code></pre></div>
+<pre><code>##   PUBLICATION_DATE TAXA_ID TARGET_TAXON    OTU_NRSA OTU_NRSA_CODE
+## 1       2016-12-02    3405       ABEDUS      ABEDUS          OTU1
+## 2       2016-12-02    3406  ABLABESMYIA ABLABESMYIA          OTU2
+## 3       2016-12-02    3407   ACENTRELLA  ACENTRELLA          OTU6
+## 4       2016-12-02    3408    ACERPENNA   ACERPENNA          OTU7
+## 5       2016-12-02    3409      ACILIUS     ACILIUS          OTU8
+## 6       2016-12-02    3410       ACNEUS      ACNEUS          OTU9
+##   NON_TARGET     PHYLUM   CLASS         ORDER         FAMILY   SUBFAMILY
+## 1            ARTHROPODA INSECTA     HEMIPTERA BELOSTOMATIDAE            
+## 2            ARTHROPODA INSECTA       DIPTERA   CHIRONOMIDAE TANYPODINAE
+## 3            ARTHROPODA INSECTA EPHEMEROPTERA       BAETIDAE            
+## 4            ARTHROPODA INSECTA EPHEMEROPTERA       BAETIDAE            
+## 5            ARTHROPODA INSECTA    COLEOPTERA     DYTISCIDAE            
+## 6            ARTHROPODA INSECTA    COLEOPTERA    PSEPHENIDAE            
+##          TRIBE       GENUS      FFG FFG_WSA HABIT HABIT_WSA PTV PTV_WSA
+## 1                   ABEDUS CF,CG,PR            CB            NA      NA
+## 2 PENTANEURINI ABLABESMYIA       PR      PR    SP        SP 5.6     5.6
+## 3               ACENTRELLA       CG      CG    SW        SW 4.0     4.0
+## 4                ACERPENNA       CG      CG    SW        SW 3.6     3.6
+## 5                  ACILIUS       PR            SW            NA      NA
+## 6                   ACNEUS                     CN            NA      NA
+##   VOLTINISM ITISTSN
+## 1   grthan1  103717
+## 2            128079
+## 3   grthan1  100801
+## 4   grthan1  568546
+## 5         1  112074
+## 6            114082</code></pre>
 <p>This is the desired format of the taxalist. All of the necessary traits are included in the taxalist for metric calculation. The variable <code>FAM_OR_CLS</code> is the same as <code>FAMILY</code> and is an artifact from the NRSA 2008-9 study.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outdf &lt;-<span class="st"> </span><span class="kw">calcAllBentMets</span>(bentEx,bentTaxa,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outdf &lt;-<span class="st"> </span><span class="kw">calcAllBentMets</span>(bentEx,bentTaxa_nrsa,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
                                        ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>,<span class="dt">ffg=</span><span class="st">'FFG_WSA'</span>
                                        ,<span class="dt">habit=</span><span class="st">'HABIT_WSA'</span>,<span class="dt">ptv=</span><span class="st">'PTV_WSA'</span>)</code></pre></div>
 <pre><code>## [1] &quot;Done calculating taxonomy metrics.&quot;
@@ -172,7 +179,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Suppose only tolerance-related and taxonomic metrics are of interest. Then we need only to run the <code>calcBentTolMets()</code> and <code>calcBentTaxMets()</code> functions.</p>
 <div id="taxonomy-metrics" class="section level3">
 <h3>Taxonomy metrics</h3>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outTax &lt;-<span class="st"> </span><span class="kw">calcBentTaxMets</span>(bentEx,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outTax &lt;-<span class="st"> </span><span class="kw">calcBentTaxMets</span>(bentEx,bentTaxa_nrsa,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
                                         ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>)</code></pre></div>
 <pre><code>## [1] &quot;Done calculating taxonomy metrics.&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outTax)</code></pre></div>
@@ -219,7 +226,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="tolerance-metrics" class="section level3">
 <h3>Tolerance metrics</h3>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outTol &lt;-<span class="st"> </span><span class="kw">calcBentTolMets</span>(bentEx,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outTol &lt;-<span class="st"> </span><span class="kw">calcBentTolMets</span>(bentEx,bentTaxa_nrsa,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
                            ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">ptv=</span><span class="st">'PTV_WSA'</span>)</code></pre></div>
 <pre><code>## [1] &quot;Done calculating tolerance metrics.&quot;
 ## [1] &quot;Calculated tolerance index.&quot;</code></pre>
@@ -254,7 +261,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="calculate-only-benthic-mmi-metrics" class="section level2">
 <h2>3.1 Calculate only benthic MMI metrics</h2>
 <p>This function calculates metrics for only the MMI for the ecoregion of each site. In order to match the taxonomy used in the NRSA MMI, the function <code>prepBentCts_WSA()</code> must be run.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bentWSA &lt;-<span class="st"> </span><span class="kw">prepBentCts_WSA</span>(bentEx,bentTaxa
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bentWSA &lt;-<span class="st"> </span><span class="kw">prepBentCts_WSA</span>(bentEx,bentTaxa_nrsa
                              ,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
                              ,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>)
 

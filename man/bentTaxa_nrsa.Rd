@@ -1,13 +1,13 @@
-\name{bentTaxa}
-\alias{bentTaxa}
+\name{bentTaxa_nrsa}
+\alias{bentTaxa_nrsa}
 \docType{data}
-\title{Benthic Invertebrate Taxa}
+\title{Benthic Invertebrate Taxa for NRSA}
 \description{
   A dataset containing benthic invertebrate taxa and traits used in NRSA metric calculation.
 }
-\usage{data(bentTaxa)}
+\usage{data(bentTaxa_nrsa)}
 \format{
-  A data frame with 1,249 rows and the following 18 columns:
+  A data frame with 1,334 rows and the following 21 columns:
   \describe{
     \item{PUBLICATION_DATE}{date the dataset was published.}
     \item{TAXA_ID}{the taxa ID.}
@@ -30,13 +30,9 @@
     \item{ITISTSN}{ITIS taxonomic serial number}
   }
 }
-\note{
-  Unless a data frame name is provided for argument inTaxa to invertebrate
-  metric functions, this dataset provides the inTaxa data frame.
-}
 \examples{
-data(bentTaxa)
-head(bentTaxa)
+data(bentTaxa_nrsa)
+head(bentTaxa_nrsa)
 }
 \keyword{datasets}
 

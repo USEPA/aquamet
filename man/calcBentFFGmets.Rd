@@ -4,8 +4,8 @@
 \alias{calcBentFFGmets}
 \title{Calculate functional feeding group benthic metrics}
 \usage{
-calcBentFFGmets(inCts, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID", ffg = "FFG")
+calcBentFFGmets(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
+  ct = "TOTAL", taxa_id = "TAXA_ID", ffg = "FFG")
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 

@@ -4,9 +4,8 @@
 \alias{calcBentHabitMets}
 \title{Calculate habit benthic metrics}
 \usage{
-calcBentHabitMets(inCts, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
-  habit = "HABIT")
+calcBentHabitMets(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
+  ct = "TOTAL", taxa_id = "TAXA_ID", habit = "HABIT")
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 

@@ -4,30 +4,30 @@ library(aquamet)
 head(bentEx)
 
 ## ----allBent.2-----------------------------------------------------------
-head(bentTaxa)
+head(bentTaxa_nrsa)
 
 ## ----allBent.3-----------------------------------------------------------
-outdf <- calcAllBentMets(bentEx,bentTaxa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+outdf <- calcAllBentMets(bentEx,bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                        ,dist='IS_DISTINCT',ct='TOTAL',taxa_id='TAXA_ID',ffg='FFG_WSA'
                                        ,habit='HABIT_WSA',ptv='PTV_WSA')
 
 names(outdf)
 
 ## ----subMets.1-----------------------------------------------------------
-outTax <- calcBentTaxMets(bentEx,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+outTax <- calcBentTaxMets(bentEx,bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                                         ,dist='IS_DISTINCT',ct='TOTAL')
 names(outTax)
 head(outTax)
 
 ## ----subMets.2-----------------------------------------------------------
-outTol <- calcBentTolMets(bentEx,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
+outTol <- calcBentTolMets(bentEx,bentTaxa_nrsa,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                            ,dist='IS_DISTINCT',ct='TOTAL',ptv='PTV_WSA')
 names(outTol)
 head(outTol)
 
 
 ## ----mmiMets.1-----------------------------------------------------------
-bentWSA <- prepBentCts_WSA(bentEx,bentTaxa
+bentWSA <- prepBentCts_WSA(bentEx,bentTaxa_nrsa
                              ,sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT')
                              ,ct='TOTAL',taxa_id='TAXA_ID')
 

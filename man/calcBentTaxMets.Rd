@@ -4,8 +4,8 @@
 \alias{calcBentTaxMets}
 \title{Calculate taxonomy metrics for benthic macroinvertebrates}
 \usage{
-calcBentTaxMets(inCts, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID")
+calcBentTaxMets(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
+  ct = "TOTAL", taxa_id = "TAXA_ID")
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 

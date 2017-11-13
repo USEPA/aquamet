@@ -53,16 +53,19 @@
 #'                      ffg='FFG',habit='HABIT',ptv='PTV')
 #'   head(bentMetrics)
 #' @keywords survey
-calcAllBentMets <- function(indf,inTaxa=NULL, sampID="UID", dist="IS_DISTINCT",
+calcAllBentMets <- function(indf,inTaxa, sampID="UID", dist="IS_DISTINCT",
                         ct="TOTAL",taxa_id='TAXA_ID',ffg='FFG',habit='HABIT',ptv='PTV'){
   
-  if(is.null(inTaxa)) {
-    inTaxa <- bentTaxa
-    if('NON_TARGET' %in% names(inTaxa)){
-      inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
-    }
+  # Make sure all taxa match to taxalist and send error if not
+  checkTaxa <- dplyr::anti_join(indf,inTaxa,by='TAXA_ID') 
+  if(nrow(checkTaxa)>0){
+    return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
   
+  if('NON_TARGET' %in% names(inTaxa)){
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  }
+
   ctVars <- c(sampID,dist,ct,taxa_id)
   if(any(ctVars %nin% names(indf))){
     msgTraits <- which(ctVars %nin% names(indf))

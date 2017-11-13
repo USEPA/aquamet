@@ -4,8 +4,8 @@
 \alias{calcBentTolMets}
 \title{Calculate tolerance benthic metrics}
 \usage{
-calcBentTolMets(inCts, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID", ptv = "PTV")
+calcBentTolMets(inCts, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
+  ct = "TOTAL", taxa_id = "TAXA_ID", ptv = "PTV")
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 

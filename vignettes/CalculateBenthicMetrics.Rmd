@@ -34,7 +34,7 @@ head(bentEx)
 This example dataset contains all of the necessary variables required to calculate all of the macroinvertebrates metrics. For this dataset, the combination of `UID`, `SAMPLE_TYPE`, and `SAMPLE_CAT` identifies individual samples, `TAXA_ID` identifies the taxon and links to same field in the taxalist, `TOTAL` is the count for the taxon, and `IS_DISTINCT` is the distinctness, which 0 indicating non-distinct within the sample and 1 distinct.
 
 ```{r allBent.2}
-head(bentTaxa)
+head(bentTaxa_nrsa)
 ```
 This is the desired format of the taxalist. All of the necessary traits are included in the taxalist for metric calculation. The variable `FAM_OR_CLS` is the same as `FAMILY` and is an artifact from the NRSA 2008-9 study.
 ```{r allBent.3}

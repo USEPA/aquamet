@@ -63,11 +63,10 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
-  # Run quick check to make sure all taxa in counts are in the taxalist
-  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
-  if(nrow(checkTaxa)!=nrow(inCts)){
-    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
-    return("Not all taxa in counts match up to taxa in taxalist")
+  # Make sure all taxa match to taxalist and send error if not
+  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID') 
+  if(nrow(checkTaxa)>0){
+    return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
   
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
@@ -75,7 +74,9 @@ calcBentTaxMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # them from our calculations.
   # if(is.null(inTaxa)) {
   #   inTaxa <- bentTaxa
-  inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  if('NON_TARGET' %in% names(inTaxa)){
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  }
   # }
 
   ## This code assumes that the following are columns in the taxa file: PHYLUM, CLASS, ORDER, FAMILY, SUBFAMILY, TRIBE, HABIT, FFG, PTV, 
@@ -268,11 +269,10 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
-  # Run quick check to make sure all taxa in counts are in the taxalist
-  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
-  if(nrow(checkTaxa)!=nrow(inCts)){
-    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
-    return("Not all taxa in counts match up to taxa in taxalist")
+  # Make sure all taxa match to taxalist and send error if not
+  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID') 
+  if(nrow(checkTaxa)>0){
+    return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
   
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
@@ -280,7 +280,9 @@ calcBentFFGmets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # them from our calculations.
   # if(is.null(inTaxa)) {
   #   inTaxa <- bentTaxa
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+  if('NON_TARGET' %in% names(inTaxa)){
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  }
   # }
   
   if(ffg %nin% names(inTaxa)){
@@ -436,11 +438,10 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
-  # Run quick check to make sure all taxa in counts are in the taxalist
-  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
-  if(nrow(checkTaxa)!=nrow(inCts)){
-    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
-    return("Not all taxa in counts match up to taxa in taxalist")
+  # Make sure all taxa match to taxalist and send error if not
+  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID') 
+  if(nrow(checkTaxa)>0){
+    return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
   
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
@@ -448,7 +449,9 @@ calcBentHabitMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # them from our calculations.
   # if(is.null(inTaxa)) {
   #   inTaxa <- bentTaxa
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+  if('NON_TARGET' %in% names(inTaxa)){
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  }
   # }
   
   if(habit %nin% names(inTaxa)){
@@ -593,11 +596,10 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
-  # Run quick check to make sure all taxa in counts are in the taxalist
-  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
-  if(nrow(checkTaxa)!=nrow(inCts)){
-    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
-    return("Not all taxa in counts match up to taxa in taxalist")
+  # Make sure all taxa match to taxalist and send error if not
+  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID') 
+  if(nrow(checkTaxa)>0){
+    return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
   
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
@@ -605,7 +607,9 @@ calcBentTolMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   # them from our calculations.
   # if(is.null(inTaxa)) {
   #   inTaxa <- bentTaxa
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+  if('NON_TARGET' %in% names(inTaxa)){
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  }
   # }
   
   if(ptv %nin% names(inTaxa)){
@@ -770,19 +774,20 @@ calcBentDominMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
     else inCts$SAMPID <- paste(inCts$SAMPID,inCts[,sampID[i]],sep='.')
   }  
   
-  # Run quick check to make sure all taxa in counts are in the taxalist
-  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
-  if(nrow(checkTaxa)!=nrow(inCts)){
-    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
-    return("Not all taxa in counts match up to taxa in taxalist")
+  # Make sure all taxa match to taxalist and send error if not
+  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID') 
+  if(nrow(checkTaxa)>0){
+    return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
-
+  
   # If necessary, load the bentTaxa data frame and assign it to inTaxa.  Though
   # NON_TARGET taxa are included in the table provided by NRSA, we need to exclude
   # them from our calculations.
   # if(is.null(inTaxa)) {
   #   inTaxa <- bentTaxa
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+  if('NON_TARGET' %in% names(inTaxa)){
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" |NON_TARGET=='N')
+  }
   # }
   
   if('FAMILY' %nin% names(inTaxa)){
@@ -790,12 +795,6 @@ calcBentDominMets <- function(inCts, inTaxa, sampID="UID", dist="IS_DISTINCT",
   }
   
   inTaxa <- subset(inTaxa,select=names(inTaxa) %in% c('TAXA_ID','FAMILY')) 
-  
-  # Make sure all taxa match to taxalist and send error if not
-  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID') 
-  if(nrow(checkTaxa)>0){
-    return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
-  }
   
   samples <- unique(subset(inCts,select=c(sampID,'SAMPID')))
   inCts.1 <- dplyr::semi_join(inCts,subset(inTaxa,select='TAXA_ID'),by='TAXA_ID') %>%

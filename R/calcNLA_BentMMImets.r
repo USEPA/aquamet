@@ -68,14 +68,15 @@ calcNLA_BentMMImets <- function(inCts,inTaxa=bentTaxa_nla, sampID="UID",ecoreg=N
                   ,ffg='FFG',habit='HABIT',ptv='PTV'){
 
     # Run quick check to make sure all taxa in counts are in the taxalist
-  checkTaxa <- merge(inTaxa,inCts,by='TAXA_ID')
-  if(nrow(checkTaxa)!=nrow(inCts)){
-    print("Not all taxa in counts match taxa in taxalist. Verify correct taxalist is being used.")
-    return("Not all taxa in counts match up to taxa in taxalist")
+  # Make sure all taxa match to taxalist and send error if not
+  checkTaxa <- dplyr::anti_join(inCts,inTaxa,by='TAXA_ID') 
+  if(nrow(checkTaxa)>0){
+    return(print('Taxa in counts that do not have matches in taxalist! Cannot continue.'))
   }
-  # if(is.null(inTaxa)) {
+
+    # if(is.null(inTaxa)) {
   #   inTaxa <- bentTaxa_nla
-    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "")
+    inTaxa <- subset(inTaxa, is.na(NON_TARGET) | NON_TARGET == "" | NON_TARGET=='N')
   # }
   
   ctVars <- c(sampID,dist,ct,taxa_id,ecoreg)
