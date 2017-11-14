@@ -4,7 +4,7 @@
 \alias{calcAllBentMets}
 \title{Calculate all benthic metrics}
 \usage{
-calcAllBentMets(indf, inTaxa = NULL, sampID = "UID", dist = "IS_DISTINCT",
+calcAllBentMets(indf, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
   ct = "TOTAL", taxa_id = "TAXA_ID", ffg = "FFG", habit = "HABIT",
   ptv = "PTV")
 }

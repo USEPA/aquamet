@@ -64,7 +64,9 @@ reaches, with the following columns:
 
 \item{wChannelUnitCodeList}{A data frame specifying the wadeable 
 channel unit codes, meanings and class memberships.  The default 
-value of this argument is for the EPA NARS processing.  It should  
+value of this argument is for the EPA NARS processing for 2008-9.  
+The updated version for 2013-14 would be identical to the values used
+in \emph{bChannelUnitCodeList} above. The data frame input should  
 have the following columns:
 \itemize{
    \item code        character values for the channel units
