@@ -165,3 +165,22 @@ test_that("Fish MMI scores correct",
             expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001) 
             
           })
+
+# Create wsarea from lwsarea above for samples in fishws_test.1
+fishws_test.2 <- plyr::mutate(fishws_test.1,WSAREA=10^LWSAREA) %>%
+  merge(fishMMI_test[,c('UID','MMI_FISH')],by='UID')
+
+test_that("Fish MMI scores correct",
+          {
+            testOut <- assignFishCondition(fishws_test.2,sampID=c('UID','SAMPLE_TYPE'),ecoreg='AGGR_ECO9_2015'
+                                   ,wsarea='WSAREA',totlnind='TOTLNIND',mmi='MMI_FISH')
+            testOut.long <- reshape2::melt(testOut,id.vars=c('UID','SAMPLE_TYPE')
+                                           ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
+              plyr::mutate(PARAMETER=as.character(PARAMETER))
+            fishMMI_test.long <- reshape2::melt(fishMMI_test,id.vars=c('UID'),measure.vars='FISH_MMI_COND'
+                                                ,variable.name='PARAMETER',value.name='RESULT')
+            compOut <- merge(fishMMI_test.long,testOut.long,by=c('UID','PARAMETER'))
+            expect_true(nrow(compOut)==10)
+            expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001) 
+            
+          })
