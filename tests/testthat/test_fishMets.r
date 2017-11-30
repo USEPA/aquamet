@@ -139,7 +139,7 @@ test_that("MMI fish metric values correct",
                                  ,variable.name='PARAMETER',value.name='RESULT',na.rm=T) %>%
     plyr::mutate(PARAMETER=as.character(PARAMETER))
   compOut <- merge(fishMet_test,testOut.long,by=c('UID','PARAMETER'))
-  expect_true(nrow(compOut)==80)
+  expect_true(nrow(compOut)==90)
   expect_equal(compOut$RESULT.x,compOut$RESULT.y,tolerance=0.0001) 
 })
 

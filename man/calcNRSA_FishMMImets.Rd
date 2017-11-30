@@ -95,7 +95,8 @@ value is \emph{GENUS}}
 default value is \emph{NAME}.}
 }
 \value{
-A data frame containing the variables in sampID and 
+A data frame containing the variables in sampID, 
+the total number of individuals in the sample as TOTLNIND, and 
 all fish metrics used in MMIs as additional variables. All metrics
 will be separate columns, but values will only be provided for 
 the metrics in the MMI for the specific region of each site,

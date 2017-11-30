@@ -70,7 +70,8 @@
 #' @param comname A string with the name of the variable in the 
 #' \emph{inTaxa} taxalist containing the common name. The 
 #' default value is \emph{NAME}.
-#' @return A data frame containing the variables in sampID and 
+#' @return A data frame containing the variables in sampID, 
+#' the total number of individuals in the sample as TOTLNIND, and 
 #' all fish metrics used in MMIs as additional variables. All metrics
 #' will be separate columns, but values will only be provided for 
 #' the metrics in the MMI for the specific region of each site,
@@ -320,9 +321,11 @@ calcNRSA_FishMMImets <- function(indata,inTaxa=NULL, sampID="UID", ecoreg=NULL
   }
   
   # Finally, we can recast the metrics df into wide format for output
-  lside <- paste(paste(sampID,collapse='+'),ecoreg,sep='+')
+  lside <- paste('SAMPID',paste(sampID,collapse='+'),ecoreg,sep='+')
   formula <- paste(lside,'~variable',sep='')
-  metOut <- reshape2::dcast(outLong,eval(formula),value.var='value') 
+  metOut <- reshape2::dcast(outLong,eval(formula),value.var='value') %>%
+    merge(unique(indata.3[,c('SAMPID','TOTLNIND')]),by='SAMPID') %>%
+    dplyr::select(-SAMPID)
   
   return(metOut)
 }
