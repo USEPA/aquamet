@@ -139,7 +139,7 @@
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' 
 #' @examples
-#' See Bed Stability vignette for example of calculating large woody debris metrics.
+#' # See Bed Stability vignette for example of calculating large woody debris metrics.
 #'   
 #nrsaLargeWoody <- function(thalweg, channelgeometry, bankgeometry, wood, visits) {
 nrsaLargeWoody <- function(bCounts=NULL

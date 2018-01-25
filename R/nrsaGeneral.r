@@ -59,18 +59,25 @@
 #' # Creating the transect spacing for wadeable streams is more complicated 
 #' # than for boatable streams because measurements are only made up to one 
 #' # station before the end of the reach. 
-#' wTr <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0 & SAMPLE_TYPE=='PHAB_THALW'
-#'        ,select=c('SITE','VALUE')) %>%
-#'    plyr::mutate(VALUE=as.numeric(VALUE)) %>%  
-#'    merge(plyr::ddply(unique(subset(thalwegEx, SAMPLE_TYPE=='PHAB_THALW', select=c('SITE','TRANSECT','STATION'))),
-#'                        c('SITE','TRANSECT'), summarise, nSta = length(STATION)), by = 'SITE') %>%  
-#'                        plyr::ddply(c('SITE'), mutate, lastTran=max(TRANSECT)) %>%  
-#'                        plyr::mutate(wTr, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) %>% 
-#'                        dplyr::select(-nSta,-lastTran)
+#' wTr.1 <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & 
+#'        STATION==0 & SAMPLE_TYPE=='PHAB_THALW',select=c('SITE','VALUE')) 
+#' 
+#' wTr.2 <- plyr::mutate(wTr.1, VALUE=as.numeric(VALUE)) 
+#' 
+#' wTr.3 <- merge(wTr.2, plyr::ddply(unique(subset(thalwegEx, SAMPLE_TYPE=='PHAB_THALW', 
+#'                              select=c('SITE','TRANSECT','STATION'))),
+#'              c('SITE','TRANSECT'), summarise, nSta = length(STATION)),
+#'                                      by = 'SITE') 
+#'                                      
+#' wTr.4 <- plyr::ddply(wTr.3, c('SITE'), mutate, lastTran=max(TRANSECT)) 
+#' 
+#' wTr.5 <- plyr::mutate(wTr.4, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) 
+#' 
+#' wTr.6 <- dplyr::select(wTr.5, -nSta,-lastTran)
 #' 
 #' bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
 #' 
-#' trDist <- rbind(wTr,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
+#' trDist <- rbind(wTr.6,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
 #' 
 #' generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,
 #' transectSpacing=trDist)

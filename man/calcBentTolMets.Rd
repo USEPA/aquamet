@@ -46,7 +46,7 @@ the benthic macroinvertebrate metrics as additional variables.
  TL23PIND, TL23PTAX, TL45NTAX, TL45PIND, TL45PTAX, TL67NTAX, 
  TL67PIND, TL67PTAX, TOLRNTAX, TOLRPIND, TOLRPTAX, and WTD_TV.
  
-Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
 included in this package.
 }
 \description{

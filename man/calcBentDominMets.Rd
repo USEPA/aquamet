@@ -39,7 +39,7 @@ the benthic macroinvertebrate metrics as additional variables.
 The names of metrics include HPRIME, DOM1PIND, DOM3PIND, 
 DOM5PIND, CHIRDOM1PIND, CHIRDOM3PIND, and CHIRDOM5PIND.
 
-Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
 included in this package.
 }
 \description{

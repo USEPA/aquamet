@@ -16,6 +16,8 @@
     \item{PHYLUM}{taxonomic phylum name.}
     \item{CLASS}{taxonomic class name.}
     \item{ORDER}{taxonomic order name.}
+    \item{OTU_NRSA}{Operational taxonomic unit as used in NRSA O/E modeling.}
+    \item{OTU_NRSA_CODE}{OTU code as used in NRSA analyses.}
     \item{FAMILY}{taxonomic family name.}
     \item{SUBFAMILY}{taxonomic subfamily name.}
     \item{TRIBE}{taxonomic tribe name.}

@@ -1,6 +1,17 @@
 \name{NEWS}
 \title{aquamet News}
 
+\section{CHANGES IN aquamet VERSION 2.5.0 (Released 2018-01-25)}{
+  \subsection{NEW FEATURES}{
+      \itemize{
+        \item Updated assignDistinct function to work more broadly across
+        other datasets.
+        
+        \item Added functions to calculate NRSA physical habitat indicators.
+      }
+    }
+}
+
 \section{CHANGES IN aquamet VERSION 2.4.6 (Released 2017-08-30)}{
   \subsection{NEW FEATURES}{
     \itemize{

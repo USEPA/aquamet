@@ -41,15 +41,6 @@
 #' @examples
 #' head(invlegEx,10)
 #' # This example has no invasive species present
-#' invspp <- subset(invlegEx, PARAMETER=='SPECIES' & VALUE!='SNAG') %>%
-#'    plyr::mutate(value=1) %>%
-#'    reshape2::dcast(SITE+TRANSECT~VALUE) %>%
-#'    merge(subset(invlegEx, PARAMETER=='NO_INVASIVES' & VALUE=='X'), by=c('SITE','TRANSECT'), all=T) %>%
-#'    dplyr::filter(VALUE!='X') %>% # This selects transects where NO_INVASIVES is not 'X' (where invasives occur)
-#'    dplyr::select(-SAMPLE_TYPE, -PARAMETER, -VALUE, -FLAG, -UNITS) %>%
-#'    reshape2::melt(id.vars=c('SITE','TRANSECT'), variable.name='PARAMETER', value.name='VALUE')
-#'    
-#' unique(as.character(invspp$PARAMETER))
 #' 
 #' noinv <- subset(invlegEx, PARAMETER=='NO_INVASIVES')     
 #'    

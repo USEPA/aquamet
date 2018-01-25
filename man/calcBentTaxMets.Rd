@@ -47,7 +47,7 @@ the benthic macroinvertebrate metrics as additional variables.
  TANYPIND, TANYPTAX, TRICNTAX, TRICPIND, TRICPTAX, TUBINAIDNTAX, 
  TUBINAIDPIND, TUBINAIDPTAX, and ORTHCHIRPIND. 
 
-Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
 included in this package.
 }
 \description{

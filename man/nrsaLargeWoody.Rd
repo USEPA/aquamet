@@ -160,7 +160,7 @@ frames containing the thalweg, channel geometry, bank
 geometry, large woody debris, and stream verification form data files.
 }
 \examples{
-See Bed Stability vignette for example of calculating large woody debris metrics.
+# See Bed Stability vignette for example of calculating large woody debris metrics.
   
 }
 \author{

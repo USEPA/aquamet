@@ -46,7 +46,7 @@ the benthic macroinvertebrate metrics as additional variables.
  CLMBPIND, CLMBPTAX, CLNGNTAX, CLNGPIND, CLNGPTAX, SPWLNTAX, 
  SPWLPIND, SPWLPTAX, SWIMNTAX, SWIMPIND, and SWIMPTAX. 
  
-Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
 included in this package.
 }
 \description{

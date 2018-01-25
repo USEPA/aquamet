@@ -44,9 +44,9 @@
 #' @examples 
 #'   data(bentEx)
 #'   head(bentEx)
-#'   head(bentTaxa)
+#'   head(bentTaxa_nrsa)
 #'   # Calculate metrics for bentIn, using the taxonomy in the count file as is
-#'   bentMetrics <- calcAllBentMets(indf=bentEx, inTaxa=bentTaxa,
+#'   bentMetrics <- calcAllBentMets(indf=bentEx, inTaxa=bentTaxa_nrsa,
 #'                      sampID=c('UID','SAMPLE_TYPE','SAMPLE_CAT'), 
 #'                      dist='IS_DISTINCT',
 #'                      ct='TOTAL',taxa_id='TAXA_ID',

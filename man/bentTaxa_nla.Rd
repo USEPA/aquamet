@@ -29,8 +29,8 @@
   }
 }
 \examples{
-data(bentTaxa)
-head(bentTaxa)
+data(bentTaxa_nla)
+head(bentTaxa_nla)
 }
 \keyword{datasets}
 

@@ -44,11 +44,13 @@
 #' @keywords survey
 #' 
 #' @examples{
-#'  fishMMIex <- data.frame(SITE_ID = c('Site1','Site2','Site3','Site4','Site5','Site1','Site6','Site7'),
-#'  VISIT_NO = c(1,1,1,1,1,2,1,1), ECO9 = c('CPL','XER','NAP','WMT','TPL','CPL','SAP','SAP'),
+#'  fishMMIex <- data.frame(SITE_ID = c('Site1','Site2','Site3','Site4',
+#'                                    'Site5','Site1','Site6','Site7'),
+#'  VISIT_NO = c(1,1,1,1,1,2,1,1), ECO9 = c('CPL','XER','NAP','WMT',
+#'                                          'TPL','CPL','SAP','SAP'),
 #'  MMI_FISH = c(57.3, 79.2, 63.2, 73.2, NA, 53.1, NA, NA), 
 #'  WSAREAKM = c(10, 56, 67, 54, 1.3, 10, 3.4, 2.6), 
-#'  TOTLNIND = c(346, 230, 507, 304, 0, 209, 0, NA), stringsAsFactors=F) 
+#'  TOTLNIND = c(346, 230, 507, 304, 0, 209, 0, NA), stringsAsFactors=FALSE) 
 #'  
 #'  fishCond <- assignFishCondition(fishMMIex, sampID = c('SITE_ID','VISIT_NO'),
 #'  ecoreg = 'ECO9', mmi = 'MMI_FISH', wsarea = 'WSAREAKM',
@@ -109,10 +111,10 @@ assignFishCondition <- function(inMMI, sampID='UID', ecoreg='ECOREG', mmi='MMI_F
   #                           ,fp=c(46.4,46.8,34.6,48.6,39.3,47.1,26.8,65.0,65.9),stringsAsFactors=F)
   cond.tholds <- data.frame(ECO9=c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER')
                             ,gf=c(57.3,57.6,46.3,60.3,50.2,58.0,39.8,75.9,76.8)
-                            ,fp=c(46.8,47.1,35.8,49.8,39.7,47.5,29.3,65.4,66.2),stringsAsFactors=F)
+                            ,fp=c(46.8,47.1,35.8,49.8,39.7,47.5,29.3,65.4,66.2),stringsAsFactors=FALSE)
   
   # Need to account for cases where no missing MMI_FISH
-  cond.mmi.1 <- merge(inMMI.1,cond.tholds,by='ECO9',all.x=T) %>%
+  cond.mmi.1 <- merge(inMMI.1,cond.tholds,by='ECO9',all.x=TRUE) %>%
     plyr::mutate(FISH_MMI_COND = ifelse(!is.na(MMI_FISH) & MMI_FISH >= gf, 'Good' 
                           , ifelse(MMI_FISH < fp, 'Poor'
                           , ifelse(MMI_FISH < gf & MMI_FISH >= fp,'Fair', NA)))) %>%

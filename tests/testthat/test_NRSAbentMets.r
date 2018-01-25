@@ -3,26 +3,7 @@ library(aquamet)
 
 context("Test NRSA benthic metric and MMI calculations")
 
-#   # Must first create input dataset using WSA taxonomy and traits
-#   bentCts <- merge(bentCts_test,dplyr::select(bentTaxa, -SAMPLE_TYPE),by=c('TARGET_TAXON','TAXA_ID'))
-#   ## Roll mites, oligochaetes, and polychaetes up to family level
-#   fixTaxa <- with(bentCts,which(CLASS %in% c('ARACHNIDA','POLYCHAETA','OLIGOCHAETA') & !is.na(FAMILY) & FAMILY!=''))
-#   bentCts$TARGET_TAXON[fixTaxa] <- bentCts$FAMILY[fixTaxa]
-#   bentCts.1 <- merge(bentCts,subset(bentTaxa,select=c('TAXA_ID','TARGET_TAXON')),by='TARGET_TAXON',all.x=TRUE) %>%
-#       plyr::rename(c('TAXA_ID.y'='TAXA_ID')) %>% 
-#       dplyr::select(-TAXA_ID.x, -PUBLICATION_DATE, -FFG, -HABIT, -PTV) %>%
-#       plyr::mutate(TAXA_ID=ifelse(TARGET_TAXON %in% c('CRICOTOPUS/ORTHOCLADIUS','THIENEMANNIMYIA GENUS GR.'),3581
-#                             ,ifelse(TARGET_TAXON %in% c('CERATOPOGONINAE'),3566,TAXA_ID))
-#              ,TARGET_TAXON=ifelse(TAXA_ID==3581,'CHIRONOMIDAE',ifelse(TAXA_ID==3566,'CERATOPOGONIDAE',TARGET_TAXON)))   
-# 
-#   bentCts.2 <- plyr::ddply(bentCts.1,c('UID','SAMPLE_TYPE','SAMPLE_CAT','TAXA_ID'),summarise,TOTAL=sum(TOTAL300)) %>%
-#       merge(dplyr::select(bentTaxa,-SAMPLE_TYPE),by='TAXA_ID')
-# 
-#   bentCts.3 <- assignDistinct(bentCts.2,c('UID','SAMPLE_TYPE','SAMPLE_CAT')) %>% 
-#   plyr::mutate(IS_DISTINCT=ifelse(is.na(IS_DISTINCT),0,IS_DISTINCT))
-#   
-#   inTest <- subset(bentCts.3,select=c('UID','SAMPLE_TYPE','SAMPLE_CAT','TAXA_ID','TOTAL','IS_DISTINCT'))
- 
+
 test_that("Data prep correct",
 {
   testOut <- prepBentCts_WSA(inCts=bentCts_test,inTaxa=bentTaxa_nrsa

@@ -48,7 +48,7 @@ COFITRICNTAX, COFITRICPIND, COFITRICPTAX, COGANTAX, COGAPIND,
 COGAPTAX, PREDNTAX, PREDPIND, PREDPTAX, SCRPNTAX, SCRPPIND,
 SCRPPTAX, SHRDNTAX, SHRDPIND, and SHRDPTAX.
 
-Metric descriptions are included in \emph{NRSA_Fish_Metric_Descriptions.pdf},
+Metric descriptions are included in \emph{NRSA_Invertebrate_Metric_Descriptions.pdf},
 included in this package.
 }
 \description{
