@@ -1,3 +1,274 @@
+#' @export
+#' @title Calculate NLA Fish Cover Metrics
+#' @description This function calculates the fish cover portion of the physical
+#' habitat metrics for National Lakes Assessment (NLA) data.  
+#' @param aquatic A data frame containing aquatic and inundated herbaceous 
+#' vegetation fish cover class values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the aquatic and inundated herbaceous
+#' vegetation fish cover category.
+#' }
+#' @param aquatic_dd A data frame containing aquatic and inundated 
+#' herbaceous vegetation fish cover class values for drawdown zone, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the aquatic and inundated herbaceous
+#' vegetation fish cover category.
+#' }
+#' @param boulders A data frame containing boulder 
+#' fish cover class values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the boulder fish cover category.
+#' }
+#' @param boulders_dd A data frame containing boulder 
+#' fish cover class values for drawdown zone, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the boulder fish cover category.
+#' }
+#' @param brush A data frame containing woody brush and small woody debris 
+#' <0.3 m diameter fish cover class values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the woody brush and small woody debris 
+#' <0.3 m diameter fish cover category.
+#' }
+#' @param brush_dd A data frame containing woody brush and small woody debris 
+#' <0.3 m diameter fish cover class values for drawdown zone, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the woody brush and small woody debris 
+#' <0.3 m diameter fish cover category.
+#' }
+#' @param ledges A data frame containing ledges or sharp dropoff 
+#' fish cover class values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the ledges or sharp dropoff fish cover category.
+#' }
+#' @param ledges_dd A data frame containing ledges or sharp dropoff 
+#' fish cover class values for drawdown zone, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the ledges or sharp dropoff fish cover category.
+#' }
+#' @param livetrees A data frame containing inundated live trees 
+#' fish cover class values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the inundated live trees fish cover category.
+#' }
+#' @param livetrees_dd A data frame containing inundated live trees 
+#' fish cover class values for drawdown zone, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the inundated live trees fish cover category.
+#' }
+#' @param overhang A data frame containing overhanging vegetation 
+#' fish cover class values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the overhanging vegetation fish cover category.
+#' }
+#' @param overhang_dd A data frame containing overhanging vegetation 
+#' fish cover class values for drawdown zone, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the overhanging vegetation fish cover category.
+#' }
+#' @param snags A data frame containing woody debris and snags >0.3m diameter 
+#' fish cover class values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the woody debris and snags fish cover category.
+#' }
+#' @param snags_dd A data frame containing woody debris and snags >0.3m diameter
+#' fish cover class values for drawdown zone, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the woody debris and snags fish cover category.
+#' }
+#' @param structures A data frame containing human structure 
+#' fish cover class values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the human structure fish cover category.
+#' }
+#' @param structures_dd A data frame containing human structure
+#' fish cover class values for drawdown zone, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the human structure fish cover category.
+#' }
+#' @param drawdown A data frame indicating presence of drawdown at station, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, indicating drawdown exists at a site.
+#' }
+#' @param horizontalDistance_dd A data frame containing the horizontal distance 
+#' to the high water mark where drawdown exists, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, indicating the horizontal distance to the high water mark when
+#' drawdown exists at a site.
+#' }
+#' @param createSyntheticCovers A logical value which specifies whether to create
+#     synthetic cover values as proportions of drawdown and riparian cover.
+#     This argument should be set to FALSE when the data follows the 2007 NLA
+#     protocol or do not contain drawdown cover data.  The default value is
+#     TRUE. 
+#' @param fillinDrawdown A logical value which specifies whether to use the
+#     DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
+#     The default value is TRUE.
+#' @param coverClassInfo A data frame containing the field fish cover
+#' categorical values and corresponding numeric cover values used in calculations, 
+#' as well as indicators of cover type presence or absence for each category. The
+#' default values (and required column names) are:
+#' \itemize{
+#' \item field c(NA,'0','1','2','3','4')
+#' \item characteristicCover c(NA,0,0.05,0.25,0.575,0.875)
+#' \item presence c(NA,0,1,1,1,1) 
+#' }  
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation 
+#' is not successful. The data frame contains the following columns:
+#' \itemize{ 
+#'     \item SITE - unique site visit identifier
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#'       }
+#' The output metrics include:
+#' FCFPAQUATIC_DD, FCFPBOULDERS_DD, FCFPBRUSH_DD, FCFPLEDGES_DD, 
+#' FCFPLIVETREES_DD, FCFPOVERHANG_DD, FCFPSNAGS_DD, FCFPSTRUCTURES_DD, 
+#' FCFPAQUATIC_LIT, FCFPBOULDERS_LIT, FCFPBRUSH_LIT, FCFPLEDGES_LIT, 
+#' FCFPLIVETREES_LIT, FCFPOVERHANG_LIT, FCFPSNAGS_LIT, FCFPSTRUCTURES_LIT, 
+#' FCFPAQUATIC_SIM, FCFPBOULDERS_SIM, FCFPBRUSH_SIM, FCFPLEDGES_SIM, 
+#' FCFPLIVETREES_SIM, FCFPOVERHANG_SIM, FCFPSNAGS_SIM, FCFPSTRUCTURES_SIM, 
+#' FCNAQUATIC_DD, FCNAQUATIC_LIT, FCNAQUATIC_SIM, FCNBOULDERS_DD, 
+#' FCNBOULDERS_LIT, FCNBOULDERS_SIM, FCNBRUSH_DD, FCNBRUSH_LIT, 
+#' FCNBRUSH_SIM, FCNLEDGES_DD, FCNLEDGES_LIT, FCNLEDGES_SIM, 
+#' FCNLIVETREES_DD, FCNLIVETREES_LIT, FCNLIVETREES_SIM, FCNOVERHANG_DD, 
+#' FCNOVERHANG_LIT, FCNOVERHANG_SIM, FCNSNAGS_DD, FCNSNAGS_LIT, 
+#' FCNSNAGS_SIM, FCNSTRUCTURES_DD, FCNSTRUCTURES_LIT, FCNSTRUCTURES_SIM, 
+#' FCVAQUATIC_DD, FCVBOULDERS_DD, FCVBRUSH_DD, FCVLEDGES_DD, 
+#' FCVLIVETREES_DD, FCVOVERHANG_DD, FCVSNAGS_DD, FCVSTRUCTURES_DD, 
+#' FCVAQUATIC_LIT, FCVBOULDERS_LIT, FCVBRUSH_LIT, FCVLEDGES_LIT, 
+#' FCVLIVETREES_LIT, FCVOVERHANG_LIT, FCVSNAGS_LIT, FCVSTRUCTURES_LIT, 
+#' FCVAQUATIC_SIM, FCVBOULDERS_SIM, FCVBRUSH_SIM, FCVLEDGES_SIM, 
+#' FCVLIVETREES_SIM, FCVOVERHANG_SIM, FCVSNAGS_SIM, , FCVSTRUCTURES_SIM, 
+#' FCFCAQUATIC_DD, FCFCBOULDERS_DD, FCFCBRUSH_DD, FCFCLEDGES_DD, 
+#' FCFCLIVETREES_DD, FCFCOVERHANG_DD, FCFCSNAGS_DD, FCFCSTRUCTURES_DD, 
+#' FCFCAQUATIC_LIT, FCFCBOULDERS_LIT, FCFCBRUSH_LIT, FCFCLEDGES_LIT, 
+#' FCFCLIVETREES_LIT, FCFCOVERHANG_LIT, FCFCSNAGS_LIT, FCFCSTRUCTURES_LIT, 
+#' FCFCAQUATIC_SIM, FCFCBOULDERS_SIM, FCFCBRUSH_SIM, FCFCLEDGES_SIM, 
+#' FCFCLIVETREES_SIM, FCFCOVERHANG_SIM, FCFCSNAGS_SIM, FCFCSTRUCTURES_SIM, 
+#' FCIALL_DD, FCIALL_LIT, FCIALL_SIM, FCIBIG_DD, 
+#' FCIBIG_LIT, FCIBIG_SIM, FCINATURAL_DD, FCINATURAL_LIT, 
+#' FCINATURAL_SIM, FCIRIPVEG_DD, FCIRIPVEG_LIT, FCIRIPVEG_SIM, 
+#' FCFPALL_DD, FCFPALL_LIT, FCFPALL_SIM, FCNALL_DD, 
+#' FCNALL_LIT, FCNALL_SIM.
+#' Descriptions for all metrics are included in 
+#' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples
+#'   head(nlaPhabEx)
+#'   
+#'   aquatic <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
+#'   aquatic_dd <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
+#'   boulders <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
+#'   boulders_dd <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS_DD',select=-PARAMETER)
+#'   brush <- subset(nlaPhabEx,PARAMETER=='FC_BRUSH',select=-PARAMETER)
+#'   brush_dd <- subset(nlaPhabEx,PARAMETER=='FC_BRUSH_DD',select=-PARAMETER)
+#'   ledges <- subset(nlaPhabEx,PARAMETER=='FC_LEDGES',select=-PARAMETER)
+#'   ledges_dd <- subset(nlaPhabEx,PARAMETER=='FC_LEDGES_DD',select=-PARAMETER)
+#'   livetrees <- subset(nlaPhabEx,PARAMETER=='FC_LIVETREES',select=-PARAMETER)
+#'   livetrees_dd <- subset(nlaPhabEx,PARAMETER=='FC_LIVETREES_DD',select=-PARAMETER)
+#'   overhang <- subset(nlaPhabEx,PARAMETER=='FC_OVERHANG',select=-PARAMETER)
+#'   overhang_dd <- subset(nlaPhabEx,PARAMETER=='FC_OVERHANG_DD',select=-PARAMETER)
+#'   snags <- subset(nlaPhabEx,PARAMETER=='FC_SNAGS',select=-PARAMETER)
+#'   snags_dd <- subset(nlaPhabEx,PARAMETER=='FC_SNAGS_DD',select=-PARAMETER)
+#'   structures <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
+#'   structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
+#'   drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+#'   horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+#'   
+#'   # Use defaults for fillinDrawdown, createSyntheticCovers, and coverClassInfo
+#'   # arguments
+#'   exFishCover <- nlaFishCover(aquatic,aquatic_dd,boulders,boulders_dd,brush,
+#'       brush_dd,ledges,ledges_dd,livetrees,livetrees_dd,overhang,overhang_dd,
+#'       snags,snags_dd,structures,structures_dd,drawdown,horizontalDistance_dd)
+#'   
+#'   head(exFishCover)
+#'  
+#' @keywords survey
 nlaFishCover <- function(aquatic = NULL
                         ,aquatic_dd = NULL
                         ,boulders = NULL

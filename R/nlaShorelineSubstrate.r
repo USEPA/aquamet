@@ -1,3 +1,163 @@
+#' @export
+#' @title Calculate NLA Shoreline Substrate Metrics
+#' @description This function calculates the shoreline substrate portion 
+#' of the physical habitat metrics for National Lakes Assessment (NLA) data.  
+#' The function requires a data frame containing validated physical habitat 
+#' data collected using the NLA protocol.
+#' @param bedrock A data frame containing bedrock class values, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the bedrock bottom substrate cover
+#' category.
+#' }
+#' @param boulder A data frame containing boulder class values, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the boulder bottom substrate cover
+#' category.
+#' }
+#' @param cobble A data frame containing cobble bottom substrate class 
+#' values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the cobble bottom substrate cover
+#' category.
+#' }
+#' @param gravel A data frame containing gravel bottom substrate class 
+#' values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the gravel bottom substrate cover
+#' category.
+#' }
+#' @param organic A data frame containing organic bottom substrate class 
+#' values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the organic bottom substrate cover
+#' category.
+#' }
+#' @param other A data frame containing other bottom substrate class 
+#' values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the other bottom substrate cover
+#' category.
+#' }
+#' @param sand A data frame containing sand bottom substrate class 
+#' values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the sand bottom substrate cover
+#' category.
+#' }
+#' @param silt A data frame containing silt bottom substrate class 
+#' values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the silt bottom substrate cover
+#' category.
+#' }
+#' @param wood A data frame containing wood bottom substrate class 
+#' values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE an integer value, or character value that is castable to an 
+#' integer, from 0-4 containing the wood bottom substrate cover
+#' category.
+#' }
+#' @param substrateCovers a data frame containing substrate cover category 
+#' values (VALUE), the lower proportional cover value for each category (cover),
+#' and an indicator variable of presence of a substrate type for each category.
+#' The default values are:
+#' \itemize{
+#' \item VALUE '0', '1', '2', '3', '4', NA
+#' \item cover 0, 0.05, 0.25, 0.575, 0.875, NA
+#' \item presence 0, 1, 1, 1, 1, NA
+#' }  
+#' @param substrateSizes a data frame containing substrate class names (CLASS)
+#' and corresponding geometric mean of diameter ranges in mm (diam), as well as
+#' an indicator of whether to include the class in estimates of substrate size
+#' for the site. 
+#' The default values are: 
+#' \itemize{
+#' \item CLASS c('BEDROCK', 'BOULDERS','COBBLE', 'GRAVEL', 'SAND', 'SILT', 
+#' 'ORGANIC', 'WOOD')
+#' \item diam c(5656.854, 1000, 126.4911, 11.31371, 0.3464102, 0.007745967, 
+#' NA, NA)  
+#' \item inPopulationEstimate c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE)
+#' } 
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation 
+#' is not successful. The data frame contains the following columns:
+#' \itemize{ 
+#'     \item SITE - unique site visit identifier
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#'       }
+#' The output metrics include:
+#' SSFPBEDROCK, SSFPBOULDERS, SSFPCOBBLE, SSFPGRAVEL, SSFPORGANIC, SSFPOTHER
+#' SSFPSAND, SSFPSILT, SSFPWOOD, SSFCBEDROCK, SSFCBOULDERS, SSFCCOBBLE
+#' SSFCGRAVEL, SSFCORGANIC, SSFCOTHER, SSFCSAND, SSFCSILT, SSFCWOOD
+#' SSISTAVARIETY, SSISITEVARIETY, SSVBEDROCK, SSVBOULDERS, SSVCOBBLE, SSVGRAVEL
+#' SSVORGANIC, SSVOTHER, SSVSAND, SSVSILT, SSVWOOD, SSNBEDROCK
+#' SSNBOULDERS, SSNCOBBLE, SSNGRAVEL, SSNORGANIC, SSNOTHER, SSNSAND
+#' SSNSILT, SSNWOOD, SSXLDIA, SSVLDIA, SS16LDIA, SS25LDIA
+#' SS50LDIA, SS75LDIA, SS84LDIA, SSOPCLASS, SSOFCLASS
+#'  
+#' Descriptions for all metrics are included in 
+#' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples
+#'   head(nlaPhabEx)
+#'   
+#'   bedrock <- subset(nlaPhabEx,PARAMETER=='SS_BEDROCK',select=-PARAMETER)
+#'   boulder <- subset(nlaPhabEx,PARAMETER=='SS_BOULDERS',select=-PARAMETER)
+#'   cobble <- subset(nlaPhabEx,PARAMETER=='SS_COBBLE',select=-PARAMETER)
+#'   gravel <- subset(nlaPhabEx,PARAMETER=='SS_GRAVEL',select=-PARAMETER)
+#'   organic <- subset(nlaPhabEx,PARAMETER=='SS_ORGANIC',select=-PARAMETER)
+#'   other <- subset(nlaPhabEx,PARAMETER=='SS_OTHER',select=-PARAMETER)
+#'   sand <- subset(nlaPhabEx,PARAMETER=='SS_SAND',select=-PARAMETER)
+#'   silt <- subset(nlaPhabEx,PARAMETER=='SS_SILT',select=-PARAMETER)
+#'   wood <- subset(nlaPhabEx,PARAMETER=='SS_WOOD',select=-PARAMETER)
+#'   
+#'   exShoreSubstrate <- nlaShorelineSubstrate(bedrock,boulder,
+#'   cobble,gravel,organic,other,sand,silt,wood)
+#'   
+#'   head(exShoreSubstrate)
+#'  
+#' @keywords survey
 nlaShorelineSubstrate <- function(bedrock = NULL
 	                             ,boulder = NULL
 	                             ,cobble = NULL

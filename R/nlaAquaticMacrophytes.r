@@ -1,11 +1,9 @@
 #' @export
 #' @title Calculate NLA Aquatic Macrophyte Metrics
 #' @description This function calculates the aquatic macrophyte portion of the physical
-#' habitat metrics for National Lakes Assessment (NLA) data.  The function
-#' requires a data frame containing validated physical habitat data collected
-#' using the NLA protocol.
-#' @param emergent A data frame containing bank angle class values for sites 
-#' sampled using the boatable protocol, with the columns:
+#' habitat metrics for National Lakes Assessment (NLA) data.  
+#' @param emergent A data frame containing emergent vegetation class values for sites 
+#' sampled with the columns:
 #' \itemize{
 #' \item SITE an integer or character value identifying a single site 
 #' visit.
@@ -14,21 +12,17 @@
 #' integer, from 0-4 containing the emergent macrophyte cover
 #' category.
 #' }
-#' If this data frame is either not specified or has no data, these metrics 
-#' are not calculated.
-#' @param floating A data frame containing bank angle class value for sites sampled
-#' using the boatable protocol, with the columns:
+#' @param floating A data frame containing floating vegetation class value for 
+#' sites sampled with the columns:
 #' \itemize{
 #' \item SITE an integer or character value identifying a single site visit.
 #' \item STATION a character value identifying the station within the SITE
-#' \item VALUE VALUE an integer value, or character value that is castable to an 
+#' \item VALUE an integer value, or character value that is castable to an 
 #' integer, from 0-4 containing the floating macrophyte cover
 #' category.
 #' }
-#' If this data frame is either not specified or has no data, these metrics 
-#' are not calculated.
-#' @param submergent A data frame containing bank angle class value for sites 
-#' sampled using wadeable protocols, with the columns:
+#' @param submergent A data frame containing submergent class value for sites 
+#' sampled, with the columns:
 #' \itemize{
 #' \item SITE an integer or character value identifying a single site visit.
 #' \item STATION a character value identifying the station within the SITE
@@ -36,10 +30,8 @@
 #' integer, from 0-4 containing the subemergent macrophyte cover
 #' category.
 #' }
-#' If this data frame is either not specified or has no data, these metrics 
-#' are not calculated.
-#' @param totalCover A data frame containing bank angle class value for sites 
-#' sampled using wadeable protocols, with the columns:
+#' @param totalCover A data frame containing total cover class value for sites 
+#' sampled, with the columns:
 #' \itemize{
 #' \item SITE an integer or character value identifying a single site visit.
 #' \item STATION a character value identifying the station within the SITE
@@ -47,9 +39,6 @@
 #' integer, from 0-4 containing the total macrophyte cover
 #' category.
 #' }
-#' If this data frame is either not specified or has no data, these metrics 
-#' are not calculated.
-
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -59,7 +48,10 @@
 #'     \item VALUE - metric value
 #'       }
 #' The output metrics include:
-#'
+#' AMFPEMERGENT, AMFPFLOATING, AMFPSUBMERGENT, AMFPALL, AMFCEMERGENT,   
+#' AMFCFLOATING, AMFCSUBMERGENT, AMFCALL, AMVEMERGENT, AMVFLOATING,    
+#' AMVSUBMERGENT, AMVALL, AMNEMERGENT, AMNFLOATING, AMNSUBMERGENT, AMNALL,
+#' AMIQALL, AMIDALL, AMITOTAL 
 #' 
 #' Descriptions for all metrics are included in 
 #' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
@@ -70,14 +62,15 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
-#'   emerg <- subset(nlaPhabEx,PARAMETER=='AM_EMERGENT')
-#'   float <- subset(nlaPhabEx,PARAMETER=='AM_FLOATING')
-#'   submerg <- subset(nlaPhabEx,PARAMETER=='AM_SUBMERGENT')
-#'   totcvr <- subset(nlaPhabEx,PARAMETER=='AM_TOTALCOVER')
+#'   emerg <- subset(nlaPhabEx,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
+#'   float <- subset(nlaPhabEx,PARAMETER=='AM_FLOATING',select=-PARAMETER)
+#'   submerg <- subset(nlaPhabEx,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
+#'   totcvr <- subset(nlaPhabEx,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
 #'   
 #'   exAquMacro <- nlaAquaticMacrophytes(emergent=emerg,
 #'   floating=float,submergent=submerg,totalCover=totcvr)
-#'   head(exAqMacro)
+#'   
+#'   head(exAquMacro)
 #'  
 #' @keywords survey
 #' 

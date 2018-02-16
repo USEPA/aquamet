@@ -1,3 +1,118 @@
+#' @export
+#' @title Calculate NLA Littoral Macrohabitat Metrics
+#' @description This function calculates the littoral fish macrohabitat 
+#' portion of the physical habitat metrics for National Lakes Assessment 
+#' (NLA) data. These data were only collected in NLA 2007.  
+#' @param artificial A data frame containing artificial fish cover type 
+#'  values from the littoral zone, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a character value of X representing the presence of that 
+#' cover type.
+#' }
+#' @param boulders A data frame containing boulder fish cover type
+#' values from littoral zone, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a character value of X representing the presence of that 
+#' cover type.
+#' }
+#' @param coverExtent A data frame containing cover class values from 
+#' littoral zone, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a character value of 'CONTINUOUS COVER', 'PATCHY COVER', 
+#'  or 'NO COVER'.
+#' }
+#' @param humanDisturbance A data frame containing human disturbance class
+#'  values from the littoral zone, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a character value of NONE, LOW, MODERATE, or HEAVY.
+#' }
+#' @param noCover A data frame containing values indicating no fish cover in
+#' littoral zone, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a character value of X representing the no other cover types
+#' selected.
+#' }
+#' @param substrate A data frame containing dominant substrate values 
+#' from littoral zone, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a character value of B (bedrock), C (cobble/boulder), 
+#' M (mud/muck), or S (sand/gravel) representing the dominant substrate type.
+#' }
+#' @param vegetation A data frame containing vegetation littoral fish cover
+#'  values, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a character value of X representing the vegetation fish cover 
+#' types selected.
+#' }
+#' @param woody A data frame containing woody littoral fish cover values, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a character value of X representing the woody fish cover 
+#' types selected.
+#' }
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation 
+#' is not successful. The data frame contains the following columns:
+#' \itemize{ 
+#'     \item SITE - unique site visit identifier
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#'       }
+#' The output metrics include:
+#' LMFPBEDROCK,, LMFPCOBBLE,, LMFPMUD,, LMFPSAND, LMNSUBSTRATE, LMOSUBSTRATE, 
+#' LMOCOVER, LMNCOVER, LMFPLITTLE, LMFPPATCHY, LMFPCONTINUOUS, LMPWHUMAN, 
+#' LMNHUMAN, LMNCOVERTYPES, LMFPARTIFICIAL, LMFPWOODY, LMFPVEG, LMFPBOULDERS, 
+#' LMFPNONE
+#'  
+#' Descriptions for all metrics are included in 
+#' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples
+#'   head(nlaPhabEx07)
+#'   
+#'   artificial <- subset(nlaPhabEx07,PARAMETER=='COVER_ARTIFICIAL',select=-PARAMETER)
+#'   boulders <- subset(nlaPhabEx07,PARAMETER=='COVER_BOULDERS',select=-PARAMETER)
+#'   coverExtent <- subset(nlaPhabEx07,PARAMETER=='COVER_CLASS',select=-PARAMETER)
+#'   humanDisturbance <- subset(nlaPhabEx07,PARAMETER=='HUMAN_DISTURBANCE',select=-PARAMETER)
+#'   noCover <- subset(nlaPhabEx07,PARAMETER=='COVER_NONE',select=-PARAMETER)
+#'   substrate <- subset(nlaPhabEx07,PARAMETER=='DOM_SUBSTRATE',select=-PARAMETER)
+#'   vegetation <- subset(nlaPhabEx07,PARAMETER=='COVER_VEG',select=-PARAMETER)
+#'   woody <- subset(nlaPhabEx07,PARAMETER=='COVER_WOODY',select=-PARAMETER)
+#'
+#'   exLitMacro <- nlaLittoralMacrohabitat(artificial,boulders,coverExtent,humanDisturbance,
+#'   noCover,substrate,vegetation,woody)
+#'   
+#'   head(exLitMacro)
+#'  
+#' @keywords survey
+
 nlaLittoralMacrohabitat <- function(artificial = NULL
                                    ,boulders = NULL
                                    ,coverExtent = NULL

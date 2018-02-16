@@ -1,3 +1,49 @@
+#' @export
+#' @title Calculate NLA Littoral Zone Metrics
+#' @description This function calculates the littoral zone 
+#' portion of the physical habitat metrics for National Lakes Assessment 
+#' (NLA) data.  
+#' @param littoralFilm A data frame containing surface film type in 
+#' the littoral zone, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE For data collected in 2007, a character value of N (none), 
+#' A (algal mat), S (scum), P (oily), or O (other). For data collected in 2012
+#' or beyond, a character value of NONE, SCUM, ALGAL_MAT, OILY, or 
+#' OTHER_XXXX, where XXXX represents the name of the other film type.
+#' }
+#' @param data2007 A logical value taking the value TRUE if the data being 
+#' processed are from NLA 2007 and FALSE if not. The default value is FALSE.
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation 
+#' is not successful. The data frame contains the following columns:
+#' \itemize{ 
+#'     \item SITE - unique site visit identifier
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#'       }
+#' The output metrics include:
+#' LZOFILM, LZFPFILM, LZFPALGAE, LZFPNONE, LZFPOILY, LZFPOTHER, LZFPSCUM 
+#'  
+#' Descriptions for all metrics are included in 
+#' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples
+#'   head(nlaPhabEx)
+#'   
+#'   surfFilm <- subset(nlaPhabEx,PARAMETER=='SURFACE_FILM',select=-PARAMETER)
+#'
+#'   exLitZone <- nlaLittoralZone(surfFilm, data2007=FALSE)
+#'   
+#'   head(exLitZone)
+#'  
+#' @keywords survey
+
 nlaLittoralZone <- function(littoralFilm, data2007=FALSE) {
 
 ################################################################################

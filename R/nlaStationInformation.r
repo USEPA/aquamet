@@ -1,3 +1,57 @@
+#' @export
+#' @title Calculate NLA Station Information Metrics
+#' @description This function calculates the station information portion 
+#' of the physical habitat metrics for National Lakes Assessment (NLA) data.
+#' The function requires a data frame containing validated physical habitat 
+#' data collected using the NLA protocol.  The passed data frame must contain 
+#' records for all stations sampled at each site, or the station counts used 
+#' to calculate island metrics will not be correct.  
+#' @param isIsland A data frame containing value indicating whether station is
+#' on an island, with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE character value of N or NO if not an island and Y or YES if 
+#' station is located on an island.
+#' }
+#' @param stationDepth A data frame containing depth in meters at the station, 
+#' with the columns:
+#' \itemize{
+#' \item SITE an integer or character value identifying a single site 
+#' visit.
+#' \item STATION a character value identifying the station within the SITE
+#' \item VALUE a numeric values or a character value castable to numeric 
+#' containing the depth in meters at the station 
+#' }
+#' @return Either a data frame when metric calculation is successful or a 
+#' character string containing an error message when metric calculation 
+#' is not successful. The data frame contains the following columns:
+#' \itemize{ 
+#'     \item SITE - unique site visit identifier
+#'     \item METRIC - metric name
+#'     \item VALUE - metric value
+#'       }
+#' The output metrics include:
+#' SIFPISLAND, SINDEPTH, SIVDEPTH, SIXDEPTH.
+#' 
+#' Descriptions for all metrics are included in 
+#' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
+#' documentation.
+#' 
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
+#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @examples
+#'   head(nlaPhabEx)
+#'   
+#'   isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND',select=-PARAMETER)
+#'   depth <- subset(nlaPhabEx,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
+#'   
+#'   exStationInfo <- nlaStationInformation(isIsland, depth)
+#'   
+#'   head(exStationInfo)
+#'  
+#' @keywords survey
 nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
 
 ################################################################################
