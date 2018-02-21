@@ -7,12 +7,13 @@
 #          well.
 #  7/19/17 cws Refactored generation of error messages in preparation for adding
 #          range and legal value checks.
+#  2/21/18 cws Added stopOnError argument
 #
 
 require(RUnit)
 require(dplyr)
 
-aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='integer', VALUE='double'), rangeLimits=NULL, legalValues=NULL)
+aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='integer', VALUE='double'), rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE)
 # Used to standardize argument to aquamet functions. Returns a dataframe with
 # expected column names or NULL.
 #
@@ -41,6 +42,9 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='in
 #           check will not be performed. The occurence of values not specified 
 #           as legal will prevent calculations from proceding. Thus a substrate
 #           value might be specified as c('RR','RS','RC','XB','SB','CB','GR','SA','FN')
+# stopOnError logical value determining whether detection of an error causes the
+#           process to stop with a descriptive error message, or if that messge
+#           is merely returned and the processing allowed to continue.
 #
 {
     if(is.null(arg)) {
@@ -63,27 +67,38 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='in
         argName <- deparse(substitute(arg))
         rc <- aquametStandardizeArgument.checkStructure(arg, struct)
         if(is.character(rc)) {
-            msg <- sprintf("You blockhead, argument <<%s>> has a structure problem: %s", argName, rc)
-            stop(msg)
-            rc <- NULL
+            msg <- sprintf("You blockhead, argument <<%s>> has a structure problem: %s", paste(argName, collapse=' '), rc)
+            if(stopOnError) 
+                stop(msg)
+            else
+                return(msg)
+            #rc <- NULL
         }
         
         rc <- aquametStandardizeArgument.checkRange(arg, rangeLimits)
         if(is.character(rc)) {
             if(!is.na(rc['error'])) {
-                msg <- sprintf("You blockhead, argument <<%s>> can not be range checked: ", argName, rc['error'])
-                stop(msg)
+                msg <- sprintf("You blockhead, argument <<%s>> can not be range checked: %s", paste(argName, collapse=' '), paste(rc['error'], collapse='. '))
+                if(stopOnError) 
+                    stop(msg)
+                else
+                    return(msg)
+                
             } else if(!is.na(rc['warning'])) {
-                msg <- sprintf("Warning for argument <<%s>> while performing range check: %s", argName, rc)
+                # just print warnings and continue
+                msg <- sprintf("Warning for argument <<%s>> while performing range check: %s", paste(argName, collapse=' '), rc)
                 print(msg)
             }
         }
 
         rc <- aquametStandardizeArgument.checkLegal(arg, legalValues)
         if(is.character(rc)) {
-            msg <- sprintf("You blockhead, argument <<%s>> failed the check for illegal values: %s", argName, rc)
-            stop(msg)
-            rc <- NULL
+            msg <- sprintf("You blockhead, argument <<%s>> failed the check for illegal values: %s", paste(argName, collapse=' '), rc)
+            if(stopOnError) 
+                stop(msg)
+            else
+                return(msg)
+            #rc <- NULL
         }
         
         if(is.function(ifdf)) {
