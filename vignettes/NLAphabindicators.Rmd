@@ -1,0 +1,38 @@
+---
+title: "Using NLA Physical Habitat Indicator Functions"
+author: "Karen Blocksom"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Calculating Bed Stability}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# 1 Preliminaries
+
+There are 5 NLA physical habitat indicators that assess condition based on 1) drawdown, 2) riparian vegetation complexity, 3) littoral vegetation complexity, 4) littoral-riparian vegatation complexity, and 5) riparian disturbance. There is a separate function for each of these to calculate the indicator value and assign a condition class. Each indicator function requires specific site-related information (e.g., latitude, longitude) and specific physical habitat metrics to assign condition.
+
+********
+# 2 Calculating Inputs for Bed Stability Function)
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
