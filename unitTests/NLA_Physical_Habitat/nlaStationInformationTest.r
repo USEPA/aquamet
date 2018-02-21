@@ -60,6 +60,8 @@ nlaStationInformationTest.2012 <- function()
 # and ISLAND is N, NO or YES.
 {
 	testData <- nlaStationInformationTest.createTestData2012()
+	
+	# Test case with normal data in both arguments
 	expected <- nlaStationInformationTest.createExpectedResults2012()
 	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER=='ISLAND') %>% select(SITE,STATION,VALUE)
 	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE)
@@ -72,8 +74,50 @@ nlaStationInformationTest.2012 <- function()
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-9)
-return(diff)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics")
+#return(diff)
+	checkTrue(is.null(diff), "Incorrect calculation of metrics when both arguments have normal data")
+	
+	
+	# Test case with zero rows in one argument
+	expected <- nlaStationInformationTest.createExpectedResults2012() %>%
+	            subset(METRIC != 'SIFPISLAND')
+	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER=='ISLAND') %>% select(SITE,STATION,VALUE) %>% subset(FALSE)
+	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE)
+	                               )
+	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics when isIsland has zero rows")
+
+	expected <- nlaStationInformationTest.createExpectedResults2012() %>%
+	            subset(METRIC == 'SIFPISLAND')
+	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER=='ISLAND') %>% select(SITE,STATION,VALUE)
+	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE) %>% subset(FALSE)
+	                               )
+	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics when stationDepth has zero rows")
+
+	
+	# Test case with one argument is NULL
+	expected <- nlaStationInformationTest.createExpectedResults2012() %>%
+	            subset(METRIC != 'SIFPISLAND')
+	actual <- nlaStationInformation(isIsland = NULL
+	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE)
+	                               )
+	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics when isIsland is NULL")
+
+	expected <- nlaStationInformationTest.createExpectedResults2012() %>%
+	            subset(METRIC == 'SIFPISLAND')
+	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER=='ISLAND') %>% select(SITE,STATION,VALUE)
+	                               ,stationDepth = NULL
+	                               )
+	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics when stationDepth is NULL")
+
+	
+	# Test cases when both arguments are NULL
+	expected <- nlaStationInformationTest.createExpectedResults2012() %>%
+	            subset(FALSE)
+	actual <- nlaStationInformation(isIsland = NULL
+	                               ,stationDepth = NULL
+	                               )
+	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics when both arguments are NULL")
+
 }
 
 
