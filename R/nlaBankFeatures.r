@@ -76,15 +76,13 @@
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples
 #'   head(nlaPhabEx)
-#'   
-#'   nlaPhabEx.1 <- plyr::rename(nlaPhabEx,c('UID'='SITE','RESULT'='VALUE'))
-#'   
-#'   exBankFeatures <- nlaBankFeatures(angle=subset(nlaPhabEx.1,PARAMETER=='ANGLE',select=-PARAMETER),
-#'   drawdown=subset(nlaPhabEx.1,PARAMETER=='DRAWDOWN',select=-PARAMETER),
-#'   horizontalDistance=subset(nlaPhabEx.1,PARAMETER=='HORIZ_DIST',select=-PARAMETER),
-#'   horizontalDistanceDrawdown=subset(nlaPhabEx.1,PARAMETER='HORIZ_DIST_DD',select=-PARAMETER),
-#'   verticalHeight=subset(nlaPhabEx.1,PARAMETER=='VERT_DIST',select=-PARAMETER),
-#'   verticalHeightDrawdown=subset(nlaPhabEx.1,PARAMETER=='VERT_DIST_DD',select=-PARAMETER))
+#'      
+#'   exBankFeatures <- nlaBankFeatures(angle=subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER),
+#'   drawdown=subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER),
+#'   horizontalDistance=subset(nlaPhabEx,PARAMETER=='HORIZ_DIST',select=-PARAMETER),
+#'   horizontalDistanceDrawdown=subset(nlaPhabEx,PARAMETER='HORIZ_DIST_DD',select=-PARAMETER),
+#'   verticalHeight=subset(nlaPhabEx,PARAMETER=='VERT_DIST',select=-PARAMETER),
+#'   verticalHeightDrawdown=subset(nlaPhabEx,PARAMETER=='VERT_DIST_DD',select=-PARAMETER))
 #'   
 #'   head(exBankFeatures)
 #'  
