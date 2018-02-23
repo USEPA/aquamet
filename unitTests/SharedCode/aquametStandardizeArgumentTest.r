@@ -3,6 +3,9 @@
 #  6/29/17 cws Tests moved here from aquametStandardizeArgument.r
 #  7/19/17 cws Updated aquametStandardizeArgument.checkStructureTest to reflect 
 #          refactoring of error message generation
+#  2/20/18 cws Corrected aquametStandardizeArgument.checkRangeTest to correctly
+#          handle named elements in returned value. Completed unit test
+#          aquametStandardizeArgumentTest.with_ifdf_Validation.
 #
 
 require(RUnit)
@@ -99,31 +102,31 @@ aquametStandardizeArgument.checkRangeTest <- function()
 
     
     # test cases where data has some values outside of range
-    expected <- 'Column VALUE has 2 values below 2, and 0 values above 11'
+    expected <- c(warning = 'Column VALUE has 2 values below 2, and 0 values above 11')
     actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=c(2,11)))
     checkEquals(expected, actual, "Incorrect response when some values are below range in one column")
     
-    expected <- "Column VALUE has 2 values below 2, and unspecified maximum"
+    expected <- c(warning = "Column VALUE has 2 values below 2, and unspecified maximum")
     actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=c(2,NA)))
     checkEquals(expected, actual, "Incorrect response when some values are below range in one column, with maximum unspecified")
     
-    expected <- 'Column VALUE has 0 values below 0, and 2 values above 9'
+    expected <- c(warning = 'Column VALUE has 0 values below 0, and 2 values above 9')
     actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=c(0,9)))
     checkEquals(expected, actual, "Incorrect response when some values are above range in one column")
     
-    expected <- 'Column VALUE has unspecified minimum, and 2 values above 9'
+    expected <- c(warning = 'Column VALUE has unspecified minimum, and 2 values above 9')
     actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=c(NA,9)))
     checkEquals(expected, actual, "Incorrect response when some values are above range in one column, with minimum unspecified")
     
-    expected <- 'Column VALUE has 2 values below 2, and 2 values above 9'
+    expected <- c(warning = 'Column VALUE has 2 values below 2, and 2 values above 9')
     actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=c(2,9)))
     checkEquals(expected, actual, "Incorrect response when some values are below and above range in one column")
 
-    expected <- 'Column VALUE has 2 values below 2, and 2 values above 9'
+    expected <- c(warning = 'Column VALUE has 2 values below 2, and 2 values above 9')
     actual <- aquametStandardizeArgument.checkRange(mutate(testdata, OTHERVALUE=3), list(VALUE=c(2,9), OTHERVALUE=c(1,4)))
     checkEquals(expected, actual, "Incorrect response when some values are below and above range in one column when two columns are specified")
     
-    expected <- 'Column VALUE has 2 values below 2, and 2 values above 9.  Column OTHERVALUE has 0 values below 1, and 12 values above 2'
+    expected <- c(warning = 'Column VALUE has 2 values below 2, and 2 values above 9.  Column OTHERVALUE has 0 values below 1, and 12 values above 2')
     actual <- aquametStandardizeArgument.checkRange(mutate(testdata, OTHERVALUE=3), list(VALUE=c(2,9), OTHERVALUE=c(1,2)))
     checkEquals(expected, actual, "Incorrect response when some values are below and above range in two column when two columns are specified")
     
@@ -143,44 +146,44 @@ aquametStandardizeArgument.checkRangeTest <- function()
     
     
     # test case where data is character
-    expected <- 'Range checks on column VALUE require it to be either integer or double'
+    expected <- c(error = 'Range checks on column VALUE require it to be either integer or double')
     actual <- aquametStandardizeArgument.checkRange(mutate(testdata, VALUE=as.character(VALUE)), list(VALUE=c(0,11)))
     checkEquals(expected, actual, "Incorrect response when all values are within range in one column of integers cast as character")
 
-    expected <- 'Range checks on column OTHERVALUE require it to be either integer or double'
+    expected <- c(error = 'Range checks on column OTHERVALUE require it to be either integer or double')
     actual <- aquametStandardizeArgument.checkRange(mutate(testdata, OTHERVALUE='3'), list(VALUE=c(2,9), OTHERVALUE=c(1,2)))
     checkEquals(expected, actual, "Incorrect response when some values are below and above range in two columns when one column is character")
 
-    expected <- 'Range checks on column VALUE, OTHERVALUE require it to be either integer or double'
+    expected <- c(error = 'Range checks on column VALUE, OTHERVALUE require it to be either integer or double')
     actual <- aquametStandardizeArgument.checkRange(mutate(testdata, VALUE=as.character(VALUE), OTHERVALUE='asdf'), list(VALUE=c(2,9), OTHERVALUE=c(1,2)))
     checkEquals(expected, actual, "Incorrect response when some values are below and above range in two column when both columns are character")
 
     
     # test cases with bad input 
-    expected <- 'Range specifications for VALUE must either be NULL or have two values - low, high'
+    expected <- c(error = 'Range specifications for VALUE must either be NULL or have two values - low, high')
     actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=c(0,20,100)))
     checkEquals(expected, actual, "Incorrect response when expectedRange specifies a column with three values")
 
     actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=c(20)))
     checkEquals(expected, actual, "Incorrect response when expectedRange specifies a column with one values")
 
-    expected <- "Range values include specification for columns not in the data: ASDF"
+    expected <- c(error = "Range values include specification for columns not in the data: ASDF")
     actual <- aquametStandardizeArgument.checkRange(testdata, list(ASDF=NULL))
     checkEquals(expected, actual, "Incorrect response when expectedRange specifies a single column that does not exist and no range specified")
     actual <- aquametStandardizeArgument.checkRange(testdata, list(ASDF=c(0,1)))
     checkEquals(expected, actual, "Incorrect response when expectedRange specifies a single column that does not exist")
-    actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=rangeValue, ASDF=c(0,20)))
+    actual <- aquametStandardizeArgument.checkRange(testdata, list(VALUE=c(2,9), ASDF=c(0,20)))
     checkEquals(expected, actual, "Incorrect response when expectedRange specifies two columns, one of which does not exist")
     
-    expected <- "Range value specification must be a named list"
-    actual <- aquametStandardizeArgument.checkRange(testdata, c(VALUE=rangeValue, ASDF=c(0,20)))
+    expected <- c(error = "Range value specification must be a named list")
+    actual <- aquametStandardizeArgument.checkRange(testdata, c(VALUE=c(2,9), ASDF=c(0,20)))
     checkEquals(expected, actual, "Incorrect response when expectedRange is not a list")
     
-    expected <- "Range value specification elements must all be named"
-    actual <- aquametStandardizeArgument.checkRange(testdata, list(rangeValue, VALUE=c(0,20)))
+    expected <- c(error = "Range value specification elements must all be named")
+    actual <- aquametStandardizeArgument.checkRange(testdata, list(c(2,9), VALUE=c(0,20)))
     checkEquals(expected, actual, "Incorrect response when expectedRange has two elements and one is not named")
     
-    actual <- aquametStandardizeArgument.checkRange(testdata, list(rangeValue, c(0,20)))
+    actual <- aquametStandardizeArgument.checkRange(testdata, list(c(2,9), c(0,20)))
     checkEquals(expected, actual, "Incorrect response when expectedRange elements are all unnamed")
 }
 
@@ -323,30 +326,38 @@ aquametStandardizeArgumentTest.with_ifdf_Validation <- function()
     # Test case in which data that passes validation specs.
     expected <- testdata %>% mutate(PARAMETER='new column')
     actual <- aquametStandardizeArgument(testdata
-                                        ,ifdf=testpf, 'new column'
+                                        ,ifdf=        testpf, 'new column'
                                         ,struct=      list(SITE=c('integer','character'),VALUE_D='double',VALUE_I=c('integer','character'))
                                         ,rangeLimits= list(SITE=c(1,NA), VALUE_D=c(0,1), VALUE_I=c(1,10))
                                         ,legalValues= list(VALUE_I=1:10)
+                                        ,stopOnError= FALSE
                                         )
     checkEquals(expected, actual, "Incorrect with data passing validation specs, data are not character")
-
-    expected <- testdata %>% mutate(PARAMETER='new column')
+    
+    # Test case when asking to do range checks on character values
+    expected <- "You blockhead, argument <<testdata %>% mutate(SITE = as.character(SITE), VALUE_D = as.character(VALUE_D),      VALUE_I = as.character(VALUE_I))>> can not be range checked: Range checks on column SITE, VALUE_D, VALUE_I require it to be either integer or double"
     actual <- aquametStandardizeArgument(testdata %>% mutate(SITE=as.character(SITE), VALUE_D=as.character(VALUE_D), VALUE_I=as.character(VALUE_I))
-                                        ,ifdf=testpf, 'new column'
+                                        ,ifdf=        testpf, 'new column'
                                         ,struct=      list(SITE=c('integer','character'),VALUE_D='character',VALUE_I=c('integer','character'))
                                         ,rangeLimits= list(SITE=c(1,NA), VALUE_D=c(0,1), VALUE_I=c(1,10))
                                         ,legalValues= list(VALUE_I=1:10)
+                                        ,stopOnError= FALSE
                                         )
     checkEquals(expected, actual, "Incorrect with data passing validation specs, data are character")
 
-    
-    # Test cases in which data do NOT pass validation specs.
-    expected <- testdata %>% mutate(PARAMETER='new column')
-    actual <- aquametStandardizeArgument(testdata, ifdf=testpf, 'new column'
+
+    # Test cases in which data do NOT pass validation specs. Only the error
+    # due to the illegal VALUE_I value is expected in the returned value, the
+    # range errors are merely written to the screen and the process continues.
+    expected <- "You blockhead, argument <<testdata %>% mutate(SITE = SITE - 1L, VALUE_D = VALUE_D + 1,      VALUE_I = VALUE_I + 1L)>> failed the check for illegal values: Column VALUE_I is expected to have values <1,2,3,4,5,6,7,8,9,10>, but has illegal values <11>"
+    actual <- aquametStandardizeArgument(testdata %>% mutate(SITE=SITE-1L, VALUE_D=VALUE_D+1, VALUE_I=VALUE_I+1L)
+                                        ,ifdf=        testpf, 'new column'
                                         ,struct=      list(SITE=c('integer','character'),VALUE_D='double',VALUE_I=c('integer','character'))
                                         ,rangeLimits= list(SITE=c(1,NA), VALUE_D=c(0,1), VALUE_I=c(1,10))
                                         ,legalValues= list(VALUE_I=1:10)
+                                        ,stopOnError= FALSE
                                         )
+
     checkEquals(expected, actual, "Incorrect with data passing validation specs")
     
 }
