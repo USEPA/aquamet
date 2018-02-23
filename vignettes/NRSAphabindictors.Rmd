@@ -1,0 +1,165 @@
+---
+title: "Using NRSA Physical Habitat Indicator Functions"
+author: "Karen Blocksom"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Calculating Bed Stability}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# 1) Introduction
+
+There are 4 NRSA physical habitat indicators that assess condition based on 1) relative bed stability, 2) riparian disturbance, 3) instream natural fish cover, 4) riparian vegetation cover. There is a separate function for each of these to calculate the indicator value and assign a condition class. Each indicator function requires specific site-related information (e.g., latitude, longitude) and specific physical habitat metrics to assign condition.
+
+********
+
+# 2) Calculating the Relative Bed Stability Indicator
+
+There is a separate vignette showing all of the steps involved in calculating log10 of relative bed stability (LRBS) using the bed stability function, nrsaBedStability(). The condition class assignment is based on comparison of observed values to the modeled expected value of this metric. Other variables necessary to assign condition are site variables, including aggregated ecoregion (CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, or XER), protocol used (BOATABLE/WADEABLE), X-site latitude and longitude (in decimal degrees), watershed area in km^2^, elevation, reach slope, and mean wetted width (in meters).
+
+#### First load necessary libraries
+```{r Setup, results='hide', message=FALSE, warning=FALSE}
+library(aquamet)
+library(reshape2)
+library(plyr)
+library(dplyr)
+```
+#### Examine input dataset created from example files, with associated site variables included.
+
+```{r prepsite}
+
+nrsaPhabIndicEx
+
+```
+
+#### Use the nrsaRelBedStabilityIndicator() function to compare the observed log10(relative bed stability) to the site-specific expected value and assign condition.
+
+```{r rbs}
+rbsOut <- nrsaRelBedStabilityIndicator(nrsaPhabIndicEx,sampID='SITE', 
+                                       ecoreg='AGGR_ECO9_2015', 
+                                       protocol='REALM', lrbs='LRBS_G08', 
+                                       lat='LAT_DD83', lon='LON_DD83', 
+                                       area='WSAREASQKM', elev='ELEV_PT', 
+                                       slope='XSLOPE', xwidth='XWIDTH')
+
+rbsOut
+
+```
+******
+# 3) Calculating the Riparian Disturbance Indicator
+
+This indicator is based only on values of human disturbance in the W1_HALL metric from the nrsaHumanInfluence() function. Condition thresholds are applied uniformly nationwide and are not dependent on any site-related variables. 
+
+```{r rd}
+ripdistOut <- nrsaRipDistIndicator(nrsaPhabIndicEx,sampID='SITE',
+                                   w1_hall='W1_HALL')
+
+ripdistOut
+
+```
+
+# 4) Calculating the Instream Fish Cover Indicator
+
+The condition class for this indicator is based on comparison of the observed mean natural fish cover (xfc_nat) with the site-specific expected value. This expected value is based on the same set of site variables in Section 2 above. Although we have the XFC_NAT values in the data frame used in Sections 2 and 3, we will use the nrsaFishCover() function to show how to calculate this metric.
+
+### Calculate fish cover metrics
+
+```{r fc}
+algae <- subset(fishcoverEx,PARAMETER=='ALGAE')
+boulder <- subset(fishcoverEx,PARAMETER=='BOULDR')
+brush <- subset(fishcoverEx,PARAMETER=='BRUSH')
+liveTree <- subset(fishcoverEx,PARAMETER=='LVTREE')
+macrophytes <- subset(fishcoverEx,PARAMETER=='MACPHY')
+overhang <- subset(fishcoverEx,PARAMETER=='OVRHNG')
+structures <- subset(fishcoverEx,PARAMETER=='STRUCT')
+undercut <- subset(fishcoverEx,PARAMETER=='UNDCUT')
+woodyDebris <- subset(fishcoverEx,PARAMETER=='WOODY')
+
+fishCvrOut <- nrsaFishCover(algae, boulder,
+                            brush, liveTree, macrophytes,
+                            overhang, structures,
+                            undercut, woodyDebris)
+
+fishCvrOut.wide <- filter(fishCvrOut, METRIC=='xfc_nat') %>%
+  dcast(SITE~METRIC, value.var='VALUE')
+
+fishCvrOut.wide
+
+```
+#### We can compare these values for xfc_nat to those under XFC_NAT in the example data frame used in Sections 2 and 3 to see they match. 
+
+### Now exclude XFC_NAT from the data frame used in Sections 2 and 3 and merge with these values
+
+```{r xfc}
+xfcIn <- subset(nrsaPhabIndicEx, select=-XFC_NAT) %>%
+  merge(fishCvrOut.wide, by='SITE')
+
+xfcIn
+```
+
+### Use the nrsaInstrmCoverIndicator() function to assign condition based on the value of xfc_nat relative to the site-specific expected value, calculated based on a model using site-related variables. 
+
+```{r instrmcvr}
+instrmcvrOut <- nrsaInstrmCoverIndicator(xfcIn,sampID='SITE', ecoreg='AGGR_ECO9_2015', 
+                                         protocol='REALM', xfc_nat='xfc_nat', 
+                                         lat='LAT_DD83', lon='LON_DD83', 
+                                         area='WSAREASQKM', elev='ELEV_PT', 
+                                         slope='XSLOPE', xwidth='XWIDTH')
+
+instrmcvrOut
+```
+
+# 5) Calculating the Riparian Vegetation Indicator
+
+The condition class for this indicator is based on comparison of the observed mean riparian vegetation cover (xcmgw) with the site-specific expected value. This expected value is based on the same set of site variables in Section 2 above. Although we have the XCMGW values in the data frame used in Sections 2 and 3, we will use the nrsaRiparianVegetation() function to show how to calculate this metric.
+
+### Calculate riparian vegetation cover metrics 
+```{r rv}
+canCovLD <- subset(visripEx,PARAMETER=='CANBTRE', select=c('SITE','TRANSECT','BANK','VALUE'))
+canCovSD <- subset(visripEx,PARAMETER=='CANSTRE',select=c('SITE','TRANSECT','BANK','VALUE'))
+canVegT <- subset(visripEx,PARAMETER=='CANVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
+gCovB <- subset(visripEx,PARAMETER=='BARE',select=c('SITE','TRANSECT','BANK','VALUE'))
+gCovNW <- subset(visripEx,PARAMETER=='GCNWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+gCovW <- subset(visripEx,PARAMETER=='GCWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+undCNW <- subset(visripEx,PARAMETER=='UNDNWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+undCW <- subset(visripEx,PARAMETER=='UNDWDY',select=c('SITE','TRANSECT','BANK','VALUE'))
+undVT <- subset(visripEx,PARAMETER=='UNDERVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
+
+# Use the default values for the coverCalculationValues argument
+rvOut <- nrsaRiparianVegetation(canCovLD, canCovSD,
+                                canVegT, gCovB,
+                                gCovNW, gCovW,
+                                undCNW, undCW,
+                                undVT)
+
+rvOut.wide <- filter(rvOut, METRIC=='xcmgw') %>%
+  dcast(SITE~METRIC, value.var='VALUE')
+
+rvOut.wide
+```
+
+#### We can compare these values for xcmgw to those under XCMGW in the example data frame used in Sections 2 and 3 to see they match. 
+
+### Now exclude XCMGW from the data frame used in Sections 2 and 3 and merge with these values 
+
+```{r ripvegIn}
+ripvegIn <- subset(nrsaPhabIndicEx, select=-XCMGW) %>%
+  merge(rvOut.wide, by='SITE')
+
+```
+
+### Use the nrsaRiparianVegIndicator() function to assign condition based on the value of xcmgw relative to the site-specific expected value, calculated based on a model using site-related variables.
+
+```{r ripvegOut}
+ripvegOut <- nrsaRiparianVegIndicator(ripvegIn,sampID='SITE', 
+                                      ecoreg='AGGR_ECO9_2015', 
+                                      protocol='REALM', 
+                                      xcmgw='xcmgw', lat='LAT_DD83',
+                                      lon='LON_DD83', area='WSAREASQKM', 
+                                      elev='ELEV_PT', slope='XSLOPE', 
+                                      xwidth='XWIDTH')
+
+ripvegOut
+```

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2017-11-03" />
+<meta name="date" content="2018-02-23" />
 
 <title>Calculating Macroinvertebrate Metrics</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Calculating Macroinvertebrate Metrics</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2017-11-03</em></h4>
+<h4 class="date"><em>2018-02-23</em></h4>
 
 
 
@@ -263,13 +263,22 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>This function calculates metrics for only the MMI for the ecoregion of each site. In order to match the taxonomy used in the NRSA MMI, the function <code>prepBentCts_WSA()</code> must be run.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bentWSA &lt;-<span class="st"> </span><span class="kw">prepBentCts_WSA</span>(bentEx,bentTaxa_nrsa
                              ,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
-                             ,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>)
+                             ,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>)</code></pre></div>
+<pre><code>## [1] &quot;PHYLUM&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;GENUS&quot;
+## [1] &quot;FAMILY&quot;
+## [1] &quot;ORDER&quot;
+## [1] &quot;CLASS&quot;
+## [1] &quot;PHYLUM&quot;</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">eco9 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">UID=</span><span class="kw">c</span>(<span class="dv">10000</span>,<span class="dv">10001</span>), <span class="dt">ECO9=</span><span class="kw">c</span>(<span class="st">'CPL'</span>,<span class="st">'WMT'</span>),<span class="dt">stringsAsFactors=</span>F)
 
-eco9 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">UID=</span><span class="kw">c</span>(<span class="dv">10000</span>,<span class="dv">10001</span>), <span class="dt">ECO9=</span><span class="kw">c</span>(<span class="st">'CPL'</span>,<span class="st">'WMT'</span>),<span class="dt">stringsAsFactors=</span>F)
+bentEx.<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">merge</span>(bentWSA, eco9, <span class="dt">by=</span><span class="st">'UID'</span>)
 
-bentEx<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw">merge</span>(bentWSA, eco9, <span class="dt">by=</span><span class="st">'UID'</span>)
-
-outMets &lt;-<span class="st"> </span><span class="kw">calcNRSA_BentMMImets</span>(<span class="dt">inCts=</span>bentEx<span class="fl">.1</span>,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
+outMets &lt;-<span class="st"> </span><span class="kw">calcNRSA_BentMMImets</span>(<span class="dt">inCts=</span>bentEx.<span class="dv">1</span>,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
                                        ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>,<span class="dt">ffg=</span><span class="st">'FFG_WSA'</span>
                                        ,<span class="dt">habit=</span><span class="st">'HABIT_WSA'</span>,<span class="dt">ptv=</span><span class="st">'PTV_WSA'</span>,<span class="dt">ecoreg=</span><span class="st">'ECO9'</span>)
 

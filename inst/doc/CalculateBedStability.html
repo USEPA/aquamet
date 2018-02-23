@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2017-11-03" />
+<meta name="date" content="2018-02-23" />
 
 <title>Calculating Relative Bed Stability</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Calculating Relative Bed Stability</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2017-11-03</em></h4>
+<h4 class="date"><em>2018-02-23</em></h4>
 
 
 
@@ -105,16 +105,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 48719 10000        A       0  PHAB_THALW     DEPTH    18         CM
 ## 48720 10000        A       0  PHAB_THALW  INCREMNT   1.1          M
 ## 48721 10000        A       0  PHAB_THALW  POOLFMCD     N       NONE</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bBH &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER==<span class="st">'BANKHT'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_CHANBFRONT'</span>)
-bBW &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER==<span class="st">'BANKWID'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_CHANBFRONT'</span>)
-bD &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,(PARAMETER==<span class="st">'DEP_SONR'</span>|PARAMETER==<span class="st">'DEP_POLE'</span>) &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_THAL'</span>)
-bWW &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER==<span class="st">'WETWID'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_CHANBFRONT'</span>)
-bInc &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER==<span class="st">'INCISED'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_CHANBFRONT'</span>)
-wBH &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER==<span class="st">'BANKHGT'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_CHANW'</span>)
-wBW &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER==<span class="st">'BANKWID'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_CHANW'</span>)
-wD &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,PARAMETER==<span class="st">'DEPTH'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_THALW'</span>)
-wWW &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,PARAMETER==<span class="st">'WETWIDTH'</span>)
-wInc &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER==<span class="st">'INCISHGT'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_CHANW'</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bBH &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER<span class="op">==</span><span class="st">'BANKHT'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_CHANBFRONT'</span>)
+bBW &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER<span class="op">==</span><span class="st">'BANKWID'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_CHANBFRONT'</span>)
+bD &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,(PARAMETER<span class="op">==</span><span class="st">'DEP_SONR'</span><span class="op">|</span>PARAMETER<span class="op">==</span><span class="st">'DEP_POLE'</span>) <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THAL'</span>)
+bWW &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER<span class="op">==</span><span class="st">'WETWID'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_CHANBFRONT'</span>)
+bInc &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER<span class="op">==</span><span class="st">'INCISED'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_CHANBFRONT'</span>)
+wBH &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER<span class="op">==</span><span class="st">'BANKHGT'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_CHANW'</span>)
+wBW &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER<span class="op">==</span><span class="st">'BANKWID'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_CHANW'</span>)
+wD &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,PARAMETER<span class="op">==</span><span class="st">'DEPTH'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THALW'</span>)
+wWW &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,PARAMETER<span class="op">==</span><span class="st">'WETWIDTH'</span>)
+wInc &lt;-<span class="st"> </span><span class="kw">subset</span>(bankgeomEx,PARAMETER<span class="op">==</span><span class="st">'INCISHGT'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_CHANW'</span>)
 
 chanmorphOut &lt;-<span class="st"> </span><span class="kw">nrsaChannelMorphology</span>(<span class="dt">bBankHeight=</span>bBH, <span class="dt">bBankWidth=</span>bBW,
     <span class="dt">bDepth=</span>bD, <span class="dt">bIncisedHeight=</span>bInc, <span class="dt">bWettedWidth=</span>bWW, <span class="dt">wBankHeight=</span>wBH,
@@ -128,7 +128,7 @@ chanmorphOut &lt;-<span class="st"> </span><span class="kw">nrsaChannelMorpholog
 ## 4 10002 sdwidth  1.6571694
 ## 5 10000     n_w 20.0000000
 ## 6 10002     n_w 20.0000000</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(chanmorphOut$METRIC)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(chanmorphOut<span class="op">$</span>METRIC)</code></pre></div>
 <pre><code>##  [1] &quot;xwidth&quot;     &quot;sdwidth&quot;    &quot;n_w&quot;        &quot;xbkf_w&quot;     &quot;sdbkf_w&quot;   
 ##  [6] &quot;n_bw&quot;       &quot;xbkf_h&quot;     &quot;sdbkf_h&quot;    &quot;n_bh&quot;       &quot;xinc_h&quot;    
 ## [11] &quot;sdinc_h&quot;    &quot;n_incis&quot;    &quot;bfwd_rat&quot;   &quot;xwxd&quot;       &quot;xwd_rat&quot;   
@@ -146,15 +146,15 @@ chanmorphOut &lt;-<span class="st"> </span><span class="kw">nrsaChannelMorpholog
 ## 6140 10000        A  PHAB_CHANW    LVTREE     1     
 ## 6141 10000        A  PHAB_CHANW    MACPHY     0     
 ## 6142 10000        A  PHAB_CHANW    OVRHNG     0</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fishCvrOut &lt;-<span class="st"> </span><span class="kw">nrsaFishCover</span>(<span class="dt">algae=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'ALGAE'</span>),
-  <span class="dt">boulder=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'BOULDR'</span>),
-  <span class="dt">brush=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'BRUSH'</span>),
-  <span class="dt">liveTree=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'LVTREE'</span>),
-  <span class="dt">macrophytes=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'MACPHY'</span>),
-  <span class="dt">overhang=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'OVRHNG'</span>),
-  <span class="dt">structures=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'STRUCT'</span>),
-  <span class="dt">undercut=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'UNDCUT'</span>),
-  <span class="dt">woodyDebris=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER==<span class="st">'WOODY'</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">fishCvrOut &lt;-<span class="st"> </span><span class="kw">nrsaFishCover</span>(<span class="dt">algae=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'ALGAE'</span>),
+  <span class="dt">boulder=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'BOULDR'</span>),
+  <span class="dt">brush=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'BRUSH'</span>),
+  <span class="dt">liveTree=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'LVTREE'</span>),
+  <span class="dt">macrophytes=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'MACPHY'</span>),
+  <span class="dt">overhang=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'OVRHNG'</span>),
+  <span class="dt">structures=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'STRUCT'</span>),
+  <span class="dt">undercut=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'UNDCUT'</span>),
+  <span class="dt">woodyDebris=</span><span class="kw">subset</span>(fishcoverEx,PARAMETER<span class="op">==</span><span class="st">'WOODY'</span>))</code></pre></div>
 <pre><code>##   Fish Cover mets.1.2.3.4.5.6.7 Done.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(fishCvrOut)</code></pre></div>
 <pre><code>##    SITE  METRIC     VALUE
@@ -164,7 +164,7 @@ chanmorphOut &lt;-<span class="st"> </span><span class="kw">nrsaChannelMorpholog
 ## 4 13904 pfc_alg 0.0000000
 ## 5 10000 pfc_rck 0.3636364
 ## 6 10002 pfc_rck 0.0000000</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(fishCvrOut$METRIC)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(fishCvrOut<span class="op">$</span>METRIC)</code></pre></div>
 <pre><code>##  [1] &quot;pfc_alg&quot;  &quot;pfc_rck&quot;  &quot;pfc_brs&quot;  &quot;pfc_lvt&quot;  &quot;pfc_aqm&quot;  &quot;pfc_ohv&quot; 
 ##  [7] &quot;pfc_hum&quot;  &quot;pfc_ucb&quot;  &quot;pfc_lwd&quot;  &quot;xfc_alg&quot;  &quot;xfc_rck&quot;  &quot;xfc_brs&quot; 
 ## [13] &quot;xfc_lvt&quot;  &quot;xfc_aqm&quot;  &quot;xfc_ohv&quot;  &quot;xfc_hum&quot;  &quot;xfc_ucb&quot;  &quot;xfc_lwd&quot; 
@@ -181,21 +181,21 @@ chanmorphOut &lt;-<span class="st"> </span><span class="kw">nrsaChannelMorpholog
 <p>The final argument is a character vector containing the values of transects that are used to specify a side channel. The default value for this argument reflects the NRSA values (XA, XB, XC, etc.). Because we are using standardize EPA NRSA data, we do not need to specify this argument. The function will just use the default.</p>
 <p>In this vignette, the output data frame contains all of the metrics calculated by this function. To use as an argument in the <code>nrsaLargeWoody()</code> function, we will need to subset the data frame <code>genOut</code> for just the <code>reachlen</code> variable.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Run nrsaGeneral() to obtain reach length metric</span>
-wTr &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx, PARAMETER==<span class="st">'INCREMNT'</span> &amp;<span class="st"> </span>TRANSECT==<span class="st">'A'</span> &amp;<span class="st"> </span>STATION==<span class="dv">0</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_THALW'</span>
-                 ,<span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'VALUE'</span>)) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE)) %&gt;%
-<span class="st">  </span><span class="kw">merge</span>(plyr::<span class="kw">ddply</span>(<span class="kw">unique</span>(<span class="kw">subset</span>(thalwegEx, SAMPLE_TYPE==<span class="st">'PHAB_THALW'</span>, <span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>,<span class="st">'STATION'</span>))),
-                    <span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>), summarise, <span class="dt">nSta =</span> <span class="kw">length</span>(STATION)), <span class="dt">by =</span> <span class="st">'SITE'</span>) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">ddply</span>(<span class="kw">c</span>(<span class="st">'SITE'</span>), mutate, <span class="dt">lastTran=</span><span class="kw">max</span>(TRANSECT)) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(wTr, <span class="dt">VALUE =</span> <span class="kw">ifelse</span>(TRANSECT!=lastTran, nSta*VALUE, (nSta<span class="dv">-1</span>)*VALUE)) %&gt;%
-<span class="st">  </span>dplyr::<span class="kw">select</span>(-nSta,-lastTran)
+wTr &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx, PARAMETER<span class="op">==</span><span class="st">'INCREMNT'</span> <span class="op">&amp;</span><span class="st"> </span>TRANSECT<span class="op">==</span><span class="st">'A'</span> <span class="op">&amp;</span><span class="st"> </span>STATION<span class="op">==</span><span class="dv">0</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THALW'</span>
+                 ,<span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'VALUE'</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">merge</span>(plyr<span class="op">::</span><span class="kw">ddply</span>(<span class="kw">unique</span>(<span class="kw">subset</span>(thalwegEx, SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THALW'</span>, <span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>,<span class="st">'STATION'</span>))),
+                    <span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>), summarise, <span class="dt">nSta =</span> <span class="kw">length</span>(STATION)), <span class="dt">by =</span> <span class="st">'SITE'</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">ddply</span>(<span class="kw">c</span>(<span class="st">'SITE'</span>), mutate, <span class="dt">lastTran=</span><span class="kw">max</span>(TRANSECT)) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(wTr, <span class="dt">VALUE =</span> <span class="kw">ifelse</span>(TRANSECT<span class="op">!=</span>lastTran, nSta<span class="op">*</span>VALUE, (nSta<span class="op">-</span><span class="dv">1</span>)<span class="op">*</span>VALUE)) <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>nSta,<span class="op">-</span>lastTran)
 
 
-bTr &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx,PARAMETER==<span class="st">'ACTRANSP'</span>,<span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>,<span class="st">'VALUE'</span>))
-tranSpace &lt;-<span class="st"> </span><span class="kw">rbind</span>(wTr,bTr) %&gt;%<span class="st"> </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
+bTr &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx,PARAMETER<span class="op">==</span><span class="st">'ACTRANSP'</span>,<span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>,<span class="st">'VALUE'</span>))
+tranSpace &lt;-<span class="st"> </span><span class="kw">rbind</span>(wTr,bTr) <span class="op">%&gt;%</span><span class="st"> </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
 
 genOut &lt;-<span class="st"> </span><span class="kw">nrsaGeneral</span>(<span class="dt">sampledTransects=</span><span class="kw">unique</span>(thalwegEx[,<span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>)]),
-                        <span class="dt">sideChannels=</span><span class="kw">subset</span>(thalwegEx,PARAMETER %in%<span class="st"> </span><span class="kw">c</span>(<span class="st">'SIDCHN'</span>,<span class="st">'OFF_CHAN'</span>)),
+                        <span class="dt">sideChannels=</span><span class="kw">subset</span>(thalwegEx,PARAMETER <span class="op">%in%</span><span class="st"> </span><span class="kw">c</span>(<span class="st">'SIDCHN'</span>,<span class="st">'OFF_CHAN'</span>)),
                         <span class="dt">transectSpacing=</span>tranSpace)</code></pre></div>
 <pre><code>##   General mets .1.2.3.Done</code></pre>
 </div>
@@ -203,19 +203,19 @@ genOut &lt;-<span class="st"> </span><span class="kw">nrsaGeneral</span>(<span c
 <h3>2.3.2 Create additional inputs and call function</h3>
 <p>There are separate arguments for large woody debris counts from boatable and wadeable sites. At wadeable sites, large woody debris counts are recorded on the NRSA thalweg profile and woody debris form, and at boatable sites, these counts are recorded on the channel/riparian transect form. The expected input data frames have the variables SITE, CLASS, and VALUE. The woody debris example dataset originally contained SITE, PARAMETER, and VALUE, so PARAMETER has to be renamed to CLASS. The expected CLASS values are as used in NRSA: DLDLL, DLDML, DLDSL, DMDLL, DMDML, DMDSL, DSDLL, DSDML, DSDSL, DXDLL, DXDML, DXDSL, WLDLL, WLDML, WLDSL, WMDLL, WMDML, WMDSL, WSDLL, WSDML, WSDSL, WXDLL, WXDML, and WXDSL.</p>
 <p>Now we have the four inputs of boatable woody debris counts, wadeable woody debris counts, reachlength, and mean bankfull width. By running the function <code>nrsaLargeWoody()</code>, we can calculate the metric <code>v1W_msq</code>, which is the mean bankfull woody debris (m<sup>3</sup>/m<sup>2</sup>).</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">boatCnt &lt;-<span class="st"> </span><span class="kw">subset</span>(woodEx,SITE %in%<span class="st"> </span><span class="kw">subset</span>(visitsEx,VALXSITE==<span class="st">'BOATABLE'</span>,<span class="dt">select=</span><span class="st">'SITE'</span>)$SITE) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">rename</span>(<span class="kw">c</span>(<span class="st">'PARAMETER'</span>=<span class="st">'CLASS'</span>)) %&gt;%<span class="st"> </span>
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">boatCnt &lt;-<span class="st"> </span><span class="kw">subset</span>(woodEx,SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">subset</span>(visitsEx,VALXSITE<span class="op">==</span><span class="st">'BOATABLE'</span>,<span class="dt">select=</span><span class="st">'SITE'</span>)<span class="op">$</span>SITE) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">rename</span>(<span class="kw">c</span>(<span class="st">'PARAMETER'</span>=<span class="st">'CLASS'</span>)) <span class="op">%&gt;%</span><span class="st"> </span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
 
-wadeCnt &lt;-<span class="st"> </span><span class="kw">subset</span>(woodEx,SITE %in%<span class="st"> </span><span class="kw">subset</span>(visitsEx,VALXSITE==<span class="st">'WADEABLE'</span>,<span class="dt">select=</span><span class="st">'SITE'</span>)$SITE)  %&gt;%
-<span class="st">  </span>plyr::<span class="kw">rename</span>(<span class="kw">c</span>(<span class="st">'PARAMETER'</span>=<span class="st">'CLASS'</span>)) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
+wadeCnt &lt;-<span class="st"> </span><span class="kw">subset</span>(woodEx,SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">subset</span>(visitsEx,VALXSITE<span class="op">==</span><span class="st">'WADEABLE'</span>,<span class="dt">select=</span><span class="st">'SITE'</span>)<span class="op">$</span>SITE)  <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">rename</span>(<span class="kw">c</span>(<span class="st">'PARAMETER'</span>=<span class="st">'CLASS'</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
 
-meanBankfull &lt;-<span class="st"> </span><span class="kw">subset</span>(chanmorphOut,METRIC==<span class="st">'xbkf_w'</span>)
+meanBankfull &lt;-<span class="st"> </span><span class="kw">subset</span>(chanmorphOut,METRIC<span class="op">==</span><span class="st">'xbkf_w'</span>)
 
   
 <span class="co"># Now feed these data frames into the function nrsaLargeWoody()</span>
-lwdOut &lt;-<span class="st"> </span><span class="kw">nrsaLargeWoody</span>(<span class="dt">bCounts=</span>boatCnt,<span class="dt">wCounts=</span>wadeCnt,<span class="dt">reachlength=</span><span class="kw">subset</span>(genOut,METRIC==<span class="st">'reachlen'</span>),
+lwdOut &lt;-<span class="st"> </span><span class="kw">nrsaLargeWoody</span>(<span class="dt">bCounts=</span>boatCnt,<span class="dt">wCounts=</span>wadeCnt,<span class="dt">reachlength=</span><span class="kw">subset</span>(genOut,METRIC<span class="op">==</span><span class="st">'reachlen'</span>),
                          <span class="dt">meanBankfullWidth=</span>meanBankfull)</code></pre></div>
 <pre><code>##   Large woody debris metsEnd of ncns
 ## end of reachlen
@@ -223,7 +223,7 @@ lwdOut &lt;-<span class="st"> </span><span class="kw">nrsaLargeWoody</span>(<spa
 ## end of lgwoodsums
 ## .w.bend of mm
 ##   Done.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(lwdOut$METRIC)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(lwdOut<span class="op">$</span>METRIC)</code></pre></div>
 <pre><code>##   [1] &quot;rchdldll&quot; &quot;rchdldml&quot; &quot;rchdldsl&quot; &quot;rchdmdll&quot; &quot;rchdmdml&quot; &quot;rchdmdsl&quot;
 ##   [7] &quot;rchdsdll&quot; &quot;rchdsdml&quot; &quot;rchdsdsl&quot; &quot;rchdxdll&quot; &quot;rchdxdml&quot; &quot;rchdxdsl&quot;
 ##  [13] &quot;rchwldll&quot; &quot;rchwldml&quot; &quot;rchwldsl&quot; &quot;rchwmdll&quot; &quot;rchwmdml&quot; &quot;rchwmdsl&quot;
@@ -276,16 +276,16 @@ lwdOut &lt;-<span class="st"> </span><span class="kw">nrsaLargeWoody</span>(<spa
 ## 13646 10000        A   CT  SIZE_CLS    GC       PHAB_CHANW
 ## 13647 10000        A   CT XSIZE_CLS    FN       PHAB_THALW
 ## 13648 10000        A   LC     DEPTH    10       PHAB_CHANW</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subcharOut &lt;-<span class="st"> </span><span class="kw">nrsaSubstrateCharacterization</span> (<span class="dt">bBottomDom =</span> <span class="kw">subset</span>(littoralEx, PARAMETER ==<span class="st"> 'BOTTOMDOM'</span>)
-                                    ,<span class="dt">bBottomSec =</span> <span class="kw">subset</span>(littoralEx, PARAMETER ==<span class="st"> 'BOTTOMSEC'</span>)
-                                    ,<span class="dt">bShoreDom =</span> <span class="kw">subset</span>(littoralEx, PARAMETER ==<span class="st"> 'SHOREDOM'</span>)
-                                    ,<span class="dt">bShoreSec =</span> <span class="kw">subset</span>(littoralEx, PARAMETER ==<span class="st"> 'SHORESEC'</span>)
-                                    ,<span class="dt">bSizeClass =</span> <span class="kw">subset</span>(thalwegEx, PARAMETER ==<span class="st"> 'SIZE_CLS'</span> &amp;<span class="st"> </span>
-<span class="st">                                                           </span>SAMPLE_TYPE==<span class="st">'PHAB_THAL'</span>)
-                                    ,<span class="dt">wSizeClass =</span> <span class="kw">subset</span>(channelxsectEx, PARAMETER ==<span class="st"> 'SIZE_CLS'</span>)
-                                    ,<span class="dt">wMezzoSizeClass =</span> <span class="kw">subset</span>(channelxsectEx, PARAMETER ==<span class="st"> 'XSIZE_CLS'</span>))</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">subcharOut &lt;-<span class="st"> </span><span class="kw">nrsaSubstrateCharacterization</span> (<span class="dt">bBottomDom =</span> <span class="kw">subset</span>(littoralEx, PARAMETER <span class="op">==</span><span class="st"> 'BOTTOMDOM'</span>)
+                                    ,<span class="dt">bBottomSec =</span> <span class="kw">subset</span>(littoralEx, PARAMETER <span class="op">==</span><span class="st"> 'BOTTOMSEC'</span>)
+                                    ,<span class="dt">bShoreDom =</span> <span class="kw">subset</span>(littoralEx, PARAMETER <span class="op">==</span><span class="st"> 'SHOREDOM'</span>)
+                                    ,<span class="dt">bShoreSec =</span> <span class="kw">subset</span>(littoralEx, PARAMETER <span class="op">==</span><span class="st"> 'SHORESEC'</span>)
+                                    ,<span class="dt">bSizeClass =</span> <span class="kw">subset</span>(thalwegEx, PARAMETER <span class="op">==</span><span class="st"> 'SIZE_CLS'</span> <span class="op">&amp;</span><span class="st"> </span>
+<span class="st">                                                           </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THAL'</span>)
+                                    ,<span class="dt">wSizeClass =</span> <span class="kw">subset</span>(channelxsectEx, PARAMETER <span class="op">==</span><span class="st"> 'SIZE_CLS'</span>)
+                                    ,<span class="dt">wMezzoSizeClass =</span> <span class="kw">subset</span>(channelxsectEx, PARAMETER <span class="op">==</span><span class="st"> 'XSIZE_CLS'</span>))</code></pre></div>
 <pre><code>##   Substrate Characterization.1.  Wadeable substrate begun.2.3.4.5.6.6.7abcde.8.9.  Wadeable substrate done.  Boatable thalweg substrate begun.11.13.  Boatable thalweg substrate done.  Boatable littoral substrate begun.15.  Boatable littoral substrate done Done.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(subcharOut$METRIC)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(subcharOut<span class="op">$</span>METRIC)</code></pre></div>
 <pre><code>##   [1] &quot;lsub2d16&quot;     &quot;lsub2d25&quot;     &quot;lsub2d50&quot;     &quot;lsub2d75&quot;    
 ##   [5] &quot;lsub2d84&quot;     &quot;lsub2dmm&quot;     &quot;lsubd2sd&quot;     &quot;lsub2iqr&quot;    
 ##   [9] &quot;lsub2dmm_nor&quot; &quot;dgm&quot;          &quot;lsubd2sd_nor&quot; &quot;sub2dmm_nor&quot; 
@@ -336,7 +336,7 @@ lwdOut &lt;-<span class="st"> </span><span class="kw">nrsaLargeWoody</span>(<spa
 ## 3714 PERCENT   100     
 ## 3715      CM   8.8</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># separate changeomEx boatable and wadeable sites</span>
-changeom.b &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx, SAMPLE_TYPE==<span class="st">'PHAB_CHANBFRONT'</span>)
+changeom.b &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx, SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_CHANBFRONT'</span>)
 
 
 <span class="kw">head</span>(thalwegEx)</code></pre></div>
@@ -347,37 +347,37 @@ changeom.b &lt;-<span class="st"> </span><span class="kw">subset</span>(changeom
 ## 48719 10000        A       0  PHAB_THALW     DEPTH    18         CM
 ## 48720 10000        A       0  PHAB_THALW  INCREMNT   1.1          M
 ## 48721 10000        A       0  PHAB_THALW  POOLFMCD     N       NONE</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bBear &lt;-<span class="st"> </span><span class="kw">subset</span>(changeom.b, PARAMETER==<span class="st">'BEAR'</span>) %&gt;%
-<span class="st">   </span>plyr::<span class="kw">mutate</span>(<span class="dt">LINE=</span><span class="kw">ifelse</span>(LINE==<span class="dv">999</span>, <span class="dv">0</span>, LINE))
-bDist &lt;-<span class="st"> </span><span class="kw">subset</span>(changeom.b, PARAMETER==<span class="st">'DISTANCE'</span>) %&gt;%
-<span class="st">   </span>plyr::<span class="kw">mutate</span>(<span class="dt">LINE=</span><span class="kw">ifelse</span>(LINE==<span class="dv">999</span>, <span class="dv">0</span>, LINE))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bBear &lt;-<span class="st"> </span><span class="kw">subset</span>(changeom.b, PARAMETER<span class="op">==</span><span class="st">'BEAR'</span>) <span class="op">%&gt;%</span>
+<span class="st">   </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">LINE=</span><span class="kw">ifelse</span>(LINE<span class="op">==</span><span class="dv">999</span>, <span class="dv">0</span>, LINE))
+bDist &lt;-<span class="st"> </span><span class="kw">subset</span>(changeom.b, PARAMETER<span class="op">==</span><span class="st">'DISTANCE'</span>) <span class="op">%&gt;%</span>
+<span class="st">   </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">LINE=</span><span class="kw">ifelse</span>(LINE<span class="op">==</span><span class="dv">999</span>, <span class="dv">0</span>, LINE))
 
 gis.bSlp &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">c</span>(<span class="dv">13799</span>,<span class="dv">13904</span>),<span class="dt">VALUE=</span><span class="kw">c</span>(<span class="fl">0.002178</span>,<span class="fl">0.051732</span>))
 
-wBear &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx, <span class="kw">grepl</span>(<span class="st">'BEARING'</span>, PARAMETER) &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_SLOPE'</span>) %&gt;%
-<span class="st">   </span>plyr::<span class="kw">mutate</span>(<span class="dt">LINE =</span> <span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'BEARING'</span>, <span class="dv">0</span>
-                ,<span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'BEARING2'</span>, <span class="dv">1</span>
-                ,<span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'BEARING3'</span>, <span class="dv">2</span>, <span class="ot">NA</span>
+wBear &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx, <span class="kw">grepl</span>(<span class="st">'BEARING'</span>, PARAMETER) <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_SLOPE'</span>) <span class="op">%&gt;%</span>
+<span class="st">   </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">LINE =</span> <span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'BEARING'</span>, <span class="dv">0</span>
+                ,<span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'BEARING2'</span>, <span class="dv">1</span>
+                ,<span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'BEARING3'</span>, <span class="dv">2</span>, <span class="ot">NA</span>
                  ))) ,<span class="dt">PARAMETER =</span> <span class="ot">NULL</span>) 
 
-wTr.alt &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx, PARAMETER==<span class="st">'INCREMNT'</span> &amp;<span class="st"> </span>TRANSECT==<span class="st">'A'</span> &amp;<span class="st"> </span>STATION==<span class="dv">0</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_THALW'</span>
-                 ,<span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'VALUE'</span>)) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE)) %&gt;%
-<span class="st">  </span><span class="kw">merge</span>(plyr::<span class="kw">ddply</span>(<span class="kw">unique</span>(<span class="kw">subset</span>(thalwegEx,SAMPLE_TYPE==<span class="st">'PHAB_THALW'</span>,<span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>,<span class="st">'STATION'</span>))),
-                    <span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>),summarise,<span class="dt">nSta =</span> <span class="kw">length</span>(STATION)), <span class="dt">by =</span> <span class="st">'SITE'</span>) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE =</span> nSta*VALUE) %&gt;%
-<span class="st">  </span>dplyr::<span class="kw">select</span>(-nSta)
+wTr.alt &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx, PARAMETER<span class="op">==</span><span class="st">'INCREMNT'</span> <span class="op">&amp;</span><span class="st"> </span>TRANSECT<span class="op">==</span><span class="st">'A'</span> <span class="op">&amp;</span><span class="st"> </span>STATION<span class="op">==</span><span class="dv">0</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THALW'</span>
+                 ,<span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'VALUE'</span>)) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE)) <span class="op">%&gt;%</span>
+<span class="st">  </span><span class="kw">merge</span>(plyr<span class="op">::</span><span class="kw">ddply</span>(<span class="kw">unique</span>(<span class="kw">subset</span>(thalwegEx,SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THALW'</span>,<span class="dt">select=</span><span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>,<span class="st">'STATION'</span>))),
+                    <span class="kw">c</span>(<span class="st">'SITE'</span>,<span class="st">'TRANSECT'</span>),summarise,<span class="dt">nSta =</span> <span class="kw">length</span>(STATION)), <span class="dt">by =</span> <span class="st">'SITE'</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE =</span> nSta<span class="op">*</span>VALUE) <span class="op">%&gt;%</span>
+<span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(<span class="op">-</span>nSta)
 
-wProp &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx, <span class="kw">grepl</span>(<span class="st">'PROP'</span>, PARAMETER) &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_SLOPE'</span>) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">LINE =</span> <span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'PROP'</span>, <span class="dv">0</span>
-                       ,<span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'PROP2'</span>, <span class="dv">1</span>
-                               ,<span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'PROP3'</span>, <span class="dv">2</span>, <span class="ot">NA</span>))),<span class="dt">PARAMETER =</span> <span class="ot">NULL</span>
+wProp &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx, <span class="kw">grepl</span>(<span class="st">'PROP'</span>, PARAMETER) <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_SLOPE'</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">LINE =</span> <span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'PROP'</span>, <span class="dv">0</span>
+                       ,<span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'PROP2'</span>, <span class="dv">1</span>
+                               ,<span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'PROP3'</span>, <span class="dv">2</span>, <span class="ot">NA</span>))),<span class="dt">PARAMETER =</span> <span class="ot">NULL</span>
                , <span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
 
-wSlp &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx, <span class="kw">grepl</span>(<span class="st">'SLOPE'</span>, PARAMETER) &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_SLOPE'</span>) %&gt;%
-<span class="st">   </span>plyr::<span class="kw">mutate</span>(<span class="dt">LINE =</span> <span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'SLOPE'</span>, <span class="dv">0</span>
-                ,<span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'SLOPE2'</span>, <span class="dv">1</span>
-                ,<span class="kw">ifelse</span>(PARAMETER ==<span class="st"> 'SLOPE3'</span>, <span class="dv">2</span>, <span class="ot">NA</span>)))
+wSlp &lt;-<span class="st"> </span><span class="kw">subset</span>(changeomEx, <span class="kw">grepl</span>(<span class="st">'SLOPE'</span>, PARAMETER) <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_SLOPE'</span>) <span class="op">%&gt;%</span>
+<span class="st">   </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">LINE =</span> <span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'SLOPE'</span>, <span class="dv">0</span>
+                ,<span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'SLOPE2'</span>, <span class="dv">1</span>
+                ,<span class="kw">ifelse</span>(PARAMETER <span class="op">==</span><span class="st"> 'SLOPE3'</span>, <span class="dv">2</span>, <span class="ot">NA</span>)))
           ,<span class="dt">PARAMETER =</span> <span class="ot">NULL</span>)                 
 
 slopeOut &lt;-<span class="st"> </span><span class="kw">nrsaSlopeBearing</span>(<span class="dt">bBearing =</span> bBear
@@ -389,7 +389,7 @@ slopeOut &lt;-<span class="st"> </span><span class="kw">nrsaSlopeBearing</span>(
                               ,<span class="dt">gisSinuosity =</span> <span class="ot">NULL</span>
                               ,<span class="dt">gisSlope =</span> gis.bSlp)</code></pre></div>
 <pre><code>##   Slope and bearing calculations.0.1.2.3.4.5.6.7.8.9.10.11.12.13.14.15.16.  Done.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(slopeOut$METRIC)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(slopeOut<span class="op">$</span>METRIC)</code></pre></div>
 <pre><code>## [1] &quot;xslope&quot;        &quot;xslope_map&quot;    &quot;xslope_field&quot;  &quot;pctClinometer&quot;
 ## [5] &quot;vslope&quot;        &quot;nslp&quot;          &quot;transpc&quot;       &quot;xbearing&quot;     
 ## [9] &quot;sinu&quot;</code></pre>
@@ -397,20 +397,20 @@ slopeOut &lt;-<span class="st"> </span><span class="kw">nrsaSlopeBearing</span>(
 <div id="residual-pools-metrics" class="section level2">
 <h2>2.6 Residual pools metrics</h2>
 <p>The mean slope from section 2.5 above is required to calculate <code>rp100</code>, the mean residual depth at thalweg in cm, using the function <code>nrsaResidualPools()</code>. The inputs for this function include thalweg depth measurements from the NRSA channel/riparian transect form at boatable sites and from the NRSA thalweg profile and woody debris form at wadeable sites. The transect spacing input for this function is the same format as that used in <code>nrsaGeneral()</code>, so we will just use the data frame created as an input for that function.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">meanslope &lt;-<span class="st"> </span><span class="kw">subset</span>(slopeOut, METRIC==<span class="st">'xslope'</span>) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">meanslope &lt;-<span class="st"> </span><span class="kw">subset</span>(slopeOut, METRIC<span class="op">==</span><span class="st">'xslope'</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
 
-bDep &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,(PARAMETER==<span class="st">'DEP_SONR'</span>|PARAMETER==<span class="st">'DEP_POLE'</span>) &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_THAL'</span>) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE),<span class="dt">STATION=</span><span class="kw">as.numeric</span>(STATION))
-wDep &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,PARAMETER==<span class="st">'DEPTH'</span> &amp;<span class="st"> </span>SAMPLE_TYPE==<span class="st">'PHAB_THALW'</span>) %&gt;%
-<span class="st">  </span>plyr::<span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE),<span class="dt">STATION=</span><span class="kw">as.numeric</span>(STATION))
+bDep &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,(PARAMETER<span class="op">==</span><span class="st">'DEP_SONR'</span><span class="op">|</span>PARAMETER<span class="op">==</span><span class="st">'DEP_POLE'</span>) <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THAL'</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE),<span class="dt">STATION=</span><span class="kw">as.numeric</span>(STATION))
+wDep &lt;-<span class="st"> </span><span class="kw">subset</span>(thalwegEx,PARAMETER<span class="op">==</span><span class="st">'DEPTH'</span> <span class="op">&amp;</span><span class="st"> </span>SAMPLE_TYPE<span class="op">==</span><span class="st">'PHAB_THALW'</span>) <span class="op">%&gt;%</span>
+<span class="st">  </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE),<span class="dt">STATION=</span><span class="kw">as.numeric</span>(STATION))
 
 respoolOut &lt;-<span class="st"> </span><span class="kw">nrsaResidualPools</span>(<span class="dt">bDepth =</span> bDep     
                            ,<span class="dt">wDepth =</span> wDep     
                            ,<span class="dt">siteSlopes =</span> meanslope
                            ,<span class="dt">transectSpacing =</span> tranSpace)</code></pre></div>
 <pre><code>##   Residual Pools calculations.A.B.C.D dataOrganization.w1.w2.w3.w4.w5.b1.b2.b3.b4.b5.b6.b7.1.2.3.4 dimensions.1.2.3.4.5 poolCharacteristics.1.2.3.4   siteSummaries .1.2.3.4.5</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(respoolOut$METRIC)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(respoolOut<span class="op">$</span>METRIC)</code></pre></div>
 <pre><code>##  [1] &quot;rpxlen&quot;     &quot;rpvlen&quot;     &quot;rpmxlen&quot;    &quot;totplen&quot;    &quot;rpxdep&quot;    
 ##  [6] &quot;rpvdep&quot;     &quot;rpmxdep&quot;    &quot;rpgt50&quot;     &quot;rpgt75&quot;     &quot;rpgt100&quot;   
 ## [11] &quot;rpgt05&quot;     &quot;rpgt05x&quot;    &quot;rpgt10&quot;     &quot;rpgt10x&quot;    &quot;rpgt20&quot;    
@@ -423,32 +423,32 @@ respoolOut &lt;-<span class="st"> </span><span class="kw">nrsaResidualPools</spa
 <h1>3 Calculate Bed Stability Metrics</h1>
 <p>Use all of the metric outputs of other functions to run the bed stability metrics function, <code>nrsaBedStability()</code>. This is done by subsetting each of the output data frames and selecting only the METRIC value of interest. Because the depth-related inputs are specific to boatable or wadeable sites, the output data frame from <code>nrsaChannelMorphology()</code>, <code>chanmorphOut</code> must be split into separate boatable and wadeable pieces. The easiest way to do this is to keep only SITE values that occur in the <code>nrsaChannelMorphology()</code> input <code>bD</code> for boatable inputs and those in <code>wD</code> for wadeable inputs.</p>
 <p>Numerous metrics are calculated, but one of the more important metrics calculated by the <code>nrsaBedStabilty()</code> function is <code>lrbs_g08</code>, the log of relative bed stability. This metric is used as an indicator of physical habitat condition.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">boat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">unique</span>(bD$SITE),<span class="dt">stringsAsFactors=</span>F)
-wade &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">unique</span>(wD$SITE),<span class="dt">stringsAsFactors=</span>F)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">boat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">unique</span>(bD<span class="op">$</span>SITE),<span class="dt">stringsAsFactors=</span>F)
+wade &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">unique</span>(wD<span class="op">$</span>SITE),<span class="dt">stringsAsFactors=</span>F)
 
-bedstabOut &lt;-<span class="st"> </span><span class="kw">nrsaBedStability</span>(<span class="dt">bXdepth =</span>  <span class="kw">subset</span>(chanmorphOut, METRIC ==<span class="st"> 'xdepth'</span> &amp;<span class="st"> </span>SITE %in%<span class="st"> </span><span class="kw">unique</span>(bD$SITE))
-                        ,<span class="dt">bSddepth =</span> <span class="kw">subset</span>(chanmorphOut, METRIC ==<span class="st"> 'sddepth'</span> &amp;<span class="st"> </span>SITE %in%<span class="st"> </span><span class="kw">unique</span>(bD$SITE))
-                        ,<span class="dt">wXdepth =</span>  <span class="kw">subset</span>(chanmorphOut, METRIC ==<span class="st"> 'xdepth'</span> &amp;<span class="st"> </span>SITE %in%<span class="st"> </span><span class="kw">unique</span>(wD$SITE))
-                        ,<span class="dt">wSddepth =</span> <span class="kw">subset</span>(chanmorphOut, METRIC ==<span class="st"> 'sddepth'</span> &amp;<span class="st"> </span>SITE %in%<span class="st"> </span><span class="kw">unique</span>(wD$SITE))
-                        ,<span class="dt">lsub_dmm =</span> <span class="kw">subset</span>(subcharOut, METRIC ==<span class="st"> 'lsub_dmm'</span>)
-                        ,<span class="dt">lsub2dmm =</span> <span class="kw">subset</span>(subcharOut, METRIC ==<span class="st"> 'lsub2dmm'</span>)
-                        ,<span class="dt">rp100 =</span>    <span class="kw">subset</span>(respoolOut, METRIC ==<span class="st"> 'rp100'</span>)
-                        ,<span class="dt">v1w_msq =</span>  <span class="kw">subset</span>(lwdOut, METRIC ==<span class="st"> 'v1w_msq'</span>)
-                        ,<span class="dt">xbkf_h =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC ==<span class="st"> 'xbkf_h'</span>)
-                        ,<span class="dt">xbkf_w =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC ==<span class="st"> 'xbkf_w'</span>)
-                        ,<span class="dt">xfc_lwd =</span>  <span class="kw">subset</span>(fishCvrOut, METRIC ==<span class="st"> 'xfc_lwd'</span>)
-                        ,<span class="dt">xslope =</span>   <span class="kw">subset</span>(slopeOut, METRIC ==<span class="st"> 'xslope'</span>)
-                        ,<span class="dt">xwidth =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC ==<span class="st"> 'xwidth'</span>)
+bedstabOut &lt;-<span class="st"> </span><span class="kw">nrsaBedStability</span>(<span class="dt">bXdepth =</span>  <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xdepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(bD<span class="op">$</span>SITE))
+                        ,<span class="dt">bSddepth =</span> <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'sddepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(bD<span class="op">$</span>SITE))
+                        ,<span class="dt">wXdepth =</span>  <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xdepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(wD<span class="op">$</span>SITE))
+                        ,<span class="dt">wSddepth =</span> <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'sddepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(wD<span class="op">$</span>SITE))
+                        ,<span class="dt">lsub_dmm =</span> <span class="kw">subset</span>(subcharOut, METRIC <span class="op">==</span><span class="st"> 'lsub_dmm'</span>)
+                        ,<span class="dt">lsub2dmm =</span> <span class="kw">subset</span>(subcharOut, METRIC <span class="op">==</span><span class="st"> 'lsub2dmm'</span>)
+                        ,<span class="dt">rp100 =</span>    <span class="kw">subset</span>(respoolOut, METRIC <span class="op">==</span><span class="st"> 'rp100'</span>)
+                        ,<span class="dt">v1w_msq =</span>  <span class="kw">subset</span>(lwdOut, METRIC <span class="op">==</span><span class="st"> 'v1w_msq'</span>)
+                        ,<span class="dt">xbkf_h =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xbkf_h'</span>)
+                        ,<span class="dt">xbkf_w =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xbkf_w'</span>)
+                        ,<span class="dt">xfc_lwd =</span>  <span class="kw">subset</span>(fishCvrOut, METRIC <span class="op">==</span><span class="st"> 'xfc_lwd'</span>)
+                        ,<span class="dt">xslope =</span>   <span class="kw">subset</span>(slopeOut, METRIC <span class="op">==</span><span class="st"> 'xslope'</span>)
+                        ,<span class="dt">xwidth =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xwidth'</span>)
                         )</code></pre></div>
 <pre><code>##   Bed stability calculations.1.2.3.4.5.6  Done.</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(bedstabOut$METRIC)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(bedstabOut<span class="op">$</span>METRIC)</code></pre></div>
 <pre><code>##  [1] &quot;s_rp100&quot;       &quot;ltest&quot;         &quot;lrbs_tst&quot;      &quot;ldmb_bw5&quot;     
 ##  [5] &quot;s_ldmb_bw5&quot;    &quot;ldmb_bw4&quot;      &quot;lrbs_bw4&quot;      &quot;lrbs_bw5&quot;     
 ##  [9] &quot;s_lrbs_bw5&quot;    &quot;lrbs_bw6&quot;      &quot;s_lrbs_bw6&quot;    &quot;shld_px3&quot;     
 ## [13] &quot;reyp3&quot;         &quot;rrpw3&quot;         &quot;cp3ctrpwd_rat&quot; &quot;cp3_mill&quot;     
 ## [17] &quot;ct_rpwd&quot;       &quot;rb3&quot;           &quot;Dcbf_g08&quot;      &quot;s_Dcbf_g08&quot;   
 ## [21] &quot;ldcbf_g08&quot;     &quot;s_ldcbf_g08&quot;   &quot;lrbs_g08&quot;      &quot;s_lrbs_g08&quot;</code></pre>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">subset</span>(bedstabOut, METRIC==<span class="st">'lrbs_g08'</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">subset</span>(bedstabOut, METRIC<span class="op">==</span><span class="st">'lrbs_g08'</span>)</code></pre></div>
 <pre><code>##     SITE   METRIC     VALUE
 ## 89 10000 lrbs_g08 -2.549066
 ## 90 10002 lrbs_g08 -4.088021

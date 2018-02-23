@@ -85,6 +85,8 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
   names(x)[names(x)==protocol] <- 'protocol'
   names(x)[names(x)==lrbs] <- 'lrbs'
   
+  x$lrbs <- as.numeric(x$lrbs)
+  
   dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','lrbs','lat','lon','area','elev','width','slope')) %>%
     plyr::mutate(l_slope = log10(slope+0.0001)
                  ,l_area = log10(area)
@@ -268,6 +270,8 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
   names(x)[names(x)==xfc_nat] <- 'xfc_nat'
   names(x)[names(x)==protocol] <- 'protocol'
   
+  x$xfc_nat <- as.numeric(x$xfc_nat)
+  
   dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','xfc_nat','lat','lon','area','elev','xwidth','slope')) %>%
     plyr::mutate(l_area=log10(area), l_width=log10(xwidth + 0.1), l_slope=log10(slope+0.0001)
                        ,l_xfc_nat=log10(xfc_nat + 0.01), l_area=log10(area)) %>%
@@ -404,14 +408,16 @@ nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, l
   names(x)[names(x)==elev] <- 'elev'
   names(x)[names(x)==ecoreg] <- 'ecoreg'
   names(x)[names(x)==slope] <- 'slope'
-  names(x)[names(x)==xwidth] <- 'width'
+  names(x)[names(x)==xwidth] <- 'xwidth'
   names(x)[names(x)==protocol] <- 'protocol'
   names(x)[names(x)==xcmgw] <- 'xcmgw'
   
-  dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','xcmgw','lat','lon','area','elev','width','slope')) %>%
+  x[,c('lat','lon','area','elev','slope','xwidth','xcmgw')] <- lapply(x[,c('lat','lon','area','elev','slope','xwidth','xcmgw')],as.numeric)
+  
+  dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','xcmgw','lat','lon','area','elev','xwidth','slope')) %>%
     plyr::mutate(l_slope = log10(slope+0.0001)
                  ,l_area = log10(area)
-                 ,l_width = log10(width + 0.1)
+                 ,l_width = log10(xwidth + 0.1)
                  ,l_xcmgw = log10(xcmgw + 0.01)
     ) %>%
     reshape2::melt(id.vars=c(sampID,'ecoreg','protocol','l_xcmgw')) %>%
