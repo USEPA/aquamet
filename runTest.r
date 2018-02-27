@@ -6,6 +6,7 @@
 #
 #  5/15/15 cws Created
 #  1/04/16 cws updated pathList and fileList in testSuite arguments
+#  2/26/18 cws
 #
 require(foreach)
 require(Hmisc)
@@ -51,5 +52,8 @@ testSuiteAquamet <- function()
 }
 
 testSuiteAquamet()
+
+load('c:/Users/cseelige/local/aquamet/data/nlaPhabEx.rda')
+load('c:/Users/cseelige/local/aquamet/data/nlaPhabEx07.rda')
 
 # end of file

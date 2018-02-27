@@ -123,6 +123,7 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL) {
 #            for rivers vs. streams.
 #   10/19/15 cws Modified calling interface of metsBankMorphology for general use.
 #    2/22/16 cws Minor code cleanup
+#    2/27/18 cws Using aquametStandardizeArgument() on input data.
 # 
 # ARGUMENTS:
 #   bAngle      dataframe containing bank angle class value for sites sampled using
@@ -163,9 +164,21 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL) {
         else if(nrow(df) == 0) return (NULL)
         else return(df)
     }
-    bAngle <- absentAsNULL(bAngle)
-    wAngle <- absentAsNULL(wAngle)
-    wUndercut <- absentAsNULL(wUndercut)
+    # bAngle <- absentAsNULL(bAngle)
+    # wAngle <- absentAsNULL(wAngle)
+    # wUndercut <- absentAsNULL(wUndercut)
+    bAngle <- bAngle %>% 
+              aquametStandardizeArgument(struct=c(SITE='integer', VALUE='character')
+                                        ,legalValues=list(VALUE=c('0-5', '5-30', '30-75', '75-100'))
+                                        )
+    wAngle <- wAngle %>% 
+              aquametStandardizeArgument(struct=list(SITE='integer', VALUE=c('integer','double'))
+                                        ,rangeLimits = list(VALUE=c(0, 180))
+                                        )
+    wUndercut <- wUndercut %>% 
+                 aquametStandardizeArgument(struct=list(SITE='integer', VALUE=c('integer','double'))
+                                           ,rangeLimits = list(VALUE=c(0, 1))
+                                           )
   
     
     if(is.null(wAngle)) {

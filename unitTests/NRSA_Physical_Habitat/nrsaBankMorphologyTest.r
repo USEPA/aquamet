@@ -3,6 +3,8 @@
 # 10/19/15 cws Modified from metsBankMorphologyTest to use new generalized 
 #          calling interface
 # 10/21/15 cws Calling nrsaBankMorphology instead of nrsaBankMorphology.1.
+#  2/27/18 cws changing calls to nrsaBankMorphology to reflect new structure 
+#          checking.
 #
 
 nrsaBankMorphologyTest <- function ()
@@ -10,45 +12,45 @@ nrsaBankMorphologyTest <- function ()
 # ARGUMENTS:
 #  none
 {
-  intermediateMessage ('Bank Morphology calculations', loc='start')
-
-  # Create test data and expected calculation results
-  intermediateMessage (' both protocols')
-  testData <- nrsaBankMorphologyTest.inputData() %>% dplyr::rename(SITE = UID, VALUE=RESULT)
-  expected <- nrsaBankMorphologyTest.testResults() %>% dplyr::rename(SITE = UID, VALUE=RESULT)
-
-  #create protocols dataset
-  bob3 <- textConnection("SITE  PROTOCOL
-                            1  BOATABLE
-                            2  BOATABLE
-                            3  BOATABLE
-                            4  BOATABLE
-                            5  WADEABLE
-                            6  WADEABLE
-                            7  WADEABLE
-                            8  WADEABLE
-                            9  WADEABLE
-                            10 WADEABLE"
-                        )
-  protocols <- read.table(bob3, header=TRUE,stringsAsFactors=FALSE)
-  close (bob3)
-
-  # do the tests
-  nrsaBankMorphologyTest.process(testData, protocols, expected)
-
-  intermediateMessage (' wadeable protocol')
-  df1.w <- subset(testData, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
-  prot.w <- subset(protocols, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
-  exp.w <- subset(expected, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
-  nrsaBankMorphologyTest.process(df1.w, prot.w, exp.w)
-
-
-  intermediateMessage (' boatable protocol')
-  df1.b <- subset(testData, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
-  prot.b <- subset(protocols, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
-  exp.b <- subset(expected, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
-  nrsaBankMorphologyTest.process(df1.b, prot.b, exp.b)
-
+    intermediateMessage ('Bank Morphology calculations', loc='start')
+    
+    # Create test data and expected calculation results
+    intermediateMessage (' both protocols')
+    testData <- nrsaBankMorphologyTest.inputData() %>% dplyr::rename(SITE = UID, VALUE=RESULT)
+    expected <- nrsaBankMorphologyTest.testResults() %>% dplyr::rename(SITE = UID, VALUE=RESULT)
+    
+    #create protocols dataset
+    bob3 <- textConnection("SITE  PROTOCOL
+                               1  BOATABLE
+                               2  BOATABLE
+                               3  BOATABLE
+                               4  BOATABLE
+                               5  WADEABLE
+                               6  WADEABLE
+                               7  WADEABLE
+                               8  WADEABLE
+                               9  WADEABLE
+                              10  WADEABLE"
+    )
+    protocols <- read.table(bob3, header=TRUE,stringsAsFactors=FALSE)
+    close (bob3)
+    
+    # do the tests
+    nrsaBankMorphologyTest.process(testData, protocols, expected)
+    
+    intermediateMessage (' wadeable protocol')
+    df1.w <- subset(testData, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+    prot.w <- subset(protocols, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+    exp.w <- subset(expected, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
+    nrsaBankMorphologyTest.process(df1.w, prot.w, exp.w)
+    
+    
+    intermediateMessage (' boatable protocol')
+    df1.b <- subset(testData, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+    prot.b <- subset(protocols, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+    exp.b <- subset(expected, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
+    nrsaBankMorphologyTest.process(df1.b, prot.b, exp.b)
+    
 }
 
 
@@ -56,10 +58,18 @@ nrsaBankMorphologyTest.process <- function(df1, protocols, expected)
 # The bulk of the unit testing is done here
 {
   #calculate the metrics
-  rr <- nrsaBankMorphology(bAngle=subset(df1, PARAMETER=='ANGLE' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
-                            ,wAngle=subset(df1, PARAMETER=='ANGLE' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
-                            ,wUndercut=subset(df1, PARAMETER=='UNDERCUT' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
-                            )
+  rr <- nrsaBankMorphology(bAngle = df1 %>% 
+                                    subset(PARAMETER=='ANGLE' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE) %>% 
+                                    select(SITE, VALUE)
+                          ,wAngle = df1 %>% 
+                                    subset(PARAMETER=='ANGLE' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE) %>% 
+                                    mutate(VALUE=as.numeric(VALUE)) %>% 
+                                    select(SITE, VALUE)
+                          ,wUndercut = df1 %>% 
+                                       subset(PARAMETER=='UNDERCUT' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE) %>% 
+                                       mutate(VALUE=as.numeric(VALUE)) %>% 
+                                       select(SITE, VALUE)
+                          )
   if(is.character(rr)) return (rr)
 
   # separate values expected to be exact from those expected to be
