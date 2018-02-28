@@ -65,7 +65,7 @@
 #' @keywords survey
 #' 
 
-nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL) {
+nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitTest=FALSE) {
 
 ################################################################################
 # Function: nrsaBankMorphology
@@ -123,7 +123,8 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL) {
 #            for rivers vs. streams.
 #   10/19/15 cws Modified calling interface of metsBankMorphology for general use.
 #    2/22/16 cws Minor code cleanup
-#    2/27/18 cws Using aquametStandardizeArgument() on input data.
+#    2/27/18 cws Using aquametStandardizeArgument() on input data. Added argument
+#            isUnitTest to allow capturing of error messages during unit tests.
 # 
 # ARGUMENTS:
 #   bAngle      dataframe containing bank angle class value for sites sampled using
@@ -167,19 +168,28 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL) {
     # bAngle <- absentAsNULL(bAngle)
     # wAngle <- absentAsNULL(wAngle)
     # wUndercut <- absentAsNULL(wUndercut)
-    bAngle <- bAngle %>% 
-              aquametStandardizeArgument(struct=c(SITE='integer', VALUE='character')
+    bAngle <- aquametStandardizeArgument(bAngle
+                                        ,struct=list(SITE=c('integer','character'), VALUE='character')
                                         ,legalValues=list(VALUE=c('0-5', '5-30', '30-75', '75-100'))
+                                        ,stopOnError = !isUnitTest
                                         )
-    wAngle <- wAngle %>% 
-              aquametStandardizeArgument(struct=list(SITE='integer', VALUE=c('integer','double'))
+    wAngle <- aquametStandardizeArgument(wAngle
+                                        ,struct=list(SITE='integer', VALUE=c('integer','double'))
                                         ,rangeLimits = list(VALUE=c(0, 180))
+                                        ,stopOnError = !isUnitTest
                                         )
-    wUndercut <- wUndercut %>% 
-                 aquametStandardizeArgument(struct=list(SITE='integer', VALUE=c('integer','double'))
+    wUndercut <- aquametStandardizeArgument(wUndercut
+                                           ,struct=list(SITE='integer', VALUE=c('integer','double'))
                                            ,rangeLimits = list(VALUE=c(0, 1))
+                                           ,stopOnError = !isUnitTest
                                            )
-  
+    if(isUnitTest) {
+        errs <- NULL
+        if(is.character(bAngle)) errs <- paste(c(errs, bAngle), collapse='. ')
+        if(is.character(wAngle)) errs <- paste(c(errs, wAngle), collapse='. ')
+        if(is.character(wUndercut)) errs <- paste(c(errs, wUndercut), collapse='. ')
+        if(!is.null(errs)) return(errs)
+    }
     
     if(is.null(wAngle)) {
         intermediateMessage('. wAngle has no data')

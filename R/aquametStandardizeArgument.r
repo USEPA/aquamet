@@ -8,6 +8,9 @@
 #  7/19/17 cws Refactored generation of error messages in preparation for adding
 #          range and legal value checks.
 #  2/21/18 cws Added stopOnError argument
+#  2/27/18 cws If stopOnError is FALSE, then warning messages are also returned
+#          instead of continuing.  This is because stopOnError is only FALSE when
+#          unit testing, at least for now.
 #
 
 require(RUnit)
@@ -87,7 +90,9 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='in
             } else if(!is.na(rc['warning'])) {
                 # just print warnings and continue
                 msg <- sprintf("Warning for argument <<%s>> while performing range check: %s", paste(argName, collapse=' '), rc)
-                print(msg)
+                print(msg, row.names=FALSE)
+                if(!stopOnError) 
+                    return(msg)
             }
         }
 

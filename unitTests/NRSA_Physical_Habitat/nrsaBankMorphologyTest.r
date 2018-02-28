@@ -4,7 +4,7 @@
 #          calling interface
 # 10/21/15 cws Calling nrsaBankMorphology instead of nrsaBankMorphology.1.
 #  2/27/18 cws changing calls to nrsaBankMorphology to reflect new structure 
-#          checking.
+#          checking. Extended unit test to check for problematic arguments.
 #
 
 nrsaBankMorphologyTest <- function ()
@@ -51,6 +51,58 @@ nrsaBankMorphologyTest <- function ()
     exp.b <- subset(expected, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
     nrsaBankMorphologyTest.process(df1.b, prot.b, exp.b)
     
+    intermediateMessage(' arguments with bad structures')
+    actual <- nrsaBankMorphology(bAngle = testData %>% 
+                                          subset(PARAMETER == 'ANGLE' & SITE %in% subset(protocols, PROTOCOL == 'BOATABLE')$SITE) %>% 
+                                          select(SITE, VALUE) %>%
+                                          dplyr::rename(RESULT=VALUE)
+                                ,wAngle = testData %>% 
+                                          subset(PARAMETER == 'ANGLE' & SITE %in% subset(protocols, PROTOCOL == 'WADEABLE')$SITE) %>% 
+                                          # mutate(VALUE = as.double(VALUE)) %>%
+                                          select(SITE, VALUE)
+                                ,wUndercut = testData %>% 
+                                          subset(PARAMETER == 'UNDERCUT' & SITE %in% subset(protocols, PROTOCOL == 'WADEABLE')$SITE) %>% 
+                                          mutate(VALUE=as.numeric(VALUE)) %>% 
+                                          select(SITE, VALUE) %>%
+                                          dplyr::rename(SITE_ID=SITE)
+                                ,isUnitTest=TRUE
+                                )
+    expected <- paste("You blockhead, argument <<bAngle>> has a structure problem: missing column VALUE; unexpected column RESULT"
+                     ,"You blockhead, argument <<wAngle>> has a structure problem: column VALUE should have type integer or double rather than character"
+                     ,"You blockhead, argument <<wUndercut>> has a structure problem: missing column SITE; unexpected column SITE_ID"
+                     ,sep='. '
+                     )
+    checkEquals(expected, actual, "Not correctly detecting structural problems")
+    
+    intermediateMessage('range and legal errors')
+    actual <- nrsaBankMorphology(bAngle = testData %>% 
+                                          subset(PARAMETER == 'ANGLE' & SITE %in% subset(protocols, PROTOCOL == 'BOATABLE')$SITE) %>% 
+                                          select(SITE, VALUE) %>%
+                                          mutate(VALUE = ifelse(VALUE=='0-5', 'low', VALUE))
+                                ,wAngle = testData %>% 
+                                          subset(PARAMETER == 'ANGLE' & SITE %in% subset(protocols, PROTOCOL == 'WADEABLE')$SITE) %>% 
+                                          mutate(VALUE = 200 + as.double(VALUE)) %>%
+                                          select(SITE, VALUE)
+                                ,wUndercut = testData %>% 
+                                          subset(PARAMETER == 'UNDERCUT' & SITE %in% subset(protocols, PROTOCOL == 'WADEABLE')$SITE) %>% 
+                                          mutate(VALUE = 10 + as.numeric(VALUE)) %>% 
+                                          select(SITE, VALUE)
+                                ,isUnitTest=TRUE
+                                )
+    expected <- paste("You blockhead, argument <<bAngle>> failed the check for illegal values: Column VALUE is expected to have values <0-5,5-30,30-75,75-100>, but has illegal values <low>"
+                     ,"Warning for argument <<wAngle>> while performing range check: Column VALUE has 0 values below 0, and 107 values above 180"
+                     ,"Warning for argument <<wUndercut>> while performing range check: Column VALUE has 0 values below 0, and 103 values above 1"
+                     ,sep='. '
+                     )
+    checkEquals(expected, actual, "Not correctly detecting legal and/or range checks")
+
+    intermediateMessage('null/zero row arguments')
+    actual <- nrsaBankMorphology(bAngle = NULL
+                                ,wAngle = testData %>% subset(FALSE)
+                                ,wUndercut = NULL
+                                ,isUnitTest=TRUE
+                                )
+    checkEquals(NULL, actual, "Not correctly handling null/zero-row arguments")
 }
 
 
