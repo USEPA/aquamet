@@ -41,8 +41,18 @@
 \alias{ShanDiversity}
 \alias{tolindex}
 \alias{tolindexFish}
+\alias{aquametStandardizeArgument}
+\alias{aquametStandardizeArgument.checkLegal}
+\alias{aquametStandardizeArgument.checkRange}
+\alias{aquametStandardizeArgument.checkStructure}
+\alias{nlaStationInformation.islandStations}
+\alias{nlaStationInformation.stationDepths}
 \title{aquamet internal functions}
 \usage{
+aquametStandardizeArgument(arg, ..., ifdf=NULL, struct=list(SITE='integer', VALUE='double'), rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE) 
+aquametStandardizeArgument.checkLegal(arg, expectedLegal)
+aquametStandardizeArgument.checkRange(arg, expectedRange)
+aquametStandardizeArgument.checkStructure(arg, expectedStruct)
 assignTaxCat(lt)
 calcSynCovers(coverData, maxDrawdown, assumptions=FALSE)
 calcSynInfluence(influenceData)
@@ -82,6 +92,8 @@ Dominance(df, topN=1)
 ShanDiversity(indata)
 tolindex(indata, taxalist)
 tolindexFish(indata, taxalist)
+nlaStationInformation.islandStations(df)
+nlaStationInformation.stationDepths(df)
 }
 \description{
 These are internal functions to aquamet and not intended for use on their own.
