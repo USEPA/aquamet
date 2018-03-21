@@ -46,8 +46,8 @@ CPL, EHIGH, PLAINS, UMW, and WMTNS.}
 physical habitat protocol used. The expected values of this variable are 
 'BOATABLE' and 'WADEABLE'.}
 
-\item{xfc_nat}{A string with the name of the variable for log10(mean areal 
-natural fish cover + 0.01). Typically, the version used from NRSA physical 
+\item{xfc_nat}{A string with the name of the variable for mean areal 
+proportion natural fish cover + 0.01). Typically, the version used from NRSA physical 
 habitat metrics is XFC_NAT.}
 
 \item{lat}{A string with the name of the variable for latitude, assumed to 
@@ -56,14 +56,14 @@ be in decimal degrees using NAD83.}
 \item{lon}{A string with the name of the variable for longitude, assumed to
 be in decimal degrees using NAD83.}
 
-\item{slope}{A string with the name of the variable for stream slope. For 
+\item{slope}{A string with the name of the variable for % stream slope. For 
 NRSA, the variable used is XSLOPE.}
 
-\item{xwidth}{A string with the name of the variable for mean wetted width. 
-For NRSA, the variable used is XWIDTH.}
+\item{xwidth}{A string with the name of the variable for mean wetted width
+in meters. For NRSA, the variable used is XWIDTH.}
 
-\item{elev}{A string with the name of the variable for elevation. In NRSA, 
-the variable used is ELEV_PT.}
+\item{elev}{A string with the name of the variable for elevation in meters. 
+In NRSA, the variable used is ELEV_PT.}
 
 \item{area}{A string with the name of the variable for watershed area in km2}
 }

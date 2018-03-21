@@ -56,14 +56,14 @@
 #' 
 #' @param area A string with the name of the variable for watershed area in km2
 #' 
-#' @param elev A string with the name of the variable for elevation. In NRSA, 
+#' @param elev A string with the name of the variable for elevation in meters. In NRSA, 
 #' the variable used is ELEV_PT.
 #' 
-#' @param slope A string with the name of the variable for stream slope. For 
+#' @param slope A string with the name of the variable for % stream slope. For 
 #' NRSA, the variable used is XSLOPE. 
 #' 
-#' @param xwidth A string with the name of the variable for mean wetted width. 
-#' For NRSA, the variable used is XWIDTH.
+#' @param xwidth A string with the name of the variable for mean wetted width  
+#' in meters. For NRSA, the variable used is XWIDTH.
 #' 
 #' @return A data frame containing the variables in \emph{sampID} and BEDSED_COND, 
 #' the condition class for relative bed stability.  
@@ -231,8 +231,8 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
 #' physical habitat protocol used. The expected values of this variable are 
 #' 'BOATABLE' and 'WADEABLE'.
 #' 
-#' @param xfc_nat A string with the name of the variable for log10(mean areal 
-#' natural fish cover + 0.01). Typically, the version used from NRSA physical 
+#' @param xfc_nat A string with the name of the variable for mean areal 
+#' proportion natural fish cover + 0.01). Typically, the version used from NRSA physical 
 #' habitat metrics is XFC_NAT.
 #' 
 #' @param lat A string with the name of the variable for latitude, assumed to 
@@ -241,14 +241,14 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
 #' @param lon A string with the name of the variable for longitude, assumed to
 #' be in decimal degrees using NAD83.
 #' 
-#' @param slope A string with the name of the variable for stream slope. For 
+#' @param slope A string with the name of the variable for % stream slope. For 
 #' NRSA, the variable used is XSLOPE. 
 #' 
-#' @param xwidth A string with the name of the variable for mean wetted width. 
-#' For NRSA, the variable used is XWIDTH.
+#' @param xwidth A string with the name of the variable for mean wetted width
+#' in meters. For NRSA, the variable used is XWIDTH.
 #' 
-#' @param elev A string with the name of the variable for elevation. In NRSA, 
-#' the variable used is ELEV_PT.
+#' @param elev A string with the name of the variable for elevation in meters. 
+#' In NRSA, the variable used is ELEV_PT.
 #' 
 #' @param area A string with the name of the variable for watershed area in km2
 #' 
@@ -371,7 +371,7 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
 #' physical habitat protocol used. The expected values of this variable are 
 #' 'BOATABLE' and 'WADEABLE'.
 #' 
-#' @param xcmgw A string with the name of the variable for log10(mean canopy + 
+#' @param xcmgw A string with the name of the variable for proportion mean(canopy + 
 #' mid + ground riparian cover). Typically, the version used from NRSA 
 #' physical habitat metrics is XCMGW.
 #' 
@@ -383,14 +383,14 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
 #' 
 #' @param area A string with the name of the variable for watershed area in km2
 #' 
-#' @param elev A string with the name of the variable for elevation. In NRSA, 
-#' the variable used is ELEV_PT.
+#' @param elev A string with the name of the variable for elevation in meters. 
+#' In NRSA, the variable used is ELEV_PT.
 #' 
-#' @param slope A string with the name of the variable for stream slope. For 
+#' @param slope A string with the name of the variable for % stream slope. For 
 #' NRSA, the variable used is XSLOPE. 
 #' 
-#' @param xwidth A string with the name of the variable for mean wetted width. 
-#' For NRSA, the variable used is XWIDTH.
+#' @param xwidth A string with the name of the variable for mean wetted width
+#' in meters. For NRSA, the variable used is XWIDTH.
 #' 
 #' @return A data frame containing the variables in \emph{sampID} and RIPVEG_COND, 
 #' the condition class for the Riparian Vegetation Cover indicator.  
