@@ -10,8 +10,8 @@
 #  2/21/18 cws Added stopOnError argument
 #
 
-require(RUnit)
-require(dplyr)
+# require(RUnit)
+# require(dplyr)
 
 aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='integer', VALUE='double'), rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE)
 # Used to standardize argument to aquamet functions. Returns a dataframe with
@@ -259,7 +259,7 @@ aquametStandardizeArgument.checkStructure <- function(arg, expectedStruct)
     unexpectedColumns <- setdiff(names(argStruct), names(expectedStruct))
     
     # List expected columns with wrong types
-    commonColumns <- intersect(names(expectedStruct), names(argStruct))
+    commonColumns <- dplyr::intersect(names(expectedStruct), names(argStruct))
     wrongTypeFlag <- lapply(commonColumns
                            ,function(cname) {
                                 wrong <- argStruct[cname] %nin% expectedStruct[[cname]]
