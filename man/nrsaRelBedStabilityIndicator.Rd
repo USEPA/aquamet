@@ -58,14 +58,14 @@ be in decimal degrees using NAD83.}
 
 \item{area}{A string with the name of the variable for watershed area in km2}
 
-\item{elev}{A string with the name of the variable for elevation. In NRSA, 
+\item{elev}{A string with the name of the variable for elevation in meters. In NRSA, 
 the variable used is ELEV_PT.}
 
-\item{slope}{A string with the name of the variable for stream slope. For 
+\item{slope}{A string with the name of the variable for % stream slope. For 
 NRSA, the variable used is XSLOPE.}
 
-\item{xwidth}{A string with the name of the variable for mean wetted width. 
-For NRSA, the variable used is XWIDTH.}
+\item{xwidth}{A string with the name of the variable for mean wetted width
+in meters. For NRSA, the variable used is XWIDTH.}
 }
 \value{
 A data frame containing the variables in \emph{sampID} and BEDSED_COND, 

@@ -5,11 +5,17 @@
 #' first gmean idr iqr interpolatePercentile is.subset intermediateMessage lag last lead 
 #' modalClass modalClasses modalCount modalvalue modalValues normalizedCover nWadeableStationsPerTransect 
 #' protectedMean protectedSum rename summaryby trimws uidCreate uidSeparate Dominance ShanDiversity
-#' tolindex tolindexFish
+#' tolindex tolindexFish aquametStandardizeArgument aquametStandardizeArgument.checkLegal
+#' aquametStandardizeArgument.checkRange aquametStandardizeArgument.checkStructure
+#' nlaStationInformation.islandStations nlaStationInformation.stationDepths 
 #' 
 #' @description These are internal functions to aquamet and not intended for use on their own.
 #' @keywords internal
-#' @usage 
+#' @usage
+#' aquametStandardizeArgument(arg, ..., ifdf=NULL, struct=list(SITE='integer', VALUE='double'), rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE) 
+#' aquametStandardizeArgument.checkLegal(arg, expectedLegal)
+#' aquametStandardizeArgument.checkRange(arg, expectedRange)
+#' aquametStandardizeArgument.checkStructure(arg, expectedStruct)
 #' assignTaxCat(lt)
 #' calcSynCovers(coverData, maxDrawdown, assumptions=FALSE)
 #' calcSynInfluence(influenceData)
@@ -49,4 +55,6 @@
 #' ShanDiversity(indata)
 #' tolindex(indata, taxalist)
 #' tolindexFish(indata, taxalist)
+#' nlaStationInformation.islandStations(df)
+#' nlaStationInformation.stationDepths(df)
 NULL

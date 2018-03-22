@@ -148,16 +148,16 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
     stationDepth <- stationDepth %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('double','character')), 'DEPTH_AT_STATION')
     df <- rbind(isIsland, stationDepth)
 
-    if(is.null(isIsland))
+    if(is.null(isIsland)){
         island <- data.frame(SITE=as.integer(NULL), METRIC=as.character(NULL), VALUE=as.character(NULL), stringsAsFactors=FALSE)
-    else
+    }else{
         island <- nlaStationInformation.islandStations(isIsland)
-    
-    if(is.null(stationDepth))
+    }
+    if(is.null(stationDepth)){
         stationDepths <- data.frame(SITE=as.integer(NULL), METRIC=as.character(NULL), VALUE=as.character(NULL), stringsAsFactors=FALSE)
-    else
+    }else{
     	stationDepths <- nlaStationInformation.stationDepths(stationDepth)
-	
+    }
 	rc <- within(rbind(island, stationDepths), VALUE <- as.character(VALUE))
 
 	intermediateMessage(' Done.', loc='end')
