@@ -1,5 +1,7 @@
 # nrsaBedStability.r
 # RUnit tests
+#
+#  2/27/18 cws Modified unit test in response to use of aquametStandardizeArgument().
 
 
 nrsaBedStabilityTest <- function()
@@ -39,19 +41,19 @@ nrsaBedStabilityTest <- function()
 nrsaBedStabilityTestTest.process <- function (testData, metsExpected, protocols)   
 #
 {
-  rr <- nrsaBedStability(bXdepth =  subset(testData, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
-                        ,bSddepth = subset(testData, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
-                        ,wXdepth =  subset(testData, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
-                        ,wSddepth = subset(testData, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
-                        ,lsub_dmm = subset(testData, METRIC == 'lsub_dmm')
-                        ,lsub2dmm = subset(testData, METRIC == 'lsub2dmm')
-                        ,rp100 =    subset(testData, METRIC == 'rp100')
-                        ,v1w_msq =  subset(testData, METRIC == 'v1w_msq')
-                        ,xbkf_h =   subset(testData, METRIC == 'xbkf_h')
-                        ,xbkf_w =   subset(testData, METRIC == 'xbkf_w')
-                        ,xfc_lwd =  subset(testData, METRIC == 'xfc_lwd')
-                        ,xslope =   subset(testData, METRIC == 'xslope')
-                        ,xwidth =   subset(testData, METRIC == 'xwidth')
+  rr <- nrsaBedStability(bXdepth =  subset(testData, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE) %>% select(SITE, VALUE)
+                        ,bSddepth = subset(testData, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE) %>% select(SITE, VALUE)
+                        ,wXdepth =  subset(testData, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE) %>% select(SITE, VALUE)
+                        ,wSddepth = subset(testData, METRIC == 'sddepth' & SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE) %>% select(SITE, VALUE)
+                        ,lsub_dmm = subset(testData, METRIC == 'lsub_dmm') %>% select(SITE, VALUE)
+                        ,lsub2dmm = subset(testData, METRIC == 'lsub2dmm') %>% select(SITE, VALUE)
+                        ,rp100 =    subset(testData, METRIC == 'rp100') %>% select(SITE, VALUE)
+                        ,v1w_msq =  subset(testData, METRIC == 'v1w_msq') %>% select(SITE, VALUE)
+                        ,xbkf_h =   subset(testData, METRIC == 'xbkf_h') %>% select(SITE, VALUE)
+                        ,xbkf_w =   subset(testData, METRIC == 'xbkf_w') %>% select(SITE, VALUE)
+                        ,xfc_lwd =  subset(testData, METRIC == 'xfc_lwd') %>% select(SITE, VALUE)
+                        ,xslope =   subset(testData, METRIC == 'xslope') %>% select(SITE, VALUE)
+                        ,xwidth =   subset(testData, METRIC == 'xwidth') %>% select(SITE, VALUE)
                         )
 
   # Calculated values should be within 10E-7 of expected values, should

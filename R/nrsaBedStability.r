@@ -116,6 +116,7 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
                             ,rp100 = NULL
                             ,v1w_msq = NULL, xbkf_h = NULL, xbkf_w = NULL
                             ,xfc_lwd = NULL, xslope = NULL, xwidth = NULL
+                            ,isUnitTest=FALSE
                             ) {
 # nrsaBedStability <- function(bankgeometry, thalweg, visits, channelgeometry,
 #   channelcrosssection, littoral, wood, fishcover, gisCalcs=NULL) {
@@ -303,7 +304,21 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
               mutate(PROTOCOL=pName)
         return(rc)
     }
-
+    a<-1+2
+    bXdepth  <- aquametStandardizeArgument(bXdepth, 'xdepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)))
+    bSddepth <- aquametStandardizeArgument(bSddepth, 'sddepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)))
+    wXdepth  <- aquametStandardizeArgument(wXdepth, 'xdepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)))
+    wSddepth <- aquametStandardizeArgument(wSddepth, 'sddepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)))
+    lsub_dmm <- aquametStandardizeArgument(lsub_dmm, 'lsub_dmm', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'))
+    lsub2dmm <- aquametStandardizeArgument(lsub2dmm, 'lsub2dmm', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'))
+    rp100    <- aquametStandardizeArgument(rp100, 'rp100', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)))
+    v1w_msq  <- aquametStandardizeArgument(v1w_msq, 'v1w_msq', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,1)))
+    xbkf_h   <- aquametStandardizeArgument(xbkf_h, 'xbkf_h', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,15)))
+    xbkf_w   <- aquametStandardizeArgument(xbkf_w, 'xbkf_w', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,100)))
+    xfc_lwd  <- aquametStandardizeArgument(xfc_lwd, 'xfc_lwd', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,1)))
+    xslope   <- aquametStandardizeArgument(xslope, 'xslope', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)))
+    xwidth   <- aquametStandardizeArgument(xwidth, 'xwidth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,100)))
+    
     mets <- rbind(absentAsNULL(bXdepth,  ifdf, 'xdepth')
                  ,absentAsNULL(bSddepth, ifdf, 'sddepth')
                  ,absentAsNULL(wXdepth,  ifdf, 'xdepth')
