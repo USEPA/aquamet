@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2018-02-23" />
+<meta name="date" content="2018-08-03" />
 
 <title>Calculating Macroinvertebrate Metrics</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Calculating Macroinvertebrate Metrics</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2018-02-23</em></h4>
+<h4 class="date"><em>2018-08-03</em></h4>
 
 
 
@@ -131,14 +131,239 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outdf &lt;-<span class="st"> </span><span class="kw">calcAllBentMets</span>(bentEx,bentTaxa_nrsa,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
                                        ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>,<span class="dt">ffg=</span><span class="st">'FFG_WSA'</span>
                                        ,<span class="dt">habit=</span><span class="st">'HABIT_WSA'</span>,<span class="dt">ptv=</span><span class="st">'PTV_WSA'</span>)</code></pre></div>
-<pre><code>## [1] &quot;Done calculating taxonomy metrics.&quot;
-## [1] &quot;Done calculating functional feeding group metrics.&quot;
-## [1] &quot;Done calculating habit metrics.&quot;
-## [1] &quot;Done calculating tolerance metrics.&quot;
-## [1] &quot;Calculated tolerance index.&quot;
-## [1] &quot;Shannon Diversity calculated&quot;
+<pre><code>## [1] &quot;Done calculating taxonomy metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TOTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CHIRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CHIRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CHIRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'DIPTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'DIPTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'DIPTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPHENTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPHEPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPHEPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPOTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPOTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPOTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPT_NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPT_PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPT_PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MITENTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MITEPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MITEPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MOLLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MOLLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MOLLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NOINNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NOINPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NOINPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ODONNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ODONPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ODONPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'OLLENTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'OLLEPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'OLLEPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ORTHNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ORTHPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ORTHPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TANYNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TANYPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TANYPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TRICNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TRICPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TRICPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TUBINAIDNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TUBINAIDPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TUBINAIDPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ORTHCHIRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning: package 'bindrcpp' was built under R version 3.4.4</code></pre>
+<pre><code>## [1] &quot;Done calculating functional feeding group metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COFINTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COFIPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COFIPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COFITRICNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COFITRICPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COFITRICPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COGANTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COGAPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'COGAPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'PREDNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'PREDPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'PREDPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SCRPNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SCRPPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SCRPPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SHRDNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SHRDPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SHRDPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## [1] &quot;Done calculating habit metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'BURRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'BURRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'BURRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CLMBNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CLMBPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CLMBPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CLNGNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CLNGPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CLNGPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SPWLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SPWLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SPWLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SWIMNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SWIMPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'SWIMPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## [1] &quot;Done calculating tolerance metrics.&quot;
+## [1] &quot;Calculated tolerance index.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'FACLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'FACLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'FACLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'INTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'INTLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'INTLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'STOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'STOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'STOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL01NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL01PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL01PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL23NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL23PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL23PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL45NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL45PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL45PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL67NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL67PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL67PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TOLRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TOLRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TOLRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'WTD_TV'. Converting column to class 'character'.</code></pre>
+<pre><code>## [1] &quot;Shannon Diversity calculated&quot;
 ## [1] &quot;Dominance calculated&quot;
 ## [1] &quot;Chironomid dominance calculated&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_tax): Column class mismatch for
+## 'HPRIME'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_tax): Column class mismatch for
+## 'DOM1PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_tax): Column class mismatch for
+## 'DOM3PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_tax): Column class mismatch for
+## 'DOM5PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_tax): Column class mismatch for
+## 'CHIRDOM1PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_tax): Column class mismatch for
+## 'CHIRDOM3PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_tax): Column class mismatch for
+## 'CHIRDOM5PIND'. Converting column to class 'character'.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outdf)</code></pre></div>
 <pre><code>##   [1] &quot;UID&quot;          &quot;SAMPLE_TYPE&quot;  &quot;SAMPLE_CAT&quot;   &quot;AMPHNTAX&quot;    
 ##   [5] &quot;AMPHPIND&quot;     &quot;AMPHPTAX&quot;     &quot;CHIRNTAX&quot;     &quot;CHIRPIND&quot;    
@@ -182,6 +407,94 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">outTax &lt;-<span class="st"> </span><span class="kw">calcBentTaxMets</span>(bentEx,bentTaxa_nrsa,<span class="dt">sampID=</span><span class="kw">c</span>(<span class="st">'UID'</span>,<span class="st">'SAMPLE_TYPE'</span>,<span class="st">'SAMPLE_CAT'</span>)
                                         ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>)</code></pre></div>
 <pre><code>## [1] &quot;Done calculating taxonomy metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TOTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CHIRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CHIRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'CHIRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'DIPTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'DIPTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'DIPTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPHENTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPHEPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPHEPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPOTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPOTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPOTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPT_NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPT_PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'EPT_PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MITENTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MITEPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MITEPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MOLLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MOLLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'MOLLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NOINNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NOINPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NOINPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ODONNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ODONPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ODONPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'OLLENTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'OLLEPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'OLLEPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ORTHNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ORTHPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ORTHPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TANYNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TANYPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TANYPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TRICNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TRICPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TRICPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TUBINAIDNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TUBINAIDPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TUBINAIDPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'ORTHCHIRPIND'. Converting column to class 'character'.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outTax)</code></pre></div>
 <pre><code>##  [1] &quot;UID&quot;          &quot;SAMPLE_TYPE&quot;  &quot;SAMPLE_CAT&quot;   &quot;AMPHNTAX&quot;    
 ##  [5] &quot;AMPHPIND&quot;     &quot;AMPHPTAX&quot;     &quot;CHIRNTAX&quot;     &quot;CHIRPIND&quot;    
@@ -207,21 +520,21 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 2    17.15    27.27        0        0        0       18    21.64    40.91
 ##   EPHENTAX EPHEPIND EPHEPTAX EPOTNTAX EPOTPIND EPOTPTAX EPT_NTAX EPT_PIND
 ## 1        4    28.73    10.81        9    33.05    24.32        6    30.89
-## 2        6    42.50    13.64       12    52.05    27.27        9    43.27
+## 2        6     42.5    13.64       12    52.05    27.27        9    43.27
 ##   EPT_PTAX HEMINTAX HEMIPIND HEMIPTAX MITENTAX MITEPIND MITEPTAX MOLLNTAX
-## 1    16.22        0        0        0        0     0.00     0.00        2
+## 1    16.22        0        0        0        0        0        0        2
 ## 2    20.45        0        0        0        1     0.19     2.27        3
 ##   MOLLPIND MOLLPTAX NOINNTAX NOINPIND NOINPTAX ODONNTAX ODONPIND ODONPTAX
 ## 1     2.81     5.41        5     5.83    13.51        3     2.16     8.11
 ## 2    10.14     6.82        7    16.57    15.91        3     8.77     6.82
 ##   OLLENTAX OLLEPIND OLLEPTAX ORTHNTAX ORTHPIND ORTHPTAX PLECNTAX PLECPIND
-## 1        3     3.02     8.11        1     0.22     2.70        0        0
+## 1        3     3.02     8.11        1     0.22      2.7        0        0
 ## 2        2     6.04     4.55        1     0.19     2.27        0        0
 ##   PLECPTAX TANYNTAX TANYPIND TANYPTAX TRICNTAX TRICPIND TRICPTAX
 ## 1        0        2     5.18     5.41        2     2.16     5.41
 ## 2        0        2     0.78     4.55        3     0.78     6.82
 ##   TUBINAIDNTAX TUBINAIDPIND TUBINAIDPTAX ORTHCHIRPIND
-## 1            1         2.59         2.70         0.56
+## 1            1         2.59          2.7         0.56
 ## 2            2         6.04         4.55         1.14</code></pre>
 </div>
 <div id="tolerance-metrics" class="section level3">
@@ -230,6 +543,62 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
                            ,<span class="dt">dist=</span><span class="st">'IS_DISTINCT'</span>,<span class="dt">ct=</span><span class="st">'TOTAL'</span>,<span class="dt">ptv=</span><span class="st">'PTV_WSA'</span>)</code></pre></div>
 <pre><code>## [1] &quot;Done calculating tolerance metrics.&quot;
 ## [1] &quot;Calculated tolerance index.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'FACLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'FACLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'FACLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'INTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'INTLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'INTLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'NTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'STOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'STOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'STOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL01NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL01PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL01PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL23NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL23PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL23PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL45NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL45PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL45PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL67NTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL67PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TL67PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TOLRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TOLRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'TOLRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide, empty_tax): Column class mismatch for
+## 'WTD_TV'. Converting column to class 'character'.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outTol)</code></pre></div>
 <pre><code>##  [1] &quot;UID&quot;         &quot;SAMPLE_TYPE&quot; &quot;SAMPLE_CAT&quot;  &quot;FACLNTAX&quot;    &quot;FACLPIND&quot;   
 ##  [6] &quot;FACLPTAX&quot;    &quot;INTLNTAX&quot;    &quot;INTLPIND&quot;    &quot;INTLPTAX&quot;    &quot;NTOLNTAX&quot;   
@@ -240,13 +609,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## [31] &quot;WTD_TV&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(outTol)</code></pre></div>
 <pre><code>##     UID SAMPLE_TYPE SAMPLE_CAT FACLNTAX FACLPIND FACLPTAX INTLNTAX
-## 1 10000       BERWW          P       18    54.00    48.65        3
+## 1 10000       BERWW          P       18       54    48.65        3
 ## 2 10001       BERWW          P       27    70.96    61.36        5
 ##   INTLPIND INTLPTAX NTOLNTAX NTOLPIND NTOLPTAX STOLNTAX STOLPIND STOLPTAX
-## 1     5.40     8.11       18    31.10    48.65        7    18.36    18.92
+## 1      5.4     8.11       18     31.1    48.65        7    18.36    18.92
 ## 2     5.07    11.36       25    56.92    56.82        3    11.11     6.82
 ##   TL01NTAX TL01PIND TL01PTAX TL23NTAX TL23PIND TL23PTAX TL45NTAX TL45PIND
-## 1        0     0.00     0.00        4     5.62    10.81       14    25.49
+## 1        0        0        0        4     5.62    10.81       14    25.49
 ## 2        2     4.09     4.55        9     8.97    20.45       14    43.86
 ##   TL45PTAX TL67NTAX TL67PIND TL67PTAX TOLRNTAX TOLRPIND TOLRPTAX WTD_TV
 ## 1    37.84        6    40.39    16.22       10    30.45    27.03   5.53

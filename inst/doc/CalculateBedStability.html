@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2018-02-23" />
+<meta name="date" content="2018-08-03" />
 
 <title>Calculating Relative Bed Stability</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Calculating Relative Bed Stability</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2018-02-23</em></h4>
+<h4 class="date"><em>2018-08-03</em></h4>
 
 
 
@@ -426,19 +426,24 @@ respoolOut &lt;-<span class="st"> </span><span class="kw">nrsaResidualPools</spa
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">boat &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">unique</span>(bD<span class="op">$</span>SITE),<span class="dt">stringsAsFactors=</span>F)
 wade &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="dt">SITE=</span><span class="kw">unique</span>(wD<span class="op">$</span>SITE),<span class="dt">stringsAsFactors=</span>F)
 
-bedstabOut &lt;-<span class="st"> </span><span class="kw">nrsaBedStability</span>(<span class="dt">bXdepth =</span>  <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xdepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(bD<span class="op">$</span>SITE))
-                        ,<span class="dt">bSddepth =</span> <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'sddepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(bD<span class="op">$</span>SITE))
-                        ,<span class="dt">wXdepth =</span>  <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xdepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(wD<span class="op">$</span>SITE))
-                        ,<span class="dt">wSddepth =</span> <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'sddepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(wD<span class="op">$</span>SITE))
-                        ,<span class="dt">lsub_dmm =</span> <span class="kw">subset</span>(subcharOut, METRIC <span class="op">==</span><span class="st"> 'lsub_dmm'</span>)
-                        ,<span class="dt">lsub2dmm =</span> <span class="kw">subset</span>(subcharOut, METRIC <span class="op">==</span><span class="st"> 'lsub2dmm'</span>)
-                        ,<span class="dt">rp100 =</span>    <span class="kw">subset</span>(respoolOut, METRIC <span class="op">==</span><span class="st"> 'rp100'</span>)
-                        ,<span class="dt">v1w_msq =</span>  <span class="kw">subset</span>(lwdOut, METRIC <span class="op">==</span><span class="st"> 'v1w_msq'</span>)
-                        ,<span class="dt">xbkf_h =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xbkf_h'</span>)
-                        ,<span class="dt">xbkf_w =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xbkf_w'</span>)
-                        ,<span class="dt">xfc_lwd =</span>  <span class="kw">subset</span>(fishCvrOut, METRIC <span class="op">==</span><span class="st"> 'xfc_lwd'</span>)
-                        ,<span class="dt">xslope =</span>   <span class="kw">subset</span>(slopeOut, METRIC <span class="op">==</span><span class="st"> 'xslope'</span>)
-                        ,<span class="dt">xwidth =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xwidth'</span>)
+bedstabOut &lt;-<span class="st"> </span><span class="kw">nrsaBedStability</span>(<span class="dt">bXdepth =</span>  <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xdepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(bD<span class="op">$</span>SITE)
+                                                 ,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">bSddepth =</span> <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'sddepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(bD<span class="op">$</span>SITE)
+                                           ,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">wXdepth =</span>  <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xdepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(wD<span class="op">$</span>SITE)
+                                           ,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">wSddepth =</span> <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'sddepth'</span> <span class="op">&amp;</span><span class="st"> </span>SITE <span class="op">%in%</span><span class="st"> </span><span class="kw">unique</span>(wD<span class="op">$</span>SITE)
+                                           ,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">lsub_dmm =</span> <span class="kw">subset</span>(subcharOut, METRIC <span class="op">==</span><span class="st"> 'lsub_dmm'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">lsub2dmm =</span> <span class="kw">subset</span>(subcharOut, METRIC <span class="op">==</span><span class="st"> 'lsub2dmm'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">rp100 =</span>    <span class="kw">subset</span>(respoolOut, METRIC <span class="op">==</span><span class="st"> 'rp100'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">v1w_msq =</span>  <span class="kw">subset</span>(lwdOut, METRIC <span class="op">==</span><span class="st"> 'v1w_msq'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">xbkf_h =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xbkf_h'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">xbkf_w =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xbkf_w'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">xfc_lwd =</span>  <span class="kw">subset</span>(fishCvrOut, METRIC <span class="op">==</span><span class="st"> 'xfc_lwd'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC)
+                        ,<span class="dt">xslope =</span>   <span class="kw">subset</span>(slopeOut, METRIC <span class="op">==</span><span class="st"> 'xslope'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC) <span class="op">%&gt;%</span>
+<span class="st">                          </span>plyr<span class="op">::</span><span class="kw">mutate</span>(<span class="dt">VALUE=</span><span class="kw">as.numeric</span>(VALUE))
+                        ,<span class="dt">xwidth =</span>   <span class="kw">subset</span>(chanmorphOut, METRIC <span class="op">==</span><span class="st"> 'xwidth'</span>,<span class="dt">select=</span><span class="op">-</span>METRIC)
                         )</code></pre></div>
 <pre><code>##   Bed stability calculations.1.2.3.4.5.6  Done.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">unique</span>(bedstabOut<span class="op">$</span>METRIC)</code></pre></div>
