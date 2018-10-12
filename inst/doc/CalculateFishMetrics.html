@@ -12,7 +12,7 @@
 
 <meta name="author" content="Karen Blocksom" />
 
-<meta name="date" content="2018-02-23" />
+<meta name="date" content="2018-08-03" />
 
 <title>Calculating Fish Metrics</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Calculating Fish Metrics</h1>
 <h4 class="author"><em>Karen Blocksom</em></h4>
-<h4 class="date"><em>2018-02-23</em></h4>
+<h4 class="date"><em>2018-08-03</em></h4>
 
 
 
@@ -126,11 +126,295 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
                             , <span class="dt">trophic=</span><span class="st">'TROPHIC_NRSA'</span>, <span class="dt">migr=</span><span class="st">'MIGR_NRSA'</span>, <span class="dt">nonnat=</span><span class="st">'NON_NATIVE'</span>
                             , <span class="dt">reprod=</span><span class="st">'REPROD_NRSA'</span>, <span class="dt">temp=</span><span class="st">'TEMP_NRSA'</span>, <span class="dt">family=</span><span class="st">'FAMILY'</span>, <span class="dt">genus=</span><span class="st">'GENUS'</span>
                             , <span class="dt">comname=</span><span class="st">'FINAL_NAME'</span>)</code></pre></div>
-<pre><code>## [1] &quot;Done calculating taxonomic metrics.&quot;
-## [1] &quot;Done calculating tolerance metrics.&quot;
-## [1] &quot;Done calculating trophic metrics.&quot;
-## [1] &quot;Done calculating other metrics.&quot;
-## [1] &quot;Done calculating native metrics.&quot;
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'ICTAPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'ICTANTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'ICTAPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CENTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CENTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CENTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CYPRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CYPRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CYPRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_ICTAPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_ICTANTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_ICTAPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CENTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CENTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CENTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CYPRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CYPRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CYPRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## [1] &quot;Done calculating taxonomic metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'MTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'MTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'MTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'TOLRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'TOLRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'TOLRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'WTD_TV'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_MTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_MTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_MTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOLRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOLRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOLRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_WTD_TV'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOTLNIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLRHEONTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLRHEOPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLRHEOPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLLOTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLLOTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLLOTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLRHEONTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLRHEOPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLRHEOPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLLOTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLLOTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLLOTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLBENTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLBENTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLBENTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLBENTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLBENTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLBENTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLINVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLINVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLINVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLINVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLINVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLINVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLINVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLINVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLINVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLINVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLINVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLINVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## [1] &quot;Done calculating tolerance metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CARNNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CARNPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CARNPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'OMNINTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'OMNIPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'OMNIPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'HERBNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'HERBPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'HERBPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CARNNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CARNPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_CARNPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_OMNINTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_OMNIPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_OMNIPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_HERBNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_HERBPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_HERBPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'BENTINVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'BENTINVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'BENTINVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_BENTINVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_BENTINVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_BENTINVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## [1] &quot;Done calculating trophic metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'RHEONTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'RHEOPIND'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'RHEOPTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'LOTNTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'LOTPIND'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'LOTPTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_RHEONTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_RHEOPIND'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_RHEOPTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_LOTNTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_LOTPIND'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_LOTPTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'LITHNTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'LITHPIND'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'LITHPTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_LITHNTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_LITHPIND'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, select(empty_base, -SAMPID)):
+## Column class mismatch for 'NAT_LITHPTAX'. Converting column to class
+## 'character'.</code></pre>
+<pre><code>## [1] &quot;Done calculating other metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_base): Column class mismatch for
+## 'NAT_TOTLNIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_base): Column class mismatch for
+## 'NAT_TOTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_base): Column class mismatch for
+## 'NAT_PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_base): Column class mismatch for
+## 'NAT_PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_base): Column class mismatch for
+## 'ALIENPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_base): Column class mismatch for
+## 'ALIENNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outMet, empty_base): Column class mismatch for
+## 'ALIENPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## [1] &quot;Done calculating native metrics.&quot;
 ## [1] &quot;Done calculating anomaly metrics.&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outdf)</code></pre></div>
 <pre><code>##   [1] &quot;UID&quot;              &quot;CENTNTAX&quot;         &quot;CENTPIND&quot;        
@@ -205,6 +489,24 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
                           <span class="dt">ct=</span><span class="st">'FINAL_CT'</span>, <span class="dt">taxa_id=</span><span class="st">'TAXA_ID'</span>, <span class="dt">family=</span><span class="st">'FAMILY'</span>, <span class="dt">genus=</span><span class="st">'GENUS'</span>,
                           <span class="dt">comname=</span><span class="st">'FINAL_NAME'</span>)</code></pre></div>
 <pre><code>## [1] &quot;Cannot calculate native status-based metrics without a non-native status variable. Will calculate other metrics.&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'ICTAPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'ICTANTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'ICTAPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CENTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CENTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CENTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CYPRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CYPRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'CYPRPTAX'. Converting column to class 'character'.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outTax)</code></pre></div>
 <pre><code>##  [1] &quot;UID&quot;        &quot;CENTNTAX&quot;   &quot;CENTPIND&quot;   &quot;CENTPTAX&quot;   &quot;CYPRNTAX&quot;  
 ##  [6] &quot;CYPRPIND&quot;   &quot;CYPRPTAX&quot;   &quot;ICTANTAX&quot;   &quot;ICTAPIND&quot;   &quot;ICTAPTAX&quot;  
@@ -216,7 +518,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 1 10000        1     3.03     9.09        6    93.33    54.55        0
 ## 2 10001        1     5.26     9.09        4    36.84    36.36        1
 ##   ICTAPIND ICTAPTAX SALMPIND SALMNTAX SALMPTAX CATOPIND CATONTAX CATOPTAX
-## 1     0.00     0.00        0        0        0        0        0        0
+## 1        0        0        0        0        0        0        0        0
 ## 2    12.28     9.09        0        0        0        0        0        0
 ##   RBCATOPIND RBCATONTAX RBCATOPTAX TOTLNTAX TOTLNIND
 ## 1          0          0          0       11      330
@@ -230,6 +532,78 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
                           <span class="dt">tolval=</span><span class="st">'TOL_VAL_EMAPW'</span>, <span class="dt">nonnat=</span><span class="st">'NON_NATIVE'</span>, 
                           <span class="dt">habitat=</span><span class="st">'HABITAT_NRSA'</span>)</code></pre></div>
 <pre><code>## [1] &quot;Optional traits are missing from the taxa list. Any tolerance metrics also using these traits will not be calculated: TROPHIC,MIGRATORY,VELOCITY&quot;</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'INTLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'MTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'MTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'MTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'TOLRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'TOLRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'TOLRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'WTD_TV'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_INTLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_MTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_MTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_MTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOLRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOLRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOLRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_WTD_TV'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOTLNIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_TOTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLBENTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLBENTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NTOLBENTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLBENTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLBENTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(outWide.1, empty_base): Column class mismatch
+## for 'NAT_NTOLBENTPTAX'. Converting column to class 'character'.</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">names</span>(outTol)</code></pre></div>
 <pre><code>##  [1] &quot;UID&quot;              &quot;INTLNTAX&quot;         &quot;INTLPIND&quot;        
 ##  [4] &quot;INTLPTAX&quot;         &quot;MTOLNTAX&quot;         &quot;MTOLPIND&quot;        
@@ -246,13 +620,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## [37] &quot;NAT_PIND&quot;         &quot;TOTLNTAX&quot;         &quot;TOTLNIND&quot;</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(outTol)</code></pre></div>
 <pre><code>##     UID INTLNTAX INTLPIND INTLPTAX MTOLNTAX MTOLPIND MTOLPTAX NTOLBENTNTAX
-## 1 10000        0     0.00     0.00        4    15.45    36.36            2
+## 1 10000        0        0        0        4    15.45    36.36            2
 ## 2 10001        1     4.39     9.09        5    21.93    45.45            3
 ##   NTOLBENTPIND NTOLBENTPTAX NTOLNTAX NTOLPIND NTOLPTAX TOLRNTAX TOLRPIND
 ## 1         7.27        18.18        4    15.45    36.36        7    84.55
 ## 2        18.42        27.27        6    26.32    54.55        5    73.68
 ##   TOLRPTAX WTD_TV NAT_INTLNTAX NAT_INTLPIND NAT_INTLPTAX NAT_MTOLNTAX
-## 1    63.64   7.32            0         0.00         0.00            4
+## 1    63.64   7.32            0            0            0            4
 ## 2    45.45   7.39            1         4.39         9.09            5
 ##   NAT_MTOLPIND NAT_MTOLPTAX NAT_NTOLBENTNTAX NAT_NTOLBENTPIND
 ## 1        15.55        44.44                2             7.32
@@ -262,10 +636,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 2            27.27            6        26.32        54.55            5
 ##   NAT_TOLRPIND NAT_TOLRPTAX NAT_TOTLNIND NAT_TOTLNTAX NAT_WTD_TV NAT_PTAX
 ## 1        84.45        55.56          328            9       7.31    81.82
-## 2        73.68        45.45          228           11       7.39   100.00
+## 2        73.68        45.45          228           11       7.39      100
 ##   NAT_PIND TOTLNTAX TOTLNIND
 ## 1    99.39       11      330
-## 2   100.00       11      228</code></pre>
+## 2      100       11      228</code></pre>
 <hr />
 </div>
 </div>
@@ -285,17 +659,94 @@ fishEx.<span class="dv">1</span> &lt;-<span class="st"> </span><span class="kw">
                                  ,<span class="dt">vel=</span><span class="st">'VEL_NRSA'</span>, <span class="dt">habitat=</span><span class="st">'HABITAT_NRSA'</span>
                                  ,<span class="dt">trophic=</span><span class="st">'TROPHIC_NRSA'</span>, <span class="dt">migr=</span><span class="st">'MIGR_NRSA'</span>, <span class="dt">nonnat=</span><span class="st">'NON_NATIVE'</span>
                                  ,<span class="dt">reprod=</span><span class="st">'REPROD_NRSA'</span>, <span class="dt">family=</span><span class="st">'FAMILY'</span>, <span class="dt">genus=</span><span class="st">'GENUS'</span>
-                                 ,<span class="dt">comname=</span><span class="st">'FINAL_NAME'</span>)
-
-<span class="kw">head</span>(outMets)</code></pre></div>
+                                 ,<span class="dt">comname=</span><span class="st">'FINAL_NAME'</span>)</code></pre></div>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'ALIENPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'LOTPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'LITHPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_TOTLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'TOLRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'INVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'ALIENNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_RHEOPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'LITHPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NTOLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'INVNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_CYPRPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'LOTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_INTLPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_CARNNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_PTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_CENTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_NTOLBENTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_LITHPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'TOLRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'INVPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_PIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'CYPRPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'RHEOPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'LITHNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_NTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'HERBPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_ICTAPIND'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'RHEONTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'INTLPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'CARNNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'CYPRNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'INTLLOTNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NTOLNTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'INTLINVPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'INTLLOTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'NAT_HERBPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'CENTPTAX'. Converting column to class 'character'.</code></pre>
+<pre><code>## Warning in gtools::smartbind(., empty_base): Column class mismatch for
+## 'BENTINVPTAX'. Converting column to class 'character'.</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">head</span>(outMets)</code></pre></div>
 <pre><code>##     UID ECO9 INTLLOTPTAX INVPTAX LITHPIND LITHPTAX LOTPIND TOLRNTAX
-## 1 10000  CPL          NA   18.18    37.88       NA   96.36        7
-## 2 10001  WMT        9.09      NA       NA    27.27      NA        5
+## 1 10000  CPL        &lt;NA&gt;   18.18    37.88     &lt;NA&gt;   96.36        7
+## 2 10001  WMT        9.09    &lt;NA&gt;     &lt;NA&gt;    27.27    &lt;NA&gt;        5
 ##   NAT_HERBPTAX ALIENPIND NAT_TOTLNTAX NAT_PIND RBCATONTAX INTLMIGRPTAX
-## 1           NA      0.61            9       NA          0            0
-## 2         9.09        NA           11      100         NA           NA
+## 1         &lt;NA&gt;      0.61            9     &lt;NA&gt;          0            0
+## 2         9.09      &lt;NA&gt;           11      100       &lt;NA&gt;         &lt;NA&gt;
 ##   NAT_MIGRPTAX NAT_CATOPIND TOTLNIND
-## 1           NA           NA      330
+## 1         &lt;NA&gt;         &lt;NA&gt;      330
 ## 2            0            0      228</code></pre>
 <p>Note that there are missing values for metrics that are not included in the MMI for a given ecoregion. Any given UID should only have values for 8 metrics, which is the case in our example.</p>
 </div>
