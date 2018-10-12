@@ -1,5 +1,8 @@
 # nrsaCanopyDensiometerTest.r
 # RUnit tests
+#
+# 10/05/18 cws modified for use of aquametStandardizeArgument, limiting argument columns.
+#
 
 
 nrsaCanopyDensiometerTest <- function()
@@ -7,8 +10,8 @@ nrsaCanopyDensiometerTest <- function()
 {
     # Create test data from WEMAP data and expected results from WEMAP mets
     testData <- nrsaCanopyDensiometer.testData() %>% dplyr::rename(SITE=UID, VALUE=RESULT, DIRECTION=TRANSDIR)
-    test.w <- subset(testData, SAMPLE_TYPE == 'PHAB_CHANW')
-    test.b <- subset(testData, SAMPLE_TYPE == 'PHAB_CHANB')
+    test.w <- subset(testData, SAMPLE_TYPE == 'PHAB_CHANW', select=c('SITE','DIRECTION','VALUE'))
+    test.b <- subset(testData, SAMPLE_TYPE == 'PHAB_CHANB', select=c('SITE','VALUE'))
 
     metsExpected <- nrsaCanopyDensiometer.expectedMets () %>% dplyr::rename(SITE=UID, VALUE=RESULT)
    

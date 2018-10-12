@@ -97,6 +97,7 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
 #            TRANSDIR is now DIRECTION, and split arguments into bDensiom and wDensiom.
 #    2/23/16 cws Updated argument descriptions, corrected ifdf functions and
 #            cleaned up comments a tad.
+#   10/05/18 cws Using aquametStandardizeArgument, unit test modified accordingly
 #
 # TODO: use ddply instead of summaryby. 
 #
@@ -154,9 +155,17 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
         return(rc)
     }
 
-    bDensiom = absentAsNULL(bDensiom, ifdfBoatable) 
-    wDensiom = absentAsNULL(wDensiom, ifdfWadeable)
-   
+    # bDensiom = absentAsNULL(bDensiom, ifdfBoatable) 
+    # wDensiom = absentAsNULL(wDensiom, ifdfWadeable)
+    bDensiom <- aquametStandardizeArgument(bDensiom, 'xdepth', ifdf=ifdfBoatable
+                                          ,struct=list(SITE=c('integer','character'), VALUE='double')
+                                          ,rangeLimits = list(VALUE=c(0,20))
+                                          )   
+    wDensiom <- aquametStandardizeArgument(wDensiom, 'xdepth', ifdf=ifdfWadeable
+                                          ,struct=list(SITE=c('integer','character'), DIRECTION='character', VALUE='double')
+                                          ,rangeLimits = list(VALUE=c(0,20))
+                                          )   
+    
     mdx <- NULL
     mds <- NULL
     mdc <- NULL
