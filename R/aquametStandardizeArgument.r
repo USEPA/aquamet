@@ -23,11 +23,12 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='in
 # ARGUMENTS
 # arg       one argument provided to the aquamet function
 # ...       Additional arguments to ifdf, if any.
-# ifdf      closure to call if argument is a dataframe with more than one row; 
+# ifdf      closure to call if argument is a dataframe with more than one row 
+#           and passes all checks; 
 #           default value is NULL, which results in no action.  This function is
 #           intended to modify 'arg' in some way, such as renaming columns. The
 #           arguments to this function are ifdf(arg, ...), and the object it 
-#           returns is the 
+#           returns is the modified 'arg' data frame.
 # struct    named list of character vectors, specifying the expected column names
 #           as the names of the elements in 'arg', and the vector values as the 
 #           types of each column. It is possible to allow multiple types for 

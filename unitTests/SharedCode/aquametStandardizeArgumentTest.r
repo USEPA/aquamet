@@ -349,7 +349,8 @@ aquametStandardizeArgumentTest.with_ifdf_Validation <- function()
     # Test cases in which data do NOT pass validation specs. Only the error
     # due to the illegal VALUE_I value is expected in the returned value, the
     # range errors are merely written to the screen and the process continues.
-    expected <- "You blockhead, argument <<testdata %>% mutate(SITE = SITE - 1L, VALUE_D = VALUE_D + 1,      VALUE_I = VALUE_I + 1L)>> failed the check for illegal values: Column VALUE_I is expected to have values <1,2,3,4,5,6,7,8,9,10>, but has illegal values <11>"
+#    expected <- "You blockhead, argument <<testdata %>% mutate(SITE = SITE - 1L, VALUE_D = VALUE_D + 1,      VALUE_I = VALUE_I + 1L)>> failed the check for illegal values: Column VALUE_I is expected to have values <1,2,3,4,5,6,7,8,9,10>, but has illegal values <11>"
+    expected <- "Warning for argument <<testdata %>% mutate(SITE = SITE - 1L, VALUE_D = VALUE_D + 1,      VALUE_I = VALUE_I + 1L)>> while performing range check: Column SITE has 1 values below 1, and unspecified maximum.  Column VALUE_D has 0 values below 0, and 10 values above 1.  Column VALUE_I has 0 values below 1, and 1 values above 10"
     actual <- aquametStandardizeArgument(testdata %>% mutate(SITE=SITE-1L, VALUE_D=VALUE_D+1, VALUE_I=VALUE_I+1L)
                                         ,ifdf=        testpf, 'new column'
                                         ,struct=      list(SITE=c('integer','character'),VALUE_D='double',VALUE_I=c('integer','character'))
@@ -359,7 +360,7 @@ aquametStandardizeArgumentTest.with_ifdf_Validation <- function()
                                         )
 
     checkEquals(expected, actual, "Incorrect with data passing validation specs")
-    
+
 }
 
 # end of file

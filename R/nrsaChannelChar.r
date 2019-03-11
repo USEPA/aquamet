@@ -135,6 +135,7 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
                            ,shoreToVegDistance = NULL       # boatable only
                            ,valleyConstraintUnseen = NULL   # both, on channel constraint form
                            ,valleyWidth = NULL              # both, on channel constraint form
+                           ,isUnitTest = FALSE
                            ) {
   
 ################################################################################
@@ -179,6 +180,7 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
 #   11/18/15 cws Modified calling interface; Using SITE and VALUE instead of
 #            UID and RESULT.
 #    2/23/16 cws Updated argument descriptions, and cleaned up comments a tad.
+#    2/26/19 cws Changed to use aquametStandardizeArgument() instead of absentAsNull()
 #
 # ARGUMENTS:
 # bankfullWidth     dataframe containing bankfull width from channel constraint  
@@ -260,29 +262,69 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
 
     intermediateMessage('Channel Characteristic mets', loc='start')
 
-    absentAsNULL <- function(df, ifdf, ...) {
-        if(is.null(df)) return(NULL)
-        else if(!is.data.frame(df)) return(NULL)
-        else if(nrow(df) == 0) return (NULL)
-        else if(is.function(ifdf)) return(ifdf(df, ...))
-        else return(df)
-    }
-    ifdf <- function(df, ...) {
-        rc <- df %>% select(SITE,VALUE)
-        return(rc)
-    }
+    # absentAsNULL <- function(df, ifdf, ...) {
+    #     if(is.null(df)) return(NULL)
+    #     else if(!is.data.frame(df)) return(NULL)
+    #     else if(nrow(df) == 0) return (NULL)
+    #     else if(is.function(ifdf)) return(ifdf(df, ...))
+    #     else return(df)
+    # }
+    # ifdf <- function(df, ...) {
+    #     rc <- df %>% select(SITE,VALUE)
+    #     return(rc)
+    # }
 
     intermediateMessage('.1')
-    bankfullWidth <- absentAsNULL(bankfullWidth, ifdf)
-    channelPattern <- absentAsNULL(channelPattern, ifdf)
-    constraintFeatures <- absentAsNULL(constraintFeatures, ifdf)
-    constraintMultiple <- absentAsNULL(constraintMultiple, ifdf)
-    constraintPercent <- absentAsNULL(constraintPercent, ifdf)
-    constraintSingle <- absentAsNULL(constraintSingle, ifdf)
-    seeOverBank <- absentAsNULL(seeOverBank, ifdf)
-    shoreToVegDistance <- absentAsNULL(shoreToVegDistance, ifdf)
-    valleyConstraintUnseen <- absentAsNULL(valleyConstraintUnseen, ifdf)
-    valleyWidth <- absentAsNULL(valleyWidth, ifdf)
+    bankfullWidth <- aquametStandardizeArgument(bankfullWidth
+                                               ,struct = list(SITE=c('integer','character'), VALUE=c('integer','character','double'))
+                                               ,rangeLimits = list(VALUE=c(0, 500))
+                                               ,stopOnError = !isUnitTest
+                                               )  
+    channelPattern <- aquametStandardizeArgument(channelPattern
+                                                ,struct = list(SITE=c('integer','character'), VALUE='character')
+                                                ,legalValues = list(VALUE=c(NA,'','SINGLE','ANASTOM','BRAIDED'))
+                                                ,stopOnError = !isUnitTest
+                                                ) 
+    constraintFeatures <- aquametStandardizeArgument(constraintFeatures
+                                                    ,struct=list(SITE=c('integer','character'), VALUE='character')
+                                                    ,legalValues = list(VALUE=c(NA,'','BEDROCK','HILLSLOPE','TERRACE','HUMAN','NOCONST'))
+                                                    ,stopOnError = !isUnitTest
+                                                    ) 
+    constraintMultiple <- aquametStandardizeArgument(constraintMultiple
+                                                    ,struct=list(SITE=c('integer','character'), VALUE='character')
+                                                    ,legalValues = list(VALUE=c(NA,'','B','C','N','U'))
+                                                    ,stopOnError = !isUnitTest
+                                                    )
+    constraintPercent <- aquametStandardizeArgument(constraintPercent
+                                                   ,struct=list(SITE=c('integer','character'), VALUE=c('integer','character','double'))
+                                                   ,rangeLimits = list(VALUE=c(0, 100))
+                                                   ,stopOnError = !isUnitTest
+                                                   )
+    constraintSingle <- aquametStandardizeArgument(constraintSingle
+                                                  ,struct=list(SITE=c('integer','character'), VALUE='character')
+                                                  ,legalValues = list(VALUE=c(NA, '','CON_VSHAPED','CON_BROAD','UNC_NARROW','UNC_BROAD'))
+                                                  ,stopOnError = !isUnitTest
+                                                  ) 
+    seeOverBank <- aquametStandardizeArgument(seeOverBank
+                                             ,struct=list(SITE=c('integer','character'), VALUE='character')
+                                             ,legalValues = list(VALUE=c(NA, '', 'N', 'NO', 'Y', 'YES'))
+                                             ,stopOnError = !isUnitTest
+                                             ) 
+    shoreToVegDistance <- aquametStandardizeArgument(shoreToVegDistance
+                                                    ,struct=list(SITE=c('integer','character'), VALUE=c('integer','character','double'))
+                                                    ,rangeLimits = list(VALUE=c(0, 500))
+                                                    ,stopOnError = !isUnitTest
+                                                    ) 
+    valleyConstraintUnseen <- aquametStandardizeArgument(valleyConstraintUnseen
+                                                        ,struct=list(SITE=c('integer','character'), VALUE='character')
+                                                        ,legalValues = list(VALUE=c('','Y'))
+                                                        ,stopOnError = !isUnitTest
+                                                        ) 
+    valleyWidth <- aquametStandardizeArgument(valleyWidth
+                                             ,struct=list(SITE=c('integer','character'), VALUE=c('integer','character','double'))
+                                             ,rangeLimits = list(VALUE=c(0, 3000))
+                                             ,stopOnError = !isUnitTest
+                                             ) 
 
     intermediateMessage('.2')
 

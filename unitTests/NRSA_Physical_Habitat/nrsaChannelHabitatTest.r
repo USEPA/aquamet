@@ -1,6 +1,9 @@
 #  nrsaChannelHabitatTest.r
 # RUnit tests
-
+#
+#  2/26/19 cws Modified  due to use of aquametStandardizeArgument and allowing
+#              missing values to be included
+#
 
 nrsaChannelHabitatTest <- function()
 # Unit test for nrsaChannelHabitat
@@ -28,19 +31,45 @@ nrsaChannelHabitatTest <- function()
   # they are supposed to be nonmissing.
 
   # Check mixed protocol calculations
-  testDataResult<- nrsaChannelHabitat(bChannelUnit=riverData
-                                     ,wChannelUnit=streamData
+  testDataResult<- nrsaChannelHabitat(bChannelUnit=riverData %>% select(SITE, VALUE) %>% subset(VALUE %nin% c(NA, ''))
+                                     ,wChannelUnit=streamData %>% select(SITE, VALUE) %>% subset(VALUE %nin% c(NA, ''))
                                      )
-  tt <- merge(testDataResult, metsExpected, by=c('SITE','METRIC'), all=T)
+  tt <- merge(testDataResult, metsExpected, by=c('SITE','METRIC'), all=TRUE)
   tt$diff <- tt$VALUE - tt$EXPECTED
   errs <- subset(tt, abs(diff) > 10^-7 | is.na(VALUE) != is.na(EXPECTED))
-
   checkEquals(0, nrow(errs)
              ,"Error: Channel Habitat calculations with mixed protocol data are broken"
              )
 
+  # Check mixed protocol calculations that include NA & missing values
+  testDataResult<- nrsaChannelHabitat(bChannelUnit=riverData %>% select(SITE, VALUE) #%>% subset(VALUE %nin% c(NA, ''))
+                                     ,wChannelUnit=streamData %>% select(SITE, VALUE) #%>% subset(VALUE %nin% c(NA, ''))
+                                     )
+  tt <- merge(testDataResult
+             ,metsExpected %>%
+              mutate(EXPECTED = ifelse(SITE == 'WAZP99-0591',
+                                       ifelse(METRIC == 'pct_fast', 19.402985,
+                                       ifelse(METRIC == 'pct_slow', 80.597015, EXPECTED
+                                       ))
+                               ,ifelse(SITE == 'WCAP99-0585',
+                                       ifelse(METRIC == 'pct_fast', 0,
+                                       ifelse(METRIC == 'pct_pool', 0,
+                                       ifelse(METRIC == 'pct_slow', 0, EXPECTED
+                                       )))
+                                      ,EXPECTED
+                             ))
+                    )
+             ,by=c('SITE','METRIC'), all=TRUE
+             )
+  tt$diff <- tt$VALUE - tt$EXPECTED
+  errs <- subset(tt, abs(diff) > 10^-7 | is.na(VALUE) != is.na(EXPECTED))
+print(errs)
+  checkEquals(0, nrow(errs)
+             ,"Error: Channel Habitat calculations with mixed protocol data are broken when including NA values"
+             )
+
   # Check boatable protocol calculations
-  testDataResult<- nrsaChannelHabitat(bChannelUnit=riverData)
+  testDataResult<- nrsaChannelHabitat(bChannelUnit=riverData %>% select(SITE, VALUE) %>% subset(VALUE %nin% c(NA, '')))
   tt <- merge(testDataResult, riverMets, by=c('SITE','METRIC'), all=T)
   tt$diff <- tt$VALUE - tt$EXPECTED
   errs <- subset(tt, abs(diff) > 10^-7 | is.na(VALUE) != is.na(EXPECTED))
@@ -49,7 +78,7 @@ nrsaChannelHabitatTest <- function()
              )
 
   # Check mixed protocol calculations
-  testDataResult<- nrsaChannelHabitat(wChannelUnit=streamData)
+  testDataResult<- nrsaChannelHabitat(wChannelUnit=streamData %>% select(SITE, VALUE) %>% subset(VALUE %nin% c(NA, '')))
   tt <- merge(testDataResult, streamMets, by=c('SITE','METRIC'), all=T)
   tt$diff <- tt$VALUE - tt$EXPECTED
   errs <- subset(tt, abs(diff) > 10^-7 | is.na(VALUE) != is.na(EXPECTED))

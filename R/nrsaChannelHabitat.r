@@ -137,6 +137,7 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
                                                                          )
                                                                 ,stringsAsFactors=FALSE
                                                                 )
+                              ,isUnitTest = FALSE
                               ) {
 
 ################################################################################
@@ -183,6 +184,9 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
 #            sections are neither fast nor slow.  No change to unit test as it 
 #            passes.  Deleted section of old code at the bottom.
 #    2/23/16 cws Updated argument descriptions, and cleaned up comments a tad.
+#    2/27/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull(). Allowing inclusion of missing values, which affect
+#            calculation of percentages. Unit test updated accordingly.
 #
 # TODO: Update unit test to see whether DR is handled properly
 #
@@ -276,22 +280,36 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
 
     intermediateMessage('Channel Habitat mets', loc='start')
 
-    absentAsNULL <- function(df, ifdf, ...) {
-        if(is.null(df)) return(NULL)
-        else if(!is.data.frame(df)) return(NULL)
-        else if(nrow(df) == 0) return (NULL)
-        else if(is.function(ifdf)) return(ifdf(df, ...))
-        else return(df)
-    }
-    ifdf <- function(df, ...) {
-        if(is.null(...)) return(NULL)
-        else if(all(is.na(...))) return(NULL)
-        else return(df %>% select(SITE,VALUE) %>% subset(VALUE %in% ...))
-    }
-
-    bChannelUnit = absentAsNULL(bChannelUnit, ifdf, bChannelUnitCodeList$code)
-    wChannelUnit = absentAsNULL(wChannelUnit, ifdf, wChannelUnitCodeList$code)
-
+    # absentAsNULL <- function(df, ifdf, ...) {
+    #     if(is.null(df)) return(NULL)
+    #     else if(!is.data.frame(df)) return(NULL)
+    #     else if(nrow(df) == 0) return (NULL)
+    #     else if(is.function(ifdf)) return(ifdf(df, ...))
+    #     else return(df)
+    # }
+    # ifdf <- function(df, ...) {
+    #     if(is.null(...)) return(NULL)
+    #     else if(all(is.na(...))) return(NULL)
+    #     else return(df %>% select(SITE,VALUE) %>% subset(VALUE %in% ... ))
+    # }
+    # 
+    # bChannelUnit = absentAsNULL(bChannelUnit, ifdf, bChannelUnitCodeList$code)
+    # wChannelUnit = absentAsNULL(wChannelUnit, ifdf, wChannelUnitCodeList$code)
+    bChannelUnit = aquametStandardizeArgument(bChannelUnit
+                                             #,ifdf, bChannelUnitCodeList$code
+                                             ,struct = list(SITE=c('integer','character'), VALUE='character')
+                                             ,legalValues = list(VALUE=c(NA, '', 'FA','RA','RI','GL','PO','CA','DR'))
+                                             ,stopOnError = !isUnitTest
+                                             )
+    wChannelUnit = aquametStandardizeArgument(wChannelUnit
+                                             #,ifdf, wChannelUnitCodeList$code
+                                             ,struct = list(SITE=c('integer','character'), VALUE='character')
+                                             ,legalValues = list(VALUE=c(NA, '','FA','CA','RA','RI','GL'
+                                                                        ,'PB','PP','PD','PL','PT'
+                                                                        ,'P','DR'#,'SB'
+                                                                        ))
+                                             ,stopOnError = !isUnitTest
+                                             )
     intermediateMessage('.1')
 
     individualPercents <- function(cdData, codeList) {

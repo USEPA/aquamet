@@ -1,5 +1,9 @@
 # nrsaChannelCharTest.r
 # RUnit tests
+#
+#  2/26/19 cws Modified argument values to reflect narrower constraints due to
+#          use of aquametStandardizeArgument
+#
 
 
 nrsaChannelCharTest <- function()
@@ -16,61 +20,61 @@ nrsaChannelCharTest <- function()
     metsExpected <- nrsaChannelCharTest.testResults()
 
     # Test with mixed protocol data
-    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, PARAMETER == 'BANKFULL')
-                         ,channelPattern =        subset(testCCData, PARAMETER == 'PATTERN')
-                         ,constraintFeatures =    subset(testCCData, PARAMETER == 'FEATURES')
-                         ,constraintMultiple =    subset(testBGData, PARAMETER == 'CONSTRT')
-                         ,constraintSingle =      subset(testCCData, PARAMETER == 'CONSTRNT')
-                         ,constraintPercent =     subset(testCCData, PARAMETER == 'PERCENT')
-                         ,seeOverBank =           subset(testBGData, PARAMETER == 'SEEOVRBK')
-                         ,shoreToVegDistance =    subset(testBGData, PARAMETER == 'SHOR2RIP')
-                         ,valleyConstraintUnseen =subset(testCCData, PARAMETER == 'VALLYBOX')
-                         ,valleyWidth =           subset(testCCData, PARAMETER == 'VALLEY')
+    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, PARAMETER == 'BANKFULL') %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,channelPattern =        subset(testCCData, PARAMETER == 'PATTERN') %>% select(SITE, VALUE)
+                         ,constraintFeatures =    subset(testCCData, PARAMETER == 'FEATURES') %>% select(SITE, VALUE)
+                         ,constraintMultiple =    subset(testBGData, PARAMETER == 'CONSTRT') %>% select(SITE, VALUE)
+                         ,constraintSingle =      subset(testCCData, PARAMETER == 'CONSTRNT') %>% select(SITE, VALUE)
+                         ,constraintPercent =     subset(testCCData, PARAMETER == 'PERCENT') %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,seeOverBank =           subset(testBGData, PARAMETER == 'SEEOVRBK') %>% select(SITE, VALUE)
+                         ,shoreToVegDistance =    subset(testBGData, PARAMETER == 'SHOR2RIP') %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,valleyConstraintUnseen =subset(testCCData, PARAMETER == 'VALLYBOX') %>% select(SITE, VALUE)
+                         ,valleyWidth =           subset(testCCData, PARAMETER == 'VALLEY') %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
                          ,metsExpected
                          ,"Error: Channel Characteristic metrics using data with both protocols are broken"
                          )
 
     # Test with wadeable-only data
-    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, PARAMETER == 'BANKFULL' & SITE %in% c('stream1','stream2'))
-                         ,channelPattern =        subset(testCCData, PARAMETER == 'PATTERN' & SITE %in% c('stream1','stream2'))
-                         ,constraintFeatures =    subset(testCCData, PARAMETER == 'FEATURES' & SITE %in% c('stream1','stream2'))
-                         ,constraintMultiple =    subset(testBGData, PARAMETER == 'CONSTRT' & SITE %in% c('stream1','stream2'))
-                         ,constraintSingle =      subset(testCCData, PARAMETER == 'CONSTRNT' & SITE %in% c('stream1','stream2'))
-                         ,constraintPercent =     subset(testCCData, PARAMETER == 'PERCENT' & SITE %in% c('stream1','stream2'))
-                         ,seeOverBank =           subset(testBGData, PARAMETER == 'SEEOVRBK' & SITE %in% c('stream1','stream2'))
-                         ,shoreToVegDistance =    subset(testBGData, PARAMETER == 'SHOR2RIP' & SITE %in% c('stream1','stream2'))
-                         ,valleyConstraintUnseen =subset(testCCData, PARAMETER == 'VALLYBOX' & SITE %in% c('stream1','stream2'))
-                         ,valleyWidth =           subset(testCCData, PARAMETER == 'VALLEY' & SITE %in% c('stream1','stream2'))
+    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, PARAMETER == 'BANKFULL' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE) %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,channelPattern =        subset(testCCData, PARAMETER == 'PATTERN' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,constraintFeatures =    subset(testCCData, PARAMETER == 'FEATURES' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,constraintMultiple =    subset(testBGData, PARAMETER == 'CONSTRT' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,constraintSingle =      subset(testCCData, PARAMETER == 'CONSTRNT' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,constraintPercent =     subset(testCCData, PARAMETER == 'PERCENT' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,seeOverBank =           subset(testBGData, PARAMETER == 'SEEOVRBK' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,shoreToVegDistance =    subset(testBGData, PARAMETER == 'SHOR2RIP' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,valleyConstraintUnseen =subset(testCCData, PARAMETER == 'VALLYBOX' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,valleyWidth =           subset(testCCData, PARAMETER == 'VALLEY' & SITE %in% c('stream1','stream2')) %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
                          ,subset(metsExpected, SITE %in% c('stream1','stream2'))
                          ,"Error: Channel Characteristic metrics with only wadeable data are broken"
                          )
     
     # Test with only boatable-only data
-    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, PARAMETER == 'BANKFULL' & SITE %nin% c('stream1','stream2'))
-                         ,channelPattern =        subset(testCCData, PARAMETER == 'PATTERN' & SITE %nin% c('stream1','stream2'))
-                         ,constraintFeatures =    subset(testCCData, PARAMETER == 'FEATURES' & SITE %nin% c('stream1','stream2'))
-                         ,constraintMultiple =    subset(testBGData, PARAMETER == 'CONSTRT' & SITE %nin% c('stream1','stream2'))
-                         ,constraintSingle =      subset(testCCData, PARAMETER == 'CONSTRNT' & SITE %nin% c('stream1','stream2'))
-                         ,constraintPercent =     subset(testCCData, PARAMETER == 'PERCENT' & SITE %nin% c('stream1','stream2'))
-                         ,seeOverBank =           subset(testBGData, PARAMETER == 'SEEOVRBK' & SITE %nin% c('stream1','stream2'))
-                         ,shoreToVegDistance =    subset(testBGData, PARAMETER == 'SHOR2RIP' & SITE %nin% c('stream1','stream2'))
-                         ,valleyConstraintUnseen =subset(testCCData, PARAMETER == 'VALLYBOX' & SITE %nin% c('stream1','stream2'))
-                         ,valleyWidth =           subset(testCCData, PARAMETER == 'VALLEY' & SITE %nin% c('stream1','stream2'))
+    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, PARAMETER == 'BANKFULL' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,channelPattern =        subset(testCCData, PARAMETER == 'PATTERN' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,constraintFeatures =    subset(testCCData, PARAMETER == 'FEATURES' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,constraintMultiple =    subset(testBGData, PARAMETER == 'CONSTRT' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,constraintSingle =      subset(testCCData, PARAMETER == 'CONSTRNT' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,constraintPercent =     subset(testCCData, PARAMETER == 'PERCENT' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,seeOverBank =           subset(testBGData, PARAMETER == 'SEEOVRBK' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,shoreToVegDistance =    subset(testBGData, PARAMETER == 'SHOR2RIP' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,valleyConstraintUnseen =subset(testCCData, PARAMETER == 'VALLYBOX' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE)
+                         ,valleyWidth =           subset(testCCData, PARAMETER == 'VALLEY' & SITE %nin% c('stream1','stream2')) %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
                          ,subset(metsExpected, SITE %nin% c('stream1','stream2'))
                          ,"Error: Channel Characteristic metrics with only boatable data are broken"
                          )
 
     # Test with only constraint form data
-    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, PARAMETER == 'BANKFULL')
-                         ,channelPattern =        subset(testCCData, PARAMETER == 'PATTERN')
-                         ,constraintFeatures =    subset(testCCData, PARAMETER == 'FEATURES')
+    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, PARAMETER == 'BANKFULL') %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
+                         ,channelPattern =        subset(testCCData, PARAMETER == 'PATTERN') %>% select(SITE, VALUE)
+                         ,constraintFeatures =    subset(testCCData, PARAMETER == 'FEATURES') %>% select(SITE, VALUE)
                          ,constraintMultiple =    NULL
-                         ,constraintSingle =      subset(testCCData, PARAMETER == 'CONSTRNT')
-                         ,constraintPercent =     subset(testCCData, PARAMETER == 'PERCENT')
+                         ,constraintSingle =      subset(testCCData, PARAMETER == 'CONSTRNT') %>% select(SITE, VALUE)
+                         ,constraintPercent =     subset(testCCData, PARAMETER == 'PERCENT') %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
                          ,seeOverBank =           NULL
                          ,shoreToVegDistance =    NULL
-                         ,valleyConstraintUnseen =subset(testCCData, PARAMETER == 'VALLYBOX')
-                         ,valleyWidth =           subset(testCCData, PARAMETER == 'VALLEY')
+                         ,valleyConstraintUnseen =subset(testCCData, PARAMETER == 'VALLYBOX') %>% select(SITE, VALUE)
+                         ,valleyWidth =           subset(testCCData, PARAMETER == 'VALLEY') %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
                          ,subset(metsExpected, METRIC %nin% c('pctch_b','pctch_c','pctch_n','pctch_u','pct_ovrb','xshor2vg','mxshor','mnshor'))
                          ,"Error: Channel Characteristic metrics with only contraint form data are broken"
                          )
@@ -79,11 +83,11 @@ nrsaChannelCharTest <- function()
     nrsaChannelCharTest.1(bankfullWidth =         NULL
                          ,channelPattern =        NULL
                          ,constraintFeatures =    NULL
-                         ,constraintMultiple =    subset(testBGData, PARAMETER == 'CONSTRT')
+                         ,constraintMultiple =    subset(testBGData, PARAMETER == 'CONSTRT') %>% select(SITE, VALUE)
                          ,constraintSingle =      NULL
                          ,constraintPercent =     NULL
-                         ,seeOverBank =           subset(testBGData, PARAMETER == 'SEEOVRBK')
-                         ,shoreToVegDistance =    subset(testBGData, PARAMETER == 'SHOR2RIP')
+                         ,seeOverBank =           subset(testBGData, PARAMETER == 'SEEOVRBK') %>% select(SITE, VALUE)
+                         ,shoreToVegDistance =    subset(testBGData, PARAMETER == 'SHOR2RIP') %>% select(SITE, VALUE) %>% mutate(VALUE=as.double(VALUE))
                          ,valleyConstraintUnseen =NULL
                          ,valleyWidth =           NULL
                          ,subset(metsExpected, METRIC %in% c('pctch_b','pctch_c','pctch_n','pctch_u','pct_ovrb','xshor2vg','mxshor','mnshor'))
@@ -91,16 +95,16 @@ nrsaChannelCharTest <- function()
                          )
     
     # Test with no data
-    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, FALSE)
-                         ,channelPattern =        subset(testCCData, FALSE)
-                         ,constraintFeatures =    subset(testCCData, FALSE)
-                         ,constraintMultiple =    subset(testBGData, FALSE)
-                         ,constraintSingle =      subset(testCCData, FALSE)
-                         ,constraintPercent =     subset(testCCData, FALSE)
-                         ,seeOverBank =           subset(testBGData, FALSE)
-                         ,shoreToVegDistance =    subset(testBGData, FALSE)
-                         ,valleyConstraintUnseen =subset(testCCData, FALSE)
-                         ,valleyWidth =           subset(testCCData, FALSE)
+    nrsaChannelCharTest.1(bankfullWidth =         subset(testCCData, FALSE) %>% select(SITE, VALUE)
+                         ,channelPattern =        subset(testCCData, FALSE) %>% select(SITE, VALUE)
+                         ,constraintFeatures =    subset(testCCData, FALSE) %>% select(SITE, VALUE)
+                         ,constraintMultiple =    subset(testBGData, FALSE) %>% select(SITE, VALUE)
+                         ,constraintSingle =      subset(testCCData, FALSE) %>% select(SITE, VALUE)
+                         ,constraintPercent =     subset(testCCData, FALSE) %>% select(SITE, VALUE)
+                         ,seeOverBank =           subset(testBGData, FALSE) %>% select(SITE, VALUE)
+                         ,shoreToVegDistance =    subset(testBGData, FALSE) %>% select(SITE, VALUE)
+                         ,valleyConstraintUnseen =subset(testCCData, FALSE) %>% select(SITE, VALUE)
+                         ,valleyWidth =           subset(testCCData, FALSE) %>% select(SITE, VALUE)
                          ,subset(metsExpected, FALSE)
                          ,"Error: Channel Characteristic metrics with no data at all are broken"
                          )
