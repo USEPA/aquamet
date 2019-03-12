@@ -7,6 +7,7 @@
 #          Corrected comparisons to use correct subsets of expected values
 #          when data for only one protocol is supplied. Added new metrics
 #          xdepth_cm and sddepth_cm.
+#  3/12/19 cws Modified due to use of aquametStandardizeArgument
 #
 
 
@@ -26,16 +27,16 @@ nrsaChannelMorphologyTest <- function ()
   
   
   # Test supplying both protocols
-  actual <- nrsaChannelMorphology(bBankHeight =     bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='BANKHGT')
-                                 ,bBankWidth =      bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='BANKWID')
-                                 ,bDepth =          thal %>% subset(SITE %nin% wadeableSites & PARAMETER %in% c('DEP_POLE','DEP_SONR'))
-                                 ,bIncisedHeight =  bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='INCISHGT')
-                                 ,bWettedWidth =    bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='WETWID')
-                                 ,wBankHeight =     bg %>% subset(SITE %in% wadeableSites & PARAMETER=='BANKHGT')
-                                 ,wBankWidth =      bg %>% subset(SITE %in% wadeableSites & PARAMETER=='BANKWID')
-                                 ,wDepth =          thal %>% subset(SITE %in% wadeableSites & PARAMETER=='DEPTH')
-                                 ,wIncisedHeight =  bg %>% subset(SITE %in% wadeableSites & PARAMETER=='INCISHGT')
-                                 ,wWettedWidth =    thal %>% subset(SITE %in% wadeableSites & PARAMETER=='WETWIDTH')
+  actual <- nrsaChannelMorphology(bBankHeight =     bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='BANKHGT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,bBankWidth =      bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='BANKWID') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,bDepth =          thal %>% subset(SITE %nin% wadeableSites & PARAMETER %in% c('DEP_POLE','DEP_SONR')) %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, STATION, VALUE, UNITS)
+                                 ,bIncisedHeight =  bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='INCISHGT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,bWettedWidth =    bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='WETWID') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,wBankHeight =     bg %>% subset(SITE %in% wadeableSites & PARAMETER=='BANKHGT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,wBankWidth =      bg %>% subset(SITE %in% wadeableSites & PARAMETER=='BANKWID') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,wDepth =          thal %>% subset(SITE %in% wadeableSites & PARAMETER=='DEPTH') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, STATION, VALUE, UNITS)
+                                 ,wIncisedHeight =  bg %>% subset(SITE %in% wadeableSites & PARAMETER=='INCISHGT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,wWettedWidth =    thal %>% subset(SITE %in% wadeableSites & PARAMETER=='WETWIDTH') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, STATION, VALUE, UNITS)
                                  )
   errs<-nrsaChannelMorphologyTest.process(actual, expected)
 
@@ -43,7 +44,6 @@ nrsaChannelMorphologyTest <- function ()
             ,"Error: bankMorphology metrics are broken when supplying data for both protocols"
             )
 
-    
   # Test supplying only wadeable data
   bg.w <- subset(bg, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
   thal.w <- subset(thal, SITE %in% subset(protocols, PROTOCOL=='WADEABLE')$SITE)
@@ -55,11 +55,11 @@ nrsaChannelMorphologyTest <- function ()
                                  ,bDepth = NULL
                                  ,bIncisedHeight = NULL
                                  ,bWettedWidth = NULL
-                                 ,wBankHeight =    bg %>% subset(SITE %in% wadeableSites & PARAMETER=='BANKHGT')
-                                 ,wBankWidth =     bg %>% subset(SITE %in% wadeableSites & PARAMETER=='BANKWID')
-                                 ,wDepth =         thal %>% subset(SITE %in% wadeableSites & PARAMETER=='DEPTH')
-                                 ,wIncisedHeight = bg %>% subset(SITE %in% wadeableSites & PARAMETER=='INCISHGT')
-                                 ,wWettedWidth =   thal %>% subset(SITE %in% wadeableSites & PARAMETER=='WETWIDTH')
+                                 ,wBankHeight =    bg %>% subset(SITE %in% wadeableSites & PARAMETER=='BANKHGT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,wBankWidth =     bg %>% subset(SITE %in% wadeableSites & PARAMETER=='BANKWID') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,wDepth =         thal %>% subset(SITE %in% wadeableSites & PARAMETER=='DEPTH') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, STATION, VALUE, UNITS)
+                                 ,wIncisedHeight = bg %>% subset(SITE %in% wadeableSites & PARAMETER=='INCISHGT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,wWettedWidth =   thal %>% subset(SITE %in% wadeableSites & PARAMETER=='WETWIDTH') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, STATION, VALUE, UNITS)
                                  )
   errs<-nrsaChannelMorphologyTest.process(actual, exp.w)
   checkEquals(0, nrow(errs)
@@ -72,11 +72,11 @@ nrsaChannelMorphologyTest <- function ()
   prot.b <- subset(protocols, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
   exp.b <- subset(expected, SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE)
   
-  actual <- nrsaChannelMorphology(bBankHeight =    bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='BANKHGT')
-                                 ,bBankWidth =     bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='BANKWID')
-                                 ,bDepth =         thal %>% subset(SITE %nin% wadeableSites & PARAMETER %in% c('DEP_POLE','DEP_SONR'))
-                                 ,bIncisedHeight = bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='INCISHGT')
-                                 ,bWettedWidth =   bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='WETWID')
+  actual <- nrsaChannelMorphology(bBankHeight =    bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='BANKHGT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,bBankWidth =     bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='BANKWID') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,bDepth =         thal %>% subset(SITE %nin% wadeableSites & PARAMETER %in% c('DEP_POLE','DEP_SONR')) %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, STATION, VALUE, UNITS)
+                                 ,bIncisedHeight = bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='INCISHGT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
+                                 ,bWettedWidth =   bg %>% subset(SITE %nin% wadeableSites & PARAMETER=='WETWID') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE, UNITS)
                                  ,wBankHeight = NULL
                                  ,wBankWidth = NULL
                                  ,wDepth = NULL
@@ -572,7 +572,6 @@ metsChannelMorphologyTest.createBankGeometryData <- function()
 
   return(df1)
 }
-
 
 
 metsChannelMorphologyTest.createThalwegData <- function()
@@ -2021,7 +2020,7 @@ metsChannelMorphologyTest.createThalwegData <- function()
   close (bob2)
 
   df2$TRANSECT <- as.character(df2$TRANSECT)
-  df2$STATION <- ifelse(df2$SITE %in% 7:9, df2$STATION - 1, df2$STATION)
+  df2$STATION <- ifelse(df2$SITE %in% 7:9, df2$STATION - 1, df2$STATION) %>% as.integer()
   df2$PARAMETER <- as.character(df2$PARAMETER)
   df2$VALUE <- as.character(df2$VALUE)
   df2$SAMPLE_TYPE <- ifelse(df2$SITE %in% 1:6, 'PHAB_THALW', 'PHAB_THAL')
@@ -2029,7 +2028,6 @@ metsChannelMorphologyTest.createThalwegData <- function()
 
   return(df2)
 }
-
 
 
 metsChannelMorphologyTest.createProtocolData <- function()
@@ -2054,7 +2052,6 @@ metsChannelMorphologyTest.createProtocolData <- function()
 
   return(protocols)
 }
-
 
 
 metsChannelMorphologyTest.createExpectedResults <- function()

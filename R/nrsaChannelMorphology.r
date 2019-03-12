@@ -179,6 +179,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                                  ,wDepth = NULL
                                  ,wIncisedHeight = NULL
                                  ,wWettedWidth = NULL
+                                 ,isUnitTest = FALSE
                                  ) {
 
 ################################################################################
@@ -255,6 +256,8 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 #    3/17/16 cws Removed old commented out code
 #   11/07/16 cws Added metrics xdepth_cm and sddepth_cm. New code at tail end of
 #            this scabbed-in mess
+#    3/12/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull().
 #            
 # ARGUMENTS:
 # bBankHeight       dataframe containing bank height at each transect for
@@ -409,16 +412,66 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
         return(rc)
     }
 
-    bBankHeight     <- absentAsNULL(bBankHeight, ifdf, 'BANKHGT') # adding PARAMETER columns is just temporary until we rewrite what follows...
-    bBankWidth      <- absentAsNULL(bBankWidth, ifdf, 'BANKWID')
-    bDepth          <- absentAsNULL(bDepth, ifDepthDf, 'DEPTH')
-    bIncisedHeight  <- absentAsNULL(bIncisedHeight, ifdf, 'INCISHGT')
-    bWettedWidth    <- absentAsNULL(bWettedWidth, ifdf, 'WETWID')
-    wBankHeight     <- absentAsNULL(wBankHeight, ifdf, 'BANKHGT')
-    wBankWidth      <- absentAsNULL(wBankWidth, ifdf, 'BANKWID')
-    wDepth          <- absentAsNULL(wDepth, ifDepthDf, 'DEPTH')
-    wIncisedHeight  <- absentAsNULL(wIncisedHeight, ifdf, 'INCISHGT')
-    wWettedWidth    <- absentAsNULL(wWettedWidth, ifDepthDf, 'WETWID')
+    # bBankHeight     <- aquametStandardizeArgument(bBankHeight, ifdf, 'BANKHGT') # adding PARAMETER columns is just temporary until we rewrite what follows...
+    # bBankWidth      <- absentAsNULL(bBankWidth, ifdf, 'BANKWID')
+    # bDepth          <- absentAsNULL(bDepth, ifDepthDf, 'DEPTH')
+    # bIncisedHeight  <- absentAsNULL(bIncisedHeight, ifdf, 'INCISHGT')
+    # bWettedWidth    <- absentAsNULL(bWettedWidth, ifdf, 'WETWID')
+    # wBankHeight     <- absentAsNULL(wBankHeight, ifdf, 'BANKHGT')
+    # wBankWidth      <- absentAsNULL(wBankWidth, ifdf, 'BANKWID')
+    # wDepth          <- absentAsNULL(wDepth, ifDepthDf, 'DEPTH')
+    # wIncisedHeight  <- absentAsNULL(wIncisedHeight, ifdf, 'INCISHGT')
+    # wWettedWidth    <- absentAsNULL(wWettedWidth, ifDepthDf, 'WETWID')
+    bBankHeight     <- aquametStandardizeArgument(bBankHeight, ifdf = ifdf, 'BANKHGT'
+                                                 ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,15))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    bBankWidth      <- aquametStandardizeArgument(bBankWidth, ifdf = ifdf, 'BANKWID'
+                                                 ,struct = list(SITE = c('integer','character'), TRANSECT='character', VALUE = c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,200))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    bDepth          <- aquametStandardizeArgument(bDepth, ifdf = ifDepthDf, 'DEPTH'
+                                                 ,struct = list(SITE = c('integer','character'), TRANSECT='character', STATION=c('integer','character'), VALUE = c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,30))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    bIncisedHeight  <- aquametStandardizeArgument(bIncisedHeight, ifdf = ifdf, 'INCISHGT'
+                                                 ,struct = list(SITE = c('integer','character'), TRANSECT='character', VALUE = c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,10))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    bWettedWidth    <- aquametStandardizeArgument(bWettedWidth, ifdf = ifdf, 'WETWID'
+                                                 ,struct = list(SITE = c('integer','character'), TRANSECT='character', VALUE = c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,200))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    wBankHeight     <- aquametStandardizeArgument(wBankHeight, ifdf = ifdf, 'BANKHGT'
+                                                 ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,5))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    wBankWidth      <- aquametStandardizeArgument(wBankWidth, ifdf = ifdf, 'BANKWID'
+                                                 ,struct = list(SITE = c('integer','character'), TRANSECT='character', VALUE = c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,80))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    wDepth          <- aquametStandardizeArgument(wDepth, ifdf = ifDepthDf, 'DEPTH'
+                                                 ,struct = list(SITE = c('integer','character'), TRANSECT='character', STATION=c('integer','character'), VALUE = c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,200))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    wIncisedHeight  <- aquametStandardizeArgument(wIncisedHeight, ifdf = ifdf, 'INCISHGT'
+                                                 ,struct = list(SITE = c('integer','character'), TRANSECT='character', VALUE = c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,10))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    wWettedWidth    <- aquametStandardizeArgument(wWettedWidth, ifdf = ifDepthDf, 'WETWID'
+                                                 ,struct = list(SITE = c('integer','character'), TRANSECT='character', STATION=c('integer','character'), VALUE = c('integer','double'), UNITS='character')
+                                                 ,rangeLimits = list(VALUE = c(0,60))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
 
     intermediateMessage ('.1')
 
