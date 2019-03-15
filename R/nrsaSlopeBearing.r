@@ -125,6 +125,7 @@
 nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
                             ,wBearing = NULL, wTransectSpacing = NULL, wProportion = NULL
                             ,wSlope = NULL, gisSinuosity=NULL, gisSlope=NULL
+                            ,isUnitTest = FALSE
                             ) {
     
 # TODO: Handle slopes in DEGREES (1314 has 10 Dg rows), and maybe '' (39 rows)
@@ -224,6 +225,8 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #            descriptions.
 #    3/16/16 cws Removed old UID column name from documentation
 #    3/22/17 cws Added some comments for the slope units conversion. That stuff looks odd.
+#    3/15/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull().
 #
 # Arguments:
 # bBearing          dataframe containing bearing values recorded in the field 
@@ -368,16 +371,55 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
         return(rc)
     }
     
-    bBearing <- bBearing %>%                 absentAsNULL(ifdfLineAddMethodUnits, 'BEARING')
-    bDistance <- bDistance %>%               absentAsNULL(ifdfLineAddMethodUnits, 'DISTANCE')
-    bSlope <- bSlope %>%                     absentAsNULL(ifdfLineMethodUnits, 'SLOPE')
-    wBearing <- wBearing %>%                 absentAsNULL(ifdfLineAddMethodUnits, 'BEARING')
-    wProportion <- wProportion %>%           absentAsNULL(ifdfLineAddMethodUnits, 'PROPORTION')
-    wSlope <- wSlope %>%                     absentAsNULL(ifdfLineMethodUnits, 'SLOPE')
-    wTransectSpacing <- wTransectSpacing %>% absentAsNULL(ifdfTranspc)
-    gisSinuosity <- gisSinuosity %>%         absentAsNULL(ifdfValue)
-    gisSlope <- gisSlope %>%                 absentAsNULL(ifdfValue)
-
+    bBearing <-         aquametStandardizeArgument(bBearing, ifdf=ifdfLineAddMethodUnits, 'BEARING'
+                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', LINE='integer', VALUE=c('double'))
+                                                  ,rangeLimits = list(LINE=c(0,6), VALUE = c(0,360))
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    bDistance <-        aquametStandardizeArgument(bDistance, ifdf=ifdfLineAddMethodUnits, 'DISTANCE'
+                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', LINE='integer', VALUE=c('double'))
+                                                  ,rangeLimits = list(LINE=c(0,6), VALUE = c(50,1000))
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    bSlope <-           aquametStandardizeArgument(bSlope, ifdf=ifdfLineMethodUnits, 'SLOPE'
+                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', LINE='integer', VALUE=c('double')
+                                                                ,METHOD='character', UNITS='character'
+                                                                )
+                                                  ,rangeLimits = list(LINE=c(0,6), VALUE = c(0,1))
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    wBearing <-         aquametStandardizeArgument(wBearing, ifdf=ifdfLineAddMethodUnits, 'BEARING'
+                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', LINE='integer', VALUE=c('double'))
+                                                  ,rangeLimits = list(LINE=c(0,6), VALUE = c(0,360))
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    wProportion <-      aquametStandardizeArgument(wProportion, ifdf=ifdfLineAddMethodUnits, 'PROPORTION'
+                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', LINE='integer', VALUE=c('double'))
+                                                  ,rangeLimits = list(LINE=c(0,6), VALUE = c(0,100))
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    wSlope <-           aquametStandardizeArgument(wSlope, ifdf=ifdfLineMethodUnits, 'SLOPE'
+                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', LINE='integer', VALUE=c('double')
+                                                                ,METHOD='character', UNITS='character'
+                                                                )
+                                                  ,rangeLimits = list(LINE=c(0,6), VALUE = c(0,100)) # allow for 1 m elevation change; 20 % slope otherwise
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    wTransectSpacing <- aquametStandardizeArgument(wTransectSpacing, ifdf=ifdfTranspc
+                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('double'))
+                                                  ,rangeLimits = list(VALUE = c(0,100)) 
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    gisSinuosity <-     aquametStandardizeArgument(gisSinuosity, ifdf=ifdfValue
+                                                  ,struct = list(SITE=c('integer','character'), VALUE=c('double'))
+                                                  ,rangeLimits = list(VALUE = c(0,5)) 
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    gisSlope <-         aquametStandardizeArgument(gisSlope, ifdf=ifdfValue
+                                                  ,struct = list(SITE=c('integer','character'), VALUE=c('double'))
+                                                  ,rangeLimits = list(VALUE = c(0,20)) 
+                                                  ,stopOnError = !isUnitTest
+                                                  )
 
   intermediateMessage('.0')
   

@@ -93,6 +93,7 @@ nrsaLegacyTree <- function(dbhClass = NULL
                           ,heightClass = NULL
                           ,species = NULL
                           ,type = NULL
+                          ,isUnitTest = FALSE
                           ) {
 
 ################################################################################
@@ -162,6 +163,8 @@ nrsaLegacyTree <- function(dbhClass = NULL
 #            Fixed stupid code documentation error that confused DBH with HEIGHT
 #            class values.
 #    3/16/16 cws removed old UID name from comments
+#    3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull(). Replaced call to our rename() with dplyr::rename()
 #
 # ARGUMENTS:
 # dbhClass      dataframe containing dbh class values at each transect of all 
@@ -194,9 +197,7 @@ nrsaLegacyTree <- function(dbhClass = NULL
 #                   SITE        integer or character specifying the site visit
 #                   TRANSECT    character value specifying the transect
 #                               for which the value was recorded.
-#                   VALUE       character values specifying the dbh class,
-#                               expected to be one of '0-0.1', '.1-.3',
-#                               '.3-.75', '.75-2' or '>2'
+#                   VALUE       character values specifying the tree species
 #
 # type          dataframe containing types of largest legacy tree at each 
 #               transect of all sites.  Expected to contain the columns
@@ -235,16 +236,41 @@ nrsaLegacyTree <- function(dbhClass = NULL
     }
 
     # Just recreate old argument from new arguments for now, rip out the  guts later.
-    invasivelegacy <- rbind(absentAsNULL(dbhClass, ifdf, 'DBH')
-                           ,absentAsNULL(distance, ifdf, 'DISTANCE')
-                           ,absentAsNULL(heightClass, ifdf, 'HEIGHT')
-                           ,absentAsNULL(species, ifdf, 'SPECIES')
-                           ,absentAsNULL(type, ifdf, 'TREE_TYP')
+    # invasivelegacy <- rbind(absentAsNULL(dbhClass, ifdf, 'DBH')
+    #                        ,absentAsNULL(distance, ifdf, 'DISTANCE')
+    #                        ,absentAsNULL(heightClass, ifdf, 'HEIGHT')
+    #                        ,absentAsNULL(species, ifdf, 'SPECIES')
+    #                        ,absentAsNULL(type, ifdf, 'TREE_TYP')
+    #                        )
+    invasivelegacy <- rbind(aquametStandardizeArgument(dbhClass, ifdf=ifdf, 'DBH'
+                                                      ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                                      ,legalValues = list(VALUE = c(NA,'','0-0.1','.1-.3','.3-.75','.75-2'))
+                                                      ,stopOnError = !isUnitTest
+                                                      )
+                           ,aquametStandardizeArgument(distance, ifdf=ifdf, 'DISTANCE'
+                                                      ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('double'))
+                                                      ,rangeLimits = list(VALUE = c(0,1000))
+                                                      ,stopOnError = !isUnitTest
+                                                      )
+                           ,aquametStandardizeArgument(heightClass, ifdf=ifdf, 'HEIGHT'
+                                                      ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                                      ,legalValues = list(VALUE = c(NA,'','<5','5-15','15-30','>30'))
+                                                      ,stopOnError = !isUnitTest
+                                                      )
+                           ,aquametStandardizeArgument(species, ifdf=ifdf, 'SPECIES'
+                                                      ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                                      ,stopOnError = !isUnitTest
+                                                      )
+                           ,aquametStandardizeArgument(type, ifdf=ifdf, 'TREE_TYP'
+                                                      ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                                      ,legalValues = list(VALUE = c(NA,'','Coniferous','Deciduous'))
+                                                      ,stopOnError = !isUnitTest
+                                                      )
                            )
     if(is.null(invasivelegacy)) return(NULL)
 
 ##  Renaming PARAMETER and RESULT to variable and value
-df1 <-rename(invasivelegacy, c('PARAMETER', 'VALUE'), c('variable', 'value'))
+df1 <- invasivelegacy %>% dplyr::rename(variable=PARAMETER, value=VALUE)
 
 # Casting (transforming) data using reshape2 package
 lt <- dcast(df1, SITE + TRANSECT ~ variable)

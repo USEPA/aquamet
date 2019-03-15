@@ -201,6 +201,7 @@ nrsaHumanInfluence <- function(buildings = NULL
                                                             ,weights=c(0, 0.666667, 1, 1.5)
                                                             ,stringsAsFactors=FALSE
                                                             )
+                              ,isUnitTest = FALSE
                               ) {
 
 ################################################################################
@@ -272,6 +273,8 @@ nrsaHumanInfluence <- function(buildings = NULL
 #    1/20/16 cws Removed test is.na(ifdf); now using is.function(ifdf) instead.
 #    3/17/16 cws Added 'Done' notification at end of calculations.  Removed
 #            commented out code. Pretty printed.
+#    3/12/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull().
 #
 #  TODO: rewrite interior. Add use of influenceWeights and test it.  Make PARAMETER
 #        values less cryptic.
@@ -402,17 +405,73 @@ nrsaHumanInfluence <- function(buildings = NULL
         rc <- df %>% mutate(PARAMETER=pName) %>% select(SITE,TRANSECT,PARAMETER,VALUE)
     }
 
-    df <- rbind(absentAsNULL(buildings, ifdf,  'BUILD')
-               ,absentAsNULL(landfillTrash, ifdf, 'LANDFL')
-               ,absentAsNULL(logging, ifdf, 'LOG')
-               ,absentAsNULL(mining, ifdf,  'MINE')
-               ,absentAsNULL(parkLawn, ifdf, 'PARK')
-               ,absentAsNULL(pastureRangeHay, ifdf, 'PAST')
-               ,absentAsNULL(pavementClearedlot, ifdf, 'PAVE')
-               ,absentAsNULL(pipesInOut, ifdf, 'PIPES')
-               ,absentAsNULL(roadsRailroads, ifdf, 'ROAD')
-               ,absentAsNULL(rowcrops, ifdf, 'ROW')
-               ,absentAsNULL(wallRevetment, ifdf, 'WALL')
+    # df <- rbind(absentAsNULL(buildings, ifdf,  'BUILD')
+    #            ,absentAsNULL(landfillTrash, ifdf, 'LANDFL')
+    #            ,absentAsNULL(logging, ifdf, 'LOG')
+    #            ,absentAsNULL(mining, ifdf,  'MINE')
+    #            ,absentAsNULL(parkLawn, ifdf, 'PARK')
+    #            ,absentAsNULL(pastureRangeHay, ifdf, 'PAST')
+    #            ,absentAsNULL(pavementClearedlot, ifdf, 'PAVE')
+    #            ,absentAsNULL(pipesInOut, ifdf, 'PIPES')
+    #            ,absentAsNULL(roadsRailroads, ifdf, 'ROAD')
+    #            ,absentAsNULL(rowcrops, ifdf, 'ROW')
+    #            ,absentAsNULL(wallRevetment, ifdf, 'WALL')
+    #            )
+    df <- rbind(aquametStandardizeArgument(buildings, ifdf=ifdf,  'BUILD'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(landfillTrash, ifdf=ifdf, 'LANDFL'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(logging, ifdf=ifdf, 'LOG'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(mining, ifdf=ifdf,  'MINE'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(parkLawn, ifdf=ifdf, 'PARK'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(pastureRangeHay, ifdf=ifdf, 'PAST'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(pavementClearedlot, ifdf=ifdf, 'PAVE'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(pipesInOut, ifdf=ifdf, 'PIPES'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(roadsRailroads, ifdf=ifdf, 'ROAD'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(rowcrops, ifdf=ifdf, 'ROW'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
+               ,aquametStandardizeArgument(wallRevetment, ifdf=ifdf, 'WALL'
+                                          ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
+                                          ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,stopOnError = !isUnitTest
+                                          )
                )
 
 

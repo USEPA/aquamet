@@ -9,6 +9,7 @@
 # 11/08/16 cws Added new metrics in nrsaResidualPoolsTest.createSiteSummaries: 
 #          rpxdep_cm, rpvdep_cm, rpmxdep_cm, rpgt05x_cm, rpgt10x_cm, rpgt20x_cm 
 #          which are expressed in the same units for all protocols.
+#  3/13/19 cws Modified due to use of aquametStandardizeArgument
 #
 
 nrsaResidualPoolsTest <- function()
@@ -90,14 +91,17 @@ nrsaResidualPoolsTest.integratedComponentsBothProtocols <- function()
     intermediateMessage('\nIntegrated testing with both protocols', loc='start')
     rr <- nrsaResidualPools(bDepth = fakeThal %>%                                         # All boatable depths are in M as expected, so no need to convert units.
                                      subset(PARAMETER %in% c('DEP_SONR','DEP_POLE')) %>%
-                                     mutate(VALUE=as.numeric(VALUE)) %>%
-                                     select(-PARAMETER)      
+                                     mutate(STATION = as.integer(STATION), VALUE=as.numeric(VALUE)) %>%
+                                     select(SITE, TRANSECT, STATION, VALUE, UNITS)      
                            ,wDepth = fakeThal %>%                                         # All wadeable depths are in CM as expected, so no need to convert units
                                      subset(PARAMETER == 'DEPTH') %>%
-                                     mutate(VALUE=as.numeric(VALUE)) %>%
-                                     select(-PARAMETER)      
-                           ,siteSlopes = fakeSlopes
-                           ,transectSpacing = rbind(fakeActransp                          # boatable sites are easy
+                                     mutate(STATION = as.integer(STATION), VALUE=as.numeric(VALUE)) %>%
+                                     select(SITE, TRANSECT, STATION, VALUE)      
+                           ,siteSlopes = fakeSlopes %>% 
+                                         mutate(VALUE=as.numeric(VALUE)) %>% 
+                                         select(SITE, VALUE)
+                           ,transectSpacing = rbind(fakeActransp %>%                      # boatable sites are easy
+                                                    select(SITE, TRANSECT, VALUE)
                                                    ,fakeThal %>%                          # wadeable sites aren't.
                                                     subset(PARAMETER=='INCREMNT') %>%
                                                     merge(nWadeableStationsPerTransect(fakeThal)
@@ -109,7 +113,7 @@ nrsaResidualPoolsTest.integratedComponentsBothProtocols <- function()
                                                     subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE &
                                                            STATION==0
                                                           ) %>%
-                                                    select(SITE, TRANSECT, PARAMETER, VALUE)
+                                                    select(SITE, TRANSECT, VALUE)
                                                    )
                            ,writeIntermediateFiles=FALSE, oldeMethods=TRUE
                            )
@@ -145,13 +149,18 @@ nrsaResidualPoolsTest.integratedComponentsBoatableProtocol <- function()
     intermediateMessage('\nIntegrated testing with Boatable data', loc='start')
     rr <- nrsaResidualPools(bDepth = fakeThal %>%                                         # All boatable depths are in M as expected, so no need to convert units.
                                      subset(PARAMETER %in% c('DEP_SONR','DEP_POLE')) %>%
-                                     mutate(VALUE=as.numeric(VALUE)) %>%
-                                     select(-PARAMETER) %>% 
+                                     mutate(STATION = as.integer(STATION)
+                                           ,VALUE=as.numeric(VALUE)
+                                           ) %>%
+                                     select(SITE, TRANSECT, STATION, VALUE, UNITS) %>%
                                      subset(SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE)
                            ,wDepth = NULL      
                            ,siteSlopes = fakeSlopes %>% 
-                                         subset(SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE)
-                           ,transectSpacing = fakeActransp
+                                         subset(SITE %in% subset(fakeProtocol, PROTOCOL=='BOATABLE')$SITE) %>%
+                                         mutate(VALUE = as.numeric(VALUE)) %>%
+                                         select(SITE, VALUE)
+                           ,transectSpacing = fakeActransp %>%
+                                              select(SITE, TRANSECT, VALUE)
                            ,writeIntermediateFiles=FALSE, oldeMethods=TRUE
                            )
 
@@ -185,13 +194,17 @@ nrsaResidualPoolsTest.integratedComponentsWadeableProtocol <- function()
     # Test with both protocols
     intermediateMessage('\nIntegrated testing with Wadeable data', loc='start')
     rr <- nrsaResidualPools(bDepth = NULL      
-                           ,wDepth = fakeThal %>%                                         # All wadeable depths are in CM as expected, so no need to convert units
+                           ,wDepth = fakeThal %>%                                   # All wadeable depths are in CM as expected, so no need to convert units
                                      subset(PARAMETER == 'DEPTH') %>%
-                                     mutate(VALUE=as.numeric(VALUE)) %>%
-                                     select(-PARAMETER) %>% 
+                                     mutate(STATION = as.integer(STATION)
+                                           ,VALUE=as.numeric(VALUE)
+                                           ) %>%
+                                     select(SITE, TRANSECT, STATION, VALUE) %>% 
                                      subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE)
                            ,siteSlopes = fakeSlopes %>% 
-                                         subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE)
+                                         subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE) %>% 
+                                         mutate(VALUE=as.numeric(VALUE)) %>% 
+                                         select(SITE, VALUE)
                            ,transectSpacing = fakeThal %>%                          # wadeable sites aren't.
                                               subset(PARAMETER=='INCREMNT') %>%
                                               merge(nWadeableStationsPerTransect(fakeThal)
@@ -203,7 +216,7 @@ nrsaResidualPoolsTest.integratedComponentsWadeableProtocol <- function()
                                               subset(SITE %in% subset(fakeProtocol, PROTOCOL=='WADEABLE')$SITE &
                                                      STATION==0
                                                     ) %>%
-                                              select(SITE, TRANSECT, PARAMETER, VALUE)
+                                              select(SITE, TRANSECT, VALUE)
                            ,writeIntermediateFiles=FALSE, oldeMethods=TRUE
                            )
 

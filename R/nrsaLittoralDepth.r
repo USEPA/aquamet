@@ -40,7 +40,7 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 
-nrsaLittoralDepth <- function(bLittoralDepth=NULL) {
+nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
 
 ################################################################################
 # Function: nrsaLittoralDepth
@@ -81,6 +81,8 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL) {
 #            function
 #    3/16/16 cws Documenting arguments in comments at top.  Removed old UID 
 #            column name from documentation
+#    3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull().
 #
 # Arguments:
 # bLittoralDepth    dataframe containing littoral depth data in meters at each
@@ -119,7 +121,10 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL) {
         return(rc)
     }
 
-    depths <- absentAsNULL(bLittoralDepth, ifdf)
+    depths <- aquametStandardizeArgument(bLittoralDepth, ifdf=ifdf
+                                        ,struct=list(SITE=c('character','integer'), VALUE='double')
+                                        ,rangeLimits=list(VALUE = c(0,5))
+                                        )
     if(is.null(depths)) return (NULL)
 
     intermediateMessage('.1')

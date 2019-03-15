@@ -195,6 +195,7 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                                                       ,calc=c(NA,0,0.05,0.25,0.575,0.875)
                                                                       ,stringsAsFactors=FALSE
                                                                       )
+                                  ,isUnitTest = FALSE
                                   ) {
 
 ################################################################################
@@ -228,6 +229,8 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
 #   01/11/13 tmk: Inserted code to convert factors in the input data frame to
 #            character variables.
 #    3/16/16 cws Documenting arguments in comments at top.
+#    3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull().
 #
 # Arguments:
 # canopyCoverLargeDiameter  dataframe containing cover class values for large 
@@ -381,15 +384,61 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
     }
 
     # Recreate old argument from new ones for now, rip out guts later
-    visrip <- rbind(absentAsNULL(canopyCoverLargeDiameter, ifdf, 'CANBTRE')
-                   ,absentAsNULL(canopyCoverSmallDiameter, ifdf, 'CANSTRE')
-                   ,absentAsNULL(canopyVegetationType, ifdf, 'CANVEG')
-                   ,absentAsNULL(groundCoverBare, ifdf, 'BARE')
-                   ,absentAsNULL(groundCoverNonwoody, ifdf, 'GCNWDY')
-                   ,absentAsNULL(groundCoverWoody, ifdf, 'GCWDY')
-                   ,absentAsNULL(understoryCoverNonwoody, ifdf, 'UNDNWDY')
-                   ,absentAsNULL(understoryCoverWoody, ifdf, 'UNDWDY')
-                   ,absentAsNULL(understoryVegetationType, ifdf, 'UNDERVEG')
+    # visrip <- rbind(absentAsNULL(canopyCoverLargeDiameter, ifdf, 'CANBTRE')
+    #                ,absentAsNULL(canopyCoverSmallDiameter, ifdf, 'CANSTRE')
+    #                ,absentAsNULL(canopyVegetationType, ifdf, 'CANVEG')
+    #                ,absentAsNULL(groundCoverBare, ifdf, 'BARE')
+    #                ,absentAsNULL(groundCoverNonwoody, ifdf, 'GCNWDY')
+    #                ,absentAsNULL(groundCoverWoody, ifdf, 'GCWDY')
+    #                ,absentAsNULL(understoryCoverNonwoody, ifdf, 'UNDNWDY')
+    #                ,absentAsNULL(understoryCoverWoody, ifdf, 'UNDWDY')
+    #                ,absentAsNULL(understoryVegetationType, ifdf, 'UNDERVEG')
+    #                )
+    visrip <- rbind(aquametStandardizeArgument(canopyCoverLargeDiameter, ifdf=ifdf, 'CANBTRE'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(canopyCoverSmallDiameter, ifdf=ifdf, 'CANSTRE'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(canopyVegetationType, ifdf=ifdf, 'CANVEG'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = c(NA,'','C','D','M','N'))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(groundCoverBare, ifdf=ifdf, 'BARE'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(groundCoverNonwoody, ifdf=ifdf, 'GCNWDY'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(groundCoverWoody, ifdf=ifdf, 'GCWDY'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(understoryCoverNonwoody, ifdf=ifdf, 'UNDNWDY'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(understoryCoverWoody, ifdf=ifdf, 'UNDWDY'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(understoryVegetationType, ifdf=ifdf, 'UNDERVEG'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = c(NA,'','C','D','M','N'))
+                                              ,stopOnError = !isUnitTest
+                                              )
                    )
     if(is.null(visrip)) return(NULL)
 

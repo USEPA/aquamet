@@ -1,6 +1,7 @@
 #  nrsaLittoralDepthTest.r
 # 
 #  2/22/16 cws rewritten for new calling interface.
+#  3/13/19 cws Modified due to use of aquametStandardizeArgument
 #
 
 nrsaLittoralDepthTest <- function()
@@ -13,7 +14,7 @@ nrsaLittoralDepthTest <- function()
   # Create correctly formated test data, and run data through metsLittoralDepth.1
   testData <- nrsaLittoralDepthTest.inputdata()
 
-  actual <- nrsaLittoralDepth(bLittoralDepth = testData)
+  actual <- nrsaLittoralDepth(bLittoralDepth = testData %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, VALUE))
 
   metsExpected <- nrsaLittoralDepthTest.inputmetrics()
 

@@ -162,6 +162,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                                                            ,characteristicCover=c(NA,0,0.05,0.25,0.575,0.875)
                                                            ,stringsAsFactors=FALSE
                                                            )
+                         ,isUnitTest=FALSE
                          ) {
 ################################################################################
 # Function: metsFishCover
@@ -204,6 +205,8 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 #            to handle NULL argument values.
 #    2/25/16 cws Documenting arguments in comments at top.
 #    3/17/16 cws Deleting old commented out code.
+#    3/12/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull().
 #
 # ARGUMENTS:
 # algae       dataframe containing algae cover class data at each transect for
@@ -327,15 +330,61 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
         return(rc)
     }
 
-    fcData <- rbind(absentAsNULL(algae, ifdf, 'ALGAE')
-                   ,absentAsNULL(boulder, ifdf, 'BOULDR')
-                   ,absentAsNULL(brush, ifdf, 'BRUSH')
-                   ,absentAsNULL(liveTree, ifdf, 'LVTREE')
-                   ,absentAsNULL(macrophytes, ifdf, 'MACPHY')
-                   ,absentAsNULL(overhang, ifdf, 'OVRHNG')
-                   ,absentAsNULL(structures, ifdf, 'STRUCT')
-                   ,absentAsNULL(undercut, ifdf, 'UNDERCUT')
-                   ,absentAsNULL(woodyDebris, ifdf, 'WOODY')
+    # fcData <- rbind(absentAsNULL(algae, ifdf, 'ALGAE')
+    #                ,absentAsNULL(boulder, ifdf, 'BOULDR')
+    #                ,absentAsNULL(brush, ifdf, 'BRUSH')
+    #                ,absentAsNULL(liveTree, ifdf, 'LVTREE')
+    #                ,absentAsNULL(macrophytes, ifdf, 'MACPHY')
+    #                ,absentAsNULL(overhang, ifdf, 'OVRHNG')
+    #                ,absentAsNULL(structures, ifdf, 'STRUCT')
+    #                ,absentAsNULL(undercut, ifdf, 'UNDERCUT')
+    #                ,absentAsNULL(woodyDebris, ifdf, 'WOODY')
+    #                )
+    fcData <- rbind(aquametStandardizeArgument(algae, ifdf=ifdf, 'ALGAE'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(boulder, ifdf=ifdf, 'BOULDR'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(brush, ifdf=ifdf, 'BRUSH'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(liveTree, ifdf=ifdf, 'LVTREE'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(macrophytes, ifdf=ifdf, 'MACPHY'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(overhang, ifdf=ifdf, 'OVRHNG'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(structures, ifdf=ifdf, 'STRUCT'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(undercut, ifdf=ifdf, 'UNDERCUT'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
+                   ,aquametStandardizeArgument(woodyDebris, ifdf=ifdf, 'WOODY'
+                                              ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
+                                              ,legalValues = list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,stopOnError = !isUnitTest
+                                              )
                    )
 
     # Create tables for converting field values to calculation values

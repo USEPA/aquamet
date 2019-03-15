@@ -22,6 +22,8 @@
 #  5/23/17 cws Adding test cases using simplified arguments rather than munged 
 #          data typical of actual use. This will make what each case tests much
 #          clearer. Or so I hope.
+#  3/15/19 cws Modified due to use of aquametStandardizeArgument
+#
 
 nrsaSlopeBearingTest <- function()
 {
@@ -80,13 +82,13 @@ nrsaSlopeBearingTest.simplifiedArguments.crazyBearings <- function()
                      ) %>%
                 melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
                 mutate(METRIC=as.character(METRIC))    
-    actual <- nrsaSlopeBearing(bBearing = base %>% mutate(VALUE=c(90,180,270,360))
-                              ,bDistance = base %>% mutate(VALUE=1)
-                              ,bSlope = base %>% mutate(VALUE=0, METHOD='CL', UNITS='PERCENT')
-                              ,wBearing = base %>% mutate(SITE=2, VALUE=c(359,180,180,1))
-                              ,wTransectSpacing = base %>% mutate(SITE=2, VALUE=1)
-                              ,wProportion = base %>% mutate(SITE=2, VALUE=100)
-                              ,wSlope = base %>% mutate(SITE=2, VALUE=0, METHOD='CL', UNITS='PERCENT')
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(90,180,270,360), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bDistance =        base %>% mutate(VALUE=1, LINE=as.integer(LINE))                               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bSlope =           base %>% mutate(VALUE=0, METHOD='CL', UNITS='PERCENT', LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=c(359,180,180,1), LINE=as.integer(LINE))       %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wTransectSpacing = base %>% mutate(SITE=2L, VALUE=1, LINE=as.integer(LINE))                      %>% select(SITE, TRANSECT, VALUE)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=100, LINE=as.integer(LINE))                    %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=0, METHOD='CL', UNITS='PERCENT', LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                               ,gisSinuosity = NULL
                               ,gisSlope = NULL
                               )
@@ -114,13 +116,13 @@ nrsaSlopeBearingTest.simplifiedArguments.missingUNITS <- function()
                      ) %>%
                 melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
                 mutate(METRIC=as.character(METRIC))
-    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(100,150,200,150))
-                              ,bDistance =        base %>% mutate(VALUE=10)
-                              ,bSlope =           base %>% mutate(VALUE=c(1,2,3,4), METHOD='TR', UNITS=c('CM','CM','',NA))
-                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=c(100,150,200,150))
-                              ,wTransectSpacing = base %>% mutate(SITE=2L, VALUE=10)
-                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=100)
-                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,2,3,4), METHOD='CL', UNITS=c('PERCENT','PERCENT','',NA))
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(100,150,200,150), LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bDistance =        base %>% mutate(VALUE=10, LINE=as.integer(LINE))                                                %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bSlope =           base %>% mutate(VALUE=c(1,2,3,4), METHOD='TR', UNITS=c('CM','CM','',NA), LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=c(100,150,200,150), LINE=as.integer(LINE))                       %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wTransectSpacing = base %>% mutate(SITE=2L, VALUE=10, LINE=as.integer(LINE))                                       %>% select(SITE, TRANSECT, VALUE)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=100, LINE=as.integer(LINE))                                      %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,2,3,4), METHOD='CL', UNITS=c('PERCENT','PERCENT','',NA), LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                               ,gisSinuosity =     NULL
                               ,gisSlope =         NULL
                               )
@@ -147,13 +149,13 @@ nrsaSlopeBearingTest.simplifiedArguments.missingMETHOD <- function()
                      ) %>%
                 melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
                 mutate(METRIC=as.character(METRIC))
-    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(100,150,200,150))
-                              ,bDistance =        base %>% mutate(VALUE=10)
-                              ,bSlope =           base %>% mutate(VALUE=c(1,2,3,4), METHOD=c('TR','TR',NA,''), UNITS='CM')
-                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=c(100,150,200,150))
-                              ,wTransectSpacing = base %>% mutate(SITE=2L, VALUE=10)
-                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=100)
-                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,2,3,4), METHOD=c('CL','CL',NA,''), UNITS='PERCENT')
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(100,150,200,150), LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bDistance =        base %>% mutate(VALUE=10, LINE=as.integer(LINE))                                                %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bSlope =           base %>% mutate(VALUE=c(1,2,3,4), METHOD=c('TR','TR',NA,''), UNITS='CM', LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=c(100,150,200,150), LINE=as.integer(LINE))                       %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wTransectSpacing = base %>% mutate(SITE=2L, VALUE=10, LINE=as.integer(LINE))                                       %>% select(SITE, TRANSECT, VALUE)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=100, LINE=as.integer(LINE))                                      %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,2,3,4), METHOD=c('CL','CL',NA,''), UNITS='PERCENT', LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                               ,gisSinuosity =     NULL
                               ,gisSlope =         NULL
                               )
@@ -181,13 +183,13 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_A <-
                      ) %>%
                 melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
                 mutate(METRIC=as.character(METRIC))
-    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
-                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)))
-                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='TR', UNITS='CM')
-                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
-                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
-                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)))
-                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='CL', UNITS='CM')
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))), LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0L, 3.3, ifelse(LINE==1, 3.3, 3.4))) %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='TR', UNITS='CM', LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))), LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL) %>% select(SITE, TRANSECT, VALUE)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1L, 33L, 34L))) %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='CL', UNITS='CM', LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                               ,gisSinuosity =     NULL
                               ,gisSlope =         NULL
                               )
@@ -217,13 +219,13 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_B <-
                      ) %>%
                 melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
                 mutate(METRIC=as.character(METRIC))
-    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200, 150))))
-                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=c(10,'', 10,NA, 3.3,3.3,3.4, 5,5,0))
-                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=c(1,'', 2,NA, 3,NA,NA, 4,NA,''), METHOD='TR', UNITS='CM')
-                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200,150))))
-                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
-                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=c(100,'', 100,NA, 33,33,34, 50,50,0))
-                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,'', 2,NA, 3,NA,NA, 4,NA,''), METHOD='CL', UNITS='CM')
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200, 150))) %>% as.numeric(), LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=c(10,NA, 10,NA, 3.3,3.3,3.4, 5,5,0) %>% as.numeric(), LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=c(1,NA, 2,NA, 3,NA,NA, 4,NA,NA) %>% as.numeric(), METHOD='TR', UNITS='CM', LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200,150))) %>% as.numeric(), LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)                                %>% select(SITE, TRANSECT, VALUE)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=c(100,NA, 100,NA, 33,33,34, 50,50,0) %>% as.numeric())                                %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=c(1,NA, 2,NA, 3,NA,NA, 4,NA,NA) %>% as.numeric(), METHOD='CL', UNITS='CM', LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                               ,gisSinuosity =     NULL
                               ,gisSlope =         NULL
                               )
@@ -251,13 +253,13 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine012 <-
                      ) %>%
                 melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
                 mutate(METRIC=as.character(METRIC))
-    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
-                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)))
-                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1*.33,1*.33,1*.34), ifelse(TRANSECT=='B', c(2*.33,2*.33,2*.34), ifelse(TRANSECT=='C', c(3*.33,3*.33,3*.34),c(4*.33,4*.33,4*.34)))), METHOD='TR', UNITS='CM')
-                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
-                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
-                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)))
-                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1*.33,1*.33,1*.34), ifelse(TRANSECT=='B', c(2*.33,2*.33,2*.34), ifelse(TRANSECT=='C', c(3*.33,3*.33,3*.34),c(4*.33,4*.33,4*.34)))), METHOD='CL', UNITS='CM')
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1*.33,1*.33,1*.34), ifelse(TRANSECT=='B', c(2*.33,2*.33,2*.34), ifelse(TRANSECT=='C', c(3*.33,3*.33,3*.34),c(4*.33,4*.33,4*.34)))), METHOD='TR', UNITS='CM', LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)               %>% select(SITE, TRANSECT, VALUE)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1*.33,1*.33,1*.34), ifelse(TRANSECT=='B', c(2*.33,2*.33,2*.34), ifelse(TRANSECT=='C', c(3*.33,3*.33,3*.34),c(4*.33,4*.33,4*.34)))), METHOD='CL', UNITS='CM', LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                               ,gisSinuosity =     NULL
                               ,gisSlope =         NULL
                               )
@@ -296,13 +298,13 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine0 <- fun
                                      ,VALUE
                                ))
                       )
-    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
-                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)))
-                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='TR', UNITS='PERCENT')
-                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
-                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)
-                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)))
-                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='CL', UNITS='PERCENT')
+    actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,bSlope =           base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='TR', UNITS='PERCENT', LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
+                              ,wBearing =         base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wTransectSpacing = base %>% subset(LINE==0) %>% mutate(SITE=2L, VALUE=10, LINE=NULL)               %>% select(SITE, TRANSECT, VALUE)
+                              ,wProportion =      base %>% mutate(SITE=2L, VALUE=ifelse(LINE==0, 33, ifelse(LINE==1, 33, 34)), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
+                              ,wSlope =           base %>% mutate(SITE=2L, VALUE=ifelse(TRANSECT=='A', c(1,NA,NA), ifelse(TRANSECT=='B', c(2,NA,NA), ifelse(TRANSECT=='C', c(3,NA,NA),c(4,NA,NA)))), METHOD='CL', UNITS='PERCENT', LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                               ,gisSinuosity =     NULL
                               ,gisSlope =         NULL
                               )
@@ -407,45 +409,59 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
     # Test calculations with both wadeable and boatable data AND with extra incremnt values.
     results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>% 
                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
-                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                           mutate(LINE = as.integer(ifelse(LINE==999, 0, LINE))
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)
                                ,bDistance = fakeChanGeom %>% 
                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
-                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                            mutate(LINE = as.integer(ifelse(LINE==999, 0, LINE))
+                                                  ,VALUE = as.numeric(VALUE)
+                                                  ) %>%
+                                            select(SITE, TRANSECT, LINE, VALUE)
                                ,bSlope = fakeChanGeom %>% 
                                          subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                         mutate(LINE=as.integer(ifelse(LINE==999, 0, LINE))
+                                               ,VALUE = as.numeric(VALUE)
+                                               ) %>%
+                                         select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                                ,wBearing = fakeChanGeom %>%
                                            subset(SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
-                                           mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
-                                                        ,ifelse(PARAMETER == 'BEARING2', 1
-                                                        ,ifelse(PARAMETER == 'BEARING3', 2, NA
+                                           mutate(LINE = ifelse(PARAMETER == 'BEARING', 0L
+                                                        ,ifelse(PARAMETER == 'BEARING2', 1L
+                                                        ,ifelse(PARAMETER == 'BEARING3', 2L, as.integer(NA)
                                                          )))
-                                                  ,PARAMETER = NULL
-                                                  )                                         
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 )    %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)                                      
                                ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
                                                          mutate(VALUE=as.numeric(VALUE))
                                                         ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
                                                         ,'SITE'
                                                         ) %>%
-                                                   mutate(VALUE = VALUE * nSta
+                                                   mutate(VALUE = as.numeric(VALUE * nSta)
                                                          ,nSta = NULL
-                                                         )
+                                                         ) %>%
+                                                  select(SITE, TRANSECT, VALUE)
                                ,wProportion = fakeChanGeom %>%
                                               subset(SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
-                                         mutate(LINE = ifelse(PARAMETER == 'PROP', 0
-                                                      ,ifelse(PARAMETER == 'PROP2', 1
-                                                      ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                       )))
-                                                ,PARAMETER = NULL
-                                                )
+                                              mutate(LINE = ifelse(PARAMETER == 'PROP', 0L
+                                                           ,ifelse(PARAMETER == 'PROP2', 1L
+                                                           ,ifelse(PARAMETER == 'PROP3', 2L, as.integer(NA)
+                                                            )))
+                                                    ,VALUE = as.numeric(VALUE)
+                                                    ) %>%
+                                              select(SITE, TRANSECT, LINE, VALUE)
                                ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
-                                         mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
-                                                      ,ifelse(PARAMETER == 'SLOPE2', 1
-                                                      ,ifelse(PARAMETER == 'SLOPE3', 2, NA
+                                         mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0L
+                                                      ,ifelse(PARAMETER == 'SLOPE2', 1L
+                                                      ,ifelse(PARAMETER == 'SLOPE3', 2L, as.integer(NA)
                                                       )))
-                                                ,PARAMETER = NULL
-                                                ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
-                                                )                                         
+                                               ,VALUE = as.numeric(VALUE)
+                                               ,PARAMETER = NULL
+                                               ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
+                                               )     %>%
+                                         select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)                                     
                                ,gisSinuosity = NULL
                                ,gisSlope = NULL
                                )
@@ -469,20 +485,31 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
   
     results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
-                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                           mutate(LINE = ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)
                                ,bDistance = fakeChanGeom %>%
                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
-                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                  ,VALUE = as.numeric(VALUE)
+                                                  ) %>%
+                                            select(SITE, TRANSECT, LINE, VALUE)
                                ,bSlope = fakeChanGeom %>%
                                          subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                               ,VALUE = as.numeric(VALUE)
+                                               ) %>%
+                                         select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                                ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                            mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                         ,ifelse(PARAMETER == 'BEARING2', 1
                                                         ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                         )))
+                                                         ))) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
                                                  ,PARAMETER = NULL
-                                                 )                                    
+                                                 ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)                        
                                ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
                                                          mutate(VALUE=as.numeric(VALUE))
                                                         ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
@@ -490,24 +517,29 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
                                                         ) %>%
                                                    mutate(VALUE = VALUE * nSta
                                                          ,nSta = NULL
-                                                         )
+                                                         ) %>%
+                                           select(SITE, TRANSECT, VALUE)
                                ,wProportion = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
                                               mutate(LINE = ifelse(PARAMETER == 'PROP', 0
                                                            ,ifelse(PARAMETER == 'PROP2', 1
                                                            ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                            )))
+                                                            ))) %>% as.integer()
+                                                    ,VALUE = as.numeric(VALUE)
                                                     ,PARAMETER = NULL
-                                                    )                                         
+                                                    ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)                                  
                                ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
                                                       ,ifelse(PARAMETER == 'SLOPE2', 1
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                      )))
+                                                      ))) %>% as.integer()
+                                               ,VALUE = as.numeric(VALUE)
                                                ,PARAMETER = NULL
                                                ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
-                                               )                                         
-                               ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
-                               ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
+                                               ) %>%
+                                         select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)                                         
+                               ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope') %>% select(SITE, VALUE)
+                               ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu') %>% select(SITE, VALUE)
                                )
     results <- results[order(results$SITE, results$METRIC),]
     results$VALUE <- as.numeric(results$VALUE)
@@ -525,20 +557,30 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
     # values AND GIS values
     results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
-                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                           mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)
                                ,bDistance = fakeChanGeom %>%
                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
-                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                  ,VALUE = as.numeric(VALUE)
+                                                  ) %>%
+                                            select(SITE, TRANSECT, LINE, VALUE)                               
                                ,bSlope = fakeChanGeom %>%
                                          subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                               ,VALUE = as.numeric(VALUE)
+                                               ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)                               
                                ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                            mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                         ,ifelse(PARAMETER == 'BEARING2', 1
                                                         ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                         )))
-                                                  ,PARAMETER = NULL
-                                                  )                                         
+                                                         ))) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)
                                ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
                                                          mutate(VALUE=as.numeric(VALUE))
                                                         ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
@@ -546,24 +588,28 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
                                                         ) %>%
                                                    mutate(VALUE = VALUE * nSta
                                                          ,nSta = NULL
-                                                         )
+                                                         ) %>%
+                                                   select(SITE, TRANSECT, VALUE)
                                ,wProportion = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
                                               mutate(LINE = ifelse(PARAMETER == 'PROP', 0
                                                            ,ifelse(PARAMETER == 'PROP2', 1
                                                            ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                            )))
-                                                    ,PARAMETER = NULL
-                                                    )                                         
+                                                            ))) %>% as.integer()
+                                                    ,VALUE = as.numeric(VALUE)
+                                                    ) %>%
+                                              select(SITE, TRANSECT, LINE, VALUE)
                                ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
                                                       ,ifelse(PARAMETER == 'SLOPE2', 1
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                       )))
+                                                       ))) %>% as.integer()
                                                 ,PARAMETER = NULL
                                                 ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
-                                                )                                         
-                               ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu')
-                               ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope')
+                                                ,VALUE = as.numeric(VALUE)
+                                                ) %>%
+                                         select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)                                         
+                               ,gisSinuosity = subset(fakeGisCalcs, METRIC=='sinu') %>% select(SITE, VALUE)
+                               ,gisSlope = subset(fakeGisCalcs, METRIC=='xslope') %>% select(SITE, VALUE)
                                )
     results <- results[order(results$SITE, results$METRIC),]
     results$VALUE <- as.numeric(results$VALUE)
@@ -581,20 +627,30 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
     # based calculations or extra incremnt values.
     results <- nrsaSlopeBearing(bBearing = fakeChanGeom %>%
                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
-                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                           mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)
                                ,bDistance = fakeChanGeom %>%
                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
-                                            mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                            mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                            select(SITE, TRANSECT, LINE, VALUE)
                                ,bSlope = fakeChanGeom %>%
                                          subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-                                         mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                         mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                         select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                                ,wBearing = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                            mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                         ,ifelse(PARAMETER == 'BEARING2', 1
                                                         ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                         )))
-                                                  ,PARAMETER = NULL
-                                                  )                                         
+                                                         ))) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                          select(SITE, TRANSECT, LINE, VALUE)
                                ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
                                                          mutate(VALUE=as.numeric(VALUE))
                                                         ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
@@ -602,22 +658,26 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
                                                         ) %>%
                                                    mutate(VALUE = VALUE * nSta
                                                          ,nSta = NULL
-                                                         )
+                                                         ) %>%
+                                                   select(SITE, TRANSECT, VALUE)
                                ,wProportion = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
                                               mutate(LINE = ifelse(PARAMETER == 'PROP', 0
                                                            ,ifelse(PARAMETER == 'PROP2', 1
                                                            ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                            )))
-                                                    ,PARAMETER = NULL
-                                                    )                                         
+                                                            ))) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                             select(SITE, TRANSECT, LINE, VALUE)                             
                                ,wSlope = subset(fakeChanGeom, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
                                          mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
                                                       ,ifelse(PARAMETER == 'SLOPE2', 1
                                                       ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                      )))
-                                               ,PARAMETER = NULL
-                                               ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
-                                               )                                         
+                                                      ))) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ,PARAMETER = NULL
+                                                 ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
+                                                ) %>%
+                                         select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                                ,gisSinuosity = NULL
                                ,gisSlope = NULL
                                )
@@ -641,18 +701,25 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
 
     # TODO: the boatable args have zero rows, and would normally be allowed to be NULL -- that case should be tested as well
     results.s <- nrsaSlopeBearing(bBearing = fakeChanGeom.s %>%
-                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR')
+                                             subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
+                                             mutate(VALUE = as.numeric(VALUE)) %>%
+                                             select(SITE, TRANSECT, LINE, VALUE)
                                  ,bDistance = fakeChanGeom.s %>%
-                                              subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE')
+                                              subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
+                                              mutate(VALUE = as.numeric(VALUE)) %>%
+                                              select(SITE, TRANSECT, LINE, VALUE)
                                  ,bSlope = fakeChanGeom.s %>%
-                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE')
+                                           subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
+                                           mutate(VALUE = as.numeric(VALUE)) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE)
                                  ,wBearing = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                              mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                           ,ifelse(PARAMETER == 'BEARING2', 1
                                                           ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                           )))
-                                                   ,PARAMETER = NULL
-                                                   )                                         
+                                                           ))) %>% as.integer()
+                                                   ,VALUE = as.numeric(VALUE)
+                                                   ) %>%
+                                            select(SITE, TRANSECT, LINE, VALUE)                  
                                  ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
                                                            mutate(VALUE=as.numeric(VALUE))
                                                           ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
@@ -665,17 +732,19 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
                                                 mutate(LINE = ifelse(PARAMETER == 'PROP', 0
                                                              ,ifelse(PARAMETER == 'PROP2', 1
                                                              ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                              )))
-                                                      ,PARAMETER = NULL
-                                                      )                                         
+                                                              ))) %>% as.integer()
+                                                      ,VALUE = as.numeric(VALUE)
+                                                      ) %>%
+                                                select(SITE, TRANSECT, LINE, VALUE)
                                  ,wSlope = subset(fakeChanGeom.s, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
                                            mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
                                                         ,ifelse(PARAMETER == 'SLOPE2', 1
                                                         ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                         )))
-                                                 ,PARAMETER = NULL
+                                                         ))) %>% as.integer()
                                                  ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
-                                                 )                                         
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                          select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                                  ,gisSinuosity = NULL
                                  ,gisSlope = NULL
                                  )
@@ -696,20 +765,30 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
     # TODO: the wadetable args have zero rows, and would normally be allowed to be NULL -- that case should be tested as well
     results.r <- nrsaSlopeBearing(bBearing = fakeChanGeom.r %>%
                                              subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='BEAR') %>%
-                                             mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                             mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                   ,VALUE = as.numeric(VALUE)
+                                                   ) %>%
+                                             select(SITE, TRANSECT, LINE, VALUE)
                                  ,bDistance = fakeChanGeom.r %>%
                                               subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='DISTANCE') %>%
-                                              mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                              mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                    ,VALUE = as.numeric(VALUE)
+                                                    ) %>%
+                                              select(SITE, TRANSECT, LINE, VALUE)
                                  ,bSlope = fakeChanGeom.r %>%
                                            subset(SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='SLOPE') %>%
-                                           mutate(LINE=ifelse(LINE==999, 0, LINE))
+                                           mutate(LINE=ifelse(LINE==999, 0, LINE) %>% as.integer()
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                                  ,wBearing = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('BEARING', PARAMETER)) %>%
                                              mutate(LINE = ifelse(PARAMETER == 'BEARING', 0
                                                           ,ifelse(PARAMETER == 'BEARING2', 1
                                                           ,ifelse(PARAMETER == 'BEARING3', 2, NA
-                                                           )))
-                                                   ,PARAMETER = NULL
-                                                   )                                         
+                                                           ))) %>% as.integer()
+                                                   ,VALUE = as.numeric(VALUE)
+                                                   ) %>%
+                                             select(SITE, TRANSECT, LINE, VALUE)
                                  ,wTransectSpacing = merge(subset(fakeThal_IncremntsAtEachSITE, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0)[c('SITE','VALUE')] %>%
                                                            mutate(VALUE=as.numeric(VALUE))
                                                           ,nWadeableStationsPerTransect(fakeThal_IncremntsAtEachSITE[c('SITE','TRANSECT','STATION')])
@@ -717,22 +796,25 @@ nrsaSlopeBearingTest.typicalDataMungedArguments <- function()
                                                           ) %>%
                                                      mutate(VALUE = VALUE * nSta
                                                            ,nSta = NULL
-                                                           )
+                                                           ) %>%
+                                                     select(SITE, TRANSECT, VALUE)
                                  ,wProportion = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('PROP', PARAMETER)) %>%
                                                 mutate(LINE = ifelse(PARAMETER == 'PROP', 0
                                                              ,ifelse(PARAMETER == 'PROP2', 1
                                                              ,ifelse(PARAMETER == 'PROP3', 2, NA
-                                                              )))
-                                                      ,PARAMETER = NULL
-                                                      )                                         
+                                                              ))) %>% as.integer()
+                                                      ,VALUE = as.numeric(VALUE)
+                                                      ) %>%
+                                                select(SITE, TRANSECT, LINE, VALUE)
                                  ,wSlope = subset(fakeChanGeom.r, SAMPLE_TYPE=='PHAB_SLOPE' & grepl('SLOPE', PARAMETER)) %>%
                                            mutate(LINE = ifelse(PARAMETER == 'SLOPE', 0
                                                         ,ifelse(PARAMETER == 'SLOPE2', 1
                                                         ,ifelse(PARAMETER == 'SLOPE3', 2, NA
-                                                         )))
-                                                 ,PARAMETER = NULL
+                                                         ))) %>% as.integer()
                                                  ,UNITS = ifelse(UNITS %in% c('', NA), 'CM', UNITS)
-                                                 )                                         
+                                                 ,VALUE = as.numeric(VALUE)
+                                                 ) %>%
+                                           select(SITE, TRANSECT, LINE, VALUE, METHOD, UNITS)
                                  ,gisSinuosity = NULL
                                  ,gisSlope = NULL
                                  )

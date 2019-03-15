@@ -1,6 +1,7 @@
 # nrsaLegacyTreeTest.r
 # 
 # 12/11/15 cws Updated for new calling interface
+#  3/12/19 cws Modified due to use of aquametStandardizeArgument
 #
 
 nrsaLegacyTreeTest <- function()
@@ -8,11 +9,11 @@ nrsaLegacyTreeTest <- function()
   testData <- nrsaLegacyTreeTest.inputData()
   testResults <- nrsaLegacyTreeTest.testResults()
 
-  legMets <- nrsaLegacyTree(dbhClass = subset(testData, PARAMETER=='DBH')
-                           ,distance = subset(testData, PARAMETER=='DISTANCE')
-                           ,heightClass = subset(testData, PARAMETER=='HEIGHT')
-                           ,species = subset(testData, PARAMETER=='SPECIES')
-                           ,type = subset(testData, PARAMETER=='TREE_TYP')
+  legMets <- nrsaLegacyTree(dbhClass = subset(testData, PARAMETER=='DBH')%>% select(SITE, TRANSECT, VALUE)
+                           ,distance = subset(testData, PARAMETER=='DISTANCE') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, TRANSECT, VALUE)
+                           ,heightClass = subset(testData, PARAMETER=='HEIGHT') %>% select(SITE, TRANSECT, VALUE)
+                           ,species = subset(testData, PARAMETER=='SPECIES') %>% select(SITE, TRANSECT, VALUE)
+                           ,type = subset(testData, PARAMETER=='TREE_TYP') %>% select(SITE, TRANSECT, VALUE)
                            )
 
   ## Get both data frames in the same order

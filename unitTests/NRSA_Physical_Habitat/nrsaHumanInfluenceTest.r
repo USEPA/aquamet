@@ -3,6 +3,7 @@
 #
 # 11/13/15 cws Modified for new calling interface, ignoring influencWeights 
 #          argument for now.
+#  3/12/19 cws Modified due to use of aquametStandardizeArgument
 #
 
 
@@ -15,17 +16,17 @@ nrsaHumanInfluenceTest <- function()
     testResults <- nrsaHumanInfluence.createResults() %>% dplyr::rename(SITE=UID,VALUE=RESULT)
     
     # Test with data for all arguments
-    rr <- nrsaHumanInfluence(buildings =          subset(testData, PARAMETER=='BUILD', select=-PARAMETER)
-                            ,landfillTrash =      subset(testData, PARAMETER=='LANDFL', select=-PARAMETER)
-                            ,logging =            subset(testData, PARAMETER=='LOG', select=-PARAMETER)
-                            ,mining =             subset(testData, PARAMETER=='MINE', select=-PARAMETER)
-                            ,parkLawn =           subset(testData, PARAMETER=='PARK', select=-PARAMETER)
-                            ,pastureRangeHay =    subset(testData, PARAMETER=='PAST', select=-PARAMETER)
-                            ,pavementClearedlot = subset(testData, PARAMETER=='PAVE', select=-PARAMETER)
-                            ,pipesInOut =         subset(testData, PARAMETER=='PIPES', select=-PARAMETER)
-                            ,roadsRailroads =     subset(testData, PARAMETER=='ROAD', select=-PARAMETER)
-                            ,rowcrops =           subset(testData, PARAMETER=='ROW', select=-PARAMETER)
-                            ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER)
+    rr <- nrsaHumanInfluence(buildings =          subset(testData, PARAMETER=='BUILD', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,landfillTrash =      subset(testData, PARAMETER=='LANDFL', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,logging =            subset(testData, PARAMETER=='LOG', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,mining =             subset(testData, PARAMETER=='MINE', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,parkLawn =           subset(testData, PARAMETER=='PARK', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,pastureRangeHay =    subset(testData, PARAMETER=='PAST', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,pavementClearedlot = subset(testData, PARAMETER=='PAVE', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,pipesInOut =         subset(testData, PARAMETER=='PIPES', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,roadsRailroads =     subset(testData, PARAMETER=='ROAD', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,rowcrops =           subset(testData, PARAMETER=='ROW', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
                             ,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
                             )
 
@@ -41,16 +42,16 @@ nrsaHumanInfluenceTest <- function()
     # we treat absent data as a deal breaker and set results to NA or remove them
     # all together, or should absent data be treated the same as missing?
     rr <- nrsaHumanInfluence(buildings =          NULL #subset(testData, PARAMETER=='BUILD', select=-PARAMETER)
-                            ,landfillTrash =      subset(testData, PARAMETER=='LANDFL', select=-PARAMETER)
-                            ,logging =            subset(testData, PARAMETER=='LOG', select=-PARAMETER)
-                            ,mining =             subset(testData, PARAMETER=='MINE', select=-PARAMETER)
-                            ,parkLawn =           subset(testData, PARAMETER=='PARK', select=-PARAMETER)
+                            ,landfillTrash =      subset(testData, PARAMETER=='LANDFL', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,logging =            subset(testData, PARAMETER=='LOG', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,mining =             subset(testData, PARAMETER=='MINE', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,parkLawn =           subset(testData, PARAMETER=='PARK', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
                             ,pastureRangeHay =    NULL #subset(testData, PARAMETER=='PAST', select=-PARAMETER)
-                            ,pavementClearedlot = subset(testData, PARAMETER=='PAVE', select=-PARAMETER)
-                            ,pipesInOut =         subset(testData, PARAMETER=='PIPES', select=-PARAMETER)
-                            ,roadsRailroads =     subset(testData, PARAMETER=='ROAD', select=-PARAMETER)
-                            ,rowcrops =           subset(testData, PARAMETER=='ROW', select=-PARAMETER)
-                            ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER)
+                            ,pavementClearedlot = subset(testData, PARAMETER=='PAVE', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,pipesInOut =         subset(testData, PARAMETER=='PIPES', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,roadsRailroads =     subset(testData, PARAMETER=='ROAD', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,rowcrops =           subset(testData, PARAMETER=='ROW', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
+                            ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
                             ,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
                             )
     testMets <- rr[order(rr$SITE, rr$METRIC),]

@@ -1,6 +1,8 @@
 # nrsaRiparianVegetation.r
 # RUnit tests
-
+#
+#  3/12/19 cws Modified due to use of aquametStandardizeArgument
+#
 
 nrsaRiparianVegetationTest <- function()
 # Unit test for metsRiparianVegetation().
@@ -12,15 +14,15 @@ nrsaRiparianVegetationTest <- function()
     expected <- nrsaRiparianVegetationTest.makeExpected()
 
     # Compare expected and calculated results
-    results <- nrsaRiparianVegetation(canopyCoverLargeDiameter = subset(ripData, PARAMETER=='CANBTRE') %>% dplyr::rename(BANK=TRANSDIR)
-                                     ,canopyCoverSmallDiameter = subset(ripData, PARAMETER=='CANSTRE') %>% dplyr::rename(BANK=TRANSDIR)
-                                     ,canopyVegetationType = subset(ripData, PARAMETER=='CANVEG') %>% dplyr::rename(BANK=TRANSDIR)
-                                     ,groundCoverBare = subset(ripData, PARAMETER=='BARE') %>% dplyr::rename(BANK=TRANSDIR)
-                                     ,groundCoverNonwoody = subset(ripData, PARAMETER=='GCNWDY') %>% dplyr::rename(BANK=TRANSDIR)
-                                     ,groundCoverWoody = subset(ripData, PARAMETER=='GCWDY') %>% dplyr::rename(BANK=TRANSDIR)
-                                     ,understoryCoverNonwoody = subset(ripData, PARAMETER=='UNDNWDY') %>% dplyr::rename(BANK=TRANSDIR)
-                                     ,understoryCoverWoody = subset(ripData, PARAMETER=='UNDWDY') %>% dplyr::rename(BANK=TRANSDIR)
-                                     ,understoryVegetationType = subset(ripData, PARAMETER=='UNDERVEG') %>% dplyr::rename(BANK=TRANSDIR)
+    results <- nrsaRiparianVegetation(canopyCoverLargeDiameter = subset(ripData, PARAMETER=='CANBTRE') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
+                                     ,canopyCoverSmallDiameter = subset(ripData, PARAMETER=='CANSTRE') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
+                                     ,canopyVegetationType = subset(ripData, PARAMETER=='CANVEG') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
+                                     ,groundCoverBare = subset(ripData, PARAMETER=='BARE') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
+                                     ,groundCoverNonwoody = subset(ripData, PARAMETER=='GCNWDY') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
+                                     ,groundCoverWoody = subset(ripData, PARAMETER=='GCWDY') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
+                                     ,understoryCoverNonwoody = subset(ripData, PARAMETER=='UNDNWDY') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
+                                     ,understoryCoverWoody = subset(ripData, PARAMETER=='UNDWDY') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
+                                     ,understoryVegetationType = subset(ripData, PARAMETER=='UNDERVEG') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
                                      ,coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
                                                                          ,calc=c(NA,0,0.05,0.25,0.575,0.875)
                                                                          ,stringsAsFactors=FALSE

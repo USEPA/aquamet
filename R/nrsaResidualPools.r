@@ -82,7 +82,7 @@
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 
 
-nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transectSpacing=NULL, writeIntermediateFiles=FALSE, oldeMethods=FALSE) {
+nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transectSpacing=NULL, writeIntermediateFiles=FALSE, oldeMethods=FALSE, isUnitTest=FALSE) {
 
 ################################################################################
 # Function: nrsaResidualPools
@@ -164,6 +164,8 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
 # 11/08/16 cws Added new metrics rpxdep_cm, rpvdep_cm, rpmxdep_cm, rpgt05x_cm, 
 #          rpgt10x_cm, rpgt20x_cm which are expressed in the same units for all 
 #          protocols.
+#  3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
+#          absentAsNull().
 #
 # ARGUMENTS:
 # bDepth          dataframe containing thalweg depths for boatable reaches, with
@@ -276,13 +278,28 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
         return(rc)
     }
 
-    bDepth <- absentAsNULL(bDepth, ifdfTransectStationUnits, 'DEPTH') # in M
-    wDepth <- absentAsNULL(wDepth, ifdfTransectStation, 'DEPTH') # in CM
-    siteSlopes <- absentAsNULL(siteSlopes, ifdfMetric, 'xslope')
-    transectSpacing <- absentAsNULL(transectSpacing, ifdfTransect, 'ACTRANSP') # in M
+    bDepth <- aquametStandardizeArgument(bDepth, ifdf=ifdfTransectStationUnits, 'DEPTH'
+                                        ,struct = list(SITE=c('integer','character'), TRANSECT='character', STATION='integer', VALUE=c('double'), UNITS='character')
+                                        ,rangeLimits = list(VALUE=c(0,30))
+                                        ,stopOnError = !isUnitTest
+                                        ) # in M
+    wDepth <- aquametStandardizeArgument(wDepth, ifdf=ifdfTransectStation, 'DEPTH'
+                                        ,struct = list(SITE=c('integer','character'), TRANSECT='character', STATION='integer', VALUE=c('double'))
+                                        ,rangeLimits = list(VALUE=c(0,200))
+                                        ,stopOnError = !isUnitTest
+                                        ) # in CM
+    siteSlopes <- aquametStandardizeArgument(siteSlopes, ifdf=ifdfMetric, 'xslope'
+                                            ,struct = list(SITE=c('integer','character'), VALUE=c('double'))
+                                            ,rangeLimits = list(VALUE=c(0,20))
+                                            ,stopOnError = !isUnitTest
+                                            )
+    transectSpacing <- aquametStandardizeArgument(transectSpacing, ifdf=ifdfTransect, 'ACTRANSP'
+                                                 ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('double'))
+                                                 ,rangeLimits = list(VALUE=c(10, 1000))
+                                                 ,stopOnError = !isUnitTest
+                                                 ) # in M
 
     if((is.null(bDepth) & is.null(wDepth)) | is.null(siteSlopes) | is.null(transectSpacing)) return(NULL)
-
 
     # Recreate old argument from new ones for now, rip out guts later
     intermediateMessage('.A')
