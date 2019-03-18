@@ -86,6 +86,7 @@
 
 nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSpacing = NULL
                        ,sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')
+                       ,isUnitTest = FALSE
                        ) {
   
    
@@ -143,6 +144,9 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
 #            use in nrsaResidualPools
 #    2/25/16 cws Documenting arguments in comments at top. Removed old code that
 #            had been commented or function(){}d out of use.
+#    3/18/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull(). Also modified to treat '' values the same as NA
+#            for consistency. Unit test modified accordingly.
 #
 # ARGUMENTS:
 # sampledTransects  dataframe containing only the list of transects sampled for
@@ -209,9 +213,20 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
         return(rc)
     }
     
-    sampledTransects <- absentAsNULL(sampledTransects, ifdfTransects)
-    sideChannels <- absentAsNULL(sideChannels, ifdf)
-    transectSpacing <- absentAsNULL(transectSpacing, ifdfValues)
+    sampledTransects <- aquametStandardizeArgument(sampledTransects, ifdf=ifdfTransects
+                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character')
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    sideChannels <- aquametStandardizeArgument(sideChannels, ifdf=ifdf
+                                              ,struct = list(SITE=c('integer','character'), VALUE=c('character'))
+                                              ,legalValues = list(VALUE = c(NA,'','N','Y'))
+                                              ,stopOnError = !isUnitTest
+                                              )
+    transectSpacing <- aquametStandardizeArgument(transectSpacing, ifdf=ifdfValues
+                                                 ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('double'))
+                                                 ,rangeLimits = list(VALUE = c(15,1000))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
 
 
     # Calculate count of side channels SIDECNT (only meaningful for wadeables)
@@ -219,9 +234,8 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
         sidecnt <- NULL
     } else {
       
-      
         sidecnt <- sampledTransects %>%
-          mutate(inSideChan=TRANSECT %in% sideChannelTransects) %>%
+                   mutate(inSideChan=TRANSECT %in% sideChannelTransects) %>%
                    ddply('SITE', summarise
                         ,VALUE= protectedSum(inSideChan
                                             ,na.rm=TRUE
@@ -239,7 +253,7 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
         pct_side <- NULL
     } else {
         pct_side <- sideChannels %>%
-                    subset(VALUE %in% c('Y','N',NA)) %>%
+                    subset(VALUE %in% c('Y','N','',NA)) %>%
                     mutate(standardizedPresent = VALUE=='Y') %>%
                     ddply('SITE', summarise
                          ,VALUE = 100 * protectedMean(standardizedPresent, na.rm=TRUE)

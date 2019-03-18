@@ -54,9 +54,10 @@ nrsaHumanInfluenceTest <- function()
                             ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
                             ,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
                             )
-    testMets <- rr[order(rr$SITE, rr$METRIC),]
-    sasMets <- testResults[order(testResults$SITE, testResults$METRIC),]
-    errs <- dfCompare(sasMets, testMets, c('SITE','METRIC'), zeroFudge=1e-9)
+    # testMets <- rr[order(rr$SITE, rr$METRIC),]
+    # sasMets <- testResults[order(testResults$SITE, testResults$METRIC),]
+    # errs <- dfCompare(sasMets, testMets, c('SITE','METRIC'), zeroFudge=1e-9)
+    errs <- dfCompare(testResults, rr, c('SITE','METRIC'), zeroFudge=1e-9)
     checkEquals(NULL, errs, "Error: metsHumanInfluence is broken with NULL arguments. Need to ask Phil how we should handle these cases")
     
 }

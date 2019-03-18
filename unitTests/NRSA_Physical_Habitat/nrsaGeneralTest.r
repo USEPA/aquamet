@@ -1,6 +1,10 @@
 # metsGeneral.r
 # RUnit tests
-
+#
+#  3/12/19 cws Modified due to use of aquametStandardizeArgument. Also modified
+#          to reflect change in calculations which now treat '' the same as NA
+#          in pct_side calculation.
+#
 
 nrsaGeneralTest <- function()
 # Unit test for metsGeneral.1
@@ -43,8 +47,8 @@ nrsaGeneralTest.process <- function(testData, metsExpected)
         rc <- ddply(df, 'SITE', summarise, lastTransect=max(TRANSECT))
         return(rc)
     }
-  testDataResult<- nrsaGeneral(sampledTransects = subset(testData, PARAMETER == 'INCREMNT') # this subset done for historical reasons, results in sidecnt=NA instead of 0 for boatable reaches.
-                              ,sideChannels = subset(testData, PARAMETER %in% c('SIDCHN','OFF_CHAN') & TRANSECT %in% LETTERS)
+  testDataResult<- nrsaGeneral(sampledTransects = subset(testData, PARAMETER == 'INCREMNT') %>% select(SITE, TRANSECT) # this subset done for historical reasons, results in sidecnt=NA instead of 0 for boatable reaches.
+                              ,sideChannels = subset(testData, PARAMETER %in% c('SIDCHN','OFF_CHAN') & TRANSECT %in% LETTERS) %>% mutate(VALUE = trimws(VALUE)) %>% select(SITE, VALUE)
                               ,transectSpacing = rbind(merge(testData %>%                               # values for wadeable sites
                                                              subset(PARAMETER == 'DISTANCE') %>%        # sum DISTANCE between waypoints, if calculated
                                                              ddply(.(SITE,TRANSECT), summarise
@@ -83,7 +87,9 @@ nrsaGeneralTest.process <- function(testData, metsExpected)
 #                                                        mutate(VALUE = as.numeric(VALUE) * nSta
 #                                                              ,nSta = NULL
 #                                                              )
-                                                      )
+                                                      ) %>%
+                                                 mutate(VALUE = as.numeric(VALUE)) %>%
+                                                 select(SITE, TRANSECT, VALUE)
                               )
 
   #compare results from baseData (testDataResult) with expectedResults  (metsExpected)
@@ -100,6 +106,7 @@ nrsaGeneralTest.process <- function(testData, metsExpected)
   tt$diff <- tt$VALUE - tt$EXPECTED
 
   errs <- subset(tt, abs(diff) > 10^-7 | is.na(VALUE) != is.na(EXPECTED))
+# print('errs'); print(errs)
   checkEquals(0, nrow(errs)
              ,"Error: General  metrics are broken"
              )
@@ -341,10 +348,12 @@ nrsaGeneralTest.expectedMets <- function()
 # difference in how the value was calculated -- EMAP defines it as the
 # number of side channel transects in the sub_bank file, while NRSA defines
 # it as the number of side channel transects recorded in the tblTHALWEG2 table.
+# Note: Values of pct_side are altered to treat values of '' or ' ' the same as
+#       NA values in calculation.
 {
   metsExpected <- rbind(data.frame(SITE = c('WCAP99-0585','WCAP99-0587','WCAP99-0591','WCAP99-0592','WCAP99-0905'),
                                    METRIC='pct_side',
-                                   VALUE=c( NA,0,10.552763819,100,28 )
+                                   VALUE=c( NA,0,10.5,99,28) # c( NA,0,10.552763819,100,28 )
                                    ,stringsAsFactors=FALSE
                                   )
                        ,data.frame(SITE = c(#'WCAP99-0585','WCAP99-0585 w/DISTANCE',
