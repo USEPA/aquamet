@@ -169,6 +169,7 @@ nrsaLargeWoody <- function(bCounts=NULL
 
                           ,reachlength = NULL
                           ,meanBankfullWidth = NULL
+                          ,isUnitTest = FALSE
                           ) {
 ################################################################################
 # Function: 
@@ -269,6 +270,7 @@ nrsaLargeWoody <- function(bCounts=NULL
 #            row dataframe and went on.  This means the unit test no longer works.
 #            The creation of the reachlen dataframe based on df2 was jiggered to
 #            to handle this case, and now the unit test works.
+#    3/18/19 cws Using aquametStandardizeArgument; modified unit test accordingly.
 #
 # Arguments:
 # bCounts       dataframe containing large woody debris class counts at each 
@@ -395,8 +397,34 @@ nrsaLargeWoody <- function(bCounts=NULL
         return(rc)
     }
 
-    boats <- absentAsNULL(bCounts, ifdfRecode, bClassInfo)
-    wades <- absentAsNULL(wCounts, ifdfRecode, wClassInfo)
+    bClassInfo <- aquametStandardizeArgument(bClassInfo, ifdf=NULL
+                                            ,struct = list(diam='character', len='character', loc='character', CLASS='character')
+                                            ,legalValues = list(diam=c('SMALL','MEDIUM', 'LARGE', 'EXTRALARGE')
+                                                               ,len=c('SMALL','MEDIUM', 'LARGE')
+                                                               ,loc=c('DRY','WET')
+                                                               )
+                                            ,stopOnError = !isUnitTest
+                                            )
+    wClassInfo <- aquametStandardizeArgument(wClassInfo, ifdf=NULL
+                                            ,struct = list(diam='character', len='character', loc='character', CLASS='character')
+                                            ,legalValues = list(diam=c('SMALL','MEDIUM', 'LARGE', 'EXTRALARGE')
+                                                               ,len=c('SMALL','MEDIUM', 'LARGE')
+                                                               ,loc=c('DRY','WET')
+                                                               )
+                                            ,stopOnError = !isUnitTest
+                                            )
+    boats <- aquametStandardizeArgument(bCounts, ifdf=ifdfRecode, bClassInfo
+                                       ,struct = list(SITE=c('integer','character'), TRANSECT='character', CLASS = 'character', VALUE=c('integer'))
+                                       ,legalValues = list(CLASS = bClassInfo$CLASS)
+                                       ,rangeLimits = list(VALUE=c(0,50))
+                                       ,stopOnError = !isUnitTest
+                                       )
+    wades <- aquametStandardizeArgument(wCounts, ifdf=ifdfRecode, wClassInfo
+                                       ,struct = list(SITE=c('integer','character'), TRANSECT='character', CLASS = 'character', VALUE=c('integer'))
+                                       ,legalValues = list(CLASS = wClassInfo$CLASS)
+                                       ,rangeLimits = list(VALUE=c(0,50))
+                                       ,stopOnError = !isUnitTest
+                                       )
 
     df1 <- rbind(boats, wades)
     if(is.null(df1)) return (NULL)

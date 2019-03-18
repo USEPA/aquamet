@@ -49,7 +49,7 @@
 #' invasiveOut
 #' 
 
-nrsaInvasiveSpecies <- function(...) {
+nrsaInvasiveSpecies <- function(..., isUnitTest=FALSE) {
 
 ################################################################################
 # Function: nrsaInvasiveSpecies
@@ -99,6 +99,7 @@ nrsaInvasiveSpecies <- function(...) {
 #    2/25/16 cws Documenting arguments in comments at top. Moved definition of
 #            nrsaInvasiveSpecies.singleSpeciesTest to nrsaInvasiveSpeciesTest.r
 #            Removed old code.
+#    3/18/19 cws Using aquametStandardizeArgument; modified unit test accordingly.
 #
 # ARGUMENTS
 # ...       named arguments consisting of dataframes containing presence/absence
@@ -135,7 +136,11 @@ nrsaInvasiveSpecies <- function(...) {
     if(length(speciesList) > 0) {
         for(spName in names(speciesList)) {
             intermediateMessage(sprintf('. %s', spName))
-            spData <- speciesList[[spName]]
+            spData <- aquametStandardizeArgument(speciesList[[spName]]
+                                                ,struct = list(SITE=c('integer','character'), VALUE=c('character'))
+                                                ,legalValues = list(VALUE = c(NA,'','N','X','Y'))
+                                                ,stopOnError = !isUnitTest
+                                                )
             if(is.null(spData)) next;
             spMets <- nrsaInvasiveSpecies.singleSpecies(spData) %>%
                       mutate(METRIC=sprintf('f_%s', spName))

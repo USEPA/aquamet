@@ -10,6 +10,7 @@
 #          nrsaInvasiveSpecies.ip_scoreTest here from nrsaInvasiveSpecies.r.
 #  6/28/17 cws Updated nrsaInvasiveSpecies.ip_scoreTest() so row names in actual
 #          response match expected.
+#  3/12/19 cws Modified due to use of aquametStandardizeArgument.
 #
 
 nrsaInvasiveSpeciesTest <- function()
@@ -29,11 +30,11 @@ nrsaInvasiveSpeciesTest <- function()
     
     # Test full data set
     expected <- nrsaInvasiveSpecies.createMetrics()
-    actual <- nrsaInvasiveSpecies(butumb = selectSpeciesData('FLWR_RUSH')
-                                 ,arudon = selectSpeciesData('G_REED')
-                                 ,lytsal = selectSpeciesData('P_LSTRIFE')
-                                 ,eiccra = selectSpeciesData('W_HYACINTH')
-                                 ,none = selectSpeciesData('NO_INVASIVES')
+    actual <- nrsaInvasiveSpecies(butumb = selectSpeciesData('FLWR_RUSH') %>% select(SITE, VALUE)
+                                 ,arudon = selectSpeciesData('G_REED') %>% select(SITE, VALUE)
+                                 ,lytsal = selectSpeciesData('P_LSTRIFE') %>% select(SITE, VALUE)
+                                 ,eiccra = selectSpeciesData('W_HYACINTH') %>% select(SITE, VALUE)
+                                 ,none = selectSpeciesData('NO_INVASIVES') %>% select(SITE, VALUE)
                                  )
     errs <- dfCompare(expected, actual, c('SITE', 'METRIC'), zeroFudge=1e-9)
     checkEquals(NULL, errs
@@ -42,11 +43,11 @@ nrsaInvasiveSpeciesTest <- function()
 
     # Test full data set and a NULL argument, to make sure they're accepted.
     expected <- nrsaInvasiveSpecies.createMetrics()
-    actual <- nrsaInvasiveSpecies(butumb = selectSpeciesData('FLWR_RUSH')
-                                 ,arudon = selectSpeciesData('G_REED')
-                                 ,lytsal = selectSpeciesData('P_LSTRIFE')
-                                 ,eiccra = selectSpeciesData('W_HYACINTH')
-                                 ,none = selectSpeciesData('NO_INVASIVES')
+    actual <- nrsaInvasiveSpecies(butumb = selectSpeciesData('FLWR_RUSH') %>% select(SITE, VALUE)
+                                 ,arudon = selectSpeciesData('G_REED') %>% select(SITE, VALUE)
+                                 ,lytsal = selectSpeciesData('P_LSTRIFE') %>% select(SITE, VALUE)
+                                 ,eiccra = selectSpeciesData('W_HYACINTH') %>% select(SITE, VALUE)
+                                 ,none = selectSpeciesData('NO_INVASIVES') %>% select(SITE, VALUE)
                                  ,other = NULL
                                  )
     errs <- dfCompare(expected, actual, c('SITE', 'METRIC'), zeroFudge=1e-9)
@@ -56,10 +57,10 @@ nrsaInvasiveSpeciesTest <- function()
     
     # Test calculations without NO_INVASIVES parameter data
     expected <- nrsaInvasiveSpecies.createMetrics() %>% subset(METRIC %nin% 'f_none')
-    actual <- nrsaInvasiveSpecies(butumb = selectSpeciesData('FLWR_RUSH')
-                                 ,arudon = selectSpeciesData('G_REED')
-                                 ,lytsal = selectSpeciesData('P_LSTRIFE')
-                                 ,eiccra = selectSpeciesData('W_HYACINTH')
+    actual <- nrsaInvasiveSpecies(butumb = selectSpeciesData('FLWR_RUSH') %>% select(SITE, VALUE)
+                                 ,arudon = selectSpeciesData('G_REED') %>% select(SITE, VALUE)
+                                 ,lytsal = selectSpeciesData('P_LSTRIFE') %>% select(SITE, VALUE)
+                                 ,eiccra = selectSpeciesData('W_HYACINTH') %>% select(SITE, VALUE)
                                  )
     errs <- dfCompare(expected, actual, c('SITE', 'METRIC'), zeroFudge=1e-9)
     checkEquals(NULL, errs

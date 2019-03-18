@@ -5,6 +5,7 @@
 #  2/11/15 cws Modifying calling interface based on local feedback. Condensing
 #          class count arguments from 48 separate args to 2 data args plus 2
 #          class code definition arguments, similar to nrsaChannelHabitat().
+#  3/18/19 cws Modified due to use of aquametStandardizeArgument.
 #         
 # TODO: Add test for NULL reachlength and meanBankfullWidth args
 
@@ -25,8 +26,8 @@ nrsaLargeWoodyTest <- function ()
     protocols <- nrsaLargeWoodyTest.protocol()
   
     # Test with both protocols
-    actual <- nrsaLargeWoody(bCounts = boatableLWD %>% dplyr::rename(CLASS=PARAMETER)
-                            ,wCounts = wadeableLWD %>% dplyr::rename(CLASS=PARAMETER)
+    actual <- nrsaLargeWoody(bCounts = boatableLWD %>% dplyr::rename(CLASS=PARAMETER) %>% select(SITE, TRANSECT, CLASS, VALUE)
+                            ,wCounts = wadeableLWD %>% dplyr::rename(CLASS=PARAMETER) %>% select(SITE, TRANSECT, CLASS, VALUE)
                             ,reachlength=reachlenValues
                             ,meanBankfullWidth=meanBankWidthValues
                             )
@@ -109,7 +110,7 @@ nrsaLargeWoodyTest <- function ()
     protocols.w <- subset(protocols, SITE %in% c('WWAP99-0713','WWAP99-0714','WWAP99-0716',
                                                  'WSDP04-R052','WSDP04-R048','WORP99-0891','WORP99-0871')) 
  
-    actual <- nrsaLargeWoody(wCounts = wadeableLWD %>% dplyr::rename(CLASS=PARAMETER)
+    actual <- nrsaLargeWoody(wCounts = wadeableLWD %>% dplyr::rename(CLASS=PARAMETER) %>% select(SITE, TRANSECT, CLASS, VALUE)
                             ,reachlength=reachlenValues.w
                             ,meanBankfullWidth=meanBankWidthValues.w
                             )
@@ -131,7 +132,7 @@ nrsaLargeWoodyTest <- function ()
     protocols.b <- subset(protocols, SITE %in% c('WWAP99-0711','WWAP99-0537','WSDP99-0595',
                                                  'WSDP99-0661','WORP99-0731')) 
  
-    actual <- nrsaLargeWoody(bCounts = boatableLWD %>% dplyr::rename(CLASS=PARAMETER)
+    actual <- nrsaLargeWoody(bCounts = boatableLWD %>% dplyr::rename(CLASS=PARAMETER) %>% select(SITE, TRANSECT, CLASS, VALUE)
                             ,reachlength=reachlenValues.b, meanBankfullWidth=meanBankWidthValues.b
                             )
 
