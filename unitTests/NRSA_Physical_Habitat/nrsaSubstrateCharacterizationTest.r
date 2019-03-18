@@ -3,6 +3,7 @@
 #
 # 10/21/15 cws Modified from metsSubstrateCharacterization.r to use new generalized 
 #          calling interface
+#  3/18/19 cws Modified due to use of aquametStandardizeArgument
 #
 
 
@@ -22,13 +23,13 @@ nrsaSubstrateCharacterizationTest <- function ()
 
   # Test calculations using data with both protocols
   # calculate the metrics
-  rr <- nrsaSubstrateCharacterization (bBottomDom = subset(boatableLittoral, PARAMETER == 'BOTTOMDOM')
-                                      ,bBottomSec = subset(boatableLittoral, PARAMETER == 'BOTTOMSEC')
-                                      ,bShoreDom = subset(boatableLittoral, PARAMETER == 'SHOREDOM')
-                                      ,bShoreSec = subset(boatableLittoral, PARAMETER == 'SHORESEC')
-                                      ,bSizeClass = subset(boatableThalweg, PARAMETER == 'SIZE_CLS')
-                                      ,wSizeClass = subset(wadeableSubstrate, PARAMETER == 'SIZE_CLS')
-                                      ,wMezzoSizeClass = subset(wadeableSubstrate, PARAMETER == 'XSIZE_CLS')
+  rr <- nrsaSubstrateCharacterization (bBottomDom = subset(boatableLittoral, PARAMETER == 'BOTTOMDOM') %>% select(SITE, TRANSECT, VALUE)
+                                      ,bBottomSec = subset(boatableLittoral, PARAMETER == 'BOTTOMSEC') %>% select(SITE, TRANSECT, VALUE)
+                                      ,bShoreDom = subset(boatableLittoral, PARAMETER == 'SHOREDOM') %>% select(SITE, TRANSECT, VALUE)
+                                      ,bShoreSec = subset(boatableLittoral, PARAMETER == 'SHORESEC') %>% select(SITE, TRANSECT, VALUE)
+                                      ,bSizeClass = subset(boatableThalweg, PARAMETER == 'SIZE_CLS') %>% select(SITE, TRANSECT, VALUE)
+                                      ,wSizeClass = subset(wadeableSubstrate, PARAMETER == 'SIZE_CLS') %>% select(SITE, VALUE)
+                                      ,wMezzoSizeClass = subset(wadeableSubstrate, PARAMETER == 'XSIZE_CLS') %>% select(SITE, VALUE)
                                       )
   checkTrue(is.data.frame(rr)
            ,paste("Error: nrsaSubstrateCharacterization returns error message:"
@@ -64,13 +65,13 @@ nrsaSubstrateCharacterizationTest <- function ()
 
 
   # Test calculations with just wadeable data
-  rr <- nrsaSubstrateCharacterization (bBottomDom = subset(boatableLittoral, PARAMETER == 'BOTTOMDOM' & FALSE)
-                                      ,bBottomSec = subset(boatableLittoral, PARAMETER == 'BOTTOMSEC' & FALSE)
-                                      ,bShoreDom = subset(boatableLittoral, PARAMETER == 'SHOREDOM' & FALSE)
-                                      ,bShoreSec = subset(boatableLittoral, PARAMETER == 'SHORESEC' & FALSE)
-                                      ,bSizeClass = subset(boatableThalweg, PARAMETER == 'SIZE_CLS' & FALSE)
-                                      ,wSizeClass = subset(wadeableSubstrate, PARAMETER == 'SIZE_CLS')
-                                      ,wMezzoSizeClass = subset(wadeableSubstrate, PARAMETER == 'XSIZE_CLS')
+  rr <- nrsaSubstrateCharacterization (bBottomDom = subset(boatableLittoral, PARAMETER == 'BOTTOMDOM' & FALSE) %>% select(SITE, TRANSECT, VALUE)
+                                      ,bBottomSec = subset(boatableLittoral, PARAMETER == 'BOTTOMSEC' & FALSE) %>% select(SITE, TRANSECT, VALUE)
+                                      ,bShoreDom = subset(boatableLittoral, PARAMETER == 'SHOREDOM' & FALSE) %>% select(SITE, TRANSECT, VALUE)
+                                      ,bShoreSec = subset(boatableLittoral, PARAMETER == 'SHORESEC' & FALSE) %>% select(SITE, TRANSECT, VALUE)
+                                      ,bSizeClass = subset(boatableThalweg, PARAMETER == 'SIZE_CLS' & FALSE) %>% select(SITE, TRANSECT, VALUE)
+                                      ,wSizeClass = subset(wadeableSubstrate, PARAMETER == 'SIZE_CLS') %>% select(SITE, VALUE)
+                                      ,wMezzoSizeClass = subset(wadeableSubstrate, PARAMETER == 'XSIZE_CLS') %>% select(SITE, VALUE)
                                       )
   checkTrue(is.data.frame(rr)
            ,paste("Error: nrsaSubstrateCharacterization (wadeable only) returns error message:"
@@ -95,13 +96,13 @@ nrsaSubstrateCharacterizationTest <- function ()
 
 
   # Test calculations with just boatable data
-  rr <- nrsaSubstrateCharacterization (bBottomDom = subset(boatableLittoral, PARAMETER == 'BOTTOMDOM')
-                                      ,bBottomSec = subset(boatableLittoral, PARAMETER == 'BOTTOMSEC')
-                                      ,bShoreDom = subset(boatableLittoral, PARAMETER == 'SHOREDOM')
-                                      ,bShoreSec = subset(boatableLittoral, PARAMETER == 'SHORESEC')
-                                      ,bSizeClass = subset(boatableThalweg, PARAMETER == 'SIZE_CLS')
-                                      ,wSizeClass = subset(wadeableSubstrate, PARAMETER == 'SIZE_CLS' & FALSE)
-                                      ,wMezzoSizeClass = subset(wadeableSubstrate, PARAMETER == 'XSIZE_CLS' & FALSE)
+  rr <- nrsaSubstrateCharacterization (bBottomDom = subset(boatableLittoral, PARAMETER == 'BOTTOMDOM') %>% select(SITE, TRANSECT, VALUE)
+                                      ,bBottomSec = subset(boatableLittoral, PARAMETER == 'BOTTOMSEC') %>% select(SITE, TRANSECT, VALUE)
+                                      ,bShoreDom = subset(boatableLittoral, PARAMETER == 'SHOREDOM') %>% select(SITE, TRANSECT, VALUE)
+                                      ,bShoreSec = subset(boatableLittoral, PARAMETER == 'SHORESEC') %>% select(SITE, TRANSECT, VALUE)
+                                      ,bSizeClass = subset(boatableThalweg, PARAMETER == 'SIZE_CLS') %>% select(SITE, TRANSECT, VALUE)
+                                      ,wSizeClass = subset(wadeableSubstrate, PARAMETER == 'SIZE_CLS' & FALSE) %>% select(SITE, VALUE)
+                                      ,wMezzoSizeClass = subset(wadeableSubstrate, PARAMETER == 'XSIZE_CLS' & FALSE) %>% select(SITE, VALUE)
                                       )
   checkTrue(is.data.frame(rr)
            ,paste("Error: nrsaSubstrateCharacterization (wadeable only) returns error message:"

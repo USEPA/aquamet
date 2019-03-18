@@ -36,7 +36,7 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 
-nrsaSubstrateEmbed <- function(percentEmbedded=NULL) {
+nrsaSubstrateEmbed <- function(percentEmbedded=NULL, isUnitTest=FALSE) {
 
 ################################################################################
 # Function: metsSubstrateEmbed
@@ -75,6 +75,8 @@ nrsaSubstrateEmbed <- function(percentEmbedded=NULL) {
 #            character variables.
 #   12/11/15 cws created from metsSubstrateEmbed, updated for new calling interface.
 #    3/16/16 cws Documenting arguments in comments at top.
+#    3/18/19 cws Changed to use aquametStandardizeArgument() instead of 
+#            absentAsNull().
 #
 # Arguments:
 # percentEmbedded   dataframe containing size class data for the dominant 
@@ -120,7 +122,12 @@ nrsaSubstrateEmbed <- function(percentEmbedded=NULL) {
         return(rc)
     }
     
-    percentEmbedded <- absentAsNULL(percentEmbedded, ifdf)
+    percentEmbedded <- aquametStandardizeArgument(percentEmbedded, ifdf=ifdf
+                                                 ,struct = list(SITE=c('integer','character'), TRANSECT='character', ONBANK='logical', VALUE=c('double'))
+                                                 ,legalValues = list(ONBANK=c(NA,TRUE,FALSE))
+                                                 ,rangeLimits = list(VALUE=c(0,100))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
     if(is.null(percentEmbedded)) {
     intermediateMessage('.  no data', loc='end')
         return(NULL)

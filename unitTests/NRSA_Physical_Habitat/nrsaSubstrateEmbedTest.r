@@ -3,6 +3,7 @@
 # 12/11/15 cws created from metsSubstrateEmbed, updated for new calling interface.
 #          Changed expected result when zero data is provided to NULL instead of 
 #          error message.
+#  3/18/19 cws Modified due to use of aquametStandardizeArgument
 #
 
 
@@ -18,7 +19,7 @@ nrsaSubstrateEmbedTest <- function()
     testData <- nrsaSubstrateEmbedTest.createTestData() %>% 
                 mutate(ONBANK=ifelse(TRANSDIR %in% c('LC','CT','RC'), FALSE, TRUE))
 
-    actual <- nrsaSubstrateEmbed(percentEmbedded = testData)
+    actual <- nrsaSubstrateEmbed(percentEmbedded = testData %>% select(SITE, TRANSECT, ONBANK, VALUE))
     expected <- nrsaSubstrateEmbedTest.createExpectedResults()
     expected <- rename(expected, 'VALUE','EXPECTED')
 
@@ -36,7 +37,7 @@ nrsaSubstrateEmbedTest <- function()
              
     # Check how it handles an empty dataframe, as might happen with a
     # boatable-only study.
-    actual <- nrsaSubstrateEmbed(percentEmbedded = subset(testData, FALSE))
+    actual <- nrsaSubstrateEmbed(percentEmbedded = subset(testData, FALSE) %>% select(SITE, TRANSECT, ONBANK, VALUE))
     checkEquals(NULL, actual
                ,"Error: Substrate embeddedness metrics do not handle empty dataframes"
                )
