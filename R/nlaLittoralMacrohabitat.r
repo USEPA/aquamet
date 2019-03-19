@@ -121,6 +121,7 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
                                    ,substrate = NULL
                                    ,vegetation = NULL
                                    ,woody = NULL
+                                   ,isUnitTest = FALSE
                                    ) {
 
 ################################################################################
@@ -151,6 +152,7 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
 #   07/14/17 cws Renamed metsLittoralMacrohabitat to nlaLittoralMacrohabitat.
 #            Changed UID to SITE, RESULT to VALUE, and output uses METRIC instead
 #            of PARAMETER. Updated calling interface.
+#    3/19/19 cws Added isUnitTest argument for consistency.
 #
 # Arguments:
 #   df = a data frame containing littoral fish macrohabitat data.  The
@@ -190,14 +192,14 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
         rc <- df %>% mutate(PARAMETER = args[[1]])
         return(rc)
     }
-    artificial <- artificial %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),   'COVER_ARTIFICIAL')
-    boulders <- boulders %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),       'COVER_BOULDERS')
-    coverExtent <- coverExtent %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'COVER_CLASS')
-    humanDisturbance <- humanDisturbance %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'HUMAN_DISTURBANCE')
-    noCover <- noCover %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),         'COVER_NONE')
-    substrate <- substrate %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'DOM_SUBSTRATE')
-    vegetation <- vegetation %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),   'COVER_VEG')
-    woody <- woody %>% aquametStandardizeArgument(ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),             'COVER_WOODY')
+    artificial <- aquametStandardizeArgument(artificial, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),   'COVER_ARTIFICIAL', stopOnError = !isUnitTest)
+    boulders <- aquametStandardizeArgument(boulders, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),       'COVER_BOULDERS', stopOnError = !isUnitTest)
+    coverExtent <- aquametStandardizeArgument(coverExtent, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'COVER_CLASS', stopOnError = !isUnitTest)
+    humanDisturbance <- aquametStandardizeArgument(humanDisturbance, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'HUMAN_DISTURBANCE', stopOnError = !isUnitTest)
+    noCover <- aquametStandardizeArgument(noCover, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),         'COVER_NONE', stopOnError = !isUnitTest)
+    substrate <- aquametStandardizeArgument(substrate, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'DOM_SUBSTRATE', stopOnError = !isUnitTest)
+    vegetation <- aquametStandardizeArgument(vegetation, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),   'COVER_VEG', stopOnError = !isUnitTest)
+    woody <- aquametStandardizeArgument(woody, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),             'COVER_WOODY', stopOnError = !isUnitTest)
     
     df <- rbind(artificial, boulders, coverExtent, humanDisturbance, noCover, substrate, vegetation, woody)
     

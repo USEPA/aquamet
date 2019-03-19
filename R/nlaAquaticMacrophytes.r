@@ -74,7 +74,9 @@
 #'  
 #' @keywords survey
 #' 
-nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, totalCover=NULL) {
+nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, totalCover=NULL
+                                 ,isUnitTest = FALSE
+                                 ) {
 
 ################################################################################
 # Function: nlaAquaticMacrophytes
@@ -112,6 +114,7 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
 #            returning metric name in METRIC rather than PARAMETER, but
 #            otherwise left the body of the function intact. Returning NULL if
 #            arguments contain no data.
+#    3/19/19 cws Added isUnitTest argument for consistency.
 #
 # Arguments:
 #   df = a data frame containing aquatic macrophyte data.  The data frame must
@@ -155,10 +158,10 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
         return(rc)
         
     }
-    emergent <- aquametStandardizeArgument(emergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_EMERGENT')
-    floating <- aquametStandardizeArgument(floating, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_FLOATING')
-    submergent <- aquametStandardizeArgument(submergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_SUBMERGENT')
-    totalCover <- aquametStandardizeArgument(totalCover, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_TOTALCOVER')
+    emergent <- aquametStandardizeArgument(emergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_EMERGENT', stopOnError = !isUnitTest)
+    floating <- aquametStandardizeArgument(floating, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_FLOATING', stopOnError = !isUnitTest)
+    submergent <- aquametStandardizeArgument(submergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_SUBMERGENT', stopOnError = !isUnitTest)
+    totalCover <- aquametStandardizeArgument(totalCover, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_TOTALCOVER', stopOnError = !isUnitTest)
     
     df <- rbind(emergent, floating, submergent, totalCover)
     if(is.null(df)) {

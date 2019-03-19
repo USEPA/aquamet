@@ -337,6 +337,7 @@ nlaRiparianVegetation <- function(bigTrees = NULL
                                  ,horizontalDistance_dd = NULL
                                  ,createSyntheticCovers=TRUE
                                  ,fillinDrawdown=TRUE
+                                 ,isUnitTest = FALSE
                                  ) {
 
 ################################################################################
@@ -406,6 +407,7 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 #            Changed UID to SITE, RESULT to VALUE, PARAMETER to CLASS for input
 #            and METRIC for output.
 #    7/17/17 cws Updated to test with new calling interface.
+#    3/19/19 cws Added isUnitTest argument for consistency.
 #   
 # Arguments:
 #   df = a data frame containing riparian zone and vegetation data.  The data
@@ -457,28 +459,28 @@ nlaRiparianVegetation <- function(bigTrees = NULL
         rc <- df %>% mutate(CLASS = args[[1]])
         return(rc)
     }
-    bigTrees <- bigTrees %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_BIGTREES')
-    bigTrees_dd  <- bigTrees_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_BIGTREES_DD')
-    smallTrees <- smallTrees %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_SMALLTREES')
-    smallTrees_dd <- smallTrees_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_SMALLTREES_DD')
-    canopyType <- canopyType %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'CANOPY')
-    canopyType_dd <- canopyType_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'CANOPY_DD')
-    groundcoverBare <- groundcoverBare %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_BARE')
-    groundcoverBare_dd <- groundcoverBare_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_BARE_DD')
-    groundcoverInundated <- groundcoverInundated %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_INUNDATED')
-    groundcoverInundated_dd <- groundcoverInundated_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_INUNDATED_DD')
-    groundcoverNonwoody <- groundcoverNonwoody %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_NONWOODY')
-    groundcoverNonwoody_dd <- groundcoverNonwoody_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_NONWOODY_DD')
-    groundcoverWoody <- groundcoverWoody %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_WOODY')
-    groundcoverWoody_dd <- groundcoverWoody_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_WOODY_DD')
-    understoryNonwoody <- understoryNonwoody %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_NONWOODY')
-    understoryNonwoody_dd <- understoryNonwoody_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_NONWOODY_DD')
-    understoryWoody <- understoryWoody %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_WOODY')
-    understoryWoody_dd <- understoryWoody_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_WOODY_DD')
-    understoryType <- understoryType %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'UNDERSTORY')
-    understoryType_dd <- understoryType_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'UNDERSTORY_DD')
-    drawdown <- drawdown %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'DRAWDOWN')
-    horizontalDistance_dd <- horizontalDistance_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'HORIZ_DIST_DD')
+    bigTrees <- aquametStandardizeArgument(bigTrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_BIGTREES', stopOnError = !isUnitTest)
+    bigTrees_dd  <- aquametStandardizeArgument(bigTrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_BIGTREES_DD', stopOnError = !isUnitTest)
+    smallTrees <- aquametStandardizeArgument(smallTrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_SMALLTREES', stopOnError = !isUnitTest)
+    smallTrees_dd <- aquametStandardizeArgument(smallTrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_SMALLTREES_DD', stopOnError = !isUnitTest)
+    canopyType <- aquametStandardizeArgument(canopyType, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'CANOPY', stopOnError = !isUnitTest)
+    canopyType_dd <- aquametStandardizeArgument(canopyType_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'CANOPY_DD', stopOnError = !isUnitTest)
+    groundcoverBare <- aquametStandardizeArgument(groundcoverBare, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_BARE', stopOnError = !isUnitTest)
+    groundcoverBare_dd <- aquametStandardizeArgument(groundcoverBare_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_BARE_DD', stopOnError = !isUnitTest)
+    groundcoverInundated <- aquametStandardizeArgument(groundcoverInundated, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_INUNDATED', stopOnError = !isUnitTest)
+    groundcoverInundated_dd <- aquametStandardizeArgument(groundcoverInundated_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_INUNDATED_DD', stopOnError = !isUnitTest)
+    groundcoverNonwoody <- aquametStandardizeArgument(groundcoverNonwoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_NONWOODY', stopOnError = !isUnitTest)
+    groundcoverNonwoody_dd <- aquametStandardizeArgument(groundcoverNonwoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_NONWOODY_DD', stopOnError = !isUnitTest)
+    groundcoverWoody <- aquametStandardizeArgument(groundcoverWoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_WOODY', stopOnError = !isUnitTest)
+    groundcoverWoody_dd <- aquametStandardizeArgument(groundcoverWoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_WOODY_DD', stopOnError = !isUnitTest)
+    understoryNonwoody <- aquametStandardizeArgument(understoryNonwoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_NONWOODY', stopOnError = !isUnitTest)
+    understoryNonwoody_dd <- aquametStandardizeArgument(understoryNonwoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_NONWOODY_DD', stopOnError = !isUnitTest)
+    understoryWoody <- aquametStandardizeArgument(understoryWoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_WOODY', stopOnError = !isUnitTest)
+    understoryWoody_dd <- aquametStandardizeArgument(understoryWoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_WOODY_DD', stopOnError = !isUnitTest)
+    understoryType <- aquametStandardizeArgument(understoryType, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'UNDERSTORY', stopOnError = !isUnitTest)
+    understoryType_dd <- quametStandardizeArgument(understoryType_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'UNDERSTORY_DD', stopOnError = !isUnitTest)
+    drawdown <- aquametStandardizeArgument(drawdown, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'DRAWDOWN', stopOnError = !isUnitTest)
+    horizontalDistance_dd <- aquametStandardizeArgument(horizontalDistance_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'HORIZ_DIST_DD', stopOnError = !isUnitTest)
     
     df <- rbind(bigTrees,bigTrees_dd,smallTrees,smallTrees_dd
                ,canopyType,canopyType_dd,groundcoverBare,groundcoverBare_dd

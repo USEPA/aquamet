@@ -44,7 +44,9 @@
 #'  
 #' @keywords survey
 
-nlaLittoralZone <- function(littoralFilm, data2007=FALSE) {
+nlaLittoralZone <- function(littoralFilm, data2007=FALSE
+                           ,isUnitTest = FALSE
+                           ) {
 
 ################################################################################
 # Function: nlaLittoralZone
@@ -76,6 +78,7 @@ nlaLittoralZone <- function(littoralFilm, data2007=FALSE) {
 #   06/12/14 tmk: Removed calls to the require() function.
 #    7/14/17 cws Renamed metsLittoralZone to nlaLittoralZone. Updated call interface
 #            which required little work because there's only one kind of data
+#    3/19/19 cws Added isUnitTest argument for consistency.
 #
 # Arguments:
 #   df = a data frame containing littoral zone data.  The data frame must
@@ -103,7 +106,7 @@ nlaLittoralZone <- function(littoralFilm, data2007=FALSE) {
     # Print initial messages
     intermediateMessage('NLA littoral zone metrics', loc='start')
 
-    df <- littoralFilm %>% aquametStandardizeArgument(struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'))
+    df <- aquametStandardizeArgument(littoralFilm, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), stopOnError = !isUnitTest)
     
 	lzData <- nlaLittoralZone.prepareInput(df, data2007)
     intermediateMessage('.1')

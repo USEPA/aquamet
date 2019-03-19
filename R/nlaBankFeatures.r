@@ -95,6 +95,7 @@ nlaBankFeatures <- function(angle = NULL
                            ,horizontalDistanceDrawdown = NULL
                            ,verticalHeight = NULL
                            ,verticalHeightDrawdown = NULL
+                           ,isUnitTest = FALSE
                            ) {
 
 ################################################################################
@@ -136,7 +137,8 @@ nlaBankFeatures <- function(angle = NULL
 #            otherwise left the body of the function intact. Returning NULL if
 #            arguments contain no data. Removed data2007 argument as it wasnt 
 #            being used.
-#  7/18/17 cws Corrected to put metrics values in METRICS column
+#    7/18/17 cws Corrected to put metrics values in METRICS column
+#    3/19/19 cws Added isUnitTest argument for consistency.
 #
 # Arguments:
 #   df = a data frame containing bank features data.  The data frame must
@@ -180,12 +182,12 @@ nlaBankFeatures <- function(angle = NULL
         return(rc)
         
     }
-    angle <- aquametStandardizeArgument(angle, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'ANGLE')
-    drawdown <- aquametStandardizeArgument(drawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'DRAWDOWN')
-    horizontalDistance <- aquametStandardizeArgument(horizontalDistance, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'HORIZ_DIST')
-    horizontalDistanceDrawdown <- aquametStandardizeArgument(horizontalDistanceDrawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'HORIZ_DIST_DD')
-    verticalHeight <- aquametStandardizeArgument(verticalHeight, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'VERT_HEIGHT')
-    verticalHeightDrawdown <- aquametStandardizeArgument(verticalHeightDrawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'VERT_HEIGHT_DD')
+    angle <- aquametStandardizeArgument(angle, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'ANGLE', stopOnError = !isUnitTest)
+    drawdown <- aquametStandardizeArgument(drawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'DRAWDOWN', stopOnError = !isUnitTest)
+    horizontalDistance <- aquametStandardizeArgument(horizontalDistance, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'HORIZ_DIST', stopOnError = !isUnitTest)
+    horizontalDistanceDrawdown <- aquametStandardizeArgument(horizontalDistanceDrawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'HORIZ_DIST_DD', stopOnError = !isUnitTest)
+    verticalHeight <- aquametStandardizeArgument(verticalHeight, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'VERT_HEIGHT', stopOnError = !isUnitTest)
+    verticalHeightDrawdown <- aquametStandardizeArgument(verticalHeightDrawdown, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'VERT_HEIGHT_DD', stopOnError = !isUnitTest)
 
     df <- rbind(angle, drawdown, horizontalDistance, horizontalDistanceDrawdown, verticalHeight, verticalHeightDrawdown)
 	stdData <- nlaBankFeatures.standardizeData(df)

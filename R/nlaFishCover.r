@@ -294,6 +294,8 @@ nlaFishCover <- function(aquatic = NULL
 						 	                        ,presence = c(NA,0,1,1,1,1)
 						 	                        ,stringsAsFactors=FALSE
 						 	                        )
+
+                        ,isUnitTest = FALSE
                         ) {
 ################################################################################
 # Function: nlaFishCover
@@ -390,6 +392,7 @@ nlaFishCover <- function(aquatic = NULL
 #            METRIC and VALUE column names instead of UID, PARAMETER, RESULT.
 #    7/12/17 cws Updated calling interface to aquamet phab standard, updating
 #            unit tests as well.
+#    3/19/19 cws Added isUnitTest argument for consistency.
 #
 # Arguments:
 #   df = a data frame containing fish cover data.  The data frame must include
@@ -446,41 +449,41 @@ nlaFishCover <- function(aquatic = NULL
         return(rc)
         
     }
-    aquatic <- aquatic %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_AQUATIC')
+    aquatic <- aquametStandardizeArgument(aquatic, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_AQUATIC', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    aquatic_dd <- aquatic_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_AQUATIC_DD')
+    aquatic_dd <- aquametStandardizeArgument(aquatic_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_AQUATIC_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    boulders <- boulders %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BOULDERS')
+    boulders <- aquametStandardizeArgument(boulders, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BOULDERS', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    boulders_dd <- boulders_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BOULDERS_DD')
+    boulders_dd <- aquametStandardizeArgument(boulders_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BOULDERS_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    brush <- brush %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BRUSH')
+    brush <- aquametStandardizeArgument(brush, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BRUSH', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    brush_dd <- brush_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BRUSH_DD')
+    brush_dd <- aquametStandardizeArgument(brush_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_BRUSH_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    ledges <- ledges %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LEDGES')
+    ledges <- aquametStandardizeArgument(ledges, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LEDGES', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    ledges_dd <- ledges_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LEDGES_DD')
+    ledges_dd <- aquametStandardizeArgument(ledges_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LEDGES_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    livetrees <- livetrees %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LIVETREES')
+    livetrees <- aquametStandardizeArgument(livetrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LIVETREES', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    livetrees_dd <- livetrees_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LIVETREES_DD')
+    livetrees_dd <- aquametStandardizeArgument(livetrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_LIVETREES_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    overhang <- overhang %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_OVERHANG')
+    overhang <- aquametStandardizeArgument(overhang, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_OVERHANG', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    overhang_dd <- overhang_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_OVERHANG_DD')
+    overhang_dd <- aquametStandardizeArgument(overhang_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_OVERHANG_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    snags <- snags %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_SNAGS')
+    snags <- aquametStandardizeArgument(snags, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_SNAGS', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    snags_dd <- snags_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_SNAGS_DD')
+    snags_dd <- aquametStandardizeArgument(snags_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_SNAGS_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    structures <- structures %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_STRUCTURES')
+    structures <- aquametStandardizeArgument(structures, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_STRUCTURES', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    structures_dd <- structures_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_STRUCTURES_DD')
+    structures_dd <- aquametStandardizeArgument(structures_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'FC_STRUCTURES_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    horizontalDistance_dd <- horizontalDistance_dd %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'HORIZ_DIST_DD')
+    horizontalDistance_dd <- aquametStandardizeArgument(horizontalDistance_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'HORIZ_DIST_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    drawdown <- drawdown %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'DRAWDOWN')
+    drawdown <- aquametStandardizeArgument(drawdown, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), 'DRAWDOWN', stopOnError = !isUnitTest)
     intermediateMessage('.')
     
     df <- rbind(aquatic, aquatic_dd, boulders, boulders_dd, brush, brush_dd

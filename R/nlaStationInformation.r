@@ -52,7 +52,9 @@
 #'   head(exStationInfo)
 #'  
 #' @keywords survey
-nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
+nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL
+                                 ,isUnitTest = FALSE
+                                 ) {
 
 ################################################################################
 # Function: nlaStationInformation
@@ -102,6 +104,7 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
 #            this function is changed to expect both Y/YES and N/NO values. Two
 #            additional sites with NA values were added in the 2012 data to 
 #            exercise the cases where NA values occur.
+#    3/19/19 cws Added isUnitTest argument for consistency.
 #
 # Arguments:
 #   df = a data frame containing station information data.  The data frame must
@@ -144,8 +147,8 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL) {
         return(rc)
     }
     
-    isIsland <- isIsland %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'ISLAND')
-    stationDepth <- stationDepth %>% aquametStandardizeArgument(ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('double','character')), 'DEPTH_AT_STATION')
+    isIsland <- aquametStandardizeArgument(isIsland, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'ISLAND', stopOnError = !isUnitTest)
+    stationDepth <- aquametStandardizeArgument(stationDepth, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('double','character')), 'DEPTH_AT_STATION', stopOnError = !isUnitTest)
     df <- rbind(isIsland, stationDepth)
 
     if(is.null(isIsland)){
