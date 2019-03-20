@@ -100,7 +100,8 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
 #    2/23/16 cws Updated argument descriptions, corrected ifdf functions and
 #            cleaned up comments a tad.
 #   10/05/18 cws Using aquametStandardizeArgument, unit test modified accordingly
-#    3/19/19 cws Aded isUnitTest argument for consistency with other functions
+#    3/19/19 cws Added isUnitTest argument for consistency with other functions
+#    3/20/19 cws Added legal value check of DIRECTION values in wDensiom argument.
 #
 # TODO: use ddply instead of summaryby. 
 #
@@ -166,7 +167,8 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
                                           ,stopOnError = !isUnitTest
                                           )   
     wDensiom <- aquametStandardizeArgument(wDensiom, 'xdepth', ifdf=ifdfWadeable
-                                          ,struct=list(SITE=c('integer','character'), DIRECTION='character', VALUE='double')
+                                          ,struct = list(SITE=c('integer','character'), DIRECTION='character', VALUE='double')
+                                          ,LegalValues = list(DIRECTION = c(wChannelBank, wChannelMid))
                                           ,rangeLimits = list(VALUE=c(0,20))
                                           ,stopOnError = !isUnitTest
                                           )   
