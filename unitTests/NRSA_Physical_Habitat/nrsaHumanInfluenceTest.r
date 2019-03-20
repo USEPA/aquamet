@@ -4,6 +4,7 @@
 # 11/13/15 cws Modified for new calling interface, ignoring influencWeights 
 #          argument for now.
 #  3/12/19 cws Modified due to use of aquametStandardizeArgument
+#  3/20/19 cws Using default value of influenceWeights
 #
 
 
@@ -27,7 +28,7 @@ nrsaHumanInfluenceTest <- function()
                             ,roadsRailroads =     subset(testData, PARAMETER=='ROAD', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
                             ,rowcrops =           subset(testData, PARAMETER=='ROW', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
                             ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
-                            ,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
+                            #,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
                             )
 
     ## Get both results data frames in the same order and compare
@@ -52,7 +53,7 @@ nrsaHumanInfluenceTest <- function()
                             ,roadsRailroads =     subset(testData, PARAMETER=='ROAD', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
                             ,rowcrops =           subset(testData, PARAMETER=='ROW', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
                             ,wallRevetment =      subset(testData, PARAMETER=='WALL', select=-PARAMETER) %>% select(SITE, TRANSECT, VALUE)
-                            ,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
+                            #,influenceWeights =   data.frame() # NOT IMPLEMENTED YET
                             )
     # testMets <- rr[order(rr$SITE, rr$METRIC),]
     # sasMets <- testResults[order(testResults$SITE, testResults$METRIC),]

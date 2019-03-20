@@ -187,6 +187,9 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
 #    2/27/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull(). Allowing inclusion of missing values, which affect
 #            calculation of percentages. Unit test updated accordingly.
+#    3/20/19 cws Added structure checks for arguments bChannelUnitCodeList and 
+#            wChannelUnitCodeList. Using the code columns of each for legal 
+#            values of VALUE in bChannelUnit and wChannelUnit arguments.
 #
 # TODO: Update unit test to see whether DR is handled properly
 #
@@ -295,19 +298,25 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
     # 
     # bChannelUnit = absentAsNULL(bChannelUnit, ifdf, bChannelUnitCodeList$code)
     # wChannelUnit = absentAsNULL(wChannelUnit, ifdf, wChannelUnitCodeList$code)
+    bChannelUnitCodeList <- aquametStandardizeArgument(bChannelUnitCodeList
+                                                      ,struct = list(code = 'character', metsSuffix='character', category = 'character', isFast = 'logical')
+                                                      )
+    wChannelUnitCodeList <- aquametStandardizeArgument(wChannelUnitCodeList
+                                                      ,struct = list(code = 'character', metsSuffix='character', category = 'character', isFast = 'logical', isPool = 'logical')
+                                                      )
     bChannelUnit = aquametStandardizeArgument(bChannelUnit
                                              #,ifdf, bChannelUnitCodeList$code
                                              ,struct = list(SITE=c('integer','character'), VALUE='character')
-                                             ,legalValues = list(VALUE=c(NA, '', 'FA','RA','RI','GL','PO','CA','DR'))
+                                             ,legalValues = list(VALUE=c(NA, '', bChannelUnitCodeList$code)) #c(NA, '', 'FA','RA','RI','GL','PO','CA','DR'))
                                              ,stopOnError = !isUnitTest
                                              )
     wChannelUnit = aquametStandardizeArgument(wChannelUnit
                                              #,ifdf, wChannelUnitCodeList$code
                                              ,struct = list(SITE=c('integer','character'), VALUE='character')
-                                             ,legalValues = list(VALUE=c(NA, '','FA','CA','RA','RI','GL'
-                                                                        ,'PB','PP','PD','PL','PT'
-                                                                        ,'P','DR'#,'SB'
-                                                                        ))
+                                             ,legalValues = list(VALUE=c(NA, '', wChannelUnitCodeList$code)) #c(NA, '','FA','CA','RA','RI','GL'
+                                                                       # ,'PB','PP','PD','PL','PT'
+                                                                       # ,'P','DR'#,'SB'
+                                                                       # ))
                                              ,stopOnError = !isUnitTest
                                              )
     intermediateMessage('.1')

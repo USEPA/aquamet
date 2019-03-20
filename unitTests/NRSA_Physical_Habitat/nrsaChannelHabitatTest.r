@@ -63,7 +63,6 @@ nrsaChannelHabitatTest <- function()
              )
   tt$diff <- tt$VALUE - tt$EXPECTED
   errs <- subset(tt, abs(diff) > 10^-7 | is.na(VALUE) != is.na(EXPECTED))
-print(errs)
   checkEquals(0, nrow(errs)
              ,"Error: Channel Habitat calculations with mixed protocol data are broken when including NA values"
              )
