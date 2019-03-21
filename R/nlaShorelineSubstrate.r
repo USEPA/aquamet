@@ -237,6 +237,8 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 #            and substrateSizes, just like nlaBottomSubstrate; code will need
 #            some serious cleanup.
 #    3/19/19 cws Added isUnitTest argument for consistency.
+#    3/21/19 cws Added validation checks to substrateCovers and substrateSizes
+#            arguments. Using substrateCovers to validate data arguments.
 #
 # Arguments:
 #   df = a data frame containing shoreline substrate data.  The data frame must
@@ -279,16 +281,33 @@ nlaShorelineSubstrate <- function(bedrock = NULL
         rc <- df %>% mutate(CLASS = args[[1]])
         return(rc)
     }
-
-    bedrock <- aquametStandardizeArgument(bedrock, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'BEDROCK', stopOnError = !isUnitTest)
-	boulder <- aquametStandardizeArgument(boulder, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'BOULDERS', stopOnError = !isUnitTest)
-	cobble <- aquametStandardizeArgument(cobble, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'COBBLE', stopOnError = !isUnitTest)
-	gravel <- aquametStandardizeArgument(gravel, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'GRAVEL', stopOnError = !isUnitTest)
-	organic <- aquametStandardizeArgument(organic, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'ORGANIC', stopOnError = !isUnitTest)
-	other <- aquametStandardizeArgument(other, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'OTHER', stopOnError = !isUnitTest)
-	sand <- aquametStandardizeArgument(sand, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SAND', stopOnError = !isUnitTest)
-	silt <- aquametStandardizeArgument(silt, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'SILT', stopOnError = !isUnitTest)
-	wood <- aquametStandardizeArgument(wood, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')),  'WOOD', stopOnError = !isUnitTest)
+    substrateCovers <- aquametStandardizeArgument(substrateCovers
+                                                 ,struct = list(VALUE=c('character','integer'), cover='double', presence=c('logical','integer'))
+                                                 ,legalValues = list(VALUE=c(NA,'','0','1','2','3','4'), presence=c(NA, FALSE, TRUE))
+                                                 ,rangeLimits = list(cover=c(0,1))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
+    substrateSizes <- aquametStandardizeArgument(substrateSizes
+                                                ,struct = list(CLASS=c('character'), diam='double', inPopulationEstimate=c('logical','integer'))
+                                                ,legalValues = list(CLASS=c(NA, ''
+                                                                           ,'BEDROCK', 'BOULDERS'
+                                                                           ,'COBBLE',  'GRAVEL'
+                                                                           ,'SAND',    'SILT'
+                                                                           ,'ORGANIC', 'WOOD'
+                                                                           )
+                                                                   ,inPopulationEstimate=c(NA, FALSE, TRUE)
+                                                                   )
+                                                ,stopOnError = !isUnitTest
+                                                )
+    bedrock <- aquametStandardizeArgument(bedrock, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)), 'BEDROCK', stopOnError = !isUnitTest)
+	boulder <- aquametStandardizeArgument(boulder, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)),  'BOULDERS', stopOnError = !isUnitTest)
+	cobble <- aquametStandardizeArgument(cobble, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)),  'COBBLE', stopOnError = !isUnitTest)
+	gravel <- aquametStandardizeArgument(gravel, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)),  'GRAVEL', stopOnError = !isUnitTest)
+	organic <- aquametStandardizeArgument(organic, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)),  'ORGANIC', stopOnError = !isUnitTest)
+	other <- aquametStandardizeArgument(other, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)),  'OTHER', stopOnError = !isUnitTest)
+	sand <- aquametStandardizeArgument(sand, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)),  'SAND', stopOnError = !isUnitTest)
+	silt <- aquametStandardizeArgument(silt, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)),  'SILT', stopOnError = !isUnitTest)
+	wood <- aquametStandardizeArgument(wood, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues = list(VALUE=c(NA,'',substrateCovers$VALUE)),  'WOOD', stopOnError = !isUnitTest)
 	
 	substrateCovers <- substrateCovers %>% aquametStandardizeArgument(struct = list(VALUE='character', cover='double', presence = 'integer'))
 	substrateSizes <- substrateSizes %>% aquametStandardizeArgument(struct = list(CLASS='character', diam='double', inPopulationEstimate='logical'))

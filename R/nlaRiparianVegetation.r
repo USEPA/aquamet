@@ -337,6 +337,11 @@ nlaRiparianVegetation <- function(bigTrees = NULL
                                  ,horizontalDistance_dd = NULL
                                  ,createSyntheticCovers=TRUE
                                  ,fillinDrawdown=TRUE
+                                 ,coverCalculationValues = data.frame(field = c(NA,'0','1','2','3','4')
+                                                                     ,calc = c(NA,0,0.05,0.25,0.575,0.875)
+                                                                     ,presence = c(NA,0L,1L,1L,1L,1L)
+                                                                     ,stringsAsFactors=FALSE
+                                                                     )
                                  ,isUnitTest = FALSE
                                  ) {
 
@@ -408,6 +413,9 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 #            and METRIC for output.
 #    7/17/17 cws Updated to test with new calling interface.
 #    3/19/19 cws Added isUnitTest argument for consistency.
+#    3/21/19 cws Added coverCalculationValues argument similar to 
+#            nrsaRiparianVegetation, and added validation check for it. Using it
+#            to validate data arguments.
 #   
 # Arguments:
 #   df = a data frame containing riparian zone and vegetation data.  The data
@@ -459,26 +467,33 @@ nlaRiparianVegetation <- function(bigTrees = NULL
         rc <- df %>% mutate(CLASS = args[[1]])
         return(rc)
     }
-    bigTrees <- aquametStandardizeArgument(bigTrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_BIGTREES', stopOnError = !isUnitTest)
-    bigTrees_dd  <- aquametStandardizeArgument(bigTrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_BIGTREES_DD', stopOnError = !isUnitTest)
-    smallTrees <- aquametStandardizeArgument(smallTrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_SMALLTREES', stopOnError = !isUnitTest)
-    smallTrees_dd <- aquametStandardizeArgument(smallTrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'C_SMALLTREES_DD', stopOnError = !isUnitTest)
-    canopyType <- aquametStandardizeArgument(canopyType, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'CANOPY', stopOnError = !isUnitTest)
-    canopyType_dd <- aquametStandardizeArgument(canopyType_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'CANOPY_DD', stopOnError = !isUnitTest)
-    groundcoverBare <- aquametStandardizeArgument(groundcoverBare, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_BARE', stopOnError = !isUnitTest)
-    groundcoverBare_dd <- aquametStandardizeArgument(groundcoverBare_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_BARE_DD', stopOnError = !isUnitTest)
-    groundcoverInundated <- aquametStandardizeArgument(groundcoverInundated, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_INUNDATED', stopOnError = !isUnitTest)
-    groundcoverInundated_dd <- aquametStandardizeArgument(groundcoverInundated_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_INUNDATED_DD', stopOnError = !isUnitTest)
-    groundcoverNonwoody <- aquametStandardizeArgument(groundcoverNonwoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_NONWOODY', stopOnError = !isUnitTest)
-    groundcoverNonwoody_dd <- aquametStandardizeArgument(groundcoverNonwoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_NONWOODY_DD', stopOnError = !isUnitTest)
-    groundcoverWoody <- aquametStandardizeArgument(groundcoverWoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_WOODY', stopOnError = !isUnitTest)
-    groundcoverWoody_dd <- aquametStandardizeArgument(groundcoverWoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'GC_WOODY_DD', stopOnError = !isUnitTest)
-    understoryNonwoody <- aquametStandardizeArgument(understoryNonwoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_NONWOODY', stopOnError = !isUnitTest)
-    understoryNonwoody_dd <- aquametStandardizeArgument(understoryNonwoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_NONWOODY_DD', stopOnError = !isUnitTest)
-    understoryWoody <- aquametStandardizeArgument(understoryWoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_WOODY', stopOnError = !isUnitTest)
-    understoryWoody_dd <- aquametStandardizeArgument(understoryWoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'U_WOODY_DD', stopOnError = !isUnitTest)
-    understoryType <- aquametStandardizeArgument(understoryType, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'UNDERSTORY', stopOnError = !isUnitTest)
-    understoryType_dd <- quametStandardizeArgument(understoryType_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'UNDERSTORY_DD', stopOnError = !isUnitTest)
+
+    coverCalculationValues <- aquametStandardizeArgument(coverCalculationValues
+                                                        ,struct = list(field=c('character','integer'), calc='double', presence=c('logical','integer'))
+                                                        ,rangeLimits = list(calc=c(0,1))
+                                                        ,legalValues = list(field=c(NA,'','0','1','2','3','4'), presence=c(NA,FALSE,TRUE))
+                                                        ,stopOnError = !isUnitTest
+                                                        )
+    bigTrees <- aquametStandardizeArgument(bigTrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),    'C_BIGTREES', stopOnError = !isUnitTest)
+    bigTrees_dd  <- aquametStandardizeArgument(bigTrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'C_BIGTREES_DD', stopOnError = !isUnitTest)
+    smallTrees <- aquametStandardizeArgument(smallTrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'C_SMALLTREES', stopOnError = !isUnitTest)
+    smallTrees_dd <- aquametStandardizeArgument(smallTrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'C_SMALLTREES_DD', stopOnError = !isUnitTest)
+    canopyType <- aquametStandardizeArgument(canopyType, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','C','D','M','N')),     'CANOPY', stopOnError = !isUnitTest)
+    canopyType_dd <- aquametStandardizeArgument(canopyType_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','C','D','M','N')),     'CANOPY_DD', stopOnError = !isUnitTest)
+    groundcoverBare <- aquametStandardizeArgument(groundcoverBare, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'GC_BARE', stopOnError = !isUnitTest)
+    groundcoverBare_dd <- aquametStandardizeArgument(groundcoverBare_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'GC_BARE_DD', stopOnError = !isUnitTest)
+    groundcoverInundated <- aquametStandardizeArgument(groundcoverInundated, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'GC_INUNDATED', stopOnError = !isUnitTest)
+    groundcoverInundated_dd <- aquametStandardizeArgument(groundcoverInundated_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'GC_INUNDATED_DD', stopOnError = !isUnitTest)
+    groundcoverNonwoody <- aquametStandardizeArgument(groundcoverNonwoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'GC_NONWOODY', stopOnError = !isUnitTest)
+    groundcoverNonwoody_dd <- aquametStandardizeArgument(groundcoverNonwoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'GC_NONWOODY_DD', stopOnError = !isUnitTest)
+    groundcoverWoody <- aquametStandardizeArgument(groundcoverWoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'GC_WOODY', stopOnError = !isUnitTest)
+    groundcoverWoody_dd <- aquametStandardizeArgument(groundcoverWoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'GC_WOODY_DD', stopOnError = !isUnitTest)
+    understoryNonwoody <- aquametStandardizeArgument(understoryNonwoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'U_NONWOODY', stopOnError = !isUnitTest)
+    understoryNonwoody_dd <- aquametStandardizeArgument(understoryNonwoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'U_NONWOODY_DD', stopOnError = !isUnitTest)
+    understoryWoody <- aquametStandardizeArgument(understoryWoody, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'U_WOODY', stopOnError = !isUnitTest)
+    understoryWoody_dd <- aquametStandardizeArgument(understoryWoody_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)),     'U_WOODY_DD', stopOnError = !isUnitTest)
+    understoryType <- aquametStandardizeArgument(understoryType, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),legalValues=list(VALUE=c(NA,'','C','D','M','N')),     'UNDERSTORY', stopOnError = !isUnitTest)
+    understoryType_dd <- aquametStandardizeArgument(understoryType_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','C','D','M','N')),     'UNDERSTORY_DD', stopOnError = !isUnitTest)
     drawdown <- aquametStandardizeArgument(drawdown, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'DRAWDOWN', stopOnError = !isUnitTest)
     horizontalDistance_dd <- aquametStandardizeArgument(horizontalDistance_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'),     'HORIZ_DIST_DD', stopOnError = !isUnitTest)
     
@@ -520,11 +535,17 @@ nlaRiparianVegetation <- function(bigTrees = NULL
     intermediateMessage('.1')
     
   	# Create table for converting field values to calculation values
-  	coverClassInfo<-data.frame(VALUE = c(NA,'0','1','2','3','4')
-						  	  ,characteristicCover = c(NA,0,0.05,0.25,0.575,0.875)
-							  ,presence = c(NA,0,1,1,1,1)
-							  ,stringsAsFactors=FALSE
-							  )
+    coverClassInfo <- coverCalculationValues %>% dplyr::rename(VALUE=field, characteristicCover=calc)
+                                     # ,coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
+                                     #                                 ,calc=c(NA,0,0.05,0.25,0.575,0.875)
+                                     #                                 ,stringsAsFactors=FALSE
+                                     #                                 )
+
+#   	coverClassInfo<-data.frame(VALUE = c(NA,'0','1','2','3','4')
+# 						  	  ,characteristicCover = c(NA,0,0.05,0.25,0.575,0.875)
+# 							  ,presence = c(NA,0,1,1,1,1)
+# 							  ,stringsAsFactors=FALSE
+# 							  )
 				
   	rvData <- subset(dfStart, CLASS %in% vegParams & !is.na(VALUE))
 
