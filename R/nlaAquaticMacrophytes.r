@@ -75,6 +75,11 @@
 #' @keywords survey
 #' 
 nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, totalCover=NULL
+                                 ,coverCalculationValues = data.frame(field = c(NA,'0','1','2','3','4')
+                                                                     ,calc = c(NA,0,0.05,0.25,0.575,0.875)
+                                                                     ,presence = c(NA,0L,1L,1L,1L,1L)
+                                                                     ,stringsAsFactors=FALSE
+                                                                     )
                                  ,isUnitTest = FALSE
                                  ) {
 
@@ -115,6 +120,8 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
 #            otherwise left the body of the function intact. Returning NULL if
 #            arguments contain no data.
 #    3/19/19 cws Added isUnitTest argument for consistency.
+#    3/21/19 cws Added coverCalculationValues argument. Using it to validate
+#            data arguments
 #
 # Arguments:
 #   df = a data frame containing aquatic macrophyte data.  The data frame must
@@ -158,10 +165,18 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
         return(rc)
         
     }
-    emergent <- aquametStandardizeArgument(emergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_EMERGENT', stopOnError = !isUnitTest)
-    floating <- aquametStandardizeArgument(floating, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_FLOATING', stopOnError = !isUnitTest)
-    submergent <- aquametStandardizeArgument(submergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_SUBMERGENT', stopOnError = !isUnitTest)
-    totalCover <- aquametStandardizeArgument(totalCover, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), 'AM_TOTALCOVER', stopOnError = !isUnitTest)
+    
+    coverCalculationValues <- aquametStandardizeArgument(coverCalculationValues
+                                                        ,struct = list(field=c('character','integer'), calc='double', presence=c('logical','integer'))
+                                                        ,rangeLimits = list(calc=c(0,1))
+                                                        ,legalValues = list(field=c(NA,'','0','1','2','3','4'), presence=c(NA,FALSE,TRUE))
+                                                        ,stopOnError = !isUnitTest
+                                                        )
+
+    emergent <- aquametStandardizeArgument(emergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)), 'AM_EMERGENT', stopOnError = !isUnitTest)
+    floating <- aquametStandardizeArgument(floating, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)), 'AM_FLOATING', stopOnError = !isUnitTest)
+    submergent <- aquametStandardizeArgument(submergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)), 'AM_SUBMERGENT', stopOnError = !isUnitTest)
+    totalCover <- aquametStandardizeArgument(totalCover, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)), 'AM_TOTALCOVER', stopOnError = !isUnitTest)
     
     df <- rbind(emergent, floating, submergent, totalCover)
     if(is.null(df)) {
@@ -180,15 +195,17 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
                     )
 
     # Create tables for converting field values to calculation values
-    cover04<-data.frame(field=c(NA,'0','1','2','3','4')
-                       ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-                       ,stringsAsFactors=FALSE
-                       )
-
-    presence04<-data.frame(field=c(NA,'0','1','2','3','4')
-                          ,calc=c(NA,0,1,1,1,1)
-                          ,stringsAsFactors=FALSE
-                          )
+    cover04 <- coverCalculationValues %>% select(field, calc)
+    presence04 <- coverCalculationValues %>% mutate(calc=presence) %>% select(field, calc)
+    # cover04<-data.frame(field=c(NA,'0','1','2','3','4')
+    #                    ,calc=c(NA,0,0.05,0.25,0.575,0.875)
+    #                    ,stringsAsFactors=FALSE
+    #                    )
+    # 
+    # presence04<-data.frame(field=c(NA,'0','1','2','3','4')
+    #                       ,calc=c(NA,0,1,1,1,1)
+    #                       ,stringsAsFactors=FALSE
+    #                       )
 
     intermediateMessage('.1')
 

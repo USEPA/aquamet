@@ -8,6 +8,7 @@
 #          It also results in a change in values for 2012 data for sites 6683 
 #          and 6794 for which there is no ISLAND data; previously these resolved 
 #          to 0 but are now absent.
+#  3/22/19 cws Modified to work with new validation checks
 #
 
 
@@ -39,7 +40,7 @@ nlaStationInformationTest.2007 <- function()
 	                                           select(SITE,STATION,VALUE)
 	                               ,stationDepth = testData %>% 
 	                                               subset(PARAMETER == 'DEPTH_AT_STATION' & !is.na(UNITS)) %>% 
-	                                               mutate(VALUE = ifelse(toupper(UNITS) %in% 'FT', as.numeric(VALUE) * 0.3048, VALUE)) %>% 
+	                                               mutate(VALUE = ifelse(toupper(UNITS) %in% 'FT', as.numeric(VALUE) * 0.3048, as.numeric(VALUE))) %>% 
 	                                               select(SITE,STATION,VALUE)
 	                               )
 	
@@ -64,7 +65,7 @@ nlaStationInformationTest.2012 <- function()
 	# Test case with normal data in both arguments
 	expected <- nlaStationInformationTest.createExpectedResults2012()
 	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER=='ISLAND') %>% select(SITE,STATION,VALUE)
-	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE)
+	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% mutate(VALUE=as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
 	                               )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
@@ -82,14 +83,14 @@ nlaStationInformationTest.2012 <- function()
 	expected <- nlaStationInformationTest.createExpectedResults2012() %>%
 	            subset(METRIC != 'SIFPISLAND')
 	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER=='ISLAND') %>% select(SITE,STATION,VALUE) %>% subset(FALSE)
-	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE)
+	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% mutate(VALUE=as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
 	                               )
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics when isIsland has zero rows")
 
 	expected <- nlaStationInformationTest.createExpectedResults2012() %>%
 	            subset(METRIC == 'SIFPISLAND')
 	actual <- nlaStationInformation(isIsland = testData %>% subset(PARAMETER=='ISLAND') %>% select(SITE,STATION,VALUE)
-	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE) %>% subset(FALSE)
+	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% mutate(VALUE=as.numeric(VALUE)) %>% select(SITE,STATION,VALUE) %>% subset(FALSE)
 	                               )
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics when stationDepth has zero rows")
 
@@ -98,7 +99,7 @@ nlaStationInformationTest.2012 <- function()
 	expected <- nlaStationInformationTest.createExpectedResults2012() %>%
 	            subset(METRIC != 'SIFPISLAND')
 	actual <- nlaStationInformation(isIsland = NULL
-	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% select(SITE,STATION,VALUE)
+	                               ,stationDepth = testData %>% subset(PARAMETER=='DEPTH_AT_STATION') %>% mutate(VALUE=as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
 	                               )
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics when isIsland is NULL")
 

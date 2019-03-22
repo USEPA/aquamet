@@ -55,7 +55,6 @@
 nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL
                                  ,isUnitTest = FALSE
                                  ) {
-
 ################################################################################
 # Function: nlaStationInformation
 # Title: Calculate NLA Station Information Metrics
@@ -105,6 +104,8 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL
 #            additional sites with NA values were added in the 2012 data to 
 #            exercise the cases where NA values occur.
 #    3/19/19 cws Added isUnitTest argument for consistency.
+#    3/22/19 cws Added validation checks of data arguments. Unit test modified
+#            accordingly.
 #
 # Arguments:
 #   df = a data frame containing station information data.  The data frame must
@@ -147,8 +148,8 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL
         return(rc)
     }
     
-    isIsland <- aquametStandardizeArgument(isIsland, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'ISLAND', stopOnError = !isUnitTest)
-    stationDepth <- aquametStandardizeArgument(stationDepth, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('double','character')), 'DEPTH_AT_STATION', stopOnError = !isUnitTest)
+    isIsland <- aquametStandardizeArgument(isIsland, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','N','NO','Y','YES')), 'ISLAND', stopOnError = !isUnitTest)
+    stationDepth <- aquametStandardizeArgument(stationDepth, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('double')), rangeLimits=list(VALUE=c(0,30)), 'DEPTH_AT_STATION', stopOnError = !isUnitTest)
     df <- rbind(isIsland, stationDepth)
 
     if(is.null(isIsland)){
@@ -270,7 +271,5 @@ nlaStationInformation.stationDepths <- function(df)
 
   	return(stationDepths)
 }
-
-
 
 # end of file

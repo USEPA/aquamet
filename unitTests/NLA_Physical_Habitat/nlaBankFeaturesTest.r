@@ -1,7 +1,7 @@
 # nlaBankFeaturesTest.r
 # RUnit tests
 #  7/18/17 cws Corrected to expect metrics values in METRICS column
-#
+#  3/21/19 cws Modified to reflect validation added to nlaBankFeatures.
 
 
 nlaBankFeatures.fillinDistancesTest <- function()
@@ -85,12 +85,20 @@ nlaBankFeaturesTest.2007 <- function()
 {
 	testData <- nlaBankFeaturesTest.createTestData2007()
 	expected <- nlaBankFeaturesTest.createExpectedResults2007()
-	actual <- nlaBankFeatures(angle = testData %>% subset(PARAMETER=='ANGLE') %>% select(SITE,STATION,VALUE)
+	actual <- nlaBankFeatures(angle = testData %>% 
+	                                  subset(PARAMETER=='ANGLE') %>% 
+	                                  mutate(VALUE = ifelse(PARAMETER %in% c('ANGLE') & 
+							                                VALUE %in% c('NEAR VERTICAL','NEAR_VERTICAL_UNDERCUT')
+					 				                       ,'NEAR_VERTICAL'
+						  			                       ,VALUE
+									                       )
+	                                        ) %>%
+				                      select(SITE,STATION,VALUE)
                              ,drawdown = testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE,STATION,VALUE)
-                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% select(SITE,STATION,VALUE)
-                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE,STATION,VALUE)
-                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% select(SITE,STATION,VALUE)
-                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
                              )
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
 	
@@ -108,12 +116,20 @@ nlaBankFeaturesTest.2012withDrawdown <- function()
 {
 	testData <- nlaBankFeaturesTest.createTestData2012()
 	expected <- nlaBankFeaturesTest.createExpectedResults2012withDrawdown()
-	actual <- nlaBankFeatures(angle = testData %>% subset(PARAMETER=='ANGLE') %>% select(SITE,STATION,VALUE)
+	actual <- nlaBankFeatures(angle = testData %>% 
+	                                  subset(PARAMETER=='ANGLE') %>% 
+	                                  mutate(VALUE = ifelse(PARAMETER %in% c('ANGLE') & 
+							                                VALUE %in% c('NEAR VERTICAL','NEAR_VERTICAL_UNDERCUT')
+					 				                       ,'NEAR_VERTICAL'
+						  			                       ,VALUE
+									                       )
+	                                        ) %>%
+				                      select(SITE,STATION,VALUE)
                              ,drawdown = testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE,STATION,VALUE)
-                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% select(SITE,STATION,VALUE)
-                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE,STATION,VALUE)
-                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% select(SITE,STATION,VALUE)
-                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
                              )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")
@@ -133,12 +149,20 @@ nlaBankFeaturesTest.2012noDrawdown <- function()
 {
 	testData <- subset(nlaBankFeaturesTest.createTestData2012(), PARAMETER != 'DRAWDOWN')
 	expected <- nlaBankFeaturesTest.createExpectedResults2012noDrawdown()
-	actual <- nlaBankFeatures(angle = testData %>% subset(PARAMETER=='ANGLE') %>% select(SITE,STATION,VALUE)
+	actual <- nlaBankFeatures(angle = testData %>% 
+	                                  subset(PARAMETER=='ANGLE') %>% 
+	                                  mutate(VALUE = ifelse(PARAMETER %in% c('ANGLE') & 
+							                                VALUE %in% c('NEAR VERTICAL','NEAR_VERTICAL_UNDERCUT')
+					 				                       ,'NEAR_VERTICAL'
+						  			                       ,VALUE
+									                       )
+	                                        ) %>%
+				                      select(SITE,STATION,VALUE)
                              ,drawdown = testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE,STATION,VALUE)
-                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% select(SITE,STATION,VALUE)
-                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE,STATION,VALUE)
-                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% select(SITE,STATION,VALUE)
-                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistance = testData %>% subset(PARAMETER=='HORIZ_DIST') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,horizontalDistanceDrawdown = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,verticalHeight = testData %>% subset(PARAMETER=='VERT_HEIGHT') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
+                             ,verticalHeightDrawdown = testData %>% subset(PARAMETER=='VERT_HEIGHT_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE,STATION,VALUE)
                              )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of metrics")

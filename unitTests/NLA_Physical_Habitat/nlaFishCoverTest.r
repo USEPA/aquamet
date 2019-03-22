@@ -3,6 +3,7 @@
 #
 #  7/10/17 cws renamed functions from metsFishCoverNLA* to nlaFishCover, changed
 #          from UID & RESULT to SITE and VALUE.
+#  3/22/19 cws Modified in response to validation checks in nlaFishCover
 #
 
 
@@ -127,7 +128,7 @@ nlaFishCoverTest.withDrawDown <- function()
                           ,snags_dd =      testData %>% subset(PARAMETER=='FC_SNAGS_DD') %>% select(SITE, STATION, VALUE)
                           ,structures =    testData %>% subset(PARAMETER=='FC_STRUCTURES') %>% select(SITE, STATION, VALUE)
                           ,structures_dd = testData %>% subset(PARAMETER=='FC_STRUCTURES_DD') %>% select(SITE, STATION, VALUE)
-                          ,horizontalDistance_dd = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+                          ,horizontalDistance_dd = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, STATION, VALUE)
                           ,drawdown =              testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
                           ,fillinDrawdown=FALSE
                           )
@@ -168,7 +169,7 @@ nlaFishCoverTest.withDrawDownAndFillin <- function()
                           ,snags_dd =      testData %>% subset(PARAMETER=='FC_SNAGS_DD') %>% select(SITE, STATION, VALUE)
                           ,structures =    testData %>% subset(PARAMETER=='FC_STRUCTURES') %>% select(SITE, STATION, VALUE)
                           ,structures_dd = testData %>% subset(PARAMETER=='FC_STRUCTURES_DD') %>% select(SITE, STATION, VALUE)
-                          ,horizontalDistance_dd = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+                          ,horizontalDistance_dd = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, STATION, VALUE)
                           ,drawdown =              testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
                           )
 	

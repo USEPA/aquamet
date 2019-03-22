@@ -11,6 +11,8 @@
 #  2/27/18 cws If stopOnError is FALSE, then warning messages are also returned
 #          instead of continuing.  This is because stopOnError is only FALSE when
 #          unit testing, at least for now.
+#  3/21/19 cws Extended to allow a single regular expression to be used to 
+#          specify legal values. Unit test extended accordingly.
 #
 
 # require(RUnit)
@@ -46,6 +48,9 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='in
 #           check will not be performed. The occurence of values not specified 
 #           as legal will prevent calculations from proceding. Thus a substrate
 #           value might be specified as c('RR','RS','RC','XB','SB','CB','GR','SA','FN')
+#           It is also possible to specify legal values using a single regular
+#           expression by including the isrx element with a value of TRUE, e.g.
+#           c('^(RR|RS|RC|XB|SB|CB|GR|SA|FN)$', isrx=TRUE).
 # stopOnError logical value determining whether detection of an error causes the
 #           process to stop with a descriptive error message, or if that messge
 #           is merely returned and the processing allowed to continue.
@@ -143,10 +148,18 @@ aquametStandardizeArgument.checkLegal <- function(arg, expectedLegal)
     
     errs <- NULL
     for(el in names(expectedLegal)) {
-        legalValues <- expectedLegal[[el]]
-        if(is.null(legalValues)) next
+        if(is.null(expectedLegal[[el]])) next
 
-        illegalValues <- setdiff(arg[[el]], legalValues)
+        if(expectedLegal[[el]]['isrx'] %in% 'TRUE') {
+            # Test legal values as determined by the regular expression provided.
+            legalValues <-  expectedLegal[[el]][1]
+            illegalValues <- setdiff(grep(legalValues, unique(arg[[el]]), invert=TRUE, value=TRUE), NA) # allow NA values to be legal; no other way to allow missing values
+        } else {
+            # Test legal values as individually specified
+            legalValues <- expectedLegal[[el]]
+            illegalValues <- setdiff(arg[[el]], legalValues)
+        }
+
         if(length(illegalValues) > 0)
             errs <- c(errs
                      ,sprintf("Column %s is expected to have values <%s>, but has illegal values <%s>"

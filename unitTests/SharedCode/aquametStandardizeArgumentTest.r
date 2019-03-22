@@ -6,6 +6,8 @@
 #  2/20/18 cws Corrected aquametStandardizeArgument.checkRangeTest to correctly
 #          handle named elements in returned value. Completed unit test
 #          aquametStandardizeArgumentTest.with_ifdf_Validation.
+#  3/21/19 cws Extended aquametStandardizeArgument.checkLegalTest for new isrx 
+#          feature to allow legal values to be represented by regular expressions.
 #
 
 require(RUnit)
@@ -27,17 +29,28 @@ aquametStandardizeArgument.checkLegalTest <- function()
     actual <- aquametStandardizeArgument.checkLegal(testdata, list(VALUE=testLegalValues, STATION=LETTERS[1:12]))
     checkEquals(NULL, actual, "Incorrect response when all values are legal in two columns")
 
+    actual <- aquametStandardizeArgument.checkLegal(testdata, list(VALUE=testLegalValues, STATION=c('^[ABCDEFGHIJKL]$', isrx=TRUE)))
+    checkEquals(NULL, actual, "Incorrect response when all values are legal in two columns and one uses regular expression")
+
     
     # Test case where data take on some illegal values
     expected <- 'Column STATION is expected to have values <A,B,C,D>, but has illegal values <E>'
     actual <- aquametStandardizeArgument.checkLegal(testdata, list(VALUE=testLegalValues, STATION=LETTERS[1:4]))
     checkEquals(expected, actual, "Incorrect response when some values are legal")
+
+    expected <- 'Column STATION is expected to have values <^[ABCD]$>, but has illegal values <E>'
+    actual <- aquametStandardizeArgument.checkLegal(testdata, list(VALUE=testLegalValues, STATION=c('^[ABCD]$', isrx=TRUE)))
+    checkEquals(expected, actual, "Incorrect response when some values are legal and regular expressions are used")
     
     
     # Test case where all of data is illegal
     expected <- 'Column VALUE is expected to have values <1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20>, but has illegal values <a,b,c,d,e,f,g,h,i,j>.  Column STATION is expected to have values <a,b,c,d,e,f,g,h,i,j,k,l>, but has illegal values <A,B,C,D,E>'
     actual <- aquametStandardizeArgument.checkLegal(testdata, list(VALUE=1:20, STATION=letters[1:12]))
     checkEquals(expected, actual, "Incorrect response when no values are legal")
+    
+    expected <- 'Column VALUE is expected to have values <^(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20)$>, but has illegal values <a,b,c,d,e,f,g,h,i,j>.  Column STATION is expected to have values <^(a|b|c|d|e|f|g|h|i|j|k|l)$>, but has illegal values <A,B,C,D,E>'
+    actual <- aquametStandardizeArgument.checkLegal(testdata, list(VALUE=c('^(1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20)$', isrx=TRUE), STATION=c('^(a|b|c|d|e|f|g|h|i|j|k|l)$', isrx=TRUE)))
+    checkEquals(expected, actual, "Incorrect response when no values are legal and regular expressions are used")
     
     
     # Test cases where legal checks are not done

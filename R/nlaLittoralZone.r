@@ -79,6 +79,7 @@ nlaLittoralZone <- function(littoralFilm, data2007=FALSE
 #    7/14/17 cws Renamed metsLittoralZone to nlaLittoralZone. Updated call interface
 #            which required little work because there's only one kind of data
 #    3/19/19 cws Added isUnitTest argument for consistency.
+#    3/21/19 cws Added validation checking of data argument.
 #
 # Arguments:
 #   df = a data frame containing littoral zone data.  The data frame must
@@ -106,8 +107,20 @@ nlaLittoralZone <- function(littoralFilm, data2007=FALSE
     # Print initial messages
     intermediateMessage('NLA littoral zone metrics', loc='start')
 
-    df <- aquametStandardizeArgument(littoralFilm, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), stopOnError = !isUnitTest)
-    
+    if(data2007) {
+        df <- aquametStandardizeArgument(littoralFilm
+                                        ,struct = list(SITE=c('integer','character'), STATION='character', VALUE='character')
+                                        ,legalValues = list(VALUE = c(NA,'','A','N','P','O','S'))
+                                        ,stopOnError = !isUnitTest
+                                        )
+    } else {
+         df <- aquametStandardizeArgument(littoralFilm
+                                        ,struct = list(SITE=c('integer','character'), STATION='character', VALUE='character')
+                                        ,legalValues = list(VALUE = c('^(|ALGAL_MAT|NONE|OILY|OTHER.*|SCUM)$', isrx=TRUE))
+                                        ,stopOnError = !isUnitTest
+                                        )
+    }
+
 	lzData <- nlaLittoralZone.prepareInput(df, data2007)
     intermediateMessage('.1')
 

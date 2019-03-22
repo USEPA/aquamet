@@ -5,8 +5,8 @@ testSuiteNLAMetrics <- function()
 # Results are saved to timestamped HTML file
 {
   testSuite <- defineTestSuite("NLA metrics",
-                               dirs=".",
-                               testFileRegexp="^mets.*\\.r$",
+                               dirs=aquametPathList,
+                               testFileRegexp="^nla.*\\.r$",
                                testFuncRegexp="^.+Test$")
 
   testResult <- runTestSuite(testSuite)

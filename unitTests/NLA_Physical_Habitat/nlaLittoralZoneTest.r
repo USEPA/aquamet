@@ -17,7 +17,8 @@ nlaLittoralZoneTest.2007 <- function()
 {
 	testData <- nlaLittoralZoneTest.createTestData2007()
 	expected <- nlaLittoralZoneTest.createExpectedResults2007()
-	actual <- nlaLittoralZone(testData %>% select(SITE, STATION, VALUE)
+	actual <- nlaLittoralZone(testData %>% 
+	                          select(SITE, STATION, VALUE)
 	                         ,data2007=TRUE
 	                         )
 
