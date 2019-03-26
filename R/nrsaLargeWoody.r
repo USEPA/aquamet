@@ -271,6 +271,7 @@ nrsaLargeWoody <- function(bCounts=NULL
 #            The creation of the reachlen dataframe based on df2 was jiggered to
 #            to handle this case, and now the unit test works.
 #    3/18/19 cws Using aquametStandardizeArgument; modified unit test accordingly.
+#    3/25/19 cws Modified to use dplyr::rename()
 #
 # Arguments:
 # bCounts       dataframe containing large woody debris class counts at each 
@@ -471,7 +472,7 @@ nrsaLargeWoody <- function(bCounts=NULL
 
     lgWoodWet2$nc <-  ifelse(lgWoodWet2$x >= 12, 1, 0)   
     
-    lgWoodWet2<- aggregate(lgWoodWet2$nc
+    lgWoodWet2<- aggregate(list(VALUE=lgWoodWet2$nc)
                        ,list('SITE'=lgWoodWet2$SITE
                        
                        )
@@ -479,7 +480,7 @@ nrsaLargeWoody <- function(bCounts=NULL
                        )  
 
     lgWoodWet2$METRIC <- 'nc'
-    lgWoodWet2 <- rename(lgWoodWet2,'x','VALUE')  
+#    lgWoodWet2 <- rename(lgWoodWet2,'x','VALUE')  
 
 #    lgWoodWet2 <- lgWoodWet2[order(lgWoodWet2$SITE
 #                    , lgWoodWet2$TRANSECT
@@ -498,14 +499,14 @@ nrsaLargeWoody <- function(bCounts=NULL
 
     lgWoodDry2$nc <-  ifelse(lgWoodDry2$x >= 12, 1, 0)   
     
-    lgWoodDry2<- aggregate(lgWoodDry2$nc
+    lgWoodDry2<- aggregate(list(VALUE=lgWoodDry2$nc)
                        ,list('SITE'=lgWoodDry2$SITE
                        
                        )
                        ,count
                        )  
     lgWoodDry2$METRIC <- 'ns'
-    lgWoodDry2 <- rename(lgWoodDry2, 'x','VALUE')                    
+#    lgWoodDry2 <- rename(lgWoodDry2, 'x','VALUE')                    
  
  #put together (append) the wet (nc) and the dry (ns)       
           
@@ -541,7 +542,7 @@ nrsaLargeWoody <- function(bCounts=NULL
                        ,count
                        )      
 
-     lgWoodTranNo <- aggregate( list('TRANSECT'=lgWoodTran$TRANSECT )
+     lgWoodTranNo <- aggregate( list('VALUE'=lgWoodTran$TRANSECT )
                       ,list ('SITE'=lgWoodTran$SITE
                         )
                       ,count
@@ -549,7 +550,7 @@ nrsaLargeWoody <- function(bCounts=NULL
 
    lgWoodTranNo$METRIC <- 'numtran'
 
-   lgWoodTranNo <- rename(lgWoodTranNo, 'TRANSECT','VALUE')
+#   lgWoodTranNo <- rename(lgWoodTranNo, 'TRANSECT','VALUE')
    
     intermediateMessage('end of lgWoodTranNo', loc='end')
    
@@ -561,7 +562,7 @@ nrsaLargeWoody <- function(bCounts=NULL
   ##  04MAY10 SSR adding code to make VALUE numeric
   df1$VALUE <- as.numeric(df1$VALUE)
 
-  lgWoodSums <- aggregate(df1$VALUE
+  lgWoodSums <- aggregate(list(VALUE=df1$VALUE)
                          ,list('SITE'=df1$SITE
                               ,"PARAMETER"=df1$PARAMETER
                               )
@@ -593,7 +594,8 @@ nrsaLargeWoody <- function(bCounts=NULL
   lgWoodSums$PARAMETER <- ifelse(lgWoodSums$PARAMETER == 'WXDML', 'rchwxdml' , lgWoodSums$PARAMETER) 
   lgWoodSums$PARAMETER <- ifelse(lgWoodSums$PARAMETER == 'WXDSL', 'rchwxdsl' , lgWoodSums$PARAMETER)
 
-  lgWoodSums <- rename(lgWoodSums, c('PARAMETER','x'),c('METRIC' , 'VALUE'))
+  lgWoodSums <- dplyr::rename(lgWoodSums, METRIC=PARAMETER)
+#  lgWoodSums <- rename(lgWoodSums, c('PARAMETER','x'),c('METRIC' , 'VALUE'))
   
   intermediateMessage('end of lgwoodsums', loc='end')
   

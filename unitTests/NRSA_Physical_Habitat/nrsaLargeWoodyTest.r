@@ -6,6 +6,7 @@
 #          class count arguments from 48 separate args to 2 data args plus 2
 #          class code definition arguments, similar to nrsaChannelHabitat().
 #  3/18/19 cws Modified due to use of aquametStandardizeArgument.
+#  3/26/19 cws Modified to use dplyr::rename()
 #         
 # TODO: Add test for NULL reachlength and meanBankfullWidth args
 
@@ -3265,7 +3266,7 @@ close(newdat)
 testData <- subset(testData, TRANSECT=='A' & STATION==0
                   ,select=c(SITE,PARAMETER,VALUE)
                   )
-testData <- rename(testData, 'PARAMETER','METRIC')
+testData <- dplyr::rename(testData, METRIC=PARAMETER) #'PARAMETER','METRIC')
 #testData$METRIC <- 'reachlen'
 return(testData)
  

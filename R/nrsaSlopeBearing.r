@@ -227,6 +227,7 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
 #    3/22/17 cws Added some comments for the slope units conversion. That stuff looks odd.
 #    3/15/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull().
+#    3/25/19 cws Modified to use dplyr::rename()
 #
 # Arguments:
 # bBearing          dataframe containing bearing values recorded in the field 
@@ -508,7 +509,9 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
                ,direction='wide'
                ,timevar='PARAMETER'
                )
-  sb <- rename(sb, names(sb), sub('VALUE\\.(\\1)', '\\1', names(sb)))
+  # sb <- rename(sb, names(sb), sub('VALUE\\.(\\1)', '\\1', names(sb)))
+  sb <- dplyr::rename(sb, SLOPE=VALUE.SLOPE, BEARING=VALUE.BEARING, PROPORTION=VALUE.PROPORTION)
+
   sb <- merge(sb, transpc, by=c('SITE','TRANSECT'), all.x=TRUE)
   sb$BEARING <- as.numeric(sb$BEARING)
   sb$PROPORTION <- as.numeric(sb$PROPORTION)
@@ -599,8 +602,8 @@ nrsaSlopeBearing <- function(bBearing = NULL, bDistance = NULL, bSlope = NULL
   tranSlope$tranSlope <- ifelse(tranSlope$n==0, NA, tranSlope$tranSlope)
   tranSlope$n <- NULL
 
-  transpc <- rename(subset(sb, LINE==0, select=c(SITE, TRANSECT, TRANSPC))
-                   ,'TRANSPC', 'transpc'
+  transpc <- dplyr::rename(subset(sb, LINE==0, select=c(SITE, TRANSECT, TRANSPC))
+                   ,transpc = TRANSPC #'TRANSPC', 'transpc'
                    )
   intermediateMessage('.5')
 

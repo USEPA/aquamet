@@ -125,6 +125,7 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
 #    2/22/16 cws Minor code cleanup
 #    2/27/18 cws Using aquametStandardizeArgument() on input data. Added argument
 #            isUnitTest to allow capturing of error messages during unit tests.
+#    3/22/19 cws Modified to use dplyr::rename()
 # 
 # ARGUMENTS:
 #   bAngle      dataframe containing bank angle class value for sites sampled using
@@ -199,66 +200,51 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
         
         wAngle$VALUE <- as.numeric(wAngle$VALUE)  ## NAs by coersion
         
-        ct <- aggregate(wAngle$VALUE
-                        ,list('SITE'=wAngle$SITE
-                        )
-                        ,count
-        )
-        
+        ct <- aggregate(list(VALUE = wAngle$VALUE)
+                       ,list(SITE = wAngle$SITE)
+                       ,count
+                       )
         ct$METRIC <- 'n_ba'
-        ct <- rename(ct, 'x', 'VALUE')
-        
-        mn <- aggregate(wAngle$VALUE
-                        ,list('SITE'=wAngle$SITE
-                        )
+
+        mn <- aggregate(list(VALUE=wAngle$VALUE)
+                        ,list('SITE'=wAngle$SITE)
                         ,mean , na.rm=TRUE
-        )
+                        )
         mn$METRIC <- 'xbka'
-        mn <- rename(mn, 'x', 'VALUE')
-        
-        stt <- aggregate(wAngle$VALUE
-                         ,list('SITE'=wAngle$SITE
-                         )
+
+        stt <- aggregate(list(VALUE=wAngle$VALUE)
+                         ,list('SITE'=wAngle$SITE)
                          ,sd  , na.rm=TRUE
-        )
+                         )
         stt$METRIC <- 'sdbk_a'
-        stt <- rename(stt, 'x', 'VALUE')
-        
-        iqq <- aggregate(wAngle$VALUE
-                         ,list('SITE'=wAngle$SITE
-                         )
+
+        iqq <- aggregate(list(VALUE=wAngle$VALUE)
+                         ,list('SITE'=wAngle$SITE)
                          ,iqr
-        )
-        iqq$METRIC <- 'intqbka'
-        iqq <- rename(iqq, 'x', 'VALUE')
-        
-        med <- aggregate(wAngle$VALUE
-                         ,list('SITE'=wAngle$SITE
                          )
+        iqq$METRIC <- 'intqbka'
+
+        med <- aggregate(list(VALUE=wAngle$VALUE)
+                         ,list('SITE'=wAngle$SITE)
                          ,median , na.rm=TRUE
-        )
+                         )
         
         med$METRIC <- 'medbk_a'
-        med <- rename(med,'x', 'VALUE')
-        
-        upq1 <- aggregate(wAngle$VALUE
-                          ,list ('SITE'=wAngle$SITE
-                          )
-                          ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
-        )
+
+        upq1 <- aggregate(list(VALUE=wAngle$VALUE)
+                         ,list ('SITE'=wAngle$SITE)
+                         ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
+                         )
         
         upq1$METRIC <- 'bka_q1'
-        upq1 <- rename(upq1, 'x', 'VALUE')
-        
-        upq3 <- aggregate(wAngle$VALUE
-                          ,list ('SITE'=wAngle$SITE)
-                          ,quantile, .75, na.rm=TRUE, names=FALSE, type=2
-        )
+
+        upq3 <- aggregate(list(VALUE=wAngle$VALUE)
+                         ,list ('SITE'=wAngle$SITE)
+                         ,quantile, .75, na.rm=TRUE, names=FALSE, type=2
+                         )
         upq3$METRIC <- 'bka_q3'
-        upq3 <- rename(upq3, 'x', 'VALUE')
-        
+
         #put these together
-        
         wAngleMets <- rbind (ct, mn, stt, iqq, med, upq1, upq3)
         intermediateMessage('. wAngle done')
     
@@ -273,64 +259,64 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
         intermediateMessage('. wUndercut begun')
         wUndercut$VALUE <- as.numeric(wUndercut$VALUE)
         
-        ct <- aggregate(wUndercut$VALUE
+        ct <- aggregate(list(VALUE=wUndercut$VALUE)
                         ,list('SITE'=wUndercut$SITE
                         )
                         ,count
         )
         
         ct$METRIC <- 'n_un'
-        ct <- rename(ct, 'x', 'VALUE')
+#        ct <- rename(ct, 'x', 'VALUE')
         
-        mn <- aggregate(wUndercut$VALUE
+        mn <- aggregate(list(VALUE=wUndercut$VALUE)
                         ,list('SITE'=wUndercut$SITE
                         )
                         ,mean , na.rm=TRUE
         )
         mn$METRIC <- 'xun'
-        mn <- rename(mn,'x', 'VALUE')
+#        mn <- rename(mn,'x', 'VALUE')
         
-        stt <- aggregate(wUndercut$VALUE
+        stt <- aggregate(list(VALUE=wUndercut$VALUE)
                          ,list('SITE'=wUndercut$SITE
                          )
                          ,sd , na.rm=TRUE
         )
         stt$METRIC <- 'sdun'
-        stt <- rename(stt, 'x', 'VALUE')
+#        stt <- rename(stt, 'x', 'VALUE')
         
-        iqq <- aggregate(wUndercut$VALUE
+        iqq <- aggregate(list(VALUE=wUndercut$VALUE)
                          ,list('SITE'=wUndercut$SITE
                          )
                          ,iqr
         )
         iqq$METRIC <- 'intqbkun'
-        iqq <- rename(iqq, 'x', 'VALUE')
+#        iqq <- rename(iqq, 'x', 'VALUE')
         
-        med <- aggregate(wUndercut$VALUE
+        med <- aggregate(list(VALUE=wUndercut$VALUE)
                          ,list('SITE'=wUndercut$SITE
                          )
                          ,median , na.rm=TRUE
         )
         
         med$METRIC <- 'medbkun'
-        med <- rename(med, 'x', 'VALUE')
+#        med <- rename(med, 'x', 'VALUE')
         
-        upq1 <- aggregate(wUndercut$VALUE
+        upq1 <- aggregate(list(VALUE=wUndercut$VALUE)
                           ,list ('SITE'=wUndercut$SITE
                           )
                           ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
         )
         
         upq1$METRIC <- 'bkun_q1'
-        upq1 <- rename(upq1, 'x', 'VALUE')
+#        upq1 <- rename(upq1, 'x', 'VALUE')
         
-        upq3 <- aggregate(wUndercut$VALUE
+        upq3 <- aggregate(list(VALUE=wUndercut$VALUE)
                           ,list ('SITE'=wUndercut$SITE
                           )
                           ,quantile, 0.75, na.rm=TRUE, names=FALSE, type=2
         )
         upq3$METRIC <- 'bkun_q3'
-        upq3 <- rename(upq3, 'x', 'VALUE')
+#        upq3 <- rename(upq3, 'x', 'VALUE')
         
         #put these together
         
@@ -344,40 +330,36 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
         bAngleMets <- NULL
     } else {
         intermediateMessage('. bAngle begun')
-        ct <- aggregate(bAngle$VALUE
+        ct <- aggregate(list(n_ba=bAngle$VALUE)
                         ,list('SITE'=bAngle$SITE)
                         ,count
         )
         ct$METRIC <- 'n_ba'
-        ct <- rename(ct, 'x', 'n_ba')
         intermediateMessage('.4')
         
         #use the total ang count to get other counts
         
 #        bap_low <- subset (mmboat, mmboat$PARAMETER=='ANGLE' )
-        bap_low <- aggregate(bAngle$VALUE
+        bap_low <- aggregate(list(low=bAngle$VALUE)
                              ,list('SITE'=bAngle$SITE)
                              ,function (VALUE) {sum(VALUE=='0-5')}
         )
-        bap_low <- rename(bap_low, 'x', 'low')
-        
-        
+
         bb <- merge(ct, bap_low,  by='SITE', all.x=TRUE, all.y=FALSE)
         intermediateMessage('.5')
         
-        
+
         bb$VALUE <- (bb$low/bb$n_ba) * 100
         bb$low <- NULL
         bb$n_ba <- NULL
         bb$METRIC <- NULL
         bb$METRIC <- 'bap_low'
-        
+
 #        bap_med <- subset (mmboat, mmboat$PARAMETER=='ANGLE')
-        bap_med <- aggregate(bAngle$VALUE
+        bap_med <- aggregate(list(med = bAngle$VALUE)
                              ,list('SITE'=bAngle$SITE)
                              ,function (VALUE) {sum(VALUE=='5-30')}
         )
-        bap_med <- rename(bap_med, 'x', 'med')
         bb1 <- merge(ct, bap_med,  by='SITE', all.x=TRUE, all.y=FALSE)
         
         intermediateMessage('.6')
@@ -390,12 +372,11 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
             bb1$METRIC <- 'bap_med'
         }
         
-        bap_stp <- aggregate(bAngle$VALUE
+        bap_stp <- aggregate(list(stp=bAngle$VALUE)
                              ,list('SITE'=bAngle$SITE)
                              , function (VALUE) {sum(VALUE=='30-75')}
         )
-        bap_stp <- rename(bap_stp, 'x', 'stp')
-        
+
         bb2 <- merge(ct, bap_stp,  by='SITE', all.x=TRUE, all.y=FALSE)
         
         if(nrow(bb2)>0) {
@@ -406,11 +387,10 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
             bb2$METRIC <- 'bap_stp'
         }
         
-        bap_vst <- aggregate(bAngle$VALUE
+        bap_vst <- aggregate(list(vst=bAngle$VALUE)
                              ,list('SITE'=bAngle$SITE)
                              ,function (VALUE) {sum(VALUE=='75-100')}
         )
-        bap_vst<- rename(bap_vst, 'x', 'vst')
         bb3 <- merge(ct, bap_vst,  by='SITE', all.x=TRUE, all.y=FALSE)
         
         intermediateMessage('.7')
@@ -424,7 +404,7 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
         }
         
         # Configuring ct for rbind
-        ct <- rename(ct,'n_ba','VALUE')
+        ct <- dplyr::rename(ct, VALUE=n_ba) #'n_ba','VALUE')
         ct <- subset(ct, select=c('SITE','METRIC','VALUE'))
         
         intermediateMessage('.8')
@@ -437,30 +417,26 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
         # values are not present, as they'll mess up the results.
         bAngle <- subset(bAngle, VALUE %in% c('0-5','5-30','30-75','75-100'))
         
-        tt <- aggregate(bAngle$VALUE=='0-5'
+        lowbap <- aggregate(list(xlow = bAngle$VALUE=='0-5')
                         ,list('SITE'=bAngle$SITE)
                         ,mean, na.rm=TRUE
         )
-        lowbap <- rename(tt, 'x', 'xlow')
-        
-        tt <- aggregate(bAngle$VALUE=='5-30'
+
+        medbap <- aggregate(list(xmed = bAngle$VALUE=='5-30')
                         ,list('SITE'=bAngle$SITE)
                         ,mean, na.rm=TRUE
         )
-        medbap <- rename(tt, 'x', 'xmed')
-        
-        tt <- aggregate(bAngle$VALUE=='30-75'
+
+        stpbap <- aggregate(list(xstp = bAngle$VALUE=='30-75')
                         ,list('SITE'=bAngle$SITE)
                         ,mean, na.rm=TRUE
         )
-        stpbap <- rename(tt, 'x', 'xstp')
-        
-        tt <- aggregate(bAngle$VALUE=='75-100'
+
+        vstbap <- aggregate(list(xvst = bAngle$VALUE=='75-100')
                         ,list('SITE'=bAngle$SITE)
                         ,mean, na.rm=TRUE
         )
-        vstbap <- rename(tt, 'x', 'xvst')
-        
+
         
         intermediateMessage('.10')
         
@@ -498,7 +474,7 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
         intermediateMessage('.12')
         
         modebang$METRIC <- 'bangmode'
-        modebang <- rename(modebang, 'bsobang', 'VALUE')
+        modebang <- dplyr::rename(modebang, VALUE=bsobang) # 'bsobang', 'VALUE')
         
         modebang$VALUE <- ifelse(modebang$VALUE =='0-5', 'low', modebang$VALUE)
         modebang$VALUE <- ifelse(modebang$VALUE =='5-30', 'med', modebang$VALUE)

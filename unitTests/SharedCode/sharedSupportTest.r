@@ -4,6 +4,7 @@
 #  7/07/17 cws Changed UID to SITE and RESULT to VALUE in normalizedCoverTest,
 #          calcSynCoversTest, calcSynInfluenceTest, fillinDrawdownDataTest and modalClassesTest.
 #  7/11/17 cws Changed PARAMETER to CLASS in all remaining functions.
+#  3/26/19 cws Modified to use dplyr::rename()
 #
 # RUnit tests
 
@@ -2328,95 +2329,95 @@ protectedSumTest <- function() {
 }
 
 
-renameTest <- function(verbose=FALSE) {   
-    dfTest<-data.frame(idx1=c('one','two','two','three')
-                      ,idx2=c(1,1,2,3)
-                      ,coverA=c(1, 1, 1 ,NA)
-                      ,coverB=c(2, 2, 2 ,NA)
-                      ,coverC=c(1, 1, NA,NA)
-                      ,coverD=c(3, 3, 3 ,NA)
-                      ,coverE=c(2, 2, NA,NA)
-                      ,coverF=c(0, 3, 3 ,NA)
-                      ,coverG=c(2, 2, 2 ,NA)
-                      ,coverH=c(0, 2, 3 ,NA)
-                      )
-
-    rr<-rename(dfTest
-              ,c('coverA','coverB','coverC','coverD'
-                ,'coverE','coverF','coverG','coverH'
-                )
-              ,LETTERS[1:8]
-              )
-    checkEquals(c('idx1','idx2',LETTERS[1:8]), names(rr)
-               ,"Error: rename failed basic renaming"
-               )
-
-    rr<-rename(dfTest
-              ,c('coverA','coverC','coverE','coverG'
-                ,'coverB','coverD','coverF','coverH'
-                )
-              ,c('A','C','E','G','B','D','F','H')
-              )
-    checkEquals(c('idx1','idx2',LETTERS[1:8]), names(rr)
-               ,"Error: rename failed out-of-order renaming"
-               )
-
-}
-
-
-uidCreateSeparateTest <- function(verbose=FALSE) { 
-# Tests uidCreate() and uidSeparate() in tandem.
-
-  df0 <- expand.grid(k1=1:10
-                    ,k2=c('a','b','c','d')
-                    ,k3=1:3
-                    ,k4=c('foo','bar','baz','gnip','gnop')
-                    )
-  df0 <- data.frame(df0, stringsAsFactors=FALSE)
-  df0$k2 <- as.character(df0$k2)
-  df0$k4 <- as.character(df0$k4)
-  df0$x<-row(df0[1])
-  df0$y<-runif(length(df0[,1]), 0, 1)
-  
-  # make a uid and parse it.
-  df1<-df0
-  df1$uid <- uidCreate(df1, c('k1','k2','k3','k4'))
-  df1 <- uidSeparate(df1, 'uid', c('t1','t2','t3','t4'))
-  df1$t1 <- as.integer(df1$t1)
-  df1$t3 <- as.integer(df1$t3)
-
-  # check the key values and their orders.
-  checkTrue(all(df1$k1==df1$t1 & df1$k2==df1$t2 & df1$k3==df1$t3 & df1$k4==df1$t4)
-           ,"Error: uidCreate/uidSeparate failed to maintain key values"
-           )
-
-  # check data associated with keys
-  df2<-df1[,c('t1','t2','t3','t4','x','y')]
-  df2<-rename(df2, c('t1','t2','t3','t4'), c('k1','k2','k3','k4'))
-  checkTrue(identical(df0,df2)
-           ,"Error: uidCreate/uidSeparate failed to maintain data values"
-           )
+# renameTest <- function(verbose=FALSE) {   
+#     dfTest<-data.frame(idx1=c('one','two','two','three')
+#                       ,idx2=c(1,1,2,3)
+#                       ,coverA=c(1, 1, 1 ,NA)
+#                       ,coverB=c(2, 2, 2 ,NA)
+#                       ,coverC=c(1, 1, NA,NA)
+#                       ,coverD=c(3, 3, 3 ,NA)
+#                       ,coverE=c(2, 2, NA,NA)
+#                       ,coverF=c(0, 3, 3 ,NA)
+#                       ,coverG=c(2, 2, 2 ,NA)
+#                       ,coverH=c(0, 2, 3 ,NA)
+#                       )
+# 
+#     rr<-rename(dfTest
+#               ,c('coverA','coverB','coverC','coverD'
+#                 ,'coverE','coverF','coverG','coverH'
+#                 )
+#               ,LETTERS[1:8]
+#               )
+#     checkEquals(c('idx1','idx2',LETTERS[1:8]), names(rr)
+#                ,"Error: rename failed basic renaming"
+#                )
+# 
+#     rr<-rename(dfTest
+#               ,c('coverA','coverC','coverE','coverG'
+#                 ,'coverB','coverD','coverF','coverH'
+#                 )
+#               ,c('A','C','E','G','B','D','F','H')
+#               )
+#     checkEquals(c('idx1','idx2',LETTERS[1:8]), names(rr)
+#                ,"Error: rename failed out-of-order renaming"
+#                )
+# 
+# }
 
 
-  # try test again with odd separator in uid
-  df1<-df0
-  df1$uid <- uidCreate(df1, c('k1','k2','k3','k4'), sep='%\\^')
-  df1 <- uidSeparate(df1, 'uid', c('t1','t2','t3','t4'), sep='%\\^')
-  df1$t1 <- as.integer(df1$t1)
-  df1$t3 <- as.integer(df1$t3)
-
-  # check the key values and their orders.
-  checkTrue(all(df1$k1==df1$t1 & df1$k2==df1$t2 & df1$k3==df1$t3 & df1$k4==df1$t4)
-           ,"Error: uidCreate/uidSeparate failed to maintain key values with odd separator"
-           )
-
-  # check data associated with keys
-  df2<-df1[,c('t1','t2','t3','t4','x','y')]
-  df2<-rename(df2, c('t1','t2','t3','t4'), c('k1','k2','k3','k4'))
-  checkTrue(identical(df0,df2)
-           ,"Error: uidCreate/uidSeparate failed to maintain data values with odd separator"
-           )
-
-}
+# uidCreateSeparateTest <- function(verbose=FALSE) { 
+# # Tests uidCreate() and uidSeparate() in tandem.
+# 
+#   df0 <- expand.grid(k1=1:10
+#                     ,k2=c('a','b','c','d')
+#                     ,k3=1:3
+#                     ,k4=c('foo','bar','baz','gnip','gnop')
+#                     )
+#   df0 <- data.frame(df0, stringsAsFactors=FALSE)
+#   df0$k2 <- as.character(df0$k2)
+#   df0$k4 <- as.character(df0$k4)
+#   df0$x<-row(df0[1])
+#   df0$y<-runif(length(df0[,1]), 0, 1)
+#   
+#   # make a uid and parse it.
+#   df1<-df0
+#   df1$uid <- uidCreate(df1, c('k1','k2','k3','k4'))
+#   df1 <- uidSeparate(df1, 'uid', c('t1','t2','t3','t4'))
+#   df1$t1 <- as.integer(df1$t1)
+#   df1$t3 <- as.integer(df1$t3)
+# 
+#   # check the key values and their orders.
+#   checkTrue(all(df1$k1==df1$t1 & df1$k2==df1$t2 & df1$k3==df1$t3 & df1$k4==df1$t4)
+#            ,"Error: uidCreate/uidSeparate failed to maintain key values"
+#            )
+# 
+#   # check data associated with keys
+#   df2<-df1[,c('t1','t2','t3','t4','x','y')]
+#   df2<-rename(df2, c('t1','t2','t3','t4'), c('k1','k2','k3','k4'))
+#   checkTrue(identical(df0,df2)
+#            ,"Error: uidCreate/uidSeparate failed to maintain data values"
+#            )
+# 
+# 
+#   # try test again with odd separator in uid
+#   df1<-df0
+#   df1$uid <- uidCreate(df1, c('k1','k2','k3','k4'), sep='%\\^')
+#   df1 <- uidSeparate(df1, 'uid', c('t1','t2','t3','t4'), sep='%\\^')
+#   df1$t1 <- as.integer(df1$t1)
+#   df1$t3 <- as.integer(df1$t3)
+# 
+#   # check the key values and their orders.
+#   checkTrue(all(df1$k1==df1$t1 & df1$k2==df1$t2 & df1$k3==df1$t3 & df1$k4==df1$t4)
+#            ,"Error: uidCreate/uidSeparate failed to maintain key values with odd separator"
+#            )
+# 
+#   # check data associated with keys
+#   df2<-df1[,c('t1','t2','t3','t4','x','y')]
+#   df2<-rename(df2, c('t1','t2','t3','t4'), c('k1','k2','k3','k4'))
+#   checkTrue(identical(df0,df2)
+#            ,"Error: uidCreate/uidSeparate failed to maintain data values with odd separator"
+#            )
+# 
+# }
 
 # end of file

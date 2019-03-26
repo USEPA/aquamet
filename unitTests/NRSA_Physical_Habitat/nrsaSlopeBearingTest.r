@@ -23,6 +23,7 @@
 #          data typical of actual use. This will make what each case tests much
 #          clearer. Or so I hope.
 #  3/15/19 cws Modified due to use of aquametStandardizeArgument
+#  3/25/19 cws Modified to use dplyr::rename()
 #
 
 nrsaSlopeBearingTest <- function()
@@ -1039,7 +1040,7 @@ nrsaSlopeBearingTest.makeTestDataDEPRECATED <- function()
   # UNITS information is handled separately.
   # To allow proper counting of stations per transect during metrics calculation,
   # DEPTH is added at each station, though these values will not be used.
-  units <- rename(wemapThal[c('SITE','TRANSECT','units')], 'units', 'UNITS')
+  units <- dplyr::rename(wemapThal[c('SITE','TRANSECT','units')], UNITS=units) #'units', 'UNITS')
   
   ss <- subset(wemapThal, select=-units)
   tt <- dfLengthen(ss

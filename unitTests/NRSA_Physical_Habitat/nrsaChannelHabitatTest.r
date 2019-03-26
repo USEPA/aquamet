@@ -3,6 +3,7 @@
 #
 #  2/26/19 cws Modified  due to use of aquametStandardizeArgument and allowing
 #              missing values to be included
+#  3/26/19 cws Modified to use dplyr::rename()
 #
 
 nrsaChannelHabitatTest <- function()
@@ -17,7 +18,7 @@ nrsaChannelHabitatTest <- function()
   # Create test datasets; first mixed protocol, then stream only and river only
   testData <- nrsaChannelHabitatTest.inputData()
   metsExpected <- nrsaChannelHabitatTest.testResults()
-  metsExpected <- rename(metsExpected, 'VALUE','EXPECTED')
+  metsExpected <- dplyr::rename(metsExpected, EXPECTED=VALUE) # 'VALUE','EXPECTED')
   
   riverData <- subset(testData, SAMPLE_TYPE=='PHAB_THAL')
   riverMets <- subset(metsExpected, SITE %in% unique(riverData$SITE))

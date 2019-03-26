@@ -4,6 +4,7 @@
 #          Changed expected result when zero data is provided to NULL instead of 
 #          error message.
 #  3/18/19 cws Modified due to use of aquametStandardizeArgument
+#  3/26/19 cws Modified to use dplyr::rename()
 #
 
 
@@ -21,7 +22,7 @@ nrsaSubstrateEmbedTest <- function()
 
     actual <- nrsaSubstrateEmbed(percentEmbedded = testData %>% select(SITE, TRANSECT, ONBANK, VALUE))
     expected <- nrsaSubstrateEmbedTest.createExpectedResults()
-    expected <- rename(expected, 'VALUE','EXPECTED')
+    expected <- dplyr::rename(expected, EXPECTED=VALUE) #'VALUE','EXPECTED')
 
     # Calculated values should be within 10E-7 of expected values, should
     # only be missing where they are supposed to be missing and nonmissing where

@@ -277,6 +277,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #            absentAsNull().
 #    3/20/19 cws Checking structure and legal values of influenceWeights argument,
 #            and using those values in subsequent legal values checks of data.
+#    3/25/19 cws Modified to use dplyr::rename()
 #
 #  TODO: rewrite interior. Add use of influenceWeights and test it.  Make PARAMETER
 #        values less cryptic.
@@ -597,37 +598,37 @@ nrsaHumanInfluence <- function(buildings = NULL
     #   Creating dataframes for export to csv file
     x_hall <- subset(df3, select=c(SITE,METRIC,x_hall))
     x_hall$METRIC <- 'x_hall'
-    x_hall <- rename(x_hall, 'x_hall', 'VALUE')
+    x_hall <- dplyr::rename(x_hall, VALUE=x_hall)
     x_hag <- subset(df3, select=c(SITE,METRIC,x_hag))
     x_hag$METRIC <- 'x_hag'
-    x_hag <- rename(x_hag, 'x_hag', 'VALUE')
+    x_hag <- dplyr::rename(x_hag, VALUE=x_hag) 
     x_hnoag <- subset(df3, select=c(SITE,METRIC,x_hnoag))
     x_hnoag$METRIC <- 'x_hnoag'
-    x_hnoag <- rename(x_hnoag, 'x_hnoag', 'VALUE')
+    x_hnoag <- dplyr::rename(x_hnoag, VALUE=x_hnoag)
  
-    xb_hall <- rename(xb_hall, 'xb_hall', 'VALUE')
+    xb_hall <- dplyr::rename(xb_hall, VALUE=xb_hall)
     xb_hall$METRIC <- 'xb_hall' 
-    xc_hall <- rename(xc_hall, 'xc_hall', 'VALUE')
+    xc_hall <- dplyr::rename(xc_hall, VALUE=xc_hall)
     xc_hall$METRIC <- 'xc_hall' 
-    xcb_hall <- rename(xcb_hall, 'xcb_hall', 'VALUE')
+    xcb_hall <- dplyr::rename(xcb_hall, VALUE=xcb_hall)
     xcb_hall$METRIC <- 'xcb_hall' 
-    xf_hall <- rename(xf_hall, 'xf_hall', 'VALUE')
+    xf_hall <- dplyr::rename(xf_hall, VALUE=xf_hall)
     xf_hall$METRIC <- 'xf_hall' 
-    xb_hag <- rename(xb_hag, 'xb_hag', 'VALUE')
+    xb_hag <- dplyr::rename(xb_hag, VALUE=xb_hag)
     xb_hag$METRIC <- 'xb_hag' 
-    xc_hag <- rename(xc_hag, 'xc_hag', 'VALUE')
+    xc_hag <- dplyr::rename(xc_hag, VALUE=xc_hag)
     xc_hag$METRIC <- 'xc_hag' 
-    xcb_hag <- rename(xcb_hag, 'xcb_hag', 'VALUE')
+    xcb_hag <- dplyr::rename(xcb_hag, VALUE=xcb_hag)
     xcb_hag$METRIC <- 'xcb_hag' 
-    xf_hag <- rename(xf_hag, 'xf_hag', 'VALUE')
+    xf_hag <- dplyr::rename(xf_hag, VALUE=xf_hag)
     xf_hag$METRIC <- 'xf_hag' 
-    xb_hnoag <- rename(xb_hnoag, 'xb_hnoag', 'VALUE')
+    xb_hnoag <- dplyr::rename(xb_hnoag, VALUE=xb_hnoag)
     xb_hnoag$METRIC <- 'xb_hnoag' 
-    xc_hnoag <- rename(xc_hnoag, 'xc_hnoag', 'VALUE')
+    xc_hnoag <- dplyr::rename(xc_hnoag, VALUE=xc_hnoag)
     xc_hnoag$METRIC <- 'xc_hnoag' 
-    xcb_hnoag <- rename(xcb_hnoag, 'xcb_hnag', 'VALUE')
+    xcb_hnoag <- dplyr::rename(xcb_hnoag, VALUE=xcb_hnag)
     xcb_hnoag$METRIC <- 'xcb_hnag' 
-    xf_hnoag <- rename(xf_hnoag, 'xf_hnoag', 'VALUE')
+    xf_hnoag <- dplyr::rename(xf_hnoag, VALUE=xf_hnoag)
     xf_hnoag$METRIC <- 'xf_hnoag' 
 
     #   Standard deviations of sumAtTransect

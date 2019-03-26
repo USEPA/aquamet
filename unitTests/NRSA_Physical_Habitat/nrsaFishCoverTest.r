@@ -3,6 +3,7 @@
 #   12/07/15 cws Modified calling interface. Still need to refactor interior.
 #            to handle NULL argument values.
 #  3/12/19 cws Modified due to use of aquametStandardizeArgument
+#  3/26/19 cws Modified to use dplyr::rename()
 #
 
 nrsaFishCoverTest <- function ()
@@ -14,7 +15,7 @@ nrsaFishCoverTest <- function ()
 
   #create the expected results (mets) for the test data using outside calculations
   metsExpected <- nrsaFishCover.createResults()
-  metsExpected <- rename(metsExpected, 'VALUE','EXPECTED')
+  metsExpected <- dplyr::rename(metsExpected, EXPECTED = VALUE) #'VALUE','EXPECTED')
 
   #compare results from baseData (testDataResult) with expectedResults  (metsExpected)
   # Calculated values should be within 10E-7 of expected values, should

@@ -4,6 +4,7 @@
 #  3/12/19 cws Modified due to use of aquametStandardizeArgument. Also modified
 #          to reflect change in calculations which now treat '' the same as NA
 #          in pct_side calculation.
+#  3/26/19 cws Modified to use dplyr::rename()
 #
 
 nrsaGeneralTest <- function()
@@ -94,7 +95,7 @@ nrsaGeneralTest.process <- function(testData, metsExpected)
 
   #compare results from baseData (testDataResult) with expectedResults  (metsExpected)
 
-  metsExpected <- rename(metsExpected, 'VALUE','EXPECTED')
+  metsExpected <- dplyr::rename(metsExpected, EXPECTED=VALUE) #'VALUE','EXPECTED')
   testDataResult$VALUE<-as.numeric(testDataResult$VALUE)
 
   # Calculated values should be within 10E-7 of expected values, should

@@ -82,6 +82,7 @@
 #          calcSynCovers, calcSynInfluence, fillinDrawdownData and modalClasses.
 #          Changed PARAMETER to CLASS in normalizedCover.
 #  7/11/17 cws Changed PARAMETER to CLASS in all remaining functions.
+#  3/25/19 cws Modified to use dplyr::rename()
 #
 ################################################################################
 
@@ -725,7 +726,8 @@ dfLengthen <- function(df, keys, name, value, values) {
 
   for (i in 1:length(values)) {
     tt <- df[c(keys, values[i])]
-    tt <- rename(tt, values[i], value)
+#    tt <- rename(tt, values[i], value)
+    tt <- eval(parse(text=sprintf("dplyr::rename(tt, %s=%s)", value, values[i])))
     tt[name]<-values[i]
 
     if(i==1) {
@@ -743,68 +745,68 @@ dfLengthen <- function(df, keys, name, value, values) {
 
 #' @keywords internal
 #' @export
-dfWiden <- function(df, keys, name, values, makeNumeric=TRUE) {
-# Converts a data frame from 'narrow' format (variables listed vertically in a 
-# single column) to 'wide' format (values listed horizontally with separate
-# columns for each variable).  The returned data frame will contain a column
-# for each key listed, and have a column for each variable name and given that 
-# name.
-#
-# e.g. 'narrow' format:                'wide' format:
-#      key1 key2 variable   value      key1 key2 meanX stX
-#      foo  1    meanX      0.7        foo  1    0.7   4.7
-#      foo  1    sdX        4.7        foo  2    1.3   NA
-#      foo  2    meanX      1.3        bar  1    NA    2.27
-#      bar  1    sdX        2.27
-#
-# ARGUMENTS:
-# df           Data frame in 'narrow' format to be converted.
-# keys         Vector of column names in df which together uniquely identify
-#              a location to which the variables are associated. e.g. 'uid'
-#              or c('site_id','year','visit_no').
-# name         Name of column with the variable names
-# values       Name of column with the variable values.
-# makeNumeric  Specify whether to allow columns which are entirely numeric
-#              to remain as character type.  If TRUE, these columns will
-#              be attempted to convert into type numeric, otherwise no
-#              conversion will be attempted.
-#
-# ASSUMPTIONS:
-# A variable occurs no more than once within a combination of variables listed
-# in the keys argument.
-#
-
-  # regexp of a string that isn't a number
-  notNumber <- '[a-df-zA-DF-Z _:;=\\/\\|\\?\\*\\(\\)\\$\\^%,<>]'
-
-  # Get list of variable names
-  names <- unique(df[,name])
-
-  for (i in 1:length(names)) {
-    # Separate input data frame by variable name, convert those values to 
-    # numeric if specified, properly name the new column, and finally
-    # merge them horizontally.
-    tt <- subset(df, get(name)==names[i])[c(keys,values)]
-    if (makeNumeric 
-       & is.character(tt[,values])
-       & length(grep(notNumber,tt[,values])) == 0
-       ) {
-       tt[,values] <- as.numeric(tt[,values])
-    }
-    tt <- rename(tt, values, names[i])
-
-    if(i==1) {
-      wide <- tt
-    } else {
-      wide <- merge(wide, tt, by=keys, all=TRUE)
-    }
-
-    #cat(paste('.',as.character(i),sep=''))
-  }
-
-  return(wide)
-
-}
+# dfWidenDEPRECATED <- function(df, keys, name, values, makeNumeric=TRUE) {
+# # Converts a data frame from 'narrow' format (variables listed vertically in a
+# # single column) to 'wide' format (values listed horizontally with separate
+# # columns for each variable).  The returned data frame will contain a column
+# # for each key listed, and have a column for each variable name and given that
+# # name.
+# #
+# # e.g. 'narrow' format:                'wide' format:
+# #      key1 key2 variable   value      key1 key2 meanX stX
+# #      foo  1    meanX      0.7        foo  1    0.7   4.7
+# #      foo  1    sdX        4.7        foo  2    1.3   NA
+# #      foo  2    meanX      1.3        bar  1    NA    2.27
+# #      bar  1    sdX        2.27
+# #
+# # ARGUMENTS:
+# # df           Data frame in 'narrow' format to be converted.
+# # keys         Vector of column names in df which together uniquely identify
+# #              a location to which the variables are associated. e.g. 'uid'
+# #              or c('site_id','year','visit_no').
+# # name         Name of column with the variable names
+# # values       Name of column with the variable values.
+# # makeNumeric  Specify whether to allow columns which are entirely numeric
+# #              to remain as character type.  If TRUE, these columns will
+# #              be attempted to convert into type numeric, otherwise no
+# #              conversion will be attempted.
+# #
+# # ASSUMPTIONS:
+# # A variable occurs no more than once within a combination of variables listed
+# # in the keys argument.
+# #
+# 
+#   # regexp of a string that isn't a number
+#   notNumber <- '[a-df-zA-DF-Z _:;=\\/\\|\\?\\*\\(\\)\\$\\^%,<>]'
+# 
+#   # Get list of variable names
+#   names <- unique(df[,name])
+# 
+#   for (i in 1:length(names)) {
+#     # Separate input data frame by variable name, convert those values to
+#     # numeric if specified, properly name the new column, and finally
+#     # merge them horizontally.
+#     tt <- subset(df, get(name)==names[i])[c(keys,values)]
+#     if (makeNumeric
+#        & is.character(tt[,values])
+#        & length(grep(notNumber,tt[,values])) == 0
+#        ) {
+#        tt[,values] <- as.numeric(tt[,values])
+#     }
+#     tt <- rename(tt, values, names[i])
+# 
+#     if(i==1) {
+#       wide <- tt
+#     } else {
+#       wide <- merge(wide, tt, by=keys, all=TRUE)
+#     }
+# 
+#     #cat(paste('.',as.character(i),sep=''))
+#   }
+# 
+#   return(wide)
+# 
+# }
 
 
 #' @keywords internal
@@ -1555,7 +1557,8 @@ normalizedCover <- function(df, coverValue, coverNorm, allowTotalBelow100=FALSE)
                  ,list('SITE'=df$SITE, 'STATION'=df$STATION)
                  ,sum, na.rm=TRUE
                  )
-  tt <- rename(tt, coverValue, '.sumCover')
+  tt <- eval(parse(text=sprintf("dplyr::rename(tt, .sumCover=%s)", coverValue)))
+#   tt <- rename(tt, coverValue, '.sumCover')
 
   tt <- merge(df, tt, by=c('SITE','STATION'), all.x=TRUE)
 
@@ -1566,7 +1569,8 @@ normalizedCover <- function(df, coverValue, coverNorm, allowTotalBelow100=FALSE)
                  ,list('SITE'=df$SITE, 'CLASS'=df$CLASS)
                  ,count
                  )
-  tt2 <- rename(tt2, coverValue, '.nValidValues')
+  tt2 <- eval(parse(text=sprintf("dplyr::rename(tt2, .nValidValues=%s)", coverValue)))
+#  tt2 <- rename(tt2, coverValue, '.nValidValues')
 
   tt <- merge(tt,tt2, by=c('SITE','CLASS'), all.x=TRUE)
 
@@ -1582,7 +1586,8 @@ normalizedCover <- function(df, coverValue, coverNorm, allowTotalBelow100=FALSE)
   tt$.sumCover <- NULL
   tt$.nValidValues <- NULL
 
-  tt <- rename(tt, '.coverNorm', coverNorm)
+  tt <- eval(parse(text=sprintf("dplyr::rename(tt, %s=.coverNorm)", coverNorm)))
+#  tt <- rename(tt, '.coverNorm', coverNorm)
 
   return(tt)
 }
@@ -1750,21 +1755,21 @@ protectedSum <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 
 #' @keywords internal
 #' @export
-rename <- function(df, old, new) {
-  # This method assumes that names in old & new are listed in the same
-  # order as the names in df 
-  # names(df)[names(df) %in% old] <- new
-  if(length(old) != length(new)) {
-      print("ERROR: rename() used with different lengths for old and new names")
-      return(NULL)
-  }
-
-  for(i in 1:length(old)) {
-      names(df)[names(df)==old[i]] <- new[i]
-  }
-
-  return(df)
-}
+# rename <- function(df, old, new) {
+#   # This method assumes that names in old & new are listed in the same
+#   # order as the names in df 
+#   # names(df)[names(df) %in% old] <- new
+#   if(length(old) != length(new)) {
+#       print("ERROR: rename() used with different lengths for old and new names")
+#       return(NULL)
+#   }
+# 
+#   for(i in 1:length(old)) {
+#       names(df)[names(df)==old[i]] <- new[i]
+#   }
+# 
+#   return(df)
+# }
 
 
 #' @keywords internal

@@ -2,6 +2,7 @@
 # 
 #  2/22/16 cws rewritten for new calling interface.
 #  3/13/19 cws Modified due to use of aquametStandardizeArgument
+#  3/26/19 cws Modified to use dplyr::rename()
 #
 
 nrsaLittoralDepthTest <- function()
@@ -93,7 +94,7 @@ nrsaLittoralDepthTest.inputmetrics <-function()
                              ,VALUE=c(0,0.2,0.1)
                              )       
                   )
-    newdat<- rename(newdat, 'VALUE','EXPECTED')
+    newdat<- dplyr::rename(newdat, EXPECTED=VALUE) #'VALUE','EXPECTED')
 
     return(newdat)
 }

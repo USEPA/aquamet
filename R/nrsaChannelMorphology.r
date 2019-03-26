@@ -258,6 +258,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 #            this scabbed-in mess
 #    3/12/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull().
+#    3/22/19 cws Modified to use dplyr::rename()
 #            
 # ARGUMENTS:
 # bBankHeight       dataframe containing bank height at each transect for
@@ -501,61 +502,60 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       # the sidechannel pair)
       wadenox <- within(wade, TRANSECT<-gsub('X' ,'',TRANSECT))
       wwidnox <- subset (wadenox, wadenox$PARAMETER=='WETWID')
-      wwidnox1 <- aggregate(wwidnox$VALUE
-                       ,list('SITE'=wwidnox$SITE, 'TRANSECT'=wwidnox$TRANSECT, 'STATION'=wwidnox$STATION
-                       )
+      wwidnox1 <- aggregate(list(VALUE=wwidnox$VALUE)
+                       ,list('SITE'=wwidnox$SITE, 'TRANSECT'=wwidnox$TRANSECT, 'STATION'=wwidnox$STATION)
                        ,max
                        )
-      wwidnox1 <- rename(wwidnox1, 'x', 'VALUE')
+#      wwidnox1 <- rename(wwidnox1, 'x', 'VALUE')
 
       #used later, below for some aggregate metrics, but calculated here for
       # organizational purposes
       #          (sum of the sidechannel pair)
       wwidnox <- subset (wadenox, wadenox$PARAMETER=='WETWID')
-      wwidnox1s <- aggregate(wwidnox$VALUE
+      wwidnox1s <- aggregate(list(VALUE=wwidnox$VALUE)
                        ,list('SITE'=wwidnox$SITE
                             ,'TRANSECT'=wwidnox$TRANSECT
                             ,'STATION'=wwidnox$STATION
                             )
                        ,sum, na.rm=TRUE
                        )
-      wwidnox1s <- rename(wwidnox1s, 'x', 'VALUE')
+#      wwidnox1s <- rename(wwidnox1s, 'x', 'VALUE')
 
       #this data (bwidnox1 is used to calculate:xbkf_w, sdbkf_w, n_bw (sum of the sidechannel pair))
       bwidnox <- subset (wadenox, wadenox$PARAMETER=='BANKWID')
-      bwidnox1 <- aggregate(bwidnox$VALUE
+      bwidnox1 <- aggregate(list(VALUE=bwidnox$VALUE)
                            ,list('SITE'=bwidnox$SITE, 'TRANSECT'=bwidnox$TRANSECT)
                            ,sum , na.rm=TRUE
                            )
-      bwidnox1 <- rename(bwidnox1, 'x', 'VALUE')
+#      bwidnox1 <- rename(bwidnox1, 'x', 'VALUE')
  
       #this data (incnox1 is used to calculate: xinc_h, sdinc_h, n_inc (max of
       # the sidechannel pair))
       inchnox <- subset (wadenox, wadenox$PARAMETER=='INCISHGT')
-      inchnox1 <- aggregate(inchnox$VALUE
+      inchnox1 <- aggregate(list(VALUE=inchnox$VALUE)
                            ,list('SITE'=inchnox$SITE, 'TRANSECT'=inchnox$TRANSECT)
                            ,max
                            )
-      inchnox1 <- rename(inchnox1, 'x', 'VALUE')
+#      inchnox1 <- rename(inchnox1, 'x', 'VALUE')
 
       # this data (bhgtnox1 is used to calculate: xbkf_h, sdbkf_h (max of the
       # sidechannel pair))
       bhgtnox <- subset (wadenox, wadenox$PARAMETER=='BANKHGT')
-      bhgtnox1 <- aggregate(bhgtnox$VALUE
+      bhgtnox1 <- aggregate(list(VALUE=bhgtnox$VALUE)
                        ,list('SITE'=bhgtnox$SITE, 'TRANSECT'=bhgtnox$TRANSECT 
                        )
                        ,max 
                        )
-      bhgtnox1 <- rename(bhgtnox1, 'x', 'VALUE')
+#      bhgtnox1 <- rename(bhgtnox1, 'x', 'VALUE')
      
       # used later, below for some aggregate metrics, but calculated here for
       # organizational purposes
       #                                      (mean of the sidechannel pair)
-      bhgtnox1x <- aggregate(bhgtnox$VALUE
+      bhgtnox1x <- aggregate(list(VALUE=bhgtnox$VALUE)
                             ,list('SITE'=bhgtnox$SITE, 'TRANSECT'=bhgtnox$TRANSECT)
                             ,mean, na.rm=TRUE
                             )
-      bhgtnox1x <- rename(bhgtnox1x, 'x', 'VALUE')
+#      bhgtnox1x <- rename(bhgtnox1x, 'x', 'VALUE')
      
   }
 
@@ -566,67 +566,67 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       # this data (wwidnoxb1 is used to calculate: xwidth, sdwidth, n_w (max of
       # the sidechannel pair))
       wwidnoxb <- subset (boatnox, boatnox$PARAMETER=='WETWID')
-      wwidnoxb1 <- aggregate(wwidnoxb$VALUE
+      wwidnoxb1 <- aggregate(list(VALUE=wwidnoxb$VALUE)
                             ,list('SITE'=wwidnoxb$SITE
                                  ,'TRANSECT'=wwidnoxb$TRANSECT
                                  )
                             ,max
                             )
-      wwidnoxb1 <- rename(wwidnoxb1, 'x', 'VALUE')
+#      wwidnoxb1 <- rename(wwidnoxb1, 'x', 'VALUE')
 
       # used later, below for some aggregate metrics, but calculated here for
       # organizational purposes
       #                                         (sum of the sidechannel pair)
-      wwidnoxb1s <- aggregate(wwidnoxb$VALUE
+      wwidnoxb1s <- aggregate(list(VALUE=wwidnoxb$VALUE)
                              ,list('SITE'=wwidnoxb$SITE
                                   ,'TRANSECT'=wwidnoxb$TRANSECT
                                   )
                              ,sum, na.rm=TRUE
                              )
-      wwidnoxb1s <- rename(wwidnoxb1s, 'x', 'VALUE')
+#      wwidnoxb1s <- rename(wwidnoxb1s, 'x', 'VALUE')
 
       # this data (bwidnoxb1 is used to calculate: bkf_w, sdbkf_w, n_bw (sum of
       # the sidechannel pair))
       bwidnoxb <- subset (boatnox, boatnox$PARAMETER=='BANKWID')
-      bwidnoxb1 <- aggregate(bwidnoxb$VALUE
+      bwidnoxb1 <- aggregate(list(VALUE=bwidnoxb$VALUE)
                             ,list('SITE'=bwidnoxb$SITE
                                  ,'TRANSECT'=bwidnoxb$TRANSECT
                                  )
                             ,sum , na.rm=TRUE
                             )
-      bwidnoxb1 <- rename(bwidnoxb1, 'x', 'VALUE')
+#      bwidnoxb1 <- rename(bwidnoxb1, 'x', 'VALUE')
     
       # this data (incnoxb1 is used to calculate: xinc_h, sdinc_h, n_inc (max of the sidechannel pair)
  
       inchnoxb <- subset (boatnox, boatnox$PARAMETER=='INCISHGT')
-      inchnoxb1 <- aggregate(inchnoxb$VALUE
+      inchnoxb1 <- aggregate(list(VALUE=inchnoxb$VALUE)
                             ,list('SITE'=inchnoxb$SITE
                                  ,'TRANSECT'=inchnoxb$TRANSECT
                                  )
                             ,max
                             )
-      inchnoxb1 <- rename(inchnoxb1, 'x', 'VALUE')
+#      inchnoxb1 <- rename(inchnoxb1, 'x', 'VALUE')
       # this data (bhgtnoxb1 is used to calculate:xbkf_h, sdbkf_h, (max of the
       # sidechannel pair))
       bhgtnoxb <- subset (boatnox, boatnox$PARAMETER=='BANKHGT')
-      bhgtnoxb1 <- aggregate(bhgtnoxb$VALUE
+      bhgtnoxb1 <- aggregate(list(VALUE=bhgtnoxb$VALUE)
                             ,list('SITE'=bhgtnoxb$SITE
                                  ,'TRANSECT'=bhgtnoxb$TRANSECT
                                  )
                             ,max
                             )
-      bhgtnoxb1 <- rename(bhgtnoxb1, 'x', 'VALUE')
+#      bhgtnoxb1 <- rename(bhgtnoxb1, 'x', 'VALUE')
      
       # used later, below for some aggregate metrics, but calculated here for
       # organizational purposes
       #                                 (mean of the sidechannel pair)
-      bhgtnoxb1x <- aggregate(bhgtnoxb$VALUE
+      bhgtnoxb1x <- aggregate(list(VALUE=bhgtnoxb$VALUE)
                              ,list('SITE'=bhgtnoxb$SITE
                                   ,'TRANSECT'=bhgtnoxb$TRANSECT
                                   )
                              ,mean, na.rm=TRUE
                              )
-      bhgtnoxb1x <- rename(bhgtnoxb1x, 'x', 'VALUE')
+#      bhgtnoxb1x <- rename(bhgtnoxb1x, 'x', 'VALUE')
   }
 
   # special case to fix an error in the field manual.  If the INCISED
@@ -647,7 +647,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
  
       inchnox1$VALUE.y <- NULL
 
-      inchnox1 <- rename (inchnox1, 'VALUE.x', 'VALUE')
+      inchnox1 <- dplyr::rename (inchnox1, VALUE=VALUE.x) #'VALUE.x', 'VALUE')
   }
 
   if(!is.null(boat)>0) {
@@ -668,7 +668,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
  
        ihgtb$VALUE.y <- NULL
  
-       ihgtb <- rename (ihgtb, 'VALUE.x', 'VALUE')
+       ihgtb <- dplyr::rename (ihgtb, VALUE=VALUE.x) # 'VALUE.x', 'VALUE')
   }
 
   intermediateMessage ('.3') 
@@ -794,72 +794,72 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       intermediateMessage ('.6')
 
       # next summarize (means)the ratios/products
-      mn <- aggregate(rs1w0$bfwd_ratseed
+      mn <- aggregate(list(VALUE=rs1w0$bfwd_ratseed)
                      ,list('SITE'=rs1w0$SITE)
                      ,mean , na.rm=TRUE
                      )
     
       mn$METRIC <- 'bfwd_rat'
 
-      mn <- rename (mn, 'x', 'VALUE')
-      mn1 <- aggregate(rs1w$wdprod
+#      mn <- rename (mn, 'x', 'VALUE')
+      mn1 <- aggregate(list(VALUE=rs1w$wdprod)
                       ,list('SITE'=rs1w$SITE)
                       ,mean , na.rm=TRUE
                       )
     
       mn1$METRIC <- 'xwxd'
-      mn1 <- rename(mn1, 'x', 'VALUE')
+#      mn1 <- rename(mn1, 'x', 'VALUE')
     
-      mn2 <- aggregate(rs1w$wdratio
+      mn2 <- aggregate(list(VALUE=rs1w$wdratio)
                       ,list('SITE'=rs1w$SITE)
                       ,mean , na.rm=TRUE
                       )
     
       mn2$METRIC <- 'xwd_rat'
-      mn2 <- rename(mn2, 'x', 'VALUE')
+#      mn2 <- rename(mn2, 'x', 'VALUE')
     
       #standard deviations (product and ratio)
     
-      sd1 <- aggregate(rs1w$wdprod
+      sd1 <- aggregate(list(VALUE=rs1w$wdprod)
                       ,list('SITE'=rs1w$SITE)
                       ,sd , na.rm=TRUE
                       )
     
       sd1$METRIC <- 'sdwxd'
-      sd1 <- rename(sd1, 'x', 'VALUE')
+#      sd1 <- rename(sd1, 'x', 'VALUE')
     
-      sd2 <- aggregate(rs1w$wdratio
+      sd2 <- aggregate(list(VALUE=rs1w$wdratio)
                       ,list('SITE'=rs1w$SITE)
                       ,sd , na.rm=TRUE
                       )
     
       sd2$METRIC <- 'sdwd_rat'
-      sd2 <- rename(sd2, 'x', 'VALUE')
+#      sd2 <- rename(sd2, 'x', 'VALUE')
     
     
       # counts for later calculations
-      cc <- aggregate(rs1w0$bfwd_ratseed
+      cc <- aggregate(list(VALUE=rs1w0$bfwd_ratseed)
                      ,list('SITE'=rs1w0$SITE)
                      ,count
                      )
        cc$METRIC <- 'n_bfrat'
-       cc <- rename(cc, 'x', 'VALUE')
+#       cc <- rename(cc, 'x', 'VALUE')
 
-      cc1 <- aggregate(rs1w$wdprod
+      cc1 <- aggregate(list(VALUE=rs1w$wdprod)
                       ,list('SITE'=rs1w$SITE)
                       ,count
                       )
     
       cc1$METRIC <- 'n_wd'
-      cc1 <- rename(cc1, 'x', 'VALUE')
+#      cc1 <- rename(cc1, 'x', 'VALUE')
     
-      cc2 <- aggregate(rs1w$wdratio
+      cc2 <- aggregate(list(VALUE=rs1w$wdratio)
                       ,list('SITE'=rs1w$SITE)
                       ,count
                       )
     
       cc2$METRIC <- 'n_wdr'
-      cc2 <- rename(cc2, 'x', 'VALUE')
+#      cc2 <- rename(cc2, 'x', 'VALUE')
 
       wadeableRatios <- rbind(mn, mn1, mn2, sd1, sd2, cc, cc1, cc2)
       intermediateMessage ('.7')
@@ -905,7 +905,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
   
       rs1b <-  merge (rs1bminus, boatbwdepth, by= c('SITE', 'TRANSECT'), all=TRUE)
 
-      rs1b <- rename(rs1b, 'VALUE', 'VALUE.DEPTH')
+      rs1b <- dplyr::rename(rs1b, VALUE.DEPTH=VALUE) #'VALUE', 'VALUE.DEPTH')
   
       # do these for the boat
 
@@ -917,69 +917,69 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       intermediateMessage ('.10')
 
       # next summarize (means)the ratios/products
-      mnb <- aggregate(rs1b$bfwd_ratseed
+      mnb <- aggregate(list(VALUE=rs1b$bfwd_ratseed)
                       ,list('SITE'=rs1b$SITE)  #####CHANGED: Use rs1w0, not rs1w #####
                       ,mean , na.rm=TRUE
                       )
     
       mnb$METRIC <- 'bfwd_rat'
-      mnb <- rename(mnb, 'x', 'VALUE')
-      mn1b <- aggregate(rs1b$wdprod
+#      mnb <- rename(mnb, 'x', 'VALUE')
+      mn1b <- aggregate(list(VALUE=rs1b$wdprod)
                        ,list('SITE'=rs1b$SITE)
                        ,mean , na.rm=TRUE
                        )
     
       mn1b$METRIC <- 'xwxd'
-      mn1b <- rename (mn1b, 'x', 'VALUE')
+#      mn1b <- rename (mn1b, 'x', 'VALUE')
     
-      mn2b <- aggregate(rs1b$wdratio
+      mn2b <- aggregate(list(VALUE=rs1b$wdratio)
                        ,list('SITE'=rs1b$SITE)
                        ,mean , na.rm=TRUE
                        )
     
       mn2b$METRIC <- 'xwd_rat'
-      mn2b <- rename(mn2b, 'x', 'VALUE')
+#      mn2b <- rename(mn2b, 'x', 'VALUE')
     
       # standard deviations (product and ratio)
-      sd1b <- aggregate(rs1b$wdprod
+      sd1b <- aggregate(list(VALUE=rs1b$wdprod)
                        ,list('SITE'=rs1b$SITE)
                        ,sd , na.rm=TRUE
                        )
     
       sd1b$METRIC <- 'sdwxd'
-      sd1b <- rename(sd1b, 'x', 'VALUE')
+#      sd1b <- rename(sd1b, 'x', 'VALUE')
     
-      sd2b <- aggregate(rs1b$wdratio
+      sd2b <- aggregate(list(VALUE=rs1b$wdratio)
                        ,list('SITE'=rs1b$SITE)
                        ,sd , na.rm=TRUE
                        )
     
       sd2b$METRIC <- 'sdwd_rat'
-      sd2b <- rename(sd2b, 'x', 'VALUE')
+#      sd2b <- rename(sd2b, 'x', 'VALUE')
 
       # counts for later calculations
-      ccb <- aggregate(rs1b$bfwd_ratseed
+      ccb <- aggregate(list(VALUE=rs1b$bfwd_ratseed)
                       ,list('SITE'=rs1b$SITE) ##### CHANGED: Use rs1w0, not rs1w #####
                       ,count
                       )
       ccb$METRIC <- 'n_bfrat'   
-      ccb <- rename(ccb,'x', 'VALUE')   
+#      ccb <- rename(ccb,'x', 'VALUE')   
 
-      cc1b <- aggregate(rs1b$wdprod
+      cc1b <- aggregate(list(VALUE=rs1b$wdprod)
                        ,list('SITE'=rs1b$SITE)
                        ,count
                        )
     
       cc1b$METRIC <- 'n_wd'
-      cc1b <- rename(cc1b, 'x', 'VALUE')
+#      cc1b <- rename(cc1b, 'x', 'VALUE')
     
-      cc2b <- aggregate(rs1b$wdratio
+      cc2b <- aggregate(list(VALUE=rs1b$wdratio)
                        ,list('SITE'=rs1b$SITE)
                        ,count
                        )
     
       cc2b$METRIC <- 'n_wdr'
-      cc2b <- rename(cc2b, 'x', 'VALUE')
+#      cc2b <- rename(cc2b, 'x', 'VALUE')
       
       boatableRatios <- rbind(mnb, mn1b, mn2b, sd1b,sd2b,ccb,cc1b,cc2b)
   }

@@ -210,6 +210,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 #    3/20/19 cws Added structure checks for arguments coverClassTypes and 
 #            coverCalculationValues.  Using the values of coverCalculationValues$field 
 #            for legal checks of VALUE in data arguments.
+#    3/22/19 cws Modified to use dplyr::rename()
 #
 # ARGUMENTS:
 # algae       dataframe containing algae cover class data at each transect for
@@ -450,7 +451,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
     intermediateMessage('.2')
 
                           
-  meanPresence  <-rename(fcPMeans, 'x','fcfp') 
+  meanPresence  <-dplyr::rename(fcPMeans, fcfp=x) # 'x','fcfp') 
    
   meanPresence$PARAMETER <- ifelse(meanPresence$PARAMETER == 'ALGAE', 'pfc_alg' , meanPresence$PARAMETER)      
   meanPresence$PARAMETER <- ifelse(meanPresence$PARAMETER == 'BOULDR', 'pfc_rck' , meanPresence$PARAMETER)     
@@ -462,9 +463,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
   meanPresence$PARAMETER <- ifelse(meanPresence$PARAMETER == 'UNDERCUT', 'pfc_ucb' , meanPresence$PARAMETER) 
   meanPresence$PARAMETER <- ifelse(meanPresence$PARAMETER == 'WOODY', 'pfc_lwd' , meanPresence$PARAMETER) 
  
-     
-     
-  meanPresence <- rename(meanPresence, c('PARAMETER','fcfp'),c('METRIC' ,'VALUE'))
+  meanPresence <- dplyr::rename(meanPresence, METRIC=PARAMETER, VALUE=fcfp) #c('PARAMETER','fcfp'),c('METRIC' ,'VALUE'))
                          
 
     intermediateMessage('.3')
@@ -486,7 +485,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                       )
  
       
-  meanCover  <- rename(fcCMeans, 'x','fcfc')  
+  meanCover  <- dplyr::rename(fcCMeans, fcfc=x) #'x','fcfc')  
       
   meanCover$PARAMETER <- ifelse(meanCover$PARAMETER == 'ALGAE', 'xfc_alg' , meanCover$PARAMETER)      
   meanCover$PARAMETER <- ifelse(meanCover$PARAMETER == 'BOULDR', 'xfc_rck' , meanCover$PARAMETER)     
@@ -500,7 +499,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
  
      
      
-  meanCover <- rename(meanCover, c('PARAMETER','fcfc'),c('METRIC' , 'VALUE'))
+  meanCover <- dplyr::rename(meanCover, METRIC=PARAMETER, VALUE=fcfc) #c('PARAMETER','fcfc'),c('METRIC' , 'VALUE'))
                                             
 
     intermediateMessage('.4')
@@ -510,57 +509,57 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
     #grouped presence
     fcPMeans <- merge(fcPMeans, fcTypes, by='PARAMETER', all=TRUE, sort=FALSE)
 
-    fciPAll <- aggregate(list('fciPAll'=fcPMeans$x)
+    fciPAll <- aggregate(list('VALUE'=fcPMeans$x)
                        ,list('SITE'=fcPMeans$SITE)
                        ,sum, na.rm=TRUE
                        )
     
     fciPAll$METRIC <- 'pfc_all'
-    fciPAll  <- rename(fciPAll, 'fciPAll','VALUE')  
+#    fciPAll  <- rename(fciPAll, 'fciPAll','VALUE')  
     
     ttPBig <- subset(fcPMeans, isBig)
-    fciPBig <- aggregate(list('fciPBig'=ttPBig$x)
+    fciPBig <- aggregate(list('VALUE'=ttPBig$x)
                        ,list('SITE'=ttPBig$SITE)
                        ,sum, na.rm=TRUE
                        )
     fciPBig$METRIC <- 'pfc_big'
-    fciPBig  <- rename(fciPBig,'fciPBig','VALUE')                    
+#    fciPBig  <- rename(fciPBig,'fciPBig','VALUE')                    
 
     ttPNatural <- subset(fcPMeans, isNatural)
-    fciPNatural <- aggregate(list('fciPNatural'=ttPNatural$x)
+    fciPNatural <- aggregate(list('VALUE'=ttPNatural$x)
                            ,list('SITE'=ttPNatural$SITE)
                            ,sum, na.rm=TRUE
                            )
     fciPNatural$METRIC <- 'pfc_nat'
-    fciPNatural  <- rename(fciPNatural, 'fciPNatural','VALUE') 
+#    fciPNatural  <- rename(fciPNatural, 'fciPNatural','VALUE') 
   
     # Calculate cover indices: total, large, and natural vegetation
     # grouped cover
     fcCMeans <- merge(fcCMeans, fcTypes, by='PARAMETER', all=TRUE, sort=FALSE)
 
-    fciCAll <- aggregate(list('fciCAll'=fcCMeans$x)
+    fciCAll <- aggregate(list('VALUE'=fcCMeans$x)
                        ,list('SITE'=fcCMeans$SITE)
                        ,sum, na.rm=TRUE
                        )
     
     fciCAll$METRIC <- 'xfc_all'
-    fciCAll  <- rename(fciCAll, 'fciCAll','VALUE')  
+#    fciCAll  <- rename(fciCAll, 'fciCAll','VALUE')  
       
     ttCBig <- subset(fcCMeans, isBig)
-    fciCBig <- aggregate(list('fciCBig'=ttCBig$x)
+    fciCBig <- aggregate(list('VALUE'=ttCBig$x)
                        ,list('SITE'=ttCBig$SITE)
                        ,sum, na.rm=TRUE
                        )
     fciCBig$METRIC <- 'xfc_big'
-    fciCBig  <- rename(fciCBig, 'fciCBig','VALUE')                    
+#    fciCBig  <- rename(fciCBig, 'fciCBig','VALUE')                    
 
     ttCNatural <- subset(fcCMeans, isNatural)
-    fciCNatural <- aggregate(list('fciCNatural'=ttCNatural$x)
+    fciCNatural <- aggregate(list('VALUE'=ttCNatural$x)
                            ,list('SITE'=ttCNatural$SITE)
                            ,sum, na.rm=TRUE
                            )
     fciCNatural$METRIC <- 'xfc_nat'
-    fciCNatural  <- rename(fciCNatural, 'fciCNatural','VALUE')
+#    fciCNatural  <- rename(fciCNatural, 'fciCNatural','VALUE')
                        
     intermediateMessage('.5')
 
@@ -568,19 +567,19 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
     
   
   
-    tt<-aggregate(fcCover$calc
+    tt<-aggregate(list(VALUE=fcCover$calc)
                  ,list('SITE'=fcCover$SITE
-                      ,"parameter"=fcCover$PARAMETER
+                      ,"METRIC"=fcCover$PARAMETER
                       )
                  ,sd, na.rm=TRUE
                  )
   
-    sd1 <- subset(tt, parameter %in% c('UNDERCUT', 'OVRHNG'))
+    sd1 <- subset(tt, METRIC %in% c('UNDERCUT', 'OVRHNG'))
     
-  sd1$parameter <- ifelse(sd1$parameter == 'UNDERCUT', 'sdfc_ucb' , sd1$parameter) 
-  sd1$parameter <- ifelse(sd1$parameter == 'OVRHNG', 'sdfc_ohv' , sd1$parameter) 
-  sd1  <- rename(sd1, 'x', 'VALUE') 
-  sd1  <- rename(sd1, 'parameter', 'METRIC') 
+  sd1$METRIC <- ifelse(sd1$METRIC == 'UNDERCUT', 'sdfc_ucb' , sd1$METRIC) 
+  sd1$METRIC <- ifelse(sd1$METRIC == 'OVRHNG', 'sdfc_ohv' , sd1$METRIC) 
+#  sd1  <- rename(sd1, 'x', 'VALUE') 
+#  sd1  <- rename(sd1, 'parameter', 'METRIC') 
      
 
     intermediateMessage('.6')
@@ -588,35 +587,35 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 
     # Calculate iqr, idr for OVRHNG and UNDERCUT midpoints
     
-     tt<-aggregate(fcCover$calc
+     tt<-aggregate(list(VALUE=fcCover$calc)
                  ,list('SITE'=fcCover$SITE
-                      ,"parameter"=fcCover$PARAMETER
+                      ,"METRIC"=fcCover$PARAMETER
                       )
                  ,iqr
                  )
   
-    idr1 <- subset(tt, parameter %in% c('UNDERCUT', 'OVRHNG'))
+    idr1 <- subset(tt, METRIC %in% c('UNDERCUT', 'OVRHNG'))
   
-  idr1$parameter <- ifelse(idr1$parameter == 'UNDERCUT', 'idrucb' , idr1$parameter) 
-  idr1$parameter <- ifelse(idr1$parameter == 'OVRHNG', 'idrohv' , idr1$parameter) 
-  idr1  <- rename(idr1, 'x','VALUE') 
-  idr1  <- rename(idr1, 'parameter','METRIC') 
+  idr1$METRIC <- ifelse(idr1$METRIC == 'UNDERCUT', 'idrucb' , idr1$METRIC) 
+  idr1$METRIC <- ifelse(idr1$METRIC == 'OVRHNG', 'idrohv' , idr1$METRIC) 
+#  idr1  <- rename(idr1, 'x','VALUE') 
+#  idr1  <- rename(idr1, 'parameter','METRIC') 
   
   #iqr
   
-       tt<-aggregate(fcCover$calc
+       tt<-aggregate(list(VALUE=fcCover$calc)
                  ,list('SITE'=fcCover$SITE
-                      ,"parameter"=fcCover$PARAMETER
+                      ,"METRIC"=fcCover$PARAMETER
                       )
                  ,iqr
                  )
   
-    iqr1 <- subset(tt, parameter %in% c('UNDERCUT', 'OVRHNG'))
+    iqr1 <- subset(tt, METRIC %in% c('UNDERCUT', 'OVRHNG'))
   
-  iqr1$parameter <- ifelse(iqr1$parameter == 'UNDERCUT', 'iqrucb' , iqr1$parameter) 
-  iqr1$parameter <- ifelse(iqr1$parameter == 'OVRHNG', 'iqrohv' , iqr1$parameter) 
-  iqr1  <- rename(iqr1, 'x', 'VALUE') 
-  iqr1  <- rename(iqr1, 'parameter', 'METRIC') 
+  iqr1$METRIC <- ifelse(iqr1$METRIC == 'UNDERCUT', 'iqrucb' , iqr1$METRIC) 
+  iqr1$METRIC <- ifelse(iqr1$METRIC == 'OVRHNG', 'iqrohv' , iqr1$METRIC) 
+#  iqr1  <- rename(iqr1, 'x', 'VALUE') 
+#  iqr1  <- rename(iqr1, 'parameter', 'METRIC') 
   
   
   

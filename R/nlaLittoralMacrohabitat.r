@@ -124,7 +124,7 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
 	                               ,humanDisturbanceWeights = data.frame(field=c('NONE','LOW','MODERATE','HEAVY')
 			                                                            ,calc =c(0, 0.2, 0.5, 1.0)
 			                                                            ,stringsAsFactors=FALSE
-                                                                    	),strings
+                                                                    	)
                                    ,isUnitTest = FALSE
                                    ) {
 
@@ -158,7 +158,8 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
 #            of PARAMETER. Updated calling interface.
 #    3/19/19 cws Added isUnitTest argument for consistency.
 #    3/22/19 cws Added validation of data args. Added humanDisturbanceWeights
-#            metadata argument.
+#            metadata argument. Modified to use dplyr::rename.
+#    3/26/19 cws Removed errant argument 'strings'.
 #
 # Arguments:
 #   df = a data frame containing littoral fish macrohabitat data.  The
@@ -342,22 +343,18 @@ nlaLittoralMacrohabitat.coverTypes <- function(df)
 	)
 	tt$VALUE[is.na(tt$VALUE)] <- 0
 	
-	
-	typeMeans <- reshape(subset(tt, select=c('SITE','PARAMETER','VALUE'))
-			,idvar='SITE'
-			,direction='wide'
-			,timevar='PARAMETER'
-	)
-	typeMeans <- rename(typeMeans
-			,c('VALUE.COVER_ARTIFICIAL', 'VALUE.COVER_BOULDERS'
-					,'VALUE.COVER_FILL', 'VALUE.COVER_NONE'
-					,'VALUE.COVER_VEG', 'VALUE.COVER_WOODY'
-			)
-			,c('LMFPARTIFICIAL', 'LMFPBOULDERS'
-					,'LMFPFILL', 'LMFPNONE'
-					,'LMFPVEG', 'LMFPWOODY'
-			)
-	)
+	typeMeans <- tt %>% select(SITE, PARAMETER, VALUE) %>%
+	             mutate(PARAMETER = ifelse(PARAMETER == 'COVER_ARTIFICIAL', 'LMFPARTIFICIAL'
+	                               ,ifelse(PARAMETER == 'COVER_BOULDERS', 'LMFPBOULDERS'
+	                               ,ifelse(PARAMETER == 'COVER_FILL', 'LMFPFILL'
+	                               ,ifelse(PARAMETER == 'COVER_NONE', 'LMFPNONE'
+	                               ,ifelse(PARAMETER == 'COVER_VEG', 'LMFPVEG'
+	                               ,ifelse(PARAMETER == 'COVER_WOODY', 'LMFPWOODY', 'IGNORED_VALUE' # (if any)
+	                                ))))))
+	                   ) %>%
+	             subset(PARAMETER != 'IGNORED_VALUE') %>%
+	             dcast(SITE~PARAMETER, value.var='VALUE')
+
 	typeMeans <- within(melt(typeMeans, 'SITE', variable.name='PARAMETER', value.name='VALUE'), PARAMETER <- as.character(PARAMETER)) %>% dplyr::rename(METRIC=PARAMETER)
 	intermediateMessage('.6')
 	

@@ -165,6 +165,7 @@ nrsaLegacyTree <- function(dbhClass = NULL
 #    3/16/16 cws removed old UID name from comments
 #    3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull(). Replaced call to our rename() with dplyr::rename()
+#    3/25/19 cws Modified to use dplyr::rename()
 #
 # ARGUMENTS:
 # dbhClass      dataframe containing dbh class values at each transect of all 
@@ -456,10 +457,10 @@ aa <- subset(aggregate(list(medianSize=lt$numdbh), list(SITE=lt$SITE),
              na.rm = T, median), !(is.na(medianSize)))
 lt <- merge(lt, aa, all.x=T)
 lt$medianDistance <- ifelse(lt$numdbh>=lt$medianSize, lt$DISTANCE, NA)
-ltmddist <- aggregate(list(ltmddist=lt$medianDistance),
+ltmddist <- aggregate(list(VALUE=lt$medianDistance),
                list(SITE=lt$SITE,METRIC=lt$METRIC), mean, na.rm = T)
   ltmddist$METRIC <- 'ltmddist'
-  ltmddist <- rename(ltmddist, 'ltmddist', 'VALUE')
+#  ltmddist <- rename(ltmddist, 'ltmddist', 'VALUE')
 
 ## fractions of trees by size
 # cntS - count of trees >= small -> s, m, l, x
@@ -497,16 +498,20 @@ treeCounts$METRIC <- ''
 
 ltfracs <- subset(treeCounts, select=c('SITE','METRIC','ltfracs'))
   ltfracs$METRIC <- 'ltfracs'
-  ltfracs <- rename(ltfracs,'ltfracs','VALUE')
+  ltfracs <- dplyr::rename(ltfracs, VALUE=ltfracs)
+#  ltfracs <- rename(ltfracs,'ltfracs','VALUE')
 ltfracm <- subset(treeCounts, select=c('SITE','METRIC','ltfracm'))
   ltfracm$METRIC <- 'ltfracm'
-  ltfracm <- rename(ltfracm,'ltfracm','VALUE')
+  ltfracm <- dplyr::rename(ltfracm, VALUE=ltfracm)
+#  ltfracm <- rename(ltfracm,'ltfracm','VALUE')
 ltfracl <- subset(treeCounts, select=c('SITE','METRIC','ltfracl'))
   ltfracl$METRIC <- 'ltfracl'
-  ltfracl <- rename(ltfracl,'ltfracl','VALUE')
+  ltfracl <- dplyr::rename(ltfracl, VALUE=ltfracl)
+#  ltfracl <- rename(ltfracl,'ltfracl','VALUE')
 ltfracx <- subset(treeCounts, select=c('SITE','METRIC','ltfracx'))
   ltfracx$METRIC <- 'ltfracx'
-  ltfracx <- rename(ltfracx,'ltfracx','VALUE')
+  ltfracx <- dplyr::rename(ltfracx, VALUE=ltfracx)
+#  ltfracx <- rename(ltfracx,'ltfracx','VALUE')
 
 ### And now for the piece de resistance - the list of dominant and subdominant species
 # ltsplist - List of all speicies present
@@ -519,45 +524,41 @@ ltfracx <- subset(treeCounts, select=c('SITE','METRIC','ltfracx'))
                      
 ##  Creating ltmddom and ltmdsub
 counts <- aggregate(list(count=lt$taxCat), list('SITE'=lt$SITE,'METRIC'=lt$METRIC, 'maxTaxCat'=lt$taxCat), count)
-ltmddomn <- aggregate(list('ltmddomn'=counts$count), list('SITE'=counts$SITE, METRIC=counts$METRIC), max)
+ltmddomn <- aggregate(list('VALUE'=counts$count), list('SITE'=counts$SITE, METRIC=counts$METRIC), max)
   ltmddomn$METRIC <- 'ltmddomn'
-  ltmddomn <- rename(ltmddomn,'ltmddomn','VALUE')
+#  ltmddomn <- rename(ltmddomn,'ltmddomn','VALUE')
   
 aa <- subset(merge(counts, subset(ltmddomn,select=c('SITE','VALUE')), by='SITE'), count==VALUE)
-ltmddom <- aggregate(list('ltmddom'=aa$maxTaxCat)
+ltmddom <- aggregate(list('VALUE'=aa$maxTaxCat)
                         ,list('SITE'=aa$SITE,'METRIC'=aa$METRIC)
                         ,function(x) { paste(x, collapse=',') } )
   ltmddom$METRIC <- 'ltmddom'
-  ltmddom <- rename(ltmddom,'ltmddom','VALUE')
+#  ltmddom <- rename(ltmddom,'ltmddom','VALUE')
                      
 bb <- subset(merge(counts, subset(ltmddomn, select=c('SITE','VALUE')),
         by='SITE'), count!=VALUE, select=c('SITE','METRIC','maxTaxCat','count'))                      
-ltmdsubn <- aggregate(list('ltmdsubn'=bb$count), list('SITE'=bb$SITE, METRIC=bb$METRIC), max)
+ltmdsubn <- aggregate(list('VALUE'=bb$count), list('SITE'=bb$SITE, METRIC=bb$METRIC), max)
   ltmdsubn$METRIC <- 'ltmdsubn'
-  ltmdsubn <- rename(ltmdsubn,'ltmdsubn','VALUE')
+#  ltmdsubn <- rename(ltmdsubn,'ltmdsubn','VALUE')
 cc <- subset(merge(counts, subset(ltmdsubn,select=c('SITE','VALUE')), by='SITE'), count==VALUE)
-ltmdsub <- aggregate(list('ltmdsub'=cc$maxTaxCat)
+ltmdsub <- aggregate(list('VALUE'=cc$maxTaxCat)
                         ,list('SITE'=cc$SITE,'METRIC'=cc$METRIC)
                         ,function(x) { paste(x, collapse=',')})
   ltmdsub$METRIC <- 'ltmdsub'
-  ltmdsub <- rename(ltmdsub,'ltmdsub','VALUE')
+#  ltmdsub <- rename(ltmdsub,'ltmdsub','VALUE')
 
 ##  List of all trees
 hasTrees <- subset(lt, !(is.na(SPECIES)))                   
-ltsplist <- aggregate(list('ltsplist'=hasTrees$SPECIES)
+ltsplist <- aggregate(list('VALUE'=hasTrees$SPECIES)
                         ,list('SITE'=hasTrees$SITE,'METRIC'=hasTrees$METRIC) 
                         ,function(x) { paste(x, collapse=',')})
   ltsplist$METRIC <- 'ltsplist'
-  ltsplist <- rename(ltsplist,'ltsplist','VALUE')
-
+#  ltsplist <- rename(ltsplist,'ltsplist','VALUE')
 
 ####  Woo hoo! Let's rbind these puppies and put 'em to bed
 mhtrees <- rbind(ltmxdbh,ltmxht,ltmxspp,ltmxsize,ltmxdist,ltmxcnt,ltfracs,ltfracm,
                  ltfracl,ltfracx,ltmddist,ltsplist,ltmddom,ltmddomn,ltmdsub,
                  ltmdsubn)
-
 }
-
-
 
 # end of file

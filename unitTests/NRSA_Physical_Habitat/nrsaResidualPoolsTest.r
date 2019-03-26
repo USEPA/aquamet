@@ -10,6 +10,7 @@
 #          rpxdep_cm, rpvdep_cm, rpmxdep_cm, rpgt05x_cm, rpgt10x_cm, rpgt20x_cm 
 #          which are expressed in the same units for all protocols.
 #  3/13/19 cws Modified due to use of aquametStandardizeArgument
+#  3/25/19 cws Modified to use dplyr::rename()
 #
 
 nrsaResidualPoolsTest <- function()
@@ -1378,13 +1379,12 @@ nrsaResidualPoolsTest.createExpectedReorgOLD <- function(fakeThal, fakeSlopes)
 #  expected$INCREMNT <- as.numeric(subset(fakeThal, PARAMETER=='INCREMNT')$VALUE)
 #  expected <- subset(expected, select=-c(PARAMETER,VALUE))
   expected <- merge(subset(expected, select=-c(PARAMETER,VALUE))
-                   ,unique(rename(subset(fakeThal
-                                        ,PARAMETER=='INCREMNT'
-                                        ,select=c('SITE','TRANSECT','VALUE')
+                   ,unique(dplyr::rename(subset(fakeThal
+                                               ,PARAMETER=='INCREMNT'
+                                               ,select=c('SITE','TRANSECT','VALUE')
+                                               )
+                                        ,INCREMENT = VALUE #,'VALUE','INCREMNT'
                                         )
-                                 ,'VALUE'
-                                 ,'INCREMNT'
-                                 )
                           )
                    ,c('SITE','TRANSECT')
                    ,all=TRUE
