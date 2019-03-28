@@ -75,11 +75,11 @@
 #' @keywords survey
 #' 
 nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, totalCover=NULL
-                                 ,coverCalculationValues = data.frame(field = c(NA,'0','1','2','3','4')
-                                                                     ,calc = c(NA,0,0.05,0.25,0.575,0.875)
-                                                                     ,presence = c(NA,0L,1L,1L,1L,1L)
-                                                                     ,stringsAsFactors=FALSE
-                                                                     )
+                                 ,dataInformation = data.frame(value    = c(NA,'0','1','2','3','4')
+                                                              ,weights  = c(NA,0,0.05,0.25,0.575,0.875)
+                                                              ,presence = c(NA,0L,1L,1L,1L,1L) %>% as.logical()
+                                                              ,stringsAsFactors=FALSE
+                                                              )
                                  ,isUnitTest = FALSE
                                  ) {
 
@@ -122,6 +122,7 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
 #    3/19/19 cws Added isUnitTest argument for consistency.
 #    3/21/19 cws Added coverCalculationValues argument. Using it to validate
 #            data arguments
+#    3/28/19 cws Standardized metadata argument naming
 #
 # Arguments:
 #   df = a data frame containing aquatic macrophyte data.  The data frame must
@@ -166,17 +167,19 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
         
     }
     
-    coverCalculationValues <- aquametStandardizeArgument(coverCalculationValues
-                                                        ,struct = list(field=c('character','integer'), calc='double', presence=c('logical','integer'))
-                                                        ,rangeLimits = list(calc=c(0,1))
-                                                        ,legalValues = list(field=c(NA,'','0','1','2','3','4'), presence=c(NA,FALSE,TRUE))
-                                                        ,stopOnError = !isUnitTest
-                                                        )
+    dataInformation <- aquametStandardizeArgument(dataInformation
+                                                 ,struct = list(value=c('character','integer'), weights='double', presence=c('logical','integer'))
+                                                 ,rangeLimits = list(weights=c(0,1))
+                                                 ,legalValues = list(value=c(NA,'','0','1','2','3','4'), presence=c(NA,FALSE,TRUE))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
 
-    emergent <- aquametStandardizeArgument(emergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)), 'AM_EMERGENT', stopOnError = !isUnitTest)
-    floating <- aquametStandardizeArgument(floating, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)), 'AM_FLOATING', stopOnError = !isUnitTest)
-    submergent <- aquametStandardizeArgument(submergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)), 'AM_SUBMERGENT', stopOnError = !isUnitTest)
-    totalCover <- aquametStandardizeArgument(totalCover, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', coverCalculationValues$field)), 'AM_TOTALCOVER', stopOnError = !isUnitTest)
+    emergent <- aquametStandardizeArgument(emergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', dataInformation$value)), 'AM_EMERGENT', stopOnError = !isUnitTest)
+    floating <- aquametStandardizeArgument(floating, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', dataInformation$value)), 'AM_FLOATING', stopOnError = !isUnitTest)
+    submergent <- aquametStandardizeArgument(submergent, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', dataInformation$value)), 'AM_SUBMERGENT', stopOnError = !isUnitTest)
+    totalCover <- aquametStandardizeArgument(totalCover, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'', dataInformation$value)), 'AM_TOTALCOVER', stopOnError = !isUnitTest)
+
+    coverCalculationValues <- dplyr::rename(dataInformation, field=value, calc=weights)
     
     df <- rbind(emergent, floating, submergent, totalCover)
     if(is.null(df)) {

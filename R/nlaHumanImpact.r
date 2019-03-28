@@ -387,12 +387,12 @@ nlaHumanImpact <- function(buildings = NULL
                           ,horizontalDistance_dd = NULL                             # required for calculation of synthetic values mimicking 2007 metrics
                           ,data2007=FALSE                                           # if TRUE, synthetic values mimicking 2007 metrics will not be calculated, and _RIParian metric names will lose that suffix
                           ,fillinDrawdown=TRUE
-                          ,proximityWeights = data.frame(proximity=c('0', 'P', 'C') # Define weighing influence proximity values 
-                          	                            ,calc=     c(0.0, 0.5, 1.0)
-                          	                            ,circa=    c(0L,   0L,   1L)
-                          	                            ,present=  c(0L,   1L,   1L)
-                                                        ,stringsAsFactors=FALSE
-                          	                            )
+                          ,dataInformation = data.frame(value=    c('0', 'P', 'C') # Define weighing influence proximity values 
+                          	                           ,weights=  c(0.0, 0.5, 1.0)
+                          	                           ,inStream= c(0L,   0L,   1L)
+                          	                           ,presence= c(0L,   1L,   1L) %>% as.logical()
+                                                       ,stringsAsFactors=FALSE
+                          	                           )
                           ,isUnitTest = FALSE
                           ) {
 
@@ -463,6 +463,7 @@ nlaHumanImpact <- function(buildings = NULL
 #    3/19/19 cws Added isUnitTest argument for consistency.
 #    3/20/19 cws Added validation check of proximityWeights argument. Using that
 #            argument to validate data arguments.
+#    3/28/19 cws Standardized metadata argument naming
 #
 # Arguments:
 #   df = a data frame containing human influence data.  The data frame must
@@ -512,42 +513,44 @@ nlaHumanImpact <- function(buildings = NULL
         return(rc)
     }
     
-    proximityWeights <- aquametStandardizeArgument(proximityWeights
-                                                  ,struct = list(proximity='character', calc='double', circa=c('integer','logical'), present=c('integer','logical'))
-                                                  ,rangeLimits = list(calc=c(0,1))
-                                                  ,legalValues = list(proximity=c(NA,'','0','P','C'), circa=c(NA, FALSE, TRUE), present=c(NA, FALSE, TRUE))
-                                                  ,stopOnError = !isUnitTest
-                                                  )
+    dataInformation <- aquametStandardizeArgument(dataInformation
+                                                 ,struct = list(value='character', weights='double', inStream=c('integer','logical'), presence=c('integer','logical'))
+                                                 ,rangeLimits = list(weights=c(0,1))
+                                                 ,legalValues = list(value=c(NA,'','0','P','C'), inStream=c(NA, FALSE, TRUE), presence=c(NA, FALSE, TRUE))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
 
-    buildings <-     aquametStandardizeArgument(buildings, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),     'HI_BUILDINGS', stopOnError = !isUnitTest)
-    buildings_dd <-  aquametStandardizeArgument(buildings_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),  'HI_BUILDINGS_DD', stopOnError = !isUnitTest)
-    commercial <-    aquametStandardizeArgument(commercial, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),    'HI_COMMERCIAL', stopOnError = !isUnitTest)
-    commercial_dd <- aquametStandardizeArgument(commercial_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)), 'HI_COMMERCIAL_DD', stopOnError = !isUnitTest)
-    crops <-         aquametStandardizeArgument(crops, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),         'HI_CROPS', stopOnError = !isUnitTest)
-    crops_dd <-      aquametStandardizeArgument(crops_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),      'HI_CROPS_DD', stopOnError = !isUnitTest)
-    docks <-         aquametStandardizeArgument(docks, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),         'HI_DOCKS', stopOnError = !isUnitTest)
-    docks_dd <-      aquametStandardizeArgument(docks_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),      'HI_DOCKS_DD', stopOnError = !isUnitTest)
-    landfill <-      aquametStandardizeArgument(landfill, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),      'HI_LANDFILL', stopOnError = !isUnitTest)
-    landfill_dd <-   aquametStandardizeArgument(landfill_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),   'HI_LANDFILL_DD', stopOnError = !isUnitTest)
-    lawn <-          aquametStandardizeArgument(lawn, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),          'HI_LAWN', stopOnError = !isUnitTest)
-    lawn_dd <-       aquametStandardizeArgument(lawn_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),       'HI_LAWN_DD', stopOnError = !isUnitTest)
-    orchard <-       aquametStandardizeArgument(orchard, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),       'HI_ORCHARD', stopOnError = !isUnitTest)
-    orchard_dd <-    aquametStandardizeArgument(orchard_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),    'HI_ORCHARD_DD', stopOnError = !isUnitTest)
-    other <-         aquametStandardizeArgument(other, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),         'HI_OTHER', stopOnError = !isUnitTest)
-    other_dd <-      aquametStandardizeArgument(other_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),      'HI_OTHER_DD', stopOnError = !isUnitTest)
-    park <-          aquametStandardizeArgument(park, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),          'HI_PARK', stopOnError = !isUnitTest)
-    park_dd <-       aquametStandardizeArgument(park_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),       'HI_PARK_DD', stopOnError = !isUnitTest)
-    pasture <-       aquametStandardizeArgument(pasture, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),       'HI_PASTURE', stopOnError = !isUnitTest)
-    pasture_dd <-    aquametStandardizeArgument(pasture_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),    'HI_PASTURE_DD', stopOnError = !isUnitTest)
-    powerlines <-    aquametStandardizeArgument(powerlines, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),    'HI_POWERLINES', stopOnError = !isUnitTest)
-    powerlines_dd <- aquametStandardizeArgument(powerlines_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)), 'HI_POWERLINES_DD', stopOnError = !isUnitTest)
-    roads <-         aquametStandardizeArgument(roads, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),         'HI_ROADS', stopOnError = !isUnitTest)
-    roads_dd <-      aquametStandardizeArgument(roads_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),      'HI_ROADS_DD', stopOnError = !isUnitTest)
-    walls <-         aquametStandardizeArgument(walls, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),         'HI_WALLS', stopOnError = !isUnitTest)
-    walls_dd <-      aquametStandardizeArgument(walls_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',proximityWeights$proximity)),      'HI_WALLS_DD', stopOnError = !isUnitTest)
+    buildings <-     aquametStandardizeArgument(buildings, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),     'HI_BUILDINGS', stopOnError = !isUnitTest)
+    buildings_dd <-  aquametStandardizeArgument(buildings_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),  'HI_BUILDINGS_DD', stopOnError = !isUnitTest)
+    commercial <-    aquametStandardizeArgument(commercial, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),    'HI_COMMERCIAL', stopOnError = !isUnitTest)
+    commercial_dd <- aquametStandardizeArgument(commercial_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)), 'HI_COMMERCIAL_DD', stopOnError = !isUnitTest)
+    crops <-         aquametStandardizeArgument(crops, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),         'HI_CROPS', stopOnError = !isUnitTest)
+    crops_dd <-      aquametStandardizeArgument(crops_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),      'HI_CROPS_DD', stopOnError = !isUnitTest)
+    docks <-         aquametStandardizeArgument(docks, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),         'HI_DOCKS', stopOnError = !isUnitTest)
+    docks_dd <-      aquametStandardizeArgument(docks_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),      'HI_DOCKS_DD', stopOnError = !isUnitTest)
+    landfill <-      aquametStandardizeArgument(landfill, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),      'HI_LANDFILL', stopOnError = !isUnitTest)
+    landfill_dd <-   aquametStandardizeArgument(landfill_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),   'HI_LANDFILL_DD', stopOnError = !isUnitTest)
+    lawn <-          aquametStandardizeArgument(lawn, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),          'HI_LAWN', stopOnError = !isUnitTest)
+    lawn_dd <-       aquametStandardizeArgument(lawn_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),       'HI_LAWN_DD', stopOnError = !isUnitTest)
+    orchard <-       aquametStandardizeArgument(orchard, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),       'HI_ORCHARD', stopOnError = !isUnitTest)
+    orchard_dd <-    aquametStandardizeArgument(orchard_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),    'HI_ORCHARD_DD', stopOnError = !isUnitTest)
+    other <-         aquametStandardizeArgument(other, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),         'HI_OTHER', stopOnError = !isUnitTest)
+    other_dd <-      aquametStandardizeArgument(other_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),      'HI_OTHER_DD', stopOnError = !isUnitTest)
+    park <-          aquametStandardizeArgument(park, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),          'HI_PARK', stopOnError = !isUnitTest)
+    park_dd <-       aquametStandardizeArgument(park_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),       'HI_PARK_DD', stopOnError = !isUnitTest)
+    pasture <-       aquametStandardizeArgument(pasture, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),       'HI_PASTURE', stopOnError = !isUnitTest)
+    pasture_dd <-    aquametStandardizeArgument(pasture_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),    'HI_PASTURE_DD', stopOnError = !isUnitTest)
+    powerlines <-    aquametStandardizeArgument(powerlines, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),    'HI_POWERLINES', stopOnError = !isUnitTest)
+    powerlines_dd <- aquametStandardizeArgument(powerlines_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)), 'HI_POWERLINES_DD', stopOnError = !isUnitTest)
+    roads <-         aquametStandardizeArgument(roads, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),         'HI_ROADS', stopOnError = !isUnitTest)
+    roads_dd <-      aquametStandardizeArgument(roads_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),      'HI_ROADS_DD', stopOnError = !isUnitTest)
+    walls <-         aquametStandardizeArgument(walls, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),         'HI_WALLS', stopOnError = !isUnitTest)
+    walls_dd <-      aquametStandardizeArgument(walls_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'',dataInformation$value)),      'HI_WALLS_DD', stopOnError = !isUnitTest)
     drawdown <-      aquametStandardizeArgument(drawdown, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','N','NO','Y','YES')),      'DRAWDOWN', stopOnError = !isUnitTest)
     horizontalDistance_dd <- aquametStandardizeArgument(horizontalDistance_dd, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), 'HORIZ_DIST_DD', stopOnError = !isUnitTest)
 
+    proximityWeights <- dplyr::rename(dataInformation, proximity=value,calc=weights, circa=inStream, present=presence)
+    
     df <- rbind(buildings, buildings_dd, commercial, commercial_dd
                ,crops, crops_dd, docks, docks_dd
                ,landfill, landfill_dd, lawn, lawn_dd

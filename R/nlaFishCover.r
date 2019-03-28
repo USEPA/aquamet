@@ -289,11 +289,11 @@ nlaFishCover <- function(aquatic = NULL
                         ,horizontalDistance_dd = NULL
                         ,createSyntheticCovers=TRUE
                         ,fillinDrawdown=TRUE
-                        ,coverClassInfo = data.frame(field = c(NA,'0','1','2','3','4')
-						 	                        ,characteristicCover = c(NA,0,0.05,0.25,0.575,0.875)
-						 	                        ,presence = c(NA,0L,1L,1L,1L,1L)
-						 	                        ,stringsAsFactors=FALSE
-						 	                        )
+                        ,dataInformation = data.frame(value = c(NA,'0','1','2','3','4')
+						 	                         ,weights = c(NA,0,0.05,0.25,0.575,0.875)
+						 	                         ,presence = c(NA,0L,1L,1L,1L,1L) %>% as.logical()
+						 	                         ,stringsAsFactors=FALSE
+						 	                         )
 
                         ,isUnitTest = FALSE
                         ) {
@@ -395,6 +395,7 @@ nlaFishCover <- function(aquatic = NULL
 #    3/19/19 cws Added isUnitTest argument for consistency.
 #    3/22/19 cws Added validation of meetadata, added legal/range checks of data
 #            args. Unit test modified accordingly
+#    3/28/19 cws Standardized metadata argument naming
 #
 # Arguments:
 #   df = a data frame containing fish cover data.  The data frame must include
@@ -452,49 +453,51 @@ nlaFishCover <- function(aquatic = NULL
         
     }
     
-    coverClassInfo <- aquametStandardizeArgument(coverClassInfo
-                                                ,struct = list(field=c('character','integer'), characteristicCover='double', presence=c('logical','integer'))
-                                                ,rangeLimits = list(characteristicCover=c(0,1))
-                                                ,legalValues = list(field=c(NA,'','0','1','2','3','4'), presence=c(NA,FALSE,TRUE))
-                                                ,stopOnError = !isUnitTest
-                                                )
+    dataInformation <- aquametStandardizeArgument(dataInformation
+                                                 ,struct = list(value=c('character','integer'), weights='double', presence=c('logical','integer'))
+                                                 ,rangeLimits = list(weights=c(0,1))
+                                                 ,legalValues = list(value=c(NA,'','0','1','2','3','4'), presence=c(NA,FALSE,TRUE))
+                                                 ,stopOnError = !isUnitTest
+                                                 )
 
-    aquatic <- aquametStandardizeArgument(aquatic, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_AQUATIC', stopOnError = !isUnitTest)
+    aquatic <- aquametStandardizeArgument(aquatic, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_AQUATIC', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    aquatic_dd <- aquametStandardizeArgument(aquatic_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_AQUATIC_DD', stopOnError = !isUnitTest)
+    aquatic_dd <- aquametStandardizeArgument(aquatic_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_AQUATIC_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    boulders <- aquametStandardizeArgument(boulders, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_BOULDERS', stopOnError = !isUnitTest)
+    boulders <- aquametStandardizeArgument(boulders, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_BOULDERS', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    boulders_dd <- aquametStandardizeArgument(boulders_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_BOULDERS_DD', stopOnError = !isUnitTest)
+    boulders_dd <- aquametStandardizeArgument(boulders_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_BOULDERS_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    brush <- aquametStandardizeArgument(brush, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_BRUSH', stopOnError = !isUnitTest)
+    brush <- aquametStandardizeArgument(brush, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_BRUSH', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    brush_dd <- aquametStandardizeArgument(brush_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_BRUSH_DD', stopOnError = !isUnitTest)
+    brush_dd <- aquametStandardizeArgument(brush_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_BRUSH_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    ledges <- aquametStandardizeArgument(ledges, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_LEDGES', stopOnError = !isUnitTest)
+    ledges <- aquametStandardizeArgument(ledges, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_LEDGES', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    ledges_dd <- aquametStandardizeArgument(ledges_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_LEDGES_DD', stopOnError = !isUnitTest)
+    ledges_dd <- aquametStandardizeArgument(ledges_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_LEDGES_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    livetrees <- aquametStandardizeArgument(livetrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_LIVETREES', stopOnError = !isUnitTest)
+    livetrees <- aquametStandardizeArgument(livetrees, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_LIVETREES', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    livetrees_dd <- aquametStandardizeArgument(livetrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_LIVETREES_DD', stopOnError = !isUnitTest)
+    livetrees_dd <- aquametStandardizeArgument(livetrees_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_LIVETREES_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    overhang <- aquametStandardizeArgument(overhang, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_OVERHANG', stopOnError = !isUnitTest)
+    overhang <- aquametStandardizeArgument(overhang, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_OVERHANG', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    overhang_dd <- aquametStandardizeArgument(overhang_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_OVERHANG_DD', stopOnError = !isUnitTest)
+    overhang_dd <- aquametStandardizeArgument(overhang_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_OVERHANG_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    snags <- aquametStandardizeArgument(snags, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_SNAGS', stopOnError = !isUnitTest)
+    snags <- aquametStandardizeArgument(snags, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_SNAGS', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    snags_dd <- aquametStandardizeArgument(snags_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_SNAGS_DD', stopOnError = !isUnitTest)
+    snags_dd <- aquametStandardizeArgument(snags_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_SNAGS_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    structures <- aquametStandardizeArgument(structures, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_STRUCTURES', stopOnError = !isUnitTest)
+    structures <- aquametStandardizeArgument(structures, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_STRUCTURES', stopOnError = !isUnitTest)
     intermediateMessage('.')
-    structures_dd <- aquametStandardizeArgument(structures_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', coverClassInfo$field)), 'FC_STRUCTURES_DD', stopOnError = !isUnitTest)
+    structures_dd <- aquametStandardizeArgument(structures_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '', dataInformation$value)), 'FC_STRUCTURES_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
     horizontalDistance_dd <- aquametStandardizeArgument(horizontalDistance_dd, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','double')), rangeLimits=list(VALUE=c(0,200)), 'HORIZ_DIST_DD', stopOnError = !isUnitTest)
     intermediateMessage('.')
     drawdown <- aquametStandardizeArgument(drawdown, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','character')), legalValues=list(VALUE=c(NA, '','N','NO','Y','YES')), 'DRAWDOWN', stopOnError = !isUnitTest)
     intermediateMessage('.')
+    
+    coverClassInfo <- dplyr::rename(dataInformation, field=value, characteristicCover=weights)
     
     df <- rbind(aquatic, aquatic_dd, boulders, boulders_dd, brush, brush_dd
                ,ledges, ledges_dd, livetrees, livetrees_dd, overhang, overhang_dd

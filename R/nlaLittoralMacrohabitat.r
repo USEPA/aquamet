@@ -121,10 +121,10 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
                                    ,substrate = NULL
                                    ,vegetation = NULL
                                    ,woody = NULL
-	                               ,humanDisturbanceWeights = data.frame(field=c('NONE','LOW','MODERATE','HEAVY')
-			                                                            ,calc =c(0, 0.2, 0.5, 1.0)
-			                                                            ,stringsAsFactors=FALSE
-                                                                    	)
+	                               ,dataInformation = data.frame(value=c('NONE','LOW','MODERATE','HEAVY')
+			                                                    ,weights =c(0, 0.2, 0.5, 1.0)
+			                                                    ,stringsAsFactors=FALSE
+                                                                )
                                    ,isUnitTest = FALSE
                                    ) {
 
@@ -160,6 +160,7 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
 #    3/22/19 cws Added validation of data args. Added humanDisturbanceWeights
 #            metadata argument. Modified to use dplyr::rename.
 #    3/26/19 cws Removed errant argument 'strings'.
+#    3/28/19 cws Standardized metadata argument naming
 #
 # Arguments:
 #   df = a data frame containing littoral fish macrohabitat data.  The
@@ -200,17 +201,18 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
         return(rc)
     }
     
-    humanDisturbanceWeights <- aquametStandardizeArgument(humanDisturbanceWeights, struct=list(field='character', calc='double'), legalValues=list(field=c('NONE','LOW','MODERATE','HEAVY')), rangeLimits=list(calc=c(0,1)), stopOnError = !isUnitTest)
+    humanDisturbanceWeights <- aquametStandardizeArgument(dataInformation, struct=list(value='character', weights='double'), legalValues=list(value=c('NONE','LOW','MODERATE','HEAVY')), rangeLimits=list(weights=c(0,1)), stopOnError = !isUnitTest)
     
     artificial <- aquametStandardizeArgument(artificial, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','X')), 'COVER_ARTIFICIAL', stopOnError = !isUnitTest)
     boulders <- aquametStandardizeArgument(boulders, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','X')),       'COVER_BOULDERS', stopOnError = !isUnitTest)
     coverExtent <- aquametStandardizeArgument(coverExtent, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','NO COVER','PATCHY COVER','CONTINUOUS COVER')), 'COVER_CLASS', stopOnError = !isUnitTest)
-    humanDisturbance <- aquametStandardizeArgument(humanDisturbance, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','X', humanDisturbanceWeights$field)),    'HUMAN_DISTURBANCE', stopOnError = !isUnitTest)
+    humanDisturbance <- aquametStandardizeArgument(humanDisturbance, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','X', dataInformation$value)),    'HUMAN_DISTURBANCE', stopOnError = !isUnitTest)
     noCover <- aquametStandardizeArgument(noCover, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','X')),         'COVER_NONE', stopOnError = !isUnitTest)
     substrate <- aquametStandardizeArgument(substrate, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','B','C','M','S')),    'DOM_SUBSTRATE', stopOnError = !isUnitTest)
     vegetation <- aquametStandardizeArgument(vegetation, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','X')),   'COVER_VEG', stopOnError = !isUnitTest)
     woody <- aquametStandardizeArgument(woody, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','X')),             'COVER_WOODY', stopOnError = !isUnitTest)
-    
+
+    humanDisturbanceWeights <- dplyr::rename(dataInformation, field=value, calc=weights)    
     df <- rbind(artificial, boulders, coverExtent, humanDisturbance, noCover, substrate, vegetation, woody)
     
 	substrate <- nlaLittoralMacrohabitat.substrate(df)
