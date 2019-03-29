@@ -7,6 +7,7 @@
 #          class code definition arguments, similar to nrsaChannelHabitat().
 #  3/18/19 cws Modified due to use of aquametStandardizeArgument.
 #  3/26/19 cws Modified to use dplyr::rename()
+#  3/29/19 cws Standardized metadata argument naming
 #         
 # TODO: Add test for NULL reachlength and meanBankfullWidth args
 
@@ -46,26 +47,26 @@ nrsaLargeWoodyTest <- function ()
     
     # Test with both protocols and using different nonstandard CLASS values for
     # both wadeable and boatable.
-    baseClassInfo <- data.frame(diam=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
-                               ,len=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
-                               ,loc=rep(c('DRY','WET'), each=12)
+    baseClassInfo <- data.frame(diameterClass=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
+                               ,lengthClass=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
+                               ,locationClass=rep(c('DRY','WET'), each=12)
                                ,stringsAsFactors=FALSE
                                )
     boatableClassInfo <- baseClassInfo %>%
                          mutate(currentClass = sprintf("%s%sD%sL"
-                                               ,substr(loc,1,1)
-                                               ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
-                                               ,substr(len,1,1)
+                                               ,substr(locationClass,1,1)
+                                               ,ifelse(substr(diameterClass,1,1)=='E', 'X', substr(diameterClass,1,1))
+                                               ,substr(lengthClass,1,1)
                                                )
-                               ,CLASS = LETTERS[1:24]
+                               ,name = LETTERS[1:24]
                                )
     wadeableClassInfo <- baseClassInfo %>%
                          mutate(currentClass = sprintf("%s%sD%sL"
-                                               ,substr(loc,1,1)
-                                               ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
-                                               ,substr(len,1,1)
+                                               ,substr(locationClass,1,1)
+                                               ,ifelse(substr(diameterClass,1,1)=='E', 'X', substr(diameterClass,1,1))
+                                               ,substr(lengthClass,1,1)
                                                )
-                               ,CLASS = letters[1:24]
+                               ,name = letters[1:24]
                                )
 
     actual <- nrsaLargeWoody(bCounts = boatableLWD %>% 
@@ -73,18 +74,18 @@ nrsaLargeWoodyTest <- function ()
                                             ,by.x='PARAMETER', by.y='currentClass'
                                             ,all.x=TRUE
                                             ) %>%
+                                       dplyr::rename(CLASS=name) %>%
                                        select(SITE,TRANSECT,CLASS,VALUE)
-                            ,bClassInfo = boatableClassInfo %>%
-                                          select(-currentClass)
+                            ,bDataInformation = boatableClassInfo %>% select(-currentClass)
                                           
                             ,wCounts = wadeableLWD %>% 
                                        merge(wadeableClassInfo
                                             ,by.x='PARAMETER', by.y='currentClass'
                                             ,all.x=TRUE
                                             ) %>%
+                                       dplyr::rename(CLASS=name) %>%
                                        select(SITE,TRANSECT,CLASS,VALUE)
-                            ,wClassInfo = wadeableClassInfo %>%
-                                          select(-currentClass)
+                            ,wDataInformation = wadeableClassInfo %>% select(-currentClass)
                             ,reachlength=reachlenValues, meanBankfullWidth=meanBankWidthValues
                             )
 

@@ -196,11 +196,11 @@ nrsaHumanInfluence <- function(buildings = NULL
                               ,roadsRailroads = NULL
                               ,rowcrops = NULL
                               ,wallRevetment = NULL
-                              ,influenceWeights = data.frame(VALUE=c('0','P','C','B')
-                                                            #,presence=c(1,1,1,1)
-                                                            ,weights=c(0, 0.666667, 1, 1.5)
-                                                            ,stringsAsFactors=FALSE
-                                                            )
+                              ,dataInformation = data.frame(value=c('0','P','C','B')
+                                                           #,presence=c(1,1,1,1)
+                                                           ,weights=c(0, 0.666667, 1, 1.5)
+                                                           ,stringsAsFactors=FALSE
+                                                           )
                               ,isUnitTest = FALSE
                               ) {
 
@@ -278,6 +278,7 @@ nrsaHumanInfluence <- function(buildings = NULL
 #    3/20/19 cws Checking structure and legal values of influenceWeights argument,
 #            and using those values in subsequent legal values checks of data.
 #    3/25/19 cws Modified to use dplyr::rename()
+#    3/29/19 cws Standardized metadata argument naming
 #
 #  TODO: rewrite interior. Add use of influenceWeights and test it.  Make PARAMETER
 #        values less cryptic.
@@ -420,67 +421,68 @@ nrsaHumanInfluence <- function(buildings = NULL
     #            ,absentAsNULL(rowcrops, ifdf, 'ROW')
     #            ,absentAsNULL(wallRevetment, ifdf, 'WALL')
     #            )
-    influenceWeights <- aquametStandardizeArgument(influenceWeights, ifdf=NULL
-                                                  ,struct = list(VALUE = 'character', weights='double')
-                                                  ,legalValues = list(VALUE = c(NA,'','0','P','C','B'))
-                                                  )
+    dataInformation <- aquametStandardizeArgument(dataInformation, ifdf=NULL
+                                                 ,struct = list(value = 'character', weights='double')
+                                                 ,legalValues = list(value = c(NA,'','0','P','C','B'))
+                                                 )
     df <- rbind(aquametStandardizeArgument(buildings, ifdf=ifdf,  'BUILD'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(landfillTrash, ifdf=ifdf, 'LANDFL'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(logging, ifdf=ifdf, 'LOG'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(mining, ifdf=ifdf,  'MINE'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(parkLawn, ifdf=ifdf, 'PARK'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(pastureRangeHay, ifdf=ifdf, 'PAST'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(pavementClearedlot, ifdf=ifdf, 'PAVE'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(pipesInOut, ifdf=ifdf, 'PIPES'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(roadsRailroads, ifdf=ifdf, 'ROAD'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(rowcrops, ifdf=ifdf, 'ROW'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                ,aquametStandardizeArgument(wallRevetment, ifdf=ifdf, 'WALL'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                          ,legalValues = list(VALUE = c(NA, '', influenceWeights$VALUE)) #list(VALUE = c(NA,'','0','P','C','B'))
+                                          ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
                                           )
                )
 
+    influenceWeights <- dplyr::rename(dataInformation, VALUE=value)
 
     df2 <- df
     df2$var_0 <- ifelse(df$VALUE=='0', 1, 0)

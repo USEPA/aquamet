@@ -106,37 +106,37 @@
 
 
 nrsaChannelHabitat <- function(bChannelUnit = NULL
-                              ,bChannelUnitCodeList = data.frame(code=c('FA','RA','RI','GL','PO','CA','DR')
-                                                                ,metsSuffix=c('fa','ra','ri','gl','pool','ca','dr')
-                                                                ,category=c('FALLS','RAPID','RIFFLE','GLIDE','POOL','CASCADE','DRY')
-                                                                ,isFast=c(TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,NA)
-                                                                #,isPool=c(FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE)
-                                                                ,stringsAsFactors=FALSE
+                              ,bDataInformation = data.frame(value=c('FA','RA','RI','GL','PO','CA','DR')
+                                                            ,metsSuffix=c('fa','ra','ri','gl','pool','ca','dr')
+                                                            ,name=c('FALLS','RAPID','RIFFLE','GLIDE','POOL','CASCADE','DRY')
+                                                            ,isFast=c(TRUE,TRUE,TRUE,FALSE,FALSE,TRUE,NA)
+                                                            #,isPool=c(FALSE,FALSE,FALSE,FALSE,TRUE,FALSE,FALSE)
+                                                            ,stringsAsFactors=FALSE
                                                                 )
                               ,wChannelUnit = NULL
                               # NOTE: wChannelUnitCodeList in 1314 is identical to bChannelUnitCodeList
-                              ,wChannelUnitCodeList = data.frame(code=c('FA','CA','RA','RI','GL'
-                                                                       ,'PB','PP','PD','PL','PT'
-                                                                       ,'P','DR'#,'SB'
-                                                                       )
-                                                                ,metsSuffix=c('fa','ca','ra','ri','gl'
-                                                                             ,'pb','pp','pd','pl','pt'
-                                                                             ,'p','dr'#,'sb'
-                                                                             )
-                                                                ,category=c('FALLS','CASCADE','RAPID','RIFFLE','GLIDE'
-                                                                           ,'POOL_B','POOL_PLUNGE','POOL_D','POOL_LATERAL','POOL_TRENCH'
-                                                                           ,'POOL','DRY'#,'SUBMERGED'
-                                                                           )
-                                                                ,isFast=c(TRUE,TRUE,TRUE,TRUE,FALSE
-                                                                         ,FALSE,FALSE,FALSE,FALSE,FALSE
-                                                                         ,FALSE,NA#,FALSE
+                              ,wDataInformation = data.frame(value=c('FA','CA','RA','RI','GL'
+                                                                    ,'PB','PP','PD','PL','PT'
+                                                                    ,'P','DR'#,'SB'
+                                                                    )
+                                                            ,metsSuffix=c('fa','ca','ra','ri','gl'
+                                                                         ,'pb','pp','pd','pl','pt'
+                                                                         ,'p','dr'#,'sb'
                                                                          )
-                                                                ,isPool=c(FALSE,FALSE,FALSE,FALSE,FALSE
-                                                                         ,TRUE,TRUE,TRUE,TRUE,TRUE
-                                                                         ,TRUE,FALSE#,FALSE
-                                                                         )
-                                                                ,stringsAsFactors=FALSE
-                                                                )
+                                                            ,name=c('FALLS','CASCADE','RAPID','RIFFLE','GLIDE'
+                                                                   ,'POOL_B','POOL_PLUNGE','POOL_D','POOL_LATERAL','POOL_TRENCH'
+                                                                   ,'POOL','DRY'#,'SUBMERGED'
+                                                                   )
+                                                            ,isFast=c(TRUE,TRUE,TRUE,TRUE,FALSE
+                                                                     ,FALSE,FALSE,FALSE,FALSE,FALSE
+                                                                     ,FALSE,NA#,FALSE
+                                                                     )
+                                                            ,isPool=c(FALSE,FALSE,FALSE,FALSE,FALSE
+                                                                     ,TRUE,TRUE,TRUE,TRUE,TRUE
+                                                                     ,TRUE,FALSE#,FALSE
+                                                                     )
+                                                            ,stringsAsFactors=FALSE
+                                                            )
                               ,isUnitTest = FALSE
                               ) {
 
@@ -190,6 +190,7 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
 #    3/20/19 cws Added structure checks for arguments bChannelUnitCodeList and 
 #            wChannelUnitCodeList. Using the code columns of each for legal 
 #            values of VALUE in bChannelUnit and wChannelUnit arguments.
+#    3/28/19 cws Standardized metadata argument naming
 #
 # TODO: Update unit test to see whether DR is handled properly
 #
@@ -298,28 +299,31 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
     # 
     # bChannelUnit = absentAsNULL(bChannelUnit, ifdf, bChannelUnitCodeList$code)
     # wChannelUnit = absentAsNULL(wChannelUnit, ifdf, wChannelUnitCodeList$code)
-    bChannelUnitCodeList <- aquametStandardizeArgument(bChannelUnitCodeList
-                                                      ,struct = list(code = 'character', metsSuffix='character', category = 'character', isFast = 'logical')
-                                                      )
-    wChannelUnitCodeList <- aquametStandardizeArgument(wChannelUnitCodeList
-                                                      ,struct = list(code = 'character', metsSuffix='character', category = 'character', isFast = 'logical', isPool = 'logical')
-                                                      )
+    bDataInformation <- aquametStandardizeArgument(bDataInformation
+                                                  ,struct = list(value = 'character', metsSuffix='character', name = 'character', isFast = 'logical')
+                                                  )
+    wDataInformation <- aquametStandardizeArgument(wDataInformation
+                                                  ,struct = list(value = 'character', metsSuffix='character', name = 'character', isFast = 'logical', isPool = 'logical')
+                                                  )
     bChannelUnit = aquametStandardizeArgument(bChannelUnit
                                              #,ifdf, bChannelUnitCodeList$code
                                              ,struct = list(SITE=c('integer','character'), VALUE='character')
-                                             ,legalValues = list(VALUE=c(NA, '', bChannelUnitCodeList$code)) #c(NA, '', 'FA','RA','RI','GL','PO','CA','DR'))
+                                             ,legalValues = list(VALUE=c(NA, '', bDataInformation$value)) #c(NA, '', 'FA','RA','RI','GL','PO','CA','DR'))
                                              ,stopOnError = !isUnitTest
                                              )
     wChannelUnit = aquametStandardizeArgument(wChannelUnit
                                              #,ifdf, wChannelUnitCodeList$code
                                              ,struct = list(SITE=c('integer','character'), VALUE='character')
-                                             ,legalValues = list(VALUE=c(NA, '', wChannelUnitCodeList$code)) #c(NA, '','FA','CA','RA','RI','GL'
+                                             ,legalValues = list(VALUE=c(NA, '', wDataInformation$value)) #c(NA, '','FA','CA','RA','RI','GL'
                                                                        # ,'PB','PP','PD','PL','PT'
                                                                        # ,'P','DR'#,'SB'
                                                                        # ))
                                              ,stopOnError = !isUnitTest
                                              )
     intermediateMessage('.1')
+    
+    bChannelUnitCodeList <- dplyr::rename(bDataInformation, code=value, category=name)
+    wChannelUnitCodeList <- dplyr::rename(wDataInformation, code=value, category=name)
 
     individualPercents <- function(cdData, codeList) {
         theseMets <- NULL

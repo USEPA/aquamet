@@ -143,25 +143,25 @@
 nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                          ,liveTree=NULL, macrophytes=NULL, overhang=NULL
                          ,structures=NULL, undercut=NULL, woodyDebris=NULL
-                         ,coverClassTypes=data.frame(coverType=c('algae', 'boulder', 'brush'
-                                                                ,'liveTree', 'macrophytes', 'overhang'
-                                                                ,'structures', 'undercut', 'woodyDebris'
-                                                                )
-                                                    ,isBig=c(FALSE, TRUE, FALSE
-                                                            ,FALSE, FALSE, FALSE
-                                                            ,TRUE, TRUE,TRUE
+                         ,classInformation=data.frame(name=c('algae', 'boulder', 'brush'
+                                                            ,'liveTree', 'macrophytes', 'overhang'
+                                                            ,'structures', 'undercut', 'woodyDebris'
                                                             )
-                                                    ,isNatural=c(FALSE, TRUE, TRUE
-                                                                ,TRUE, FALSE, TRUE
-                                                                ,FALSE ,TRUE, TRUE
-                                                                )
+                                                     ,isBig=c(FALSE, TRUE, FALSE
+                                                             ,FALSE, FALSE, FALSE
+                                                             ,TRUE, TRUE,TRUE
+                                                             )
+                                                     ,isNatural=c(FALSE, TRUE, TRUE
+                                                                 ,TRUE, FALSE, TRUE
+                                                                 ,FALSE ,TRUE, TRUE
+                                                                 )
+                                                     ,stringsAsFactors=FALSE
+                                                     )
+                         ,dataInformation=data.frame(value=c(NA,'0','1','2','3','4')
+                                                    ,presence=c(NA,0L,1L,1L,1L,1L) %>% as.logical()
+                                                    ,weights=c(NA,0,0.05,0.25,0.575,0.875)
                                                     ,stringsAsFactors=FALSE
                                                     )
-                         ,coverCalculationValues=data.frame(field=c(NA,'0','1','2','3','4')
-                                                           ,presence=c(NA,0L,1L,1L,1L,1L) #%>% as.logical()
-                                                           ,characteristicCover=c(NA,0,0.05,0.25,0.575,0.875)
-                                                           ,stringsAsFactors=FALSE
-                                                           )
                          ,isUnitTest=FALSE
                          ) {
 ################################################################################
@@ -211,6 +211,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 #            coverCalculationValues.  Using the values of coverCalculationValues$field 
 #            for legal checks of VALUE in data arguments.
 #    3/22/19 cws Modified to use dplyr::rename()
+#    3/28/19 cws Standardized metadata argument naming
 #
 # ARGUMENTS:
 # algae       dataframe containing algae cover class data at each transect for
@@ -344,70 +345,72 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
     #                ,absentAsNULL(undercut, ifdf, 'UNDERCUT')
     #                ,absentAsNULL(woodyDebris, ifdf, 'WOODY')
     #                )
-    coverClassTypes <- aquametStandardizeArgument(coverClassTypes
-                                                 ,struct = list(coverType='character', isBig='logical', isNatural='logical')
-                                                 ,legalValues = list(coverType = c('algae', 'boulder', 'brush'
-                                                                                  ,'liveTree', 'macrophytes', 'overhang'
-                                                                                  ,'structures', 'undercut', 'woodyDebris'
-                                                                                  )
-                                                                    ,isBig = c(FALSE, TRUE)
-                                                                    ,isNatural = c(FALSE, TRUE)
-                                                                    )
-
+    classInformation <- aquametStandardizeArgument(classInformation
+                                                  ,struct = list(name='character', isBig='logical', isNatural='logical')
+                                                  ,legalValues = list(name = c('algae', 'boulder', 'brush'
+                                                                              ,'liveTree', 'macrophytes', 'overhang'
+                                                                              ,'structures', 'undercut', 'woodyDebris'
+                                                                              )
+                                                                     ,isBig = c(FALSE, TRUE)
+                                                                     ,isNatural = c(FALSE, TRUE)
+                                                                     )
+                                                  )
+    dataInformation <- aquametStandardizeArgument(dataInformation
+                                                 ,struct = list(value=c('integer','character'), presence=c('integer','logical'), weights='double')
+                                                 ,legalValues = list(presence=c(NA,FALSE, TRUE))
+                                                 ,rangeCheck = list(characteristicCover=c(0,1))
                                                  )
-    coverCalculationValues <- aquametStandardizeArgument(coverCalculationValues
-                                                        ,struct = list(field=c('integer','character'), presence=c('integer','logical'), characteristicCover='double')
-                                                        ,legalValues = list(presence=c(NA,FALSE, TRUE))
-                                                        ,rangeCheck = list(characteristicCover=c(0,1))
-                                                        )
 
     fcData <- rbind(aquametStandardizeArgument(algae, ifdf=ifdf, 'ALGAE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = coverCalculationValues$field) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = dataInformation$value) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(boulder, ifdf=ifdf, 'BOULDR'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = c(NA, '', coverCalculationValues$field)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(brush, ifdf=ifdf, 'BRUSH'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = c(NA, '', coverCalculationValues$field)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(liveTree, ifdf=ifdf, 'LVTREE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = c(NA, '', coverCalculationValues$field)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(macrophytes, ifdf=ifdf, 'MACPHY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = c(NA, '', coverCalculationValues$field)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(overhang, ifdf=ifdf, 'OVRHNG'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = c(NA, '', coverCalculationValues$field)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(structures, ifdf=ifdf, 'STRUCT'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = c(NA, '', coverCalculationValues$field)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(undercut, ifdf=ifdf, 'UNDERCUT'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = c(NA, '', coverCalculationValues$field)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(woodyDebris, ifdf=ifdf, 'WOODY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(VALUE = c(NA, '', coverCalculationValues$field)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    )
 
+    coverClassTypes <- dplyr::rename(classInformation, coverType=name)
+    coverCalculationValues <- dplyr::rename(dataInformation, field=value, characteristicCover=weights)
+    
     # Create tables for converting field values to calculation values
     cover04 <- dplyr::rename(coverCalculationValues, calc = characteristicCover) %>%
                select(field, calc)

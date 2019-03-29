@@ -143,30 +143,30 @@
 #'   
 #nrsaLargeWoody <- function(thalweg, channelgeometry, bankgeometry, wood, visits) {
 nrsaLargeWoody <- function(bCounts=NULL
-                          ,bClassInfo=data.frame(diam=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
-                                                ,len=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
-                                                ,loc=rep(c('DRY','WET'), each=12)
-                                                ,stringsAsFactors=FALSE
-                                                ) %>% 
-                                      mutate(CLASS = sprintf("%s%sD%sL"
-                                                            ,substr(loc,1,1)
-                                                            ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
-                                                            ,substr(len,1,1)
-                                                            )
-                                            )
+                          ,bDataInformation=data.frame(diameterClass=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
+                                                      ,lengthClass=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
+                                                      ,locationClass=rep(c('DRY','WET'), each=12)
+                                                      ,stringsAsFactors=FALSE
+                                                      ) %>% 
+                                            mutate(name = sprintf("%s%sD%sL"
+                                                                 ,substr(locationClass,1,1)
+                                                                 ,ifelse(substr(diameterClass,1,1)=='E', 'X', substr(diameterClass,1,1))
+                                                                 ,substr(lengthClass,1,1)
+                                                                 )
+                                                  )
                           ,wCounts=NULL
-                          ,wClassInfo=data.frame(diam=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
-                                                ,len=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
-                                                ,loc=rep(c('DRY','WET'), each=12)
-                                                ,stringsAsFactors=FALSE
-                                                ) %>% 
-                                      mutate(CLASS = sprintf("%s%sD%sL"
-                                                            ,substr(loc,1,1)
-                                                            ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
-                                                            ,substr(len,1,1)
-                                                            )
-                                            )
-
+                          ,wDataInformation=data.frame(diameterClass=rep(c('SMALL','MEDIUM','LARGE','EXTRALARGE'), each=3, times=2)
+                                                      ,lengthClass=rep(c('SMALL','MEDIUM','LARGE'), times=4*2)
+                                                      ,locationClass=rep(c('DRY','WET'), each=12)
+                                                      ,stringsAsFactors=FALSE
+                                                      ) %>% 
+                                            mutate(name = sprintf("%s%sD%sL"
+                                                                 ,substr(locationClass,1,1)
+                                                                 ,ifelse(substr(diameterClass,1,1)=='E', 'X', substr(diameterClass,1,1))
+                                                                 ,substr(lengthClass,1,1)
+                                                                 )
+                                                  )
+      
                           ,reachlength = NULL
                           ,meanBankfullWidth = NULL
                           ,isUnitTest = FALSE
@@ -272,6 +272,8 @@ nrsaLargeWoody <- function(bCounts=NULL
 #            to handle this case, and now the unit test works.
 #    3/18/19 cws Using aquametStandardizeArgument; modified unit test accordingly.
 #    3/25/19 cws Modified to use dplyr::rename()
+#    3/29/19 cws Standardized metadata argument naming. Unit test modified 
+#            accordingly.
 #
 # Arguments:
 # bCounts       dataframe containing large woody debris class counts at each 
@@ -387,46 +389,56 @@ nrsaLargeWoody <- function(bCounts=NULL
               select(SITE,TRANSECT,CLASS,VALUE) %>%
               merge(classInfo %>% 
                     mutate(PARAMETER = sprintf("%s%sD%sL"
-                                              ,substr(loc,1,1)
-                                              ,ifelse(substr(diam,1,1)=='E', 'X', substr(diam,1,1))
-                                              ,substr(len,1,1)
+                                              ,substr(locationClass,1,1)
+                                              ,ifelse(substr(diameterClass,1,1)=='E', 'X', substr(diameterClass,1,1))
+                                              ,substr(lengthClass,1,1)
                                               )
                           )
-                   ,by='CLASS', all.x=TRUE
+                   ,by.x='CLASS', by.y='name', all.x=TRUE
                    ) %>%
               select(SITE,TRANSECT,PARAMETER,VALUE)  
         return(rc)
     }
+    
+    intermediateMessage('.1')
 
-    bClassInfo <- aquametStandardizeArgument(bClassInfo, ifdf=NULL
-                                            ,struct = list(diam='character', len='character', loc='character', CLASS='character')
-                                            ,legalValues = list(diam=c('SMALL','MEDIUM', 'LARGE', 'EXTRALARGE')
-                                                               ,len=c('SMALL','MEDIUM', 'LARGE')
-                                                               ,loc=c('DRY','WET')
-                                                               )
-                                            ,stopOnError = !isUnitTest
-                                            )
-    wClassInfo <- aquametStandardizeArgument(wClassInfo, ifdf=NULL
-                                            ,struct = list(diam='character', len='character', loc='character', CLASS='character')
-                                            ,legalValues = list(diam=c('SMALL','MEDIUM', 'LARGE', 'EXTRALARGE')
-                                                               ,len=c('SMALL','MEDIUM', 'LARGE')
-                                                               ,loc=c('DRY','WET')
-                                                               )
-                                            ,stopOnError = !isUnitTest
-                                            )
-    boats <- aquametStandardizeArgument(bCounts, ifdf=ifdfRecode, bClassInfo
+    bDataInformation <- aquametStandardizeArgument(bDataInformation, ifdf=NULL
+                                                  ,struct = list(diameterClass='character', lengthClass='character', locationClass='character', name='character')
+                                                  ,legalValues = list(diameterClass=c('SMALL','MEDIUM', 'LARGE', 'EXTRALARGE')
+                                                                     ,lengthClass=c('SMALL','MEDIUM', 'LARGE')
+                                                                     ,locationClass=c('DRY','WET')
+                                                                     )
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    intermediateMessage('.2')
+    wDataInformation <- aquametStandardizeArgument(wDataInformation, ifdf=NULL
+                                                  ,struct = list(diameterClass='character', lengthClass='character', locationClass='character', name='character')
+                                                  ,legalValues = list(diameterClass=c('SMALL','MEDIUM', 'LARGE', 'EXTRALARGE')
+                                                                     ,lengthClass=c('SMALL','MEDIUM', 'LARGE')
+                                                                     ,locationClass=c('DRY','WET')
+                                                                     )
+                                                  ,stopOnError = !isUnitTest
+                                                  )
+    intermediateMessage('.3')
+    boats <- aquametStandardizeArgument(bCounts, ifdf=ifdfRecode, bDataInformation
                                        ,struct = list(SITE=c('integer','character'), TRANSECT='character', CLASS = 'character', VALUE=c('integer'))
-                                       ,legalValues = list(CLASS = bClassInfo$CLASS)
+                                       ,legalValues = list(CLASS = bDataInformation$name)
                                        ,rangeLimits = list(VALUE=c(0,50))
                                        ,stopOnError = !isUnitTest
                                        )
-    wades <- aquametStandardizeArgument(wCounts, ifdf=ifdfRecode, wClassInfo
+    intermediateMessage('.4')
+    wades <- aquametStandardizeArgument(wCounts, ifdf=ifdfRecode, wDataInformation
                                        ,struct = list(SITE=c('integer','character'), TRANSECT='character', CLASS = 'character', VALUE=c('integer'))
-                                       ,legalValues = list(CLASS = wClassInfo$CLASS)
+                                       ,legalValues = list(CLASS = wDataInformation$name)
                                        ,rangeLimits = list(VALUE=c(0,50))
                                        ,stopOnError = !isUnitTest
                                        )
 
+    intermediateMessage('.5')
+    bClassInfo <- dplyr::rename(bDataInformation, diam=diameterClass, len=lengthClass, loc=locationClass, CLASS=name)
+    wClassInfo <- dplyr::rename(wDataInformation, diam=diameterClass, len=lengthClass, loc=locationClass, CLASS=name)
+    intermediateMessage('.5a')
+    
     df1 <- rbind(boats, wades)
     if(is.null(df1)) return (NULL)
     df2 <- reachlength %>% select(SITE, VALUE) %>% mutate(VALUE = as.numeric(VALUE))
@@ -434,6 +446,7 @@ nrsaLargeWoody <- function(bCounts=NULL
     protocols <- mutate(df1, PROTOCOL = ifelse(SITE %in% boats$SITE, 'BOATABLE', 'WADEABLE')) %>%
                  select(SITE, PROTOCOL) %>%
                  unique()
+    intermediateMessage('.6')
     # End of rebuilding old args from new ones...
 
 

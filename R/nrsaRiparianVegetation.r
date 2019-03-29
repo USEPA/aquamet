@@ -191,10 +191,10 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                   ,understoryCoverNonwoody = NULL
                                   ,understoryCoverWoody = NULL
                                   ,understoryVegetationType = NULL
-                                  ,coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
-                                                                      ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-                                                                      ,stringsAsFactors=FALSE
-                                                                      )
+                                  ,dataInformation = data.frame(value=c(NA,'0','1','2','3','4')
+                                                               ,weights=c(NA,0,0.05,0.25,0.575,0.875)
+                                                               ,stringsAsFactors=FALSE
+                                                               )
                                   ,isUnitTest = FALSE
                                   ) {
 
@@ -233,6 +233,7 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
 #            absentAsNull().
 #    3/20/19 cws Added structure checks for coverCalculationValues and using
 #            values of field in the legal values check of the data arguments.
+#    3/29/19 cws Standardized metadata argument naming
 ##
 # Arguments:
 # canopyCoverLargeDiameter  dataframe containing cover class values for large 
@@ -396,19 +397,19 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
     #                ,absentAsNULL(understoryCoverWoody, ifdf, 'UNDWDY')
     #                ,absentAsNULL(understoryVegetationType, ifdf, 'UNDERVEG')
     #                )
-    coverCalculationValues <- aquametStandardizeArgument(coverCalculationValues
-                                                        ,struct = list(field = c('character','integer'), calc='double')
-                                                        ,rangeLimits = list(calc = c(0,1))
-                                                        ,legalValues = list(field = c(NA,'','0','1','2','3','4'))
-                                                        )
+    dataInformation <- aquametStandardizeArgument(dataInformation
+                                                 ,struct = list(value = c('character','integer'), weights='double')
+                                                 ,rangeLimits = list(weights = c(0,1))
+                                                 ,legalValues = list(value = c(NA,'','0','1','2','3','4'))
+                                                 )
     visrip <- rbind(aquametStandardizeArgument(canopyCoverLargeDiameter, ifdf=ifdf, 'CANBTRE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = coverCalculationValues$legalValues) # as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(canopyCoverSmallDiameter, ifdf=ifdf, 'CANSTRE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = coverCalculationValues$legalValues) # as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(canopyVegetationType, ifdf=ifdf, 'CANVEG'
@@ -418,27 +419,27 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                               )
                    ,aquametStandardizeArgument(groundCoverBare, ifdf=ifdf, 'BARE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = coverCalculationValues$legalValues) # as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(groundCoverNonwoody, ifdf=ifdf, 'GCNWDY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = coverCalculationValues$legalValues) # as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(groundCoverWoody, ifdf=ifdf, 'GCWDY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = coverCalculationValues$legalValues) # as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(understoryCoverNonwoody, ifdf=ifdf, 'UNDNWDY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = coverCalculationValues$legalValues) # as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(understoryCoverWoody, ifdf=ifdf, 'UNDWDY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = coverCalculationValues$legalValues) # as.integer(c(NA,0,1,2,3,4)))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(understoryVegetationType, ifdf=ifdf, 'UNDERVEG'
@@ -449,6 +450,8 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                    )
     if(is.null(visrip)) return(NULL)
 
+    coverCalculationValues <- dplyr::rename(dataInformation, field=value, calc=weights)
+    
   # Canopy type fractions
   tt <- subset(visrip, PARAMETER=='CANVEG')
   pcan_c <- aggregate(list('VALUE' = tt$VALUE)
