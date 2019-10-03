@@ -5,7 +5,8 @@
 \title{Calculate NRSA Canopy Densiometer Metrics}
 \usage{
 nrsaCanopyDensiometer(bDensiom = NULL, wDensiom = NULL,
-  wChannelBank = c("LF", "RT"), wChannelMid = c("CU", "CL", "CD", "CR"))
+  wChannelBank = c("LF", "RT"), wChannelMid = c("CU", "CL", "CD", "CR"),
+  isUnitTest = FALSE)
 }
 \arguments{
 \item{bDensiom}{A data frame containing canopy densiometer 

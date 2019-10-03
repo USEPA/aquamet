@@ -743,8 +743,8 @@ dfLengthen <- function(df, keys, name, value, values) {
 }
 
 
-#' @keywords internal
-#' @export
+# #' @keywords internal
+# #' @export
 # dfWidenDEPRECATED <- function(df, keys, name, values, makeNumeric=TRUE) {
 # # Converts a data frame from 'narrow' format (variables listed vertically in a
 # # single column) to 'wide' format (values listed horizontally with separate

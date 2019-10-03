@@ -251,7 +251,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
     dfIn <- plyr::mutate(x, reservoir = ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                  ,elev=ifelse(elev<0,0,elev)
                  ,elevXlon = elev*lon
-                 ,l_elev = log10(elev+1)
+                 ,l_elev = ifelse(elev>0,log10(elev),log10(elev+1))
                  ,l_area = log10(area)
                  ,amfcFltEmg= amfcFloating + amfcEmergent)
     

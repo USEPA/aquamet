@@ -6,7 +6,9 @@
 \usage{
 nlaLittoralMacrohabitat(artificial = NULL, boulders = NULL,
   coverExtent = NULL, humanDisturbance = NULL, noCover = NULL,
-  substrate = NULL, vegetation = NULL, woody = NULL)
+  substrate = NULL, vegetation = NULL, woody = NULL,
+  dataInformation = data.frame(value = c("NONE", "LOW", "MODERATE", "HEAVY"),
+  weights = c(0, 0.2, 0.5, 1), stringsAsFactors = FALSE), isUnitTest = FALSE)
 }
 \arguments{
 \item{artificial}{A data frame containing artificial fish cover type 

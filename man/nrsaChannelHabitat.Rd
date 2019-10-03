@@ -4,19 +4,19 @@
 \alias{nrsaChannelHabitat}
 \title{Calculate NRSA Channel Habitat Metrics}
 \usage{
-nrsaChannelHabitat(bChannelUnit = NULL,
-  bChannelUnitCodeList = data.frame(code = c("FA", "RA", "RI", "GL", "PO",
-  "CA", "DR"), metsSuffix = c("fa", "ra", "ri", "gl", "pool", "ca", "dr"),
-  category = c("FALLS", "RAPID", "RIFFLE", "GLIDE", "POOL", "CASCADE", "DRY"),
-  isFast = c(TRUE, TRUE, TRUE, FALSE, FALSE, TRUE, NA), stringsAsFactors =
-  FALSE), wChannelUnit = NULL, wChannelUnitCodeList = data.frame(code =
-  c("FA", "CA", "RA", "RI", "GL", "PB", "PP", "PD", "PL", "PT", "P", "DR"),
-  metsSuffix = c("fa", "ca", "ra", "ri", "gl", "pb", "pp", "pd", "pl", "pt",
-  "p", "dr"), category = c("FALLS", "CASCADE", "RAPID", "RIFFLE", "GLIDE",
-  "POOL_B", "POOL_PLUNGE", "POOL_D", "POOL_LATERAL", "POOL_TRENCH", "POOL",
-  "DRY"), isFast = c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE,
-  FALSE, FALSE, NA), isPool = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE,
-  TRUE, TRUE, TRUE, TRUE, FALSE),      stringsAsFactors = FALSE))
+nrsaChannelHabitat(bChannelUnit = NULL, bDataInformation = data.frame(value
+  = c("FA", "RA", "RI", "GL", "PO", "CA", "DR"), metsSuffix = c("fa", "ra",
+  "ri", "gl", "pool", "ca", "dr"), name = c("FALLS", "RAPID", "RIFFLE", "GLIDE",
+  "POOL", "CASCADE", "DRY"), isFast = c(TRUE, TRUE, TRUE, FALSE, FALSE, TRUE,
+  NA), stringsAsFactors = FALSE), wChannelUnit = NULL,
+  wDataInformation = data.frame(value = c("FA", "CA", "RA", "RI", "GL", "PB",
+  "PP", "PD", "PL", "PT", "P", "DR"), metsSuffix = c("fa", "ca", "ra", "ri",
+  "gl", "pb", "pp", "pd", "pl", "pt", "p", "dr"), name = c("FALLS", "CASCADE",
+  "RAPID", "RIFFLE", "GLIDE", "POOL_B", "POOL_PLUNGE", "POOL_D", "POOL_LATERAL",
+  "POOL_TRENCH", "POOL", "DRY"), isFast = c(TRUE, TRUE, TRUE, TRUE, FALSE,
+  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, NA), isPool = c(FALSE, FALSE, FALSE,
+  FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE), stringsAsFactors =
+  FALSE), isUnitTest = FALSE)
 }
 \arguments{
 \item{bChannelUnit}{A data frame containing channel unit codes from 
@@ -26,6 +26,17 @@ boatable reaches, with the following columns:
 \item VALUE   character values, expected to be as specified in the 
 bChannelUnitCodeList argument column 'code'. Only values which occur 
 in the code column will be included in the calculations.
+}}
+
+\item{wChannelUnit}{A data frame containing channel unit codes from wadeable 
+reaches, with the following columns:
+\itemize{
+                 \item SITE    integer or character specifying the site 
+                                visit
+                 \item VALUE   character values, expected to be as specified
+                               in the wChannelUnitCodeList argument column 
+                               'code'. Only values which occur in the code
+                               column will be included in the calculations.
 }}
 
 \item{bChannelUnitCodeList}{A data frame specifying the boatable 
@@ -49,17 +60,6 @@ have the following columns:
  is considered a pool habitat or not.  Used to calculate 
  pct_pool; if this column does not exist, this metric will not be 
  calculated.
-}}
-
-\item{wChannelUnit}{A data frame containing channel unit codes from wadeable 
-reaches, with the following columns:
-\itemize{
-                 \item SITE    integer or character specifying the site 
-                                visit
-                 \item VALUE   character values, expected to be as specified
-                               in the wChannelUnitCodeList argument column 
-                               'code'. Only values which occur in the code
-                               column will be included in the calculations.
 }}
 
 \item{wChannelUnitCodeList}{A data frame specifying the wadeable 

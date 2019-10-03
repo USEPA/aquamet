@@ -7,13 +7,14 @@
 nrsaFishCover(algae = NULL, boulder = NULL, brush = NULL,
   liveTree = NULL, macrophytes = NULL, overhang = NULL,
   structures = NULL, undercut = NULL, woodyDebris = NULL,
-  coverClassTypes = data.frame(coverType = c("algae", "boulder", "brush",
+  classInformation = data.frame(name = c("algae", "boulder", "brush",
   "liveTree", "macrophytes", "overhang", "structures", "undercut",
   "woodyDebris"), isBig = c(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE,
   TRUE), isNatural = c(FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE),
-  stringsAsFactors = FALSE), coverCalculationValues = data.frame(field = c(NA,
-  "0", "1", "2", "3", "4"), presence = c(NA, 0, 1, 1, 1, 1), characteristicCover
-  = c(NA, 0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE))
+  stringsAsFactors = FALSE), dataInformation = data.frame(value = c(NA, "0",
+  "1", "2", "3", "4"), presence = c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(),
+  weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE),
+  isUnitTest = FALSE)
 }
 \arguments{
 \item{algae}{A data frame containing algae cover class data at each transect for

@@ -4,7 +4,7 @@
 \alias{nrsaInvasiveSpecies}
 \title{Calculate NRSA Invasive Species Metrics}
 \usage{
-nrsaInvasiveSpecies(...)
+nrsaInvasiveSpecies(..., isUnitTest = FALSE)
 }
 \arguments{
 \item{...}{named arguments consisting of data frames containing presence/absence

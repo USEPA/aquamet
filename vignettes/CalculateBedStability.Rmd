@@ -32,6 +32,8 @@ library(plyr)
 head(bankgeomEx)
 head(thalwegEx)
 
+bankgeomEx$VALUE <- as.numeric(bankgeomEx$VALUE)
+
 bBH <- subset(bankgeomEx,PARAMETER=='BANKHT' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
 bBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT')
 bD <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_TYPE=='PHAB_THAL')

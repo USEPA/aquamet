@@ -6,7 +6,7 @@
 \usage{
 nrsaGeneral(sampledTransects = NULL, sideChannels = NULL,
   transectSpacing = NULL, sideChannelTransects = c("XA", "XB", "XC", "XD",
-  "XE", "XF", "XG", "XH", "XI", "XJ", "XK"))
+  "XE", "XF", "XG", "XH", "XI", "XJ", "XK"), isUnitTest = FALSE)
 }
 \arguments{
 \item{sampledTransects}{dataframe containing only the list of 

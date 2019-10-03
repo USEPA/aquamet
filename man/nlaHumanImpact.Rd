@@ -12,9 +12,9 @@ nlaHumanImpact(buildings = NULL, buildings_dd = NULL, commercial = NULL,
   pasture_dd = NULL, powerlines = NULL, powerlines_dd = NULL,
   roads = NULL, roads_dd = NULL, walls = NULL, walls_dd = NULL,
   drawdown = NULL, horizontalDistance_dd = NULL, data2007 = FALSE,
-  fillinDrawdown = TRUE, proximityWeights = data.frame(proximity = c("0",
-  "P", "C"), calc = c(0, 0.5, 1), circa = c(0, 0, 1), present = c(0, 1, 1),
-  stringsAsFactors = FALSE))
+  fillinDrawdown = TRUE, dataInformation = data.frame(value = c("0", "P",
+  "C"), weights = c(0, 0.5, 1), inStream = c(0L, 0L, 1L), presence = c(0L, 1L,
+  1L) \%>\% as.logical(), stringsAsFactors = FALSE), isUnitTest = FALSE)
 }
 \arguments{
 \item{buildings}{A data frame containing buildings human influence 
@@ -293,16 +293,6 @@ processed.  The default value is FALSE.}
 DRAWDOWN parameter to fill in unrecorded cover and horizontalDistance_dd 
 values. The default value is TRUE.}
 
-\item{proximityWeights}{A data frame relating categorical proximity values 
-to various numeric weights for different types of metrics. The default data frame
-consists of the following values:
-\itemize{
-\item proximity c('0','P','C')
-\item calc c(0.0, 0.5, 1.0)  
-\item circa c(0, 0, 1)
-\item present c(0, 1, 1)
-}}
-
 \item{commerical}{A data frame containing commercial human influence 
  proximity class values from riparian zone, with the columns:
 \itemize{
@@ -311,6 +301,16 @@ visit.
 \item STATION a character value identifying the station within the SITE
 \item VALUE a character value of 0, P, or C representing the proximity 
 category.
+}}
+
+\item{proximityWeights}{A data frame relating categorical proximity values 
+to various numeric weights for different types of metrics. The default data frame
+consists of the following values:
+\itemize{
+\item proximity c('0','P','C')
+\item calc c(0.0, 0.5, 1.0)  
+\item circa c(0, 0, 1)
+\item present c(0, 1, 1)
 }}
 }
 \value{
