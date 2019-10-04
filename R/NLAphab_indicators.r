@@ -524,7 +524,11 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
 #' or 'MAN_MADE'
 #' 
 #' @param bfnHorizDD_nomod For 2017 data, number of unmodified horizontal 
-#' distances measurements to highwater mark in meters
+#' distances measurements to highwater mark. Must be used with
+#' \emph{bfnVertDD}
+#' 
+#' @param bfnVertDD For 2017 data, number of vertical distances measured
+#' to highwater mark. Must be used with \emph{bfnHorizDD_nomod}
 #' 
 #' @return A data frame containing:
 #' \itemize{
@@ -538,15 +542,16 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
 #' @keywords survey
 
 
-nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origin,bfnHorizDD_nomod=NULL){
+nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origin,bfnHorizDD_nomod=NULL,bfnVertDD=NULL){
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==bfxVertDD] <- 'vertDD'
   names(x)[names(x)==bfxHorizDD] <- 'horizDD'
   names(x)[names(x)==ecoreg] <- 'ecoreg'
   names(x)[names(x)==lake_origin] <- 'lake_origin'
-  if(!is.null(bfnHorizDD_nomod)){
+  if(!is.null(bfnHorizDD_nomod) & !is.null(bfnVertDD)){
     names(x)[names(x)==bfnHorizDD_nomod] <- 'nhorizDD_nomod'
+    names(x)[names(x)==bfnVertDD] <- 'nvertDD'
   }
 
   tholdsVert <- data.frame(ecoreg = c('NAP','NAP','SAP','SAP','UMW','UMW','CPL','CPL','NPL'
@@ -581,17 +586,18 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
                                                  , ifelse(vertDD_cond=='Small'|horizDD_cond=='Small', 'Small'
                                                           , 'Not Assessed')))) 
   
-  if(is.null(bfnHorizDD_nomod)){
+  if(is.null(bfnHorizDD_nomod)|is.null(bfnVertDD)){
     dfDD.1 <- dfDD %>%
       subset(select = c(sampID, 'horizDD_cond','vertDD_cond','DRAWDOWN_COND'))
   }else{
     dfDD.1 <- dfDD %>%
-      plyr::mutate(vertDD_cond17 = ifelse(is.na(vertDD)|vertDD==0, 'Not Assessed', vertDD_cond)
+      plyr::mutate(vertDD_cond17 = ifelse(is.na(nvertDD)|nvertDD==0, 'Not Assessed', vertDD_cond)
                    ,horizDD_cond17 = ifelse(is.na(nhorizDD_nomod)|nhorizDD_nomod==0, 'Not Assessed', horizDD_cond)
                    ,DDcond_screen = ifelse(vertDD_cond17=='Large'|horizDD_cond17=='Large', 'Large'
-                                           ,ifelse(vertDD_cond17=='Medium'|horizDD_cond17=='Medium', 'Medium'
-                                                   ,ifelse(vertDD_cond17=='Small'|horizDD_cond17=='Small', 'Small'
-                                                           , 'Not Assessed')))) %>%
+                                        ,ifelse(vertDD_cond17=='Medium'|horizDD_cond17=='Medium', 'Medium'
+                                            ,ifelse(vertDD_cond17=='Small'|horizDD_cond17=='Small', 'Small'
+                                                ,ifelse(vertDD_cond17=='Not Assessed' & horizDD_cond17=='Not Assessed'
+                                                        ,'Not Assessed','Not Assigned'))))) %>%
       plyr::mutate(DRAWDOWN_COND_2017 = ifelse(ecoreg %in% c('WMT','XER','NPL','SPL','TPL') & lake_origin=='MAN_MADE'
                                                , DRAWDOWN_COND, DDcond_screen)
                    ,DRAWDOWN_COND_2CAT_2017 = ifelse(DRAWDOWN_COND %in% c('Small','Medium'), 'Not Large', DRAWDOWN_COND)) %>% 
