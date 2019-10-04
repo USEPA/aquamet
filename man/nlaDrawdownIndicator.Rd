@@ -34,40 +34,49 @@ to highwater mark. Must be used with \emph{bfnHorizDD_nomod}}
 \value{
 A data frame containing:
 \itemize{
-\item{sampID}{The variables in the argument \emph{sampID}}
+\item{sampID}
+{The variables in the argument \emph{sampID}}
 
-\item{horizDD_cond}{Drawdown condition based only on horizontal
+\item{horizDD_cond}
+{Drawdown condition based only on horizontal
 distance}
 
-\item{vertDD_cond}{Drawdown conditoin based only on vertical
+\item{vertDD_cond}
+{Drawdown conditoin based only on vertical
 height}
 
-\item{DRAWDOWN_COND}{Drawdown condition class based on 
+\item{DRAWDOWN_COND}
+{Drawdown condition class based on 
 \emph{horizDD_cond} and \emph{vertDD_cond} values
  (Small/Medium/Large/Not Assessed)} 
  
-\item{horizDD_cond17}{Drawdown condition based only on horizontal
+\item{horizDD_cond17}
+{Drawdown condition based only on horizontal
 distance using additional information on number of observations. 
 Intended for 2017 data only. Run only if \emph{bfnHorizDD_nomod}
 and \emph{bfnVertDD} arguments used.}
 
-\item{vertDD_cond17}{Drawdown condition based only on vertical
+\item{vertDD_cond17}
+{Drawdown condition based only on vertical
 height using additional information on number of observations. 
 Intended for 2017 data only. Run only if \emph{bfnHorizDD_nomod}
 and \emph{bfnVertDD} arguments used.}
 
-\item{DDcond_screen}{Intermediate drawdown condition value based on
+\item{DDcond_screen}
+{Intermediate drawdown condition value based on
 values of horizDD_cond17 and vertDD_cond17. Intended for 2017 data
 only. Run only if \emph{bfnHorizDD_nomod}
 and \emph{bfnVertDD} arguments used.}
 
-\item{DRAWDOWN_COND_2017}{Drawdown condition value based on
+\item{DRAWDOWN_COND_2017}
+{Drawdown condition value based on
 values of horizDD_cond17, vertDD_cond17, and DDcond_screen. 
 Intended for 2017 data
 only. Run only if \emph{bfnHorizDD_nomod}
 and \emph{bfnVertDD} arguments used. (Small/Medium/Large/Not Assessed)}
 
-\item{DRAWDOWN_COND_2CAT_2017}{Drawdown condition value based on
+\item{DRAWDOWN_COND_2CAT_2017}
+{Drawdown condition value based on
 combining Small and Medium values of DRAWDOWN_COND into "Not Large". 
 Intended for 2017 data
 only. Run only if \emph{bfnHorizDD_nomod}
