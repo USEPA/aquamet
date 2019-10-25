@@ -9,8 +9,9 @@ nrsaRiparianVegetation(canopyCoverLargeDiameter = NULL,
   groundCoverBare = NULL, groundCoverNonwoody = NULL,
   groundCoverWoody = NULL, understoryCoverNonwoody = NULL,
   understoryCoverWoody = NULL, understoryVegetationType = NULL,
-  coverCalculationValues = data.frame(field = c(NA, "0", "1", "2", "3", "4"),
-  calc = c(NA, 0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE))
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights
+  = c(NA, 0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE),
+  isUnitTest = FALSE)
 }
 \arguments{
 \item{canopyCoverLargeDiameter}{A data frame containing cover class 

@@ -4,18 +4,20 @@
 \alias{nrsaLargeWoody}
 \title{Calculate NRSA Large Woody Debris Metrics}
 \usage{
-nrsaLargeWoody(bCounts = NULL, bClassInfo = data.frame(diam = rep(c("SMALL",
-  "MEDIUM", "LARGE", "EXTRALARGE"), each = 3, times = 2), len = rep(c("SMALL",
-  "MEDIUM", "LARGE"), times = 4 * 2), loc = rep(c("DRY", "WET"), each = 12),
-  stringsAsFactors = FALSE) \%>\% mutate(CLASS = sprintf("\%s\%sD\%sL",
-  substr(loc, 1, 1), ifelse(substr(diam, 1, 1) == "E", "X", substr(diam, 1, 1)),
-  substr(len, 1, 1))), wCounts = NULL, wClassInfo = data.frame(diam =
-  rep(c("SMALL", "MEDIUM", "LARGE", "EXTRALARGE"), each = 3, times = 2), len =
-  rep(c("SMALL", "MEDIUM", "LARGE"), times = 4 * 2), loc = rep(c("DRY", "WET"),
-  each = 12), stringsAsFactors = FALSE) \%>\% mutate(CLASS =
-  sprintf("\%s\%sD\%sL", substr(loc, 1, 1), ifelse(substr(diam, 1, 1) == "E",
-  "X", substr(diam, 1, 1)), substr(len, 1, 1))), reachlength = NULL,
-  meanBankfullWidth = NULL)
+nrsaLargeWoody(bCounts = NULL, bDataInformation = data.frame(diameterClass =
+  rep(c("SMALL", "MEDIUM", "LARGE", "EXTRALARGE"), each = 3, times = 2),
+  lengthClass = rep(c("SMALL", "MEDIUM", "LARGE"), times = 4 * 2), locationClass
+  = rep(c("DRY", "WET"), each = 12), stringsAsFactors = FALSE) \%>\% mutate(name
+  = sprintf("\%s\%sD\%sL", substr(locationClass, 1, 1),
+  ifelse(substr(diameterClass, 1, 1) == "E", "X", substr(diameterClass, 1, 1)),
+  substr(lengthClass, 1, 1))), wCounts = NULL,
+  wDataInformation = data.frame(diameterClass = rep(c("SMALL", "MEDIUM",
+  "LARGE", "EXTRALARGE"), each = 3, times = 2), lengthClass = rep(c("SMALL",
+  "MEDIUM", "LARGE"), times = 4 * 2), locationClass = rep(c("DRY", "WET"), each
+  = 12), stringsAsFactors = FALSE) \%>\% mutate(name = sprintf("\%s\%sD\%sL",
+  substr(locationClass, 1, 1), ifelse(substr(diameterClass, 1, 1) == "E", "X",
+  substr(diameterClass, 1, 1)), substr(lengthClass, 1, 1))),
+  reachlength = NULL, meanBankfullWidth = NULL, isUnitTest = FALSE)
 }
 \arguments{
 \item{bCounts}{A data frame containing large woody debris class counts 
@@ -31,6 +33,37 @@ at each transect for boatable reaches , with the following columns:
                argument
    \item VALUE character values specifying the influence 
                class
+}}
+
+\item{wCounts}{A data frame containing large woody debris class counts 
+at each transect for wadeable reaches , with the following columns:
+\itemize{
+   \item SITE integer or character specifying the site visit
+   \item TRANSECT character value specifying the transect
+                  for which the value was recorded.
+   \item CLASS character value specifying the class name
+               (one of 4 diameter classes, 3 length classes,
+               and 2 location classes).  These class names are
+               expected to be defined in the wClassInfo
+               argument
+   \item VALUE character values specifying the influence 
+               class
+}}
+
+\item{reachlength}{A data frame containing reach lengths in meters 
+for each site. Expected to contain the following columns:
+\itemize{
+   \item SITE integer or character specifying the site visit
+   \item VALUE numeric values
+}}
+
+\item{meanBankfullWidth}{A data frame containing mean bank-full 
+widths in meters for each site.  Expected to contain the following 
+columns:
+\itemize{
+ \item SITE integer or character specifying the site visit
+ \item VALUE numeric values
+
 }}
 
 \item{bClassInfo}{A data frame relating the class names used in 
@@ -51,21 +84,6 @@ Expected to have the following columns and values in 24 rows:
 }
 Default values are for EPA NARS processing.}
 
-\item{wCounts}{A data frame containing large woody debris class counts 
-at each transect for wadeable reaches , with the following columns:
-\itemize{
-   \item SITE integer or character specifying the site visit
-   \item TRANSECT character value specifying the transect
-                  for which the value was recorded.
-   \item CLASS character value specifying the class name
-               (one of 4 diameter classes, 3 length classes,
-               and 2 location classes).  These class names are
-               expected to be defined in the wClassInfo
-               argument
-   \item VALUE character values specifying the influence 
-               class
-}}
-
 \item{wClassInfo}{A data frame relating the class names used in 
 wCounts::CLASS to each combination of size and location classes.  
 Expected to have the following columns and values in 24 rows:
@@ -83,22 +101,6 @@ Expected to have the following columns and values in 24 rows:
                in the wCounts argument.
 }
 Default value is for EPA NARS processing.}
-
-\item{reachlength}{A data frame containing reach lengths in meters 
-for each site. Expected to contain the following columns:
-\itemize{
-   \item SITE integer or character specifying the site visit
-   \item VALUE numeric values
-}}
-
-\item{meanBankfullWidth}{A data frame containing mean bank-full 
-widths in meters for each site.  Expected to contain the following 
-columns:
-\itemize{
- \item SITE integer or character specifying the site visit
- \item VALUE numeric values
-
-}}
 }
 \value{
 Either a data frame when metric calculation is successful 

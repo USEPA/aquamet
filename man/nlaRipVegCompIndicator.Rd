@@ -56,16 +56,21 @@ by function \code{metsHumanImpact()}.}
 \value{
 A data frame containing:
 \itemize{
-\item{sampID}{The variables in the argument \emph{sampID}}
+\item{sampID} 
+{The variables in the argument \emph{sampID}}
 
-\item{RVegQ}{Observed riparian vegetation complexity index}
+\item{RVegQ} 
+{Observed riparian vegetation complexity index}
 
-\item{RVegQc3x15}{Expected riparian vegetation complexity index}
+\item{RVegQc3x15} 
+{Expected riparian vegetation complexity index}
 
-\item{RVegQc3OE}{Riparian vegetation complexity indicator 
+\item{RVegQc3OE} 
+{Riparian vegetation complexity indicator 
 value, O/E score}
 
-\item{RVEG_COND}{Riparian vegetation complexity indicator 
+\item{RVEG_COND} 
+{Riparian vegetation complexity indicator 
 condition class (Good/Fair/Poor/Not Assessed)} 
 }
 }

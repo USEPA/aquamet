@@ -53,16 +53,21 @@
 #' 
 #' @return A data frame containing:
 #' \itemize{
-#' \item{sampID}{The variables in the argument \emph{sampID}}
+#' \item{sampID} 
+#' {The variables in the argument \emph{sampID}}
 #' 
-#' \item{RVegQ}{Observed riparian vegetation complexity index}
+#' \item{RVegQ} 
+#' {Observed riparian vegetation complexity index}
 #' 
-#' \item{RVegQc3x15}{Expected riparian vegetation complexity index}
+#' \item{RVegQc3x15} 
+#' {Expected riparian vegetation complexity index}
 #' 
-#' \item{RVegQc3OE}{Riparian vegetation complexity indicator 
+#' \item{RVegQc3OE} 
+#' {Riparian vegetation complexity indicator 
 #' value, O/E score}
 #' 
-#' \item{RVEG_COND}{Riparian vegetation complexity indicator 
+#' \item{RVEG_COND} 
+#' {Riparian vegetation complexity indicator 
 #' condition class (Good/Fair/Poor/Not Assessed)} 
 #' }
 #' 
@@ -209,16 +214,21 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' 
 #' @return A data frame containing:
 #' \itemize{
-#' \item{sampID}{The variables in the argument \emph{sampID}}
+#' \item{sampID} 
+#' {The variables in the argument \emph{sampID}}
 #' 
-#' \item{LitCvrQ}{Observed littoral vegetation complexity index}
+#' \item{LitCvrQ} 
+#' {Observed littoral vegetation complexity index}
 #' 
-#' \item{LitCvrQc3x15}{Expected littoral vegetation complexity index}
+#' \item{LitCvrQc3x15} 
+#' {Expected littoral vegetation complexity index}
 #' 
-#' \item{LitCvrQc3OE}{Littoral vegetation complexity indicator 
+#' \item{LitCvrQc3OE} 
+#' {Littoral vegetation complexity indicator 
 #' value, O/E score}
 #' 
-#' \item{LITCVR_COND}{Littoral vegetation complexity indicator 
+#' \item{LITCVR_COND} 
+#' {Littoral vegetation complexity indicator 
 #' condition class (Good/Fair/Poor/Not Assessed)} 
 #' }
 #' 
@@ -251,7 +261,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
     dfIn <- plyr::mutate(x, reservoir = ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                  ,elev=ifelse(elev<0,0,elev)
                  ,elevXlon = elev*lon
-                 ,l_elev = log10(elev+1)
+                 ,l_elev = ifelse(elev>0,log10(elev),log10(elev+1))
                  ,l_area = log10(area)
                  ,amfcFltEmg= amfcFloating + amfcEmergent)
     
@@ -348,18 +358,23 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' 
 #' @return A data frame containing:
 #' \itemize{
-#' \item{sampID}{The variables in the argument \emph{sampID}}
+#' \item{sampID} 
+#' {The variables in the argument \emph{sampID}}
 #' 
-#' \item{LitRipCvrQ}{Observed combined riparian and littoral vegetation
+#' \item{LitRipCvrQ} 
+#' {Observed combined riparian and littoral vegetation
 #' complexity index}
 #' 
-#' \item{LitRipCvrQc3x15}{Expected combined riparian and littoral
+#' \item{LitRipCvrQc3x15} 
+#' {Expected combined riparian and littoral
 #' vegetation complexity index}
 #' 
-#' \item{LitRipCvrQc3OE}{Littoral and riparian vegetation complexity 
+#' \item{LitRipCvrQc3OE} 
+#' {Littoral and riparian vegetation complexity 
 #' Observed/Expected (O/E) value}
 #' 
-#' \item{LITRIPCVR_COND}{Littoral and riparian vegetation complexity 
+#' \item{LITRIPCVR_COND} 
+#' {Littoral and riparian vegetation complexity 
 #' indicator condition class (Good/Fair/Poor/Not Assessed)} 
 #' }
 #' 
@@ -384,7 +399,8 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                  ,elev=ifelse(elev<0,0,elev)
                  ,elevXlon=elev*lon
-                 ,l_elev=log10(elev+1)
+                 ,l_elev = ifelse(elev>0,log10(elev),log10(elev+1))
+                # ,l_elev=log10(elev+1)
                  ,l_area=log10(area))
   
   # melt dfIn now in preparation for merging with the parameter df being created next
@@ -466,11 +482,14 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
 #' 
 #' @return A data frame containing:
 #' \itemize{
-#' \item{sampID}{The variables in the argument \emph{sampID}}
+#' \item{sampID}
+#' {The variables in the argument \emph{sampID}}
 #' 
-#' \item{RDis_IX}{Riparian anthropogenic disturbance index}
+#' \item{RDis_IX}
+#' {Riparian anthropogenic disturbance index}
 #' 
-#' \item{RDIS_COND}{Riparian anthropogenic disturbance condition class
+#' \item{RDIS_COND}
+#' {Riparian anthropogenic disturbance condition class
 #'  (Low/Medium/High/Not Assessed)} 
 #' }
 #' 
@@ -521,26 +540,80 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
 
 #' @param lake_origin Lake origin, with valid values of 'NATURAL' 
 #' or 'MAN_MADE'
-
+#' 
+#' @param bfnHorizDD_nomod For 2017 data, number of unmodified horizontal 
+#' distances measurements to highwater mark. Must be used with
+#' \emph{bfnVertDD}
+#' 
+#' @param bfnVertDD For 2017 data, number of vertical distances measured
+#' to highwater mark. Must be used with \emph{bfnHorizDD_nomod}
+#' 
 #' @return A data frame containing:
 #' \itemize{
-#' \item{sampID}{The variables in the argument \emph{sampID}}
+#' \item{sampID}
+#' {The variables in the argument \emph{sampID}}
 #' 
-#' \item{DRAWDOWN_COND}{Riparian anthropogenic disturbance condition class
+#' \item{horizDD_cond}
+#' {Drawdown condition based only on horizontal
+#' distance}
+#' 
+#' \item{vertDD_cond}
+#' {Drawdown conditoin based only on vertical
+#' height}
+#' 
+#' \item{DRAWDOWN_COND}
+#' {Drawdown condition class based on 
+#' \emph{horizDD_cond} and \emph{vertDD_cond} values
 #'  (Small/Medium/Large/Not Assessed)} 
+#'  
+#' \item{horizDD_cond17}
+#' {Drawdown condition based only on horizontal
+#' distance using additional information on number of observations. 
+#' Intended for 2017 data only. Run only if \emph{bfnHorizDD_nomod}
+#' and \emph{bfnVertDD} arguments used.}
+#' 
+#' \item{vertDD_cond17}
+#' {Drawdown condition based only on vertical
+#' height using additional information on number of observations. 
+#' Intended for 2017 data only. Run only if \emph{bfnHorizDD_nomod}
+#' and \emph{bfnVertDD} arguments used.}
+#' 
+#' \item{DDcond_screen}
+#' {Intermediate drawdown condition value based on
+#' values of horizDD_cond17 and vertDD_cond17. Intended for 2017 data
+#' only. Run only if \emph{bfnHorizDD_nomod}
+#' and \emph{bfnVertDD} arguments used.}
+#' 
+#' \item{DRAWDOWN_COND_2017}
+#' {Drawdown condition value based on
+#' values of horizDD_cond17, vertDD_cond17, and DDcond_screen. 
+#' Intended for 2017 data
+#' only. Run only if \emph{bfnHorizDD_nomod}
+#' and \emph{bfnVertDD} arguments used. (Small/Medium/Large/Not Assessed)}
+#' 
+#' \item{DRAWDOWN_COND_2CAT_2017}
+#' {Drawdown condition value based on
+#' combining Small and Medium values of DRAWDOWN_COND into "Not Large". 
+#' Intended for 2017 data
+#' only. Run only if \emph{bfnHorizDD_nomod}
+#' and \emph{bfnVertDD} arguments used. (Not Large/Large/Not Assessed)}
 #' }
 #' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
 
 
-nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origin){
+nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origin,bfnHorizDD_nomod=NULL,bfnVertDD=NULL){
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==bfxVertDD] <- 'vertDD'
   names(x)[names(x)==bfxHorizDD] <- 'horizDD'
   names(x)[names(x)==ecoreg] <- 'ecoreg'
   names(x)[names(x)==lake_origin] <- 'lake_origin'
+  if(!is.null(bfnHorizDD_nomod) & !is.null(bfnVertDD)){
+    names(x)[names(x)==bfnHorizDD_nomod] <- 'nhorizDD_nomod'
+    names(x)[names(x)==bfnVertDD] <- 'nvertDD'
+  }
 
   tholdsVert <- data.frame(ecoreg = c('NAP','NAP','SAP','SAP','UMW','UMW','CPL','CPL','NPL'
                                       ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT','XER','XER')
@@ -559,20 +632,38 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
                             ,p95H = c(1.65,1.65,2.15,2.15,2.65,2.65,4.0,4.0,2.85,14.63
                                       ,2.85,14.63,2.85,14.63,9.43,11.37,9.43,11.37)
                             ,stringsAsFactors=F)
+  
+  dfIn <- plyr::mutate(x, lake_origin=ifelse(lake_origin=='MAN-MADE','MAN_MADE',lake_origin))
 
-  dfvert <- merge(x, tholdsVert, by=c('ecoreg','lake_origin')) %>%
+  dfDD <- merge(dfIn, tholdsVert, by=c('ecoreg','lake_origin')) %>%
     merge(tholdsHoriz, by=c('ecoreg','lake_origin')) %>%
     plyr::mutate(vertDD_cond = ifelse(is.na(vertDD),'Not Assessed', ifelse(vertDD <= p75V
-                            , 'Small', ifelse(vertDD > p95V, 'Large', 'Medium')))
+                                                                           , 'Small', ifelse(vertDD > p95V, 'Large', 'Medium')))
                  ,horizDD_cond = ifelse(is.na(horizDD), 'Not Assessed'
                                         , ifelse(horizDD <= p75H, 'Small'
                                                  ,ifelse(horizDD > p95H, 'Large', 'Medium')))) %>%
     plyr::mutate(DRAWDOWN_COND = ifelse(vertDD_cond=='Large'|horizDD_cond=='Large', 'Large'
-                                  , ifelse(vertDD_cond=='Medium'|horizDD_cond=='Medium', 'Medium'
-                                  , ifelse(vertDD_cond=='Small'|horizDD_cond=='Small', 'Small'
-                                           , 'Not Assessed')))) %>% 
-    subset(select = c(sampID, 'horizDD_cond','vertDD_cond','DRAWDOWN_COND'))
+                                        , ifelse(vertDD_cond=='Medium'|horizDD_cond=='Medium', 'Medium'
+                                                 , ifelse(vertDD_cond=='Small'|horizDD_cond=='Small', 'Small'
+                                                          , 'Not Assessed')))) 
   
+  if(is.null(bfnHorizDD_nomod)|is.null(bfnVertDD)){
+    dfDD.1 <- dfDD %>%
+      subset(select = c(sampID, 'horizDD_cond','vertDD_cond','DRAWDOWN_COND'))
+  }else{
+    dfDD.1 <- dfDD %>%
+      plyr::mutate(vertDD_cond17 = ifelse(is.na(nvertDD)|nvertDD==0, 'Not Assessed', vertDD_cond)
+                   ,horizDD_cond17 = ifelse(is.na(nhorizDD_nomod)|nhorizDD_nomod==0, 'Not Assessed', horizDD_cond)
+                   ,DDcond_screen = ifelse(vertDD_cond17=='Large'|horizDD_cond17=='Large', 'Large'
+                                        ,ifelse(vertDD_cond17=='Medium'|horizDD_cond17=='Medium', 'Medium'
+                                            ,ifelse(vertDD_cond17=='Small'|horizDD_cond17=='Small', 'Small'
+                                                ,ifelse(vertDD_cond17=='Not Assessed' & horizDD_cond17=='Not Assessed'
+                                                        ,'Not Assessed','Not Assigned'))))) %>%
+      plyr::mutate(DRAWDOWN_COND_2017 = ifelse(ecoreg %in% c('WMT','XER','NPL','SPL','TPL') & lake_origin=='MAN_MADE'
+                                               , DRAWDOWN_COND, DDcond_screen)
+                   ,DRAWDOWN_COND_2CAT_2017 = ifelse(DRAWDOWN_COND %in% c('Small','Medium'), 'Not Large', DRAWDOWN_COND)) %>% 
+      subset(select = c(sampID, 'horizDD_cond','vertDD_cond','horizDD_cond17','vertDD_cond17','DDcond_screen','DRAWDOWN_COND','DRAWDOWN_COND_2017','DRAWDOWN_COND_2CAT_2017'))
+  }
   
-  
+  return(dfDD.1)
 }  

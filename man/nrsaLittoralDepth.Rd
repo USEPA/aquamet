@@ -4,7 +4,7 @@
 \alias{nrsaLittoralDepth}
 \title{Calculate NRSA Littoral Depth Metrics}
 \usage{
-nrsaLittoralDepth(bLittoralDepth = NULL)
+nrsaLittoralDepth(bLittoralDepth = NULL, isUnitTest = FALSE)
 }
 \arguments{
 \item{bLittoralDepth}{A data frame containing littoral depth 

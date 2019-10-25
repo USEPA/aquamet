@@ -4,7 +4,7 @@
 \alias{nlaLittoralZone}
 \title{Calculate NLA Littoral Zone Metrics}
 \usage{
-nlaLittoralZone(littoralFilm, data2007 = FALSE)
+nlaLittoralZone(littoralFilm, data2007 = FALSE, isUnitTest = FALSE)
 }
 \arguments{
 \item{littoralFilm}{A data frame containing surface film type in 

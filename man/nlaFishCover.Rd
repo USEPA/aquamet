@@ -10,9 +10,10 @@ nlaFishCover(aquatic = NULL, aquatic_dd = NULL, boulders = NULL,
   overhang = NULL, overhang_dd = NULL, snags = NULL, snags_dd = NULL,
   structures = NULL, structures_dd = NULL, drawdown = NULL,
   horizontalDistance_dd = NULL, createSyntheticCovers = TRUE,
-  fillinDrawdown = TRUE, coverClassInfo = data.frame(field = c(NA, "0", "1",
-  "2", "3", "4"), characteristicCover = c(NA, 0, 0.05, 0.25, 0.575, 0.875),
-  presence = c(NA, 0, 1, 1, 1, 1), stringsAsFactors = FALSE))
+  fillinDrawdown = TRUE, dataInformation = data.frame(value = c(NA, "0",
+  "1", "2", "3", "4"), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence =
+  c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), stringsAsFactors = FALSE),
+  isUnitTest = FALSE)
 }
 \arguments{
 \item{aquatic}{A data frame containing aquatic and inundated herbaceous 

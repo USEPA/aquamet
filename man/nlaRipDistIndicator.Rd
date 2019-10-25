@@ -28,11 +28,14 @@ plot area at any station. Calculated by the function \code{metsHumanImpact()}}
 \value{
 A data frame containing:
 \itemize{
-\item{sampID}{The variables in the argument \emph{sampID}}
+\item{sampID}
+{The variables in the argument \emph{sampID}}
 
-\item{RDis_IX}{Riparian anthropogenic disturbance index}
+\item{RDis_IX}
+{Riparian anthropogenic disturbance index}
 
-\item{RDIS_COND}{Riparian anthropogenic disturbance condition class
+\item{RDIS_COND}
+{Riparian anthropogenic disturbance condition class
  (Low/Medium/High/Not Assessed)} 
 }
 }

@@ -8,8 +8,8 @@ nrsaHumanInfluence(buildings = NULL, landfillTrash = NULL, logging = NULL,
   mining = NULL, parkLawn = NULL, pastureRangeHay = NULL,
   pavementClearedlot = NULL, pipesInOut = NULL, roadsRailroads = NULL,
   rowcrops = NULL, wallRevetment = NULL,
-  influenceWeights = data.frame(VALUE = c("0", "P", "C", "B"), weights = c(0,
-  0.666667, 1, 1.5), stringsAsFactors = FALSE))
+  dataInformation = data.frame(value = c("0", "P", "C", "B"), weights = c(0,
+  0.666667, 1, 1.5), stringsAsFactors = FALSE), isUnitTest = FALSE)
 }
 \arguments{
 \item{buildings}{A data frame containing building influence data 

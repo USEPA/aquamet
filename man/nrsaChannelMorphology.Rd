@@ -7,7 +7,7 @@
 nrsaChannelMorphology(bBankHeight = NULL, bBankWidth = NULL,
   bDepth = NULL, bIncisedHeight = NULL, bWettedWidth = NULL,
   wBankHeight = NULL, wBankWidth = NULL, wDepth = NULL,
-  wIncisedHeight = NULL, wWettedWidth = NULL)
+  wIncisedHeight = NULL, wWettedWidth = NULL, isUnitTest = FALSE)
 }
 \arguments{
 \item{bBankHeight}{A data frame containing bank height at each transect for

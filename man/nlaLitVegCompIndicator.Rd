@@ -59,16 +59,21 @@ Calculated by the function \code{metsFishCoverNLA()}.}
 \value{
 A data frame containing:
 \itemize{
-\item{sampID}{The variables in the argument \emph{sampID}}
+\item{sampID} 
+{The variables in the argument \emph{sampID}}
 
-\item{LitCvrQ}{Observed littoral vegetation complexity index}
+\item{LitCvrQ} 
+{Observed littoral vegetation complexity index}
 
-\item{LitCvrQc3x15}{Expected littoral vegetation complexity index}
+\item{LitCvrQc3x15} 
+{Expected littoral vegetation complexity index}
 
-\item{LitCvrQc3OE}{Littoral vegetation complexity indicator 
+\item{LitCvrQc3OE} 
+{Littoral vegetation complexity indicator 
 value, O/E score}
 
-\item{LITCVR_COND}{Littoral vegetation complexity indicator 
+\item{LITCVR_COND} 
+{Littoral vegetation complexity indicator 
 condition class (Good/Fair/Poor/Not Assessed)} 
 }
 }

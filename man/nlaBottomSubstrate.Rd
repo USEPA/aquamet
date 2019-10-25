@@ -7,14 +7,14 @@
 nlaBottomSubstrate(bedrock = NULL, boulder = NULL, color = NULL,
   cobble = NULL, gravel = NULL, odor = NULL, organic = NULL,
   sand = NULL, silt = NULL, wood = NULL,
-  substrateCovers = data.frame(VALUE = c(NA, "0", "1", "2", "3", "4"), cover =
-  c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence = as.integer(c(NA, 0, 1, 1, 1,
-  1)), stringsAsFactors = FALSE), substrateSizes = data.frame(CLASS =
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights
+  = c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence = as.logical(c(NA, 0, 1, 1, 1,
+  1)), stringsAsFactors = FALSE), classInformation = data.frame(name =
   c("BEDROCK", "BOULDERS", "COBBLE", "GRAVEL", "SAND", "SILT", "ORGANIC",
-  "WOOD"), diam = c(gmean(c(4000, 8000)), gmean(c(250, 4000)), gmean(c(64,
-  250)), gmean(c(2, 64)), gmean(c(0.06, 2)), gmean(c(0.001, 0.06)), NA, NA),
-  inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE),
-  stringsAsFactors = FALSE))
+  "WOOD"), characteristicDiameter = c(gmean(c(4000, 8000)), gmean(c(250, 4000)),
+  gmean(c(64, 250)), gmean(c(2, 64)), gmean(c(0.06, 2)), gmean(c(0.001, 0.06)),
+  NA, NA), inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE,
+  FALSE), stringsAsFactors = FALSE), isUnitTest = FALSE)
 }
 \arguments{
 \item{bedrock}{A data frame containing bedrock class values, 

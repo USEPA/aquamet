@@ -37,18 +37,23 @@ calculated by function \code{nlaLitVegCompIndicator()}.}
 \value{
 A data frame containing:
 \itemize{
-\item{sampID}{The variables in the argument \emph{sampID}}
+\item{sampID} 
+{The variables in the argument \emph{sampID}}
 
-\item{LitRipCvrQ}{Observed combined riparian and littoral vegetation
+\item{LitRipCvrQ} 
+{Observed combined riparian and littoral vegetation
 complexity index}
 
-\item{LitRipCvrQc3x15}{Expected combined riparian and littoral
+\item{LitRipCvrQc3x15} 
+{Expected combined riparian and littoral
 vegetation complexity index}
 
-\item{LitRipCvrQc3OE}{Littoral and riparian vegetation complexity 
+\item{LitRipCvrQc3OE} 
+{Littoral and riparian vegetation complexity 
 Observed/Expected (O/E) value}
 
-\item{LITRIPCVR_COND}{Littoral and riparian vegetation complexity 
+\item{LITRIPCVR_COND} 
+{Littoral and riparian vegetation complexity 
 indicator condition class (Good/Fair/Poor/Not Assessed)} 
 }
 }
