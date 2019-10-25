@@ -213,6 +213,8 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #            code throughout.
 #    3/18/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull().
+#   10/25/19 cws Allowing BL and RC size classes so calculations of 0809 and 1314
+#            metrics can be repeated. No change to unit test.
 #
 # Arguments:
 # bBottomDom    dataframe containing size class data for the dominant 
@@ -335,12 +337,12 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
                                               )
     wSizeClass <- aquametStandardizeArgument(wSizeClass, ifdf=ifdf
                                               ,struct = list(SITE=c('integer','character'), VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','BL','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               )
     wMezzoSizeClass <- aquametStandardizeArgument(wMezzoSizeClass, ifdf=ifdf
                                               ,struct = list(SITE=c('integer','character'), VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','BL','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               )
 
