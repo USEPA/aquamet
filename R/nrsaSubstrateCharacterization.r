@@ -215,6 +215,9 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #            absentAsNull().
 #   10/25/19 cws Allowing BL and RC size classes so calculations of 0809 and 1314
 #            metrics can be repeated. No change to unit test.
+#   10/30/19 cws Added HP, WD, OT classes to allowable boatable littoral data values. 
+#            Added FN to allowable boatable thalweg data values. Unit tests work
+#            without modification...
 #
 # Arguments:
 # bBottomDom    dataframe containing size class data for the dominant 
@@ -312,27 +315,27 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
     }
     bBottomDom <- aquametStandardizeArgument(bBottomDom, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','RR','RS','SA','SB','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               )
     bBottomSec <- aquametStandardizeArgument(bBottomSec, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','RR','RS','SA','SB','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               )
     bShoreDom <-  aquametStandardizeArgument(bShoreDom, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','RR','RS','SA','SB','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               )
     bShoreSec <-  aquametStandardizeArgument(bShoreSec, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','RR','RS','SA','SB','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               )
     bSizeClass <- aquametStandardizeArgument(bSizeClass, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','BH','BL','CB','GR','SA'))
+                                              ,legalValues = list(VALUE = c(NA,'','BH','BL','CB','GR','SA','FN'))
                                               ,stopOnError = !isUnitTest
                                               )
     wSizeClass <- aquametStandardizeArgument(wSizeClass, ifdf=ifdf
