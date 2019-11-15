@@ -4,12 +4,25 @@
 \alias{calcNRSA_FishMMImets}
 \title{Calculate only fish metrics necessary for NRSA MMI}
 \usage{
-calcNRSA_FishMMImets(indata, inTaxa = NULL, sampID = "UID", ecoreg = NULL,
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
-  tol = "TOLERANCE", vel = "VELOCITY", habitat = "HABITAT",
-  trophic = "TROPHIC", migr = "MIGRATORY", nonnat = "NONNATIVE",
-  reprod = "REPROD", family = "FAMILY", genus = "GENUS",
-  comname = "NAME")
+calcNRSA_FishMMImets(
+  indata,
+  inTaxa = NULL,
+  sampID = "UID",
+  ecoreg = NULL,
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  tol = "TOLERANCE",
+  vel = "VELOCITY",
+  habitat = "HABITAT",
+  trophic = "TROPHIC",
+  migr = "MIGRATORY",
+  nonnat = "NONNATIVE",
+  reprod = "REPROD",
+  family = "FAMILY",
+  genus = "GENUS",
+  comname = "NAME"
+)
 }
 \arguments{
 \item{indata}{A data frame containing, at minimum, the variables 

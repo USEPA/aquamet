@@ -4,8 +4,19 @@
 \alias{nrsaInstrmCoverIndicator}
 \title{Calculate NRSA Instream Cover physical habitat indicator}
 \usage{
-nrsaInstrmCoverIndicator(x, sampID = "UID", ecoreg, protocol, xfc_nat, lat,
-  lon, slope, xwidth, elev, area)
+nrsaInstrmCoverIndicator(
+  x,
+  sampID = "UID",
+  ecoreg,
+  protocol,
+  xfc_nat,
+  lat,
+  lon,
+  slope,
+  xwidth,
+  elev,
+  area
+)
 }
 \arguments{
 \item{x}{A data frame containing, at minimum, the variables 

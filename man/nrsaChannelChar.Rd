@@ -4,11 +4,19 @@
 \alias{nrsaChannelChar}
 \title{Calculate NRSA Channel Characteristic Metrics}
 \usage{
-nrsaChannelChar(bankfullWidth = NULL, channelPattern = NULL,
-  constraintFeatures = NULL, constraintMultiple = NULL,
-  constraintSingle = NULL, constraintPercent = NULL, seeOverBank = NULL,
-  shoreToVegDistance = NULL, valleyConstraintUnseen = NULL,
-  valleyWidth = NULL, isUnitTest = FALSE)
+nrsaChannelChar(
+  bankfullWidth = NULL,
+  channelPattern = NULL,
+  constraintFeatures = NULL,
+  constraintMultiple = NULL,
+  constraintSingle = NULL,
+  constraintPercent = NULL,
+  seeOverBank = NULL,
+  shoreToVegDistance = NULL,
+  valleyConstraintUnseen = NULL,
+  valleyWidth = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bankfullWidth}{A data frame containing bankfull width from 

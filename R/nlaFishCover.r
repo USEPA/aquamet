@@ -185,14 +185,14 @@
 #' @param fillinDrawdown A logical value which specifies whether to use the
 #     DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
 #     The default value is TRUE.
-#' @param coverClassInfo A data frame containing the field fish cover
+#' @param dataInformation A data frame containing the field fish cover
 #' categorical values and corresponding numeric cover values used in calculations, 
 #' as well as indicators of cover type presence or absence for each category. The
 #' default values (and required column names) are:
 #' \itemize{
-#' \item field c(NA,'0','1','2','3','4')
-#' \item characteristicCover c(NA,0,0.05,0.25,0.575,0.875)
-#' \item presence c(NA,0,1,1,1,1) 
+#' \item value c(NA,'0','1','2','3','4')
+#' \item weights c(NA,0,0.05,0.25,0.575,0.875)
+#' \item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
 #' }  
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 

@@ -222,6 +222,17 @@
 #' @param fillinDrawdown A logical value, which specifies whether to use the
 #' DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
 #' The default value is TRUE.
+#' @param dataInformation A data frame used to convert between 
+#' cover class codes to characteristic cover values. Default 
+#' data frame uses NARS values. Expected to contain
+#' the following columns:
+#' \itemize{
+#'        \item value - values containing all expected values
+#'        \item weights - numeric values used to calculate numeric 
+#'                   metrics.
+#'        \item presence - logical values to specify presence or 
+#'        absence of vegetation.
+#' } 
 #' 
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 

@@ -4,17 +4,26 @@
 \alias{nlaShorelineSubstrate}
 \title{Calculate NLA Shoreline Substrate Metrics}
 \usage{
-nlaShorelineSubstrate(bedrock = NULL, boulder = NULL, cobble = NULL,
-  gravel = NULL, organic = NULL, other = NULL, sand = NULL,
-  silt = NULL, wood = NULL, dataInformation = data.frame(value = c(NA,
-  "0", "1", "2", "3", "4"), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875),
-  presence = as.logical(c(NA, 0, 1, 1, 1, 1)), stringsAsFactors = FALSE),
-  classInformation = data.frame(name = c("BEDROCK", "BOULDERS", "COBBLE",
-  "GRAVEL", "SAND", "SILT", "ORGANIC", "WOOD"), characteristicDiameter =
-  c(gmean(c(4000, 8000)), gmean(c(250, 4000)), gmean(c(64, 250)), gmean(c(2,
-  64)), gmean(c(0.06, 2)), gmean(c(0.001, 0.06)), NA, NA), inPopulationEstimate
-  = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE), stringsAsFactors =
-  FALSE), isUnitTest = FALSE)
+nlaShorelineSubstrate(
+  bedrock = NULL,
+  boulder = NULL,
+  cobble = NULL,
+  gravel = NULL,
+  organic = NULL,
+  other = NULL,
+  sand = NULL,
+  silt = NULL,
+  wood = NULL,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), presence = as.logical(c(NA, 0, 1, 1, 1, 1)),
+    stringsAsFactors = FALSE),
+  classInformation = data.frame(name = c("BEDROCK", "BOULDERS", "COBBLE", "GRAVEL",
+    "SAND", "SILT", "ORGANIC", "WOOD"), characteristicDiameter = c(gmean(c(4000, 8000)),
+    gmean(c(250, 4000)), gmean(c(64, 250)), gmean(c(2, 64)), gmean(c(0.06, 2)),
+    gmean(c(0.001, 0.06)), NA, NA), inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE, TRUE,
+    TRUE, FALSE, FALSE), stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bedrock}{A data frame containing bedrock class values, 
@@ -116,17 +125,17 @@ integer, from 0-4 containing the wood bottom substrate cover
 category.
 }}
 
-\item{substrateCovers}{a data frame containing substrate cover category 
+\item{dataInformation}{a data frame containing substrate cover category 
 values (VALUE), the lower proportional cover value for each category (cover),
 and an indicator variable of presence of a substrate type for each category.
 The default values are:
 \itemize{
 \item VALUE '0', '1', '2', '3', '4', NA
 \item cover 0, 0.05, 0.25, 0.575, 0.875, NA
-\item presence 0, 1, 1, 1, 1, NA
+\item presence FALSE,TRUE,TRUE,TRUE,TRUE, NA
 }}
 
-\item{substrateSizes}{a data frame containing substrate class names (CLASS)
+\item{classInformation}{a data frame containing substrate class names (CLASS)
 and corresponding geometric mean of diameter ranges in mm (diam), as well as
 an indicator of whether to include the class in estimates of substrate size
 for the site. 

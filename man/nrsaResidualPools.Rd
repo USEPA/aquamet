@@ -4,9 +4,15 @@
 \alias{nrsaResidualPools}
 \title{Calculate NRSA Residual Pools Metrics}
 \usage{
-nrsaResidualPools(bDepth = NULL, wDepth = NULL, siteSlopes = NULL,
-  transectSpacing = NULL, writeIntermediateFiles = FALSE,
-  oldeMethods = FALSE, isUnitTest = FALSE)
+nrsaResidualPools(
+  bDepth = NULL,
+  wDepth = NULL,
+  siteSlopes = NULL,
+  transectSpacing = NULL,
+  writeIntermediateFiles = FALSE,
+  oldeMethods = FALSE,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bDepth}{A data frame containing thalweg depths for boatable 

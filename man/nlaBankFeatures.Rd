@@ -4,9 +4,15 @@
 \alias{nlaBankFeatures}
 \title{Calculate NLA Aquatic Macrophyte Metrics}
 \usage{
-nlaBankFeatures(angle = NULL, drawdown = NULL, horizontalDistance = NULL,
-  horizontalDistanceDrawdown = NULL, verticalHeight = NULL,
-  verticalHeightDrawdown = NULL, isUnitTest = FALSE)
+nlaBankFeatures(
+  angle = NULL,
+  drawdown = NULL,
+  horizontalDistance = NULL,
+  horizontalDistanceDrawdown = NULL,
+  verticalHeight = NULL,
+  verticalHeightDrawdown = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{angle}{A data frame containing bank angle class values for sites 

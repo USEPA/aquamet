@@ -21,19 +21,19 @@
 #'    \item VALUE character values specifying the influence 
 #'                class
 #' }
-#' @param bClassInfo A data frame relating the class names used in 
+#' @param bDataInformation A data frame relating the class names used in 
 #' bCounts::CLASS to each combination of size and location classes.  
 #' Expected to have the following columns and values in 24 rows:
 #' \itemize{
-#'      \item diam character value specifying diameter class: SMALL
+#'      \item diameterClass character value specifying diameter class: SMALL
 #'                 MEDIUM, LARGE, EXTRALARGE, as defined in the NRSA
 #'                 field protocol manual
-#'      \item len character value specifying length class: SMALL
+#'      \item lengthClass character value specifying length class: SMALL
 #'                MEDIUM, LARGE, as defined in the NRSA field protocol
 #'                manual
-#'      \item loc character value specifying location class: DRY, WET
+#'      \item locationClass character value specifying location class: DRY, WET
 #'                as defined in the NRSA field protocol manual
-#'      \item CLASS character value associated with each combination of
+#'      \item name character value associated with each combination of
 #'                  diameter, length and channel location, as it occurs
 #'                  in the bCounts argument.
 #' }
@@ -53,19 +53,19 @@
 #'    \item VALUE character values specifying the influence 
 #'                class
 #' }
-#' @param wClassInfo A data frame relating the class names used in 
+#' @param wDataInformation A data frame relating the class names used in 
 #' wCounts::CLASS to each combination of size and location classes.  
 #' Expected to have the following columns and values in 24 rows:
 #' \itemize{
-#'    \item diam character value specifying diameter class: SMALL
+#'    \item diameterClass character value specifying diameter class: SMALL
 #'               MEDIUM, LARGE, EXTRALARGE, as defined in the NRSA
 #'               field protocol manual
-#'    \item len character value specifying length class: SMALL
+#'    \item lengthClass character value specifying length class: SMALL
 #'              MEDIUM, LARGE, as defined in the NRSA field protocol
 #'              manual
-#'    \item loc character value specifying location class: DRY, WET
+#'    \item locationClass character value specifying location class: DRY, WET
 #'              as defined in the NRSA field protocol manual
-#'    \item CLASS character value associated with each combination of
+#'    \item name character value associated with each combination of
 #'                diameter, length and channel location, as it occurs
 #'                in the wCounts argument.
 #' }

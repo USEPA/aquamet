@@ -39,6 +39,14 @@
 #' integer, from 0-4 containing the total macrophyte cover
 #' category.
 #' }
+#' @param dataInformation A data frame containing aquatic macrophyte 
+#' categorical values and corresponding numeric cover values used in 
+#' calculations. as well as indicators of cover type presence or absence 
+#' for each category. The default values (and required column names) are:
+#' \itemize{
+#' \item value c(NA,'0','1','2','3','4')
+#' \item weights c(NA,0,0.05,0.25,0.575,0.875)
+#' \item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:

@@ -4,14 +4,20 @@
 \alias{nrsaRiparianVegetation}
 \title{Calculate NRSA Riparian Vegetation Metrics}
 \usage{
-nrsaRiparianVegetation(canopyCoverLargeDiameter = NULL,
-  canopyCoverSmallDiameter = NULL, canopyVegetationType = NULL,
-  groundCoverBare = NULL, groundCoverNonwoody = NULL,
-  groundCoverWoody = NULL, understoryCoverNonwoody = NULL,
-  understoryCoverWoody = NULL, understoryVegetationType = NULL,
-  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights
-  = c(NA, 0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE),
-  isUnitTest = FALSE)
+nrsaRiparianVegetation(
+  canopyCoverLargeDiameter = NULL,
+  canopyCoverSmallDiameter = NULL,
+  canopyVegetationType = NULL,
+  groundCoverBare = NULL,
+  groundCoverNonwoody = NULL,
+  groundCoverWoody = NULL,
+  understoryCoverNonwoody = NULL,
+  understoryCoverWoody = NULL,
+  understoryVegetationType = NULL,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{canopyCoverLargeDiameter}{A data frame containing cover class 
@@ -140,12 +146,12 @@ columns:
      \item VALUE numeric or character values
 }}
 
-\item{coverCalculationValues}{A data frame used to convert between 
+\item{dataInformation}{A data frame used to convert between 
 cover class codes to characteristic cover values. Expected to contain
 the following columns:
 \itemize{
-       \item field character values containing all expected values
-       \item calc numeric values used to calculate numeric 
+       \item value - values containing all expected values
+       \item weights - numeric values used to calculate numeric 
                   metrics.
 }
 Note that possible values for variables in the input data frame are
@@ -200,9 +206,7 @@ groundCoverWoody = gCovW,
 understoryCoverNonwoody = undCNW,
 understoryCoverWoody = undCW,
 understoryVegetationType = undVT,
-coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
-                                  ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-                                  ,stringsAsFactors=FALSE))
+)
 
 head(exRipVegOut)                                   
 }

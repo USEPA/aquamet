@@ -4,9 +4,25 @@
 \alias{nlaLitVegCompIndicator}
 \title{Calculate NLA Littoral Vegetation Complexity Indicator}
 \usage{
-nlaLitVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, ecoreg,
-  fciNatural, fcfcSnag, amfcFloating, amfcEmergent, fcfcBoulders, fcfcBrush,
-  fcfcLedges, fcfcLiveTrees, fcfcOverhang)
+nlaLitVegCompIndicator(
+  x,
+  sampID,
+  lat,
+  lon,
+  lake_origin,
+  area,
+  elev,
+  ecoreg,
+  fciNatural,
+  fcfcSnag,
+  amfcFloating,
+  amfcEmergent,
+  fcfcBoulders,
+  fcfcBrush,
+  fcfcLedges,
+  fcfcLiveTrees,
+  fcfcOverhang
+)
 }
 \arguments{
 \item{x}{Input data frame containing other variables as specified in

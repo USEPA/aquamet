@@ -5,8 +5,13 @@
 \title{Aggregate benthic macroinvertebrate data for use 
 with WSA and NRSA benthic metrics and MMIs}
 \usage{
-prepBentCts_WSA(inCts, inTaxa = bentTaxa, sampID = "UID", ct = "TOTAL",
-  taxa_id = "TAXA_ID")
+prepBentCts_WSA(
+  inCts,
+  inTaxa = bentTaxa,
+  sampID = "UID",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID"
+)
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 

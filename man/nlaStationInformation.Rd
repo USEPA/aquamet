@@ -4,8 +4,7 @@
 \alias{nlaStationInformation}
 \title{Calculate NLA Station Information Metrics}
 \usage{
-nlaStationInformation(isIsland = NULL, stationDepth = NULL,
-  isUnitTest = FALSE)
+nlaStationInformation(isIsland = NULL, stationDepth = NULL, isUnitTest = FALSE)
 }
 \arguments{
 \item{isIsland}{A data frame containing value indicating whether station is

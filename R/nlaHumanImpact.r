@@ -259,14 +259,14 @@
 #' @param fillinDrawdown A logical value, which specifies whether to use the
 #' DRAWDOWN parameter to fill in unrecorded cover and horizontalDistance_dd 
 #' values. The default value is TRUE. 
-#' @param proximityWeights A data frame relating categorical proximity values 
+#' @param dataInformation A data frame relating categorical proximity values 
 #' to various numeric weights for different types of metrics. The default data frame
 #' consists of the following values:
 #' \itemize{
-#' \item proximity c('0','P','C')
-#' \item calc c(0.0, 0.5, 1.0)  
-#' \item circa c(0, 0, 1)
-#' \item present c(0, 1, 1)
+#' \item value c('0','P','C')
+#' \item weights c(0.0, 0.5, 1.0)  
+#' \item inStream c(0, 0, 1)
+#' \item presence c(FALSE,TRUE,TRUE)
 #' } 
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 

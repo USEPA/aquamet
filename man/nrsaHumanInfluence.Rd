@@ -4,12 +4,22 @@
 \alias{nrsaHumanInfluence}
 \title{Calculate NRSA Human Influence Metrics}
 \usage{
-nrsaHumanInfluence(buildings = NULL, landfillTrash = NULL, logging = NULL,
-  mining = NULL, parkLawn = NULL, pastureRangeHay = NULL,
-  pavementClearedlot = NULL, pipesInOut = NULL, roadsRailroads = NULL,
-  rowcrops = NULL, wallRevetment = NULL,
-  dataInformation = data.frame(value = c("0", "P", "C", "B"), weights = c(0,
-  0.666667, 1, 1.5), stringsAsFactors = FALSE), isUnitTest = FALSE)
+nrsaHumanInfluence(
+  buildings = NULL,
+  landfillTrash = NULL,
+  logging = NULL,
+  mining = NULL,
+  parkLawn = NULL,
+  pastureRangeHay = NULL,
+  pavementClearedlot = NULL,
+  pipesInOut = NULL,
+  roadsRailroads = NULL,
+  rowcrops = NULL,
+  wallRevetment = NULL,
+  dataInformation = data.frame(value = c("0", "P", "C", "B"), weights = c(0, 0.666667,
+    1, 1.5), stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{buildings}{A data frame containing building influence data 
@@ -126,11 +136,11 @@ data at each transect for all reaches, with the following columns:
                class
 }}
 
-\item{influenceWeights}{A data frame containing weighting values for 
+\item{dataInformation}{A data frame containing weighting values for 
 each influence class.  The default value for this argument reproduces EPA
 NARS calculations.  Expected to have the following columns:
 \itemize{
-   \item VALUE character codes used to specify each influence 
+   \item value character codes used to specify each influence 
                class
    \item weights numeric value used to weight each influence class
          in combined calculations

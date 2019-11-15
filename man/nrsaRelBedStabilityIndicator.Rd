@@ -4,8 +4,19 @@
 \alias{nrsaRelBedStabilityIndicator}
 \title{Assign NRSA Relative Bed Stability indicator condition class}
 \usage{
-nrsaRelBedStabilityIndicator(x, sampID = "UID", ecoreg, protocol, lrbs, lat,
-  lon, area, elev, slope, xwidth)
+nrsaRelBedStabilityIndicator(
+  x,
+  sampID = "UID",
+  ecoreg,
+  protocol,
+  lrbs,
+  lat,
+  lon,
+  area,
+  elev,
+  slope,
+  xwidth
+)
 }
 \arguments{
 \item{x}{A data frame containing, at minimum, the variables 

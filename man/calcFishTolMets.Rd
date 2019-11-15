@@ -4,11 +4,21 @@
 \alias{calcFishTolMets}
 \title{Calculate all tolerance-related metrics}
 \usage{
-calcFishTolMets(indata, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
-  tol = "TOLERANCE", tolval = "TOL_VAL", vel = "VELOCITY",
-  habitat = "HABITAT", trophic = "TROPHIC", migr = "MIGRATORY",
-  nonnat = "NONNATIVE")
+calcFishTolMets(
+  indata,
+  inTaxa = NULL,
+  sampID = "UID",
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  tol = "TOLERANCE",
+  tolval = "TOL_VAL",
+  vel = "VELOCITY",
+  habitat = "HABITAT",
+  trophic = "TROPHIC",
+  migr = "MIGRATORY",
+  nonnat = "NONNATIVE"
+)
 }
 \arguments{
 \item{indata}{Input data frame containing variables as identified

@@ -4,19 +4,22 @@
 \alias{nrsaChannelHabitat}
 \title{Calculate NRSA Channel Habitat Metrics}
 \usage{
-nrsaChannelHabitat(bChannelUnit = NULL, bDataInformation = data.frame(value
-  = c("FA", "RA", "RI", "GL", "PO", "CA", "DR"), metsSuffix = c("fa", "ra",
-  "ri", "gl", "pool", "ca", "dr"), name = c("FALLS", "RAPID", "RIFFLE", "GLIDE",
-  "POOL", "CASCADE", "DRY"), isFast = c(TRUE, TRUE, TRUE, FALSE, FALSE, TRUE,
-  NA), stringsAsFactors = FALSE), wChannelUnit = NULL,
-  wDataInformation = data.frame(value = c("FA", "CA", "RA", "RI", "GL", "PB",
-  "PP", "PD", "PL", "PT", "P", "DR"), metsSuffix = c("fa", "ca", "ra", "ri",
-  "gl", "pb", "pp", "pd", "pl", "pt", "p", "dr"), name = c("FALLS", "CASCADE",
-  "RAPID", "RIFFLE", "GLIDE", "POOL_B", "POOL_PLUNGE", "POOL_D", "POOL_LATERAL",
-  "POOL_TRENCH", "POOL", "DRY"), isFast = c(TRUE, TRUE, TRUE, TRUE, FALSE,
-  FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, NA), isPool = c(FALSE, FALSE, FALSE,
-  FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE), stringsAsFactors =
-  FALSE), isUnitTest = FALSE)
+nrsaChannelHabitat(
+  bChannelUnit = NULL,
+  bDataInformation = data.frame(value = c("FA", "RA", "RI", "GL", "PO", "CA", "DR"),
+    metsSuffix = c("fa", "ra", "ri", "gl", "pool", "ca", "dr"), name = c("FALLS", "RAPID",
+    "RIFFLE", "GLIDE", "POOL", "CASCADE", "DRY"), isFast = c(TRUE, TRUE, TRUE, FALSE,
+    FALSE, TRUE, NA), stringsAsFactors = FALSE),
+  wChannelUnit = NULL,
+  wDataInformation = data.frame(value = c("FA", "CA", "RA", "RI", "GL", "PB", "PP",
+    "PD", "PL", "PT", "P", "DR"), metsSuffix = c("fa", "ca", "ra", "ri", "gl", "pb", "pp",
+    "pd", "pl", "pt", "p", "dr"), name = c("FALLS", "CASCADE", "RAPID", "RIFFLE", "GLIDE",
+    "POOL_B", "POOL_PLUNGE", "POOL_D", "POOL_LATERAL", "POOL_TRENCH", "POOL", "DRY"),
+    isFast = c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+    NA), isPool = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
+    FALSE), stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bChannelUnit}{A data frame containing channel unit codes from 
@@ -26,6 +29,25 @@ boatable reaches, with the following columns:
 \item VALUE   character values, expected to be as specified in the 
 bChannelUnitCodeList argument column 'code'. Only values which occur 
 in the code column will be included in the calculations.
+}}
+
+\item{bDataInformation}{A data frame specifying the boatable 
+channel unit codes, meanings and class memberships.  The default value 
+of this argument is for the EPA NARS processing.  It should 
+have the following columns:
+\itemize{
+ \item value  character values for the channel units as they occur in the 
+ VALUE column of bChannelUnit
+ \item metsSuffix  character values which are used as the suffix for 
+ resulting metric names, e.g., a value of 'falls' results in 'pct_falls' 
+ as the resulting metric name.
+ \item name    character values that are used soley to
+ help the human reader organize things. This column is not used by the code.
+ \item isFast logical values for each habitat code specifying whether it 
+ is considered fast or not.  Used to calculate pct_fast and  
+ pct_slow; if this column does not exist, neither of those metrics will be
+ calculated. Codes for which this value is NA will not be considered as 
+ either fast nor slow.
 }}
 
 \item{wChannelUnit}{A data frame containing channel unit codes from wadeable 
@@ -39,44 +61,21 @@ reaches, with the following columns:
                                column will be included in the calculations.
 }}
 
-\item{bChannelUnitCodeList}{A data frame specifying the boatable 
-channel unit codes, meanings and class memberships.  The default value 
-of this argument is for the EPA NARS processing.  It should 
-have the following columns:
-\itemize{
- \item code  character values for the channel units as they occur in the 
- VALUE column of bChannelUnit
- \item metsSuffix  character values which are used as the suffix for 
- resulting metric names, e.g., a value of 'falls' results in 'pct_falls' 
- as the resulting metric name.
- \item category    character values that are used soley to
- help the human reader organize things. This column is not used by the code.
- \item isFast logical values for each habitat code specifying whether it 
- is considered fast or not.  Used to calculate pct_fast and  
- pct_slow; if this column does not exist, neither of those metrics will be
- calculated. Codes for which this value is NA will not be considered as 
- either fast nor slow.
- \item isPool logical values for each habitat code specifying whether it 
- is considered a pool habitat or not.  Used to calculate 
- pct_pool; if this column does not exist, this metric will not be 
- calculated.
-}}
-
-\item{wChannelUnitCodeList}{A data frame specifying the wadeable 
+\item{wDataInformation}{A data frame specifying the wadeable 
 channel unit codes, meanings and class memberships.  The default 
 value of this argument is for the EPA NARS processing for 2008-9.  
 The updated version for 2013-14 would be identical to the values used
 in \emph{bChannelUnitCodeList} above. The data frame input should  
 have the following columns:
 \itemize{
-   \item code        character values for the channel units
+   \item value        character values for the channel units
                      as they occur in the VALUE column of
                      bChannelUnit
    \item metsSuffix  character values which are used as the
                      suffix for resulting metric names, e.g.
                      a value of 'falls' results in 'pct_falls'
                      as the resulting metric name.
-   \item category    character values that are used soley to
+   \item name    character values that are used soley to
                      help the human reader organize things.
                      This column is not used by the code.
    \item isFast      logical values for each habitat code

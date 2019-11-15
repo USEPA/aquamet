@@ -4,11 +4,16 @@
 \alias{nlaAquaticMacrophytes}
 \title{Calculate NLA Aquatic Macrophyte Metrics}
 \usage{
-nlaAquaticMacrophytes(emergent = NULL, floating = NULL, submergent = NULL,
-  totalCover = NULL, dataInformation = data.frame(value = c(NA, "0", "1",
-  "2", "3", "4"), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence = c(NA,
-  0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), stringsAsFactors = FALSE),
-  isUnitTest = FALSE)
+nlaAquaticMacrophytes(
+  emergent = NULL,
+  floating = NULL,
+  submergent = NULL,
+  totalCover = NULL,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), presence = c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(),
+    stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{emergent}{A data frame containing emergent vegetation class values for sites 

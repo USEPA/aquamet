@@ -4,8 +4,14 @@
 \alias{nrsaLegacyTree}
 \title{Calculate NRSA Legacy Riparian Trees Metrics}
 \usage{
-nrsaLegacyTree(dbhClass = NULL, distance = NULL, heightClass = NULL,
-  species = NULL, type = NULL, isUnitTest = FALSE)
+nrsaLegacyTree(
+  dbhClass = NULL,
+  distance = NULL,
+  heightClass = NULL,
+  species = NULL,
+  type = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{dbhClass}{A data frame containing dbh class values at each 

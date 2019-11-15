@@ -121,12 +121,12 @@
 #'                 at which the values were recorded.
 #'      \item VALUE numeric or character values
 #' }
-#' @param coverCalculationValues A data frame used to convert between 
+#' @param dataInformation A data frame used to convert between 
 #' cover class codes to characteristic cover values. Expected to contain
 #' the following columns:
 #' \itemize{
-#'        \item field character values containing all expected values
-#'        \item calc numeric values used to calculate numeric 
+#'        \item value - values containing all expected values
+#'        \item weights - numeric values used to calculate numeric 
 #'                   metrics.
 #' }
 #' Note that possible values for variables in the input data frame are
@@ -174,9 +174,7 @@
 #' understoryCoverNonwoody = undCNW,
 #' understoryCoverWoody = undCW,
 #' understoryVegetationType = undVT,
-#' coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
-#'                                   ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-#'                                   ,stringsAsFactors=FALSE))
+#' )
 #' 
 #' head(exRipVegOut)                                   
  

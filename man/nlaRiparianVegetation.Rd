@@ -4,20 +4,36 @@
 \alias{nlaRiparianVegetation}
 \title{Calculate NLA Riparian Zone and Vegetation Metrics}
 \usage{
-nlaRiparianVegetation(bigTrees = NULL, bigTrees_dd = NULL,
-  smallTrees = NULL, smallTrees_dd = NULL, canopyType = NULL,
-  canopyType_dd = NULL, groundcoverBare = NULL, groundcoverBare_dd = NULL,
-  groundcoverInundated = NULL, groundcoverInundated_dd = NULL,
-  groundcoverNonwoody = NULL, groundcoverNonwoody_dd = NULL,
-  groundcoverWoody = NULL, groundcoverWoody_dd = NULL,
-  understoryNonwoody = NULL, understoryNonwoody_dd = NULL,
-  understoryWoody = NULL, understoryWoody_dd = NULL,
-  understoryType = NULL, understoryType_dd = NULL, drawdown = NULL,
-  horizontalDistance_dd = NULL, createSyntheticCovers = TRUE,
-  fillinDrawdown = TRUE, dataInformation = data.frame(value = c(NA, "0",
-  "1", "2", "3", "4"), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence =
-  c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), stringsAsFactors = FALSE),
-  isUnitTest = FALSE)
+nlaRiparianVegetation(
+  bigTrees = NULL,
+  bigTrees_dd = NULL,
+  smallTrees = NULL,
+  smallTrees_dd = NULL,
+  canopyType = NULL,
+  canopyType_dd = NULL,
+  groundcoverBare = NULL,
+  groundcoverBare_dd = NULL,
+  groundcoverInundated = NULL,
+  groundcoverInundated_dd = NULL,
+  groundcoverNonwoody = NULL,
+  groundcoverNonwoody_dd = NULL,
+  groundcoverWoody = NULL,
+  groundcoverWoody_dd = NULL,
+  understoryNonwoody = NULL,
+  understoryNonwoody_dd = NULL,
+  understoryWoody = NULL,
+  understoryWoody_dd = NULL,
+  understoryType = NULL,
+  understoryType_dd = NULL,
+  drawdown = NULL,
+  horizontalDistance_dd = NULL,
+  createSyntheticCovers = TRUE,
+  fillinDrawdown = TRUE,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), presence = c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(),
+    stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bigTrees}{A data frame containing cover class values for 
@@ -261,6 +277,18 @@ protocol or do not contain drawdown cover data.  The default value is TRUE.}
 \item{fillinDrawdown}{A logical value, which specifies whether to use the
 DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
 The default value is TRUE.}
+
+\item{dataInformation}{A data frame used to convert between 
+cover class codes to characteristic cover values. Default 
+data frame uses NARS values. Expected to contain
+the following columns:
+\itemize{
+       \item value - values containing all expected values
+       \item weights - numeric values used to calculate numeric 
+                  metrics.
+       \item presence - logical values to specify presence or 
+       absence of vegetation.
+}}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

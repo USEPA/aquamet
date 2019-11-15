@@ -74,6 +74,14 @@
 #' \item VALUE a character value of X representing the woody fish cover 
 #' types selected.
 #' }
+#' @param dataInformation A data frame used to convert between 
+#' cover class codes to characteristic cover values. Expected to contain
+#' the following columns:
+#' \itemize{
+#'        \item value - values containing all expected values
+#'        \item weights - numeric values used to calculate numeric 
+#'                   metrics.
+#' }
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:

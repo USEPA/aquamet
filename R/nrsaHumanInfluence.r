@@ -107,11 +107,11 @@
 #'    \item VALUE character values specifying the influence 
 #'                class
 #' }
-#' @param influenceWeights A data frame containing weighting values for 
+#' @param dataInformation A data frame containing weighting values for 
 #' each influence class.  The default value for this argument reproduces EPA
 #' NARS calculations.  Expected to have the following columns:
 #' \itemize{
-#'    \item VALUE character codes used to specify each influence 
+#'    \item value character codes used to specify each influence 
 #'                class
 #'    \item weights numeric value used to weight each influence class
 #'          in combined calculations

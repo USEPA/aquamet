@@ -4,8 +4,12 @@
 \alias{nrsaBankMorphology}
 \title{Calculate NRSA Bank Morphology Metrics}
 \usage{
-nrsaBankMorphology(bAngle = NULL, wAngle = NULL, wUndercut = NULL,
-  isUnitTest = FALSE)
+nrsaBankMorphology(
+  bAngle = NULL,
+  wAngle = NULL,
+  wUndercut = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bAngle}{A data frame containing bank angle class values for sites 

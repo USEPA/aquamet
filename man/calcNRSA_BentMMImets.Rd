@@ -4,9 +4,18 @@
 \alias{calcNRSA_BentMMImets}
 \title{Calculate benthic MMI metrics used in NRSA MMIs}
 \usage{
-calcNRSA_BentMMImets(inCts, inTaxa = bentTaxa_nrsa, sampID = "UID",
-  ecoreg = NULL, dist = "IS_DISTINCT", ct = "TOTAL",
-  taxa_id = "TAXA_ID", ffg = "FFG", habit = "HABIT", ptv = "PTV")
+calcNRSA_BentMMImets(
+  inCts,
+  inTaxa = bentTaxa_nrsa,
+  sampID = "UID",
+  ecoreg = NULL,
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  ffg = "FFG",
+  habit = "HABIT",
+  ptv = "PTV"
+)
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 

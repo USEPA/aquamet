@@ -4,17 +4,42 @@
 \alias{nlaHumanImpact}
 \title{Calculate NLA Human Influence Metrics}
 \usage{
-nlaHumanImpact(buildings = NULL, buildings_dd = NULL, commercial = NULL,
-  commercial_dd = NULL, crops = NULL, crops_dd = NULL, docks = NULL,
-  docks_dd = NULL, landfill = NULL, landfill_dd = NULL, lawn = NULL,
-  lawn_dd = NULL, orchard = NULL, orchard_dd = NULL, other = NULL,
-  other_dd = NULL, park = NULL, park_dd = NULL, pasture = NULL,
-  pasture_dd = NULL, powerlines = NULL, powerlines_dd = NULL,
-  roads = NULL, roads_dd = NULL, walls = NULL, walls_dd = NULL,
-  drawdown = NULL, horizontalDistance_dd = NULL, data2007 = FALSE,
-  fillinDrawdown = TRUE, dataInformation = data.frame(value = c("0", "P",
-  "C"), weights = c(0, 0.5, 1), inStream = c(0L, 0L, 1L), presence = c(0L, 1L,
-  1L) \%>\% as.logical(), stringsAsFactors = FALSE), isUnitTest = FALSE)
+nlaHumanImpact(
+  buildings = NULL,
+  buildings_dd = NULL,
+  commercial = NULL,
+  commercial_dd = NULL,
+  crops = NULL,
+  crops_dd = NULL,
+  docks = NULL,
+  docks_dd = NULL,
+  landfill = NULL,
+  landfill_dd = NULL,
+  lawn = NULL,
+  lawn_dd = NULL,
+  orchard = NULL,
+  orchard_dd = NULL,
+  other = NULL,
+  other_dd = NULL,
+  park = NULL,
+  park_dd = NULL,
+  pasture = NULL,
+  pasture_dd = NULL,
+  powerlines = NULL,
+  powerlines_dd = NULL,
+  roads = NULL,
+  roads_dd = NULL,
+  walls = NULL,
+  walls_dd = NULL,
+  drawdown = NULL,
+  horizontalDistance_dd = NULL,
+  data2007 = FALSE,
+  fillinDrawdown = TRUE,
+  dataInformation = data.frame(value = c("0", "P", "C"), weights = c(0, 0.5, 1),
+    inStream = c(0L, 0L, 1L), presence = c(0L, 1L, 1L) \%>\% as.logical(),
+    stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{buildings}{A data frame containing buildings human influence 
@@ -293,6 +318,16 @@ processed.  The default value is FALSE.}
 DRAWDOWN parameter to fill in unrecorded cover and horizontalDistance_dd 
 values. The default value is TRUE.}
 
+\item{dataInformation}{A data frame relating categorical proximity values 
+to various numeric weights for different types of metrics. The default data frame
+consists of the following values:
+\itemize{
+\item value c('0','P','C')
+\item weights c(0.0, 0.5, 1.0)  
+\item inStream c(0, 0, 1)
+\item presence c(FALSE,TRUE,TRUE)
+}}
+
 \item{commerical}{A data frame containing commercial human influence 
  proximity class values from riparian zone, with the columns:
 \itemize{
@@ -301,16 +336,6 @@ visit.
 \item STATION a character value identifying the station within the SITE
 \item VALUE a character value of 0, P, or C representing the proximity 
 category.
-}}
-
-\item{proximityWeights}{A data frame relating categorical proximity values 
-to various numeric weights for different types of metrics. The default data frame
-consists of the following values:
-\itemize{
-\item proximity c('0','P','C')
-\item calc c(0.0, 0.5, 1.0)  
-\item circa c(0, 0, 1)
-\item present c(0, 1, 1)
 }}
 }
 \value{

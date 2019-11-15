@@ -4,10 +4,18 @@
 \alias{calcFishTaxMets}
 \title{Calculate all taxonomy-related metrics}
 \usage{
-calcFishTaxMets(indata, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
-  nonnat = "NONNATIVE", family = "FAMILY", genus = "GENUS",
-  comname = "NAME")
+calcFishTaxMets(
+  indata,
+  inTaxa = NULL,
+  sampID = "UID",
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  nonnat = "NONNATIVE",
+  family = "FAMILY",
+  genus = "GENUS",
+  comname = "NAME"
+)
 }
 \arguments{
 \item{indata}{Input data frame containing variables as identified

@@ -4,9 +4,16 @@
 \alias{nrsaSubstrateCharacterization}
 \title{Calculate NRSA Substrate Characterization Metrics}
 \usage{
-nrsaSubstrateCharacterization(bBottomDom = NULL, bBottomSec = NULL,
-  bShoreDom = NULL, bShoreSec = NULL, bSizeClass = NULL,
-  wSizeClass = NULL, wMezzoSizeClass = NULL, isUnitTest = FALSE)
+nrsaSubstrateCharacterization(
+  bBottomDom = NULL,
+  bBottomSec = NULL,
+  bShoreDom = NULL,
+  bShoreSec = NULL,
+  bSizeClass = NULL,
+  wSizeClass = NULL,
+  wMezzoSizeClass = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bBottomDom}{A data frame containing size class data for the dominant 

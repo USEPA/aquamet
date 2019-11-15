@@ -4,9 +4,14 @@
 \alias{nrsaGeneral}
 \title{Calculate NRSA General Metrics}
 \usage{
-nrsaGeneral(sampledTransects = NULL, sideChannels = NULL,
-  transectSpacing = NULL, sideChannelTransects = c("XA", "XB", "XC", "XD",
-  "XE", "XF", "XG", "XH", "XI", "XJ", "XK"), isUnitTest = FALSE)
+nrsaGeneral(
+  sampledTransects = NULL,
+  sideChannels = NULL,
+  transectSpacing = NULL,
+  sideChannelTransects = c("XA", "XB", "XC", "XD", "XE", "XF", "XG", "XH", "XI", "XJ",
+    "XK"),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{sampledTransects}{dataframe containing only the list of 

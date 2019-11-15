@@ -100,24 +100,24 @@
 #' integer, from 0-4 containing the wood bottom substrate cover
 #' category.
 #' }
-#' @param substrateCovers a data frame containing substrate cover category 
+#' @param dataInformation a data frame containing substrate cover category 
 #' values (VALUE), the lower proportional cover value for each category (cover),
 #' and an indicator variable of presence of a substrate type for each category.
 #' The default values are:
 #' \itemize{
-#' \item VALUE '0', '1', '2', '3', '4', NA
-#' \item cover 0, 0.05, 0.25, 0.575, 0.875, NA
+#' \item value '0', '1', '2', '3', '4', NA
+#' \item weights 0, 0.05, 0.25, 0.575, 0.875, NA
 #' \item presence 0, 1, 1, 1, 1, NA
 #' }  
-#' @param substrateSizes a data frame containing substrate class names (CLASS)
+#' @param classInformation a data frame containing substrate class names (CLASS)
 #' and corresponding geometric mean of diameter ranges in mm (diam), as well as
 #' an indicator of whether to include the class in estimates of substrate size
 #' for the site. 
 #' The default values are: 
 #' \itemize{
-#' \item CLASS 'BEDROCK', 'BOULDERS','COBBLE', 'GRAVEL', 'SAND', 'SILT', 
+#' \item name 'BEDROCK', 'BOULDERS','COBBLE', 'GRAVEL', 'SAND', 'SILT', 
 #' 'ORGANIC', 'WOOD'
-#' \item diam 5656.854, 1000, 126.4911, 11.31371, 0.3464102, 0.007745967, 
+#' \item characteristicDiameter 5656.854, 1000, 126.4911, 11.31371, 0.3464102, 0.007745967, 
 #' NA, NA  
 #' \item inPopulationEstimate TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE
 #' } 

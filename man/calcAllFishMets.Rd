@@ -4,12 +4,27 @@
 \alias{calcAllFishMets}
 \title{Calculate all fish metrics}
 \usage{
-calcAllFishMets(indf, inTaxa = NULL, sampID = "UID", dist = "IS_DISTINCT",
-  ct = "TOTAL", anomct = "ANOM_CT", taxa_id = "TAXA_ID",
-  tol = "TOLERANCE", tolval = "TOL_VAL", vel = "VELOCITY",
-  habitat = "HABITAT", trophic = "TROPHIC", migr = "MIGRATORY",
-  nonnat = "NONNATIVE", reprod = "REPROD", temp = "TEMP",
-  family = "FAMILY", genus = "GENUS", comname = "NAME")
+calcAllFishMets(
+  indf,
+  inTaxa = NULL,
+  sampID = "UID",
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  anomct = "ANOM_CT",
+  taxa_id = "TAXA_ID",
+  tol = "TOLERANCE",
+  tolval = "TOL_VAL",
+  vel = "VELOCITY",
+  habitat = "HABITAT",
+  trophic = "TROPHIC",
+  migr = "MIGRATORY",
+  nonnat = "NONNATIVE",
+  reprod = "REPROD",
+  temp = "TEMP",
+  family = "FAMILY",
+  genus = "GENUS",
+  comname = "NAME"
+)
 }
 \arguments{
 \item{indf}{A data frame containing, at minimum, the variables 

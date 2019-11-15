@@ -4,9 +4,17 @@
 \alias{calcFishTrophicMets}
 \title{Calculate all trophic-related metrics}
 \usage{
-calcFishTrophicMets(indata, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
-  habitat = "HABITAT", trophic = "TROPHIC", nonnat = "NONNATIVE")
+calcFishTrophicMets(
+  indata,
+  inTaxa = NULL,
+  sampID = "UID",
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  habitat = "HABITAT",
+  trophic = "TROPHIC",
+  nonnat = "NONNATIVE"
+)
 }
 \arguments{
 \item{indata}{Input data frame containing variables as identified

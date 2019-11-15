@@ -4,9 +4,17 @@
 \alias{calcAllBentMets}
 \title{Calculate all benthic metrics}
 \usage{
-calcAllBentMets(indf, inTaxa, sampID = "UID", dist = "IS_DISTINCT",
-  ct = "TOTAL", taxa_id = "TAXA_ID", ffg = "FFG", habit = "HABIT",
-  ptv = "PTV")
+calcAllBentMets(
+  indf,
+  inTaxa,
+  sampID = "UID",
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  ffg = "FFG",
+  habit = "HABIT",
+  ptv = "PTV"
+)
 }
 \arguments{
 \item{indf}{A data frame containing, at minimum, the variables 

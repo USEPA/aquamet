@@ -4,8 +4,12 @@
 \alias{calcNRSA_BenthicMMI}
 \title{Calculate the NRSA benthic macroinvertebrate MMI}
 \usage{
-calcNRSA_BenthicMMI(inMets, sampID = "UID", ecoreg = "ECOREG",
-  totlnind = "TOTLNIND")
+calcNRSA_BenthicMMI(
+  inMets,
+  sampID = "UID",
+  ecoreg = "ECOREG",
+  totlnind = "TOTLNIND"
+)
 }
 \arguments{
 \item{inMets}{A data frame containing, at minimum, the variables 

@@ -2,7 +2,7 @@ Package: aquamet
 Type: Package
 Title: Calculate NRSA and NLA metrics
 Version: 2.5.2
-Date: 2019-10-2
+Date: 2019-11-15
 Author: Karen Blocksom
 Depends:
     R (>= 3.0)
@@ -27,4 +27,4 @@ Suggests:
     rmarkdown
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 7.0.0

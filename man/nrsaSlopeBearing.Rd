@@ -4,10 +4,18 @@
 \alias{nrsaSlopeBearing}
 \title{Calculate NRSA Slope and Bearing Metrics}
 \usage{
-nrsaSlopeBearing(bBearing = NULL, bDistance = NULL, bSlope = NULL,
-  wBearing = NULL, wTransectSpacing = NULL, wProportion = NULL,
-  wSlope = NULL, gisSinuosity = NULL, gisSlope = NULL,
-  isUnitTest = FALSE)
+nrsaSlopeBearing(
+  bBearing = NULL,
+  bDistance = NULL,
+  bSlope = NULL,
+  wBearing = NULL,
+  wTransectSpacing = NULL,
+  wProportion = NULL,
+  wSlope = NULL,
+  gisSinuosity = NULL,
+  gisSlope = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bBearing}{A data frame containing bearing values recorded 

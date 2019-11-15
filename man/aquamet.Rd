@@ -3,7 +3,6 @@
 \docType{package}
 \name{aquamet}
 \alias{aquamet}
-\alias{aquamet-package}
 \title{aquamet}
 \description{
 aquamet: Calculate metrics used in NRSA and NLA

@@ -4,9 +4,24 @@
 \alias{nlaRipVegCompIndicator}
 \title{Calculate NLA Riparian Vegetation Complexity Indicator}
 \usage{
-nlaRipVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, ecoreg,
-  rviWoody, rvfcGndInundated, rvfcUndWoody, rvfcGndWoody, rvfpCanBig,
-  ssfcBedrock, ssfcBoulders, hipwWalls)
+nlaRipVegCompIndicator(
+  x,
+  sampID,
+  lat,
+  lon,
+  lake_origin,
+  area,
+  elev,
+  ecoreg,
+  rviWoody,
+  rvfcGndInundated,
+  rvfcUndWoody,
+  rvfcGndWoody,
+  rvfpCanBig,
+  ssfcBedrock,
+  ssfcBoulders,
+  hipwWalls
+)
 }
 \arguments{
 \item{x}{Input data frame containing other variables as specified in

@@ -4,9 +4,18 @@
 \alias{calcNLA_BentMMImets}
 \title{Calculate benthic MMI metrics used in NLA MMIs}
 \usage{
-calcNLA_BentMMImets(inCts, inTaxa = bentTaxa_nla, sampID = "UID",
-  ecoreg = NULL, dist = "IS_DISTINCT", ct = "TOTAL",
-  taxa_id = "TAXA_ID", ffg = "FFG", habit = "HABIT", ptv = "PTV")
+calcNLA_BentMMImets(
+  inCts,
+  inTaxa = bentTaxa_nla,
+  sampID = "UID",
+  ecoreg = NULL,
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  ffg = "FFG",
+  habit = "HABIT",
+  ptv = "PTV"
+)
 }
 \arguments{
 \item{inCts}{A data frame containing, at minimum, the variables 

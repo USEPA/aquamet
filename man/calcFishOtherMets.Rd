@@ -4,10 +4,19 @@
 \alias{calcFishOtherMets}
 \title{Calculate other subsets of fish metrics}
 \usage{
-calcFishOtherMets(indata, inTaxa = NULL, sampID = "UID",
-  dist = "IS_DISTINCT", ct = "TOTAL", taxa_id = "TAXA_ID",
-  vel = "VELOCITY", migr = "MIGRATORY", reprod = "REPROD",
-  temp = "TEMP", nonnat = "NONNATIVE")
+calcFishOtherMets(
+  indata,
+  inTaxa = NULL,
+  sampID = "UID",
+  dist = "IS_DISTINCT",
+  ct = "TOTAL",
+  taxa_id = "TAXA_ID",
+  vel = "VELOCITY",
+  migr = "MIGRATORY",
+  reprod = "REPROD",
+  temp = "TEMP",
+  nonnat = "NONNATIVE"
+)
 }
 \arguments{
 \item{indata}{Input data frame containing variables as identified

@@ -4,16 +4,32 @@
 \alias{nlaFishCover}
 \title{Calculate NLA Fish Cover Metrics}
 \usage{
-nlaFishCover(aquatic = NULL, aquatic_dd = NULL, boulders = NULL,
-  boulders_dd = NULL, brush = NULL, brush_dd = NULL, ledges = NULL,
-  ledges_dd = NULL, livetrees = NULL, livetrees_dd = NULL,
-  overhang = NULL, overhang_dd = NULL, snags = NULL, snags_dd = NULL,
-  structures = NULL, structures_dd = NULL, drawdown = NULL,
-  horizontalDistance_dd = NULL, createSyntheticCovers = TRUE,
-  fillinDrawdown = TRUE, dataInformation = data.frame(value = c(NA, "0",
-  "1", "2", "3", "4"), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence =
-  c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), stringsAsFactors = FALSE),
-  isUnitTest = FALSE)
+nlaFishCover(
+  aquatic = NULL,
+  aquatic_dd = NULL,
+  boulders = NULL,
+  boulders_dd = NULL,
+  brush = NULL,
+  brush_dd = NULL,
+  ledges = NULL,
+  ledges_dd = NULL,
+  livetrees = NULL,
+  livetrees_dd = NULL,
+  overhang = NULL,
+  overhang_dd = NULL,
+  snags = NULL,
+  snags_dd = NULL,
+  structures = NULL,
+  structures_dd = NULL,
+  drawdown = NULL,
+  horizontalDistance_dd = NULL,
+  createSyntheticCovers = TRUE,
+  fillinDrawdown = TRUE,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), presence = c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(),
+    stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{aquatic}{A data frame containing aquatic and inundated herbaceous 
@@ -213,14 +229,14 @@ drawdown exists at a site.
 
 \item{fillinDrawdown}{A logical value which specifies whether to use the}
 
-\item{coverClassInfo}{A data frame containing the field fish cover
+\item{dataInformation}{A data frame containing the field fish cover
 categorical values and corresponding numeric cover values used in calculations, 
 as well as indicators of cover type presence or absence for each category. The
 default values (and required column names) are:
 \itemize{
-\item field c(NA,'0','1','2','3','4')
-\item characteristicCover c(NA,0,0.05,0.25,0.575,0.875)
-\item presence c(NA,0,1,1,1,1) 
+\item value c(NA,'0','1','2','3','4')
+\item weights c(NA,0,0.05,0.25,0.575,0.875)
+\item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
 }}
 }
 \value{
