@@ -28,8 +28,6 @@ contain the following columns:
 station, with the following columns:
 \itemize{
          \item SITE integer or character specifying the site visit
-         \item TRANSECT character value specifying the transect for which 
-             values were recorded
          \item VALUE character values, expected to be 'Y', 'N' or NA
 }}
 
@@ -74,7 +72,7 @@ head(thalwegEx)
 head(changeomEx)
 
 sampTr <- unique(thalwegEx[,c('SITE','TRANSECT')])
-sideCh <- subset(thalwegEx,PARAMETER \%in\% c('SIDCHN','OFF_CHAN'))
+sideCh <- subset(thalwegEx,PARAMETER \%in\% c('SIDCHN','OFF_CHAN'),select=c(SITE,VALUE))
 
 # Creating the transect spacing for wadeable streams is more complicated 
 # than for boatable streams because measurements are only made up to one 

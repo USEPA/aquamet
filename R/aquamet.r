@@ -16,15 +16,9 @@
 
 
 
-if(getRversion() >= "3.0") utils::globalVariables(c('DOM1PIND','DOM3PIND','DOM5PIND','FAMILY','CHIRDOM1PIND'
-                  ,'CHIRDOM3PIND','CHIRDOM5PIND'
-                  ,'FFG','ORDER','HABIT','CLASS','PHYLUM','SUBFAMILY','TRIBE','ORTHCHIRPIND','PTV'
-                  ,'TRAIT','ANOMPIND','Freq','int','slope','WSAREA','RESULT_WS','NONNATIVE','ALIEN'
-                  ,'VELOCITY','MIGRATORY','REPROD','TEMP','NAME','GENUS'
-                  ,'INTL','TOLERANCE','NTOL','HABITAT','TROPHIC','TOL_VAL','CLASS'
-                  ,'ECO9','MMI_BENT','gf','fp','HABITAT','NAME','NAT','VALUE','SITE'
+if(getRversion() >= "3.0") utils::globalVariables(c('ECO9','gf','fp','HABITAT','NAME','NAT','VALUE','SITE'
                   ,'DIRECTION','isFast','isSlow','isPool','characteristicCover','field'
                   ,'standardizedPresent','loc','len','first.SITE','BANK','pct','VALUE.sa'
-                  ,'VALUE.fn','ONBANK','TARGET_TAXON','TOTAL','isfast','isslow','ispool'
+                  ,'VALUE.fn','ONBANK','isfast','isslow','ispool'
                   ,'coverType'))
 ## NULL

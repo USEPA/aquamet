@@ -51,10 +51,6 @@
 #' trimws(text)
 #' uidCreate(df, keys, sep='+')
 #' uidSeparate(df, uidName, keyNames, sep='+')
-#' Dominance(df, topN=1)
-#' ShanDiversity(indata)
-#' tolindex(indata, taxalist)
-#' tolindexFish(indata, taxalist)
 #' nlaStationInformation.islandStations(df)
 #' nlaStationInformation.stationDepths(df)
 NULL
