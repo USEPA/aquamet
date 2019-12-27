@@ -155,25 +155,35 @@
 #' head(thalwegEx)
 #' 
 #' bBH <- subset(bankgeomEx,PARAMETER=='BANKHT' & SAMPLE_TYPE=='PHAB_CHANBFRONT',
-#'         select=c(SITE,TRANSECT,VALUE))
+#'         select=c(SITE,TRANSECT,VALUE,UNITS))
+#'         bBH$VALUE <- as.numeric(bBH$VALUE)
 #' bBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT',
-#'         select=c(SITE,TRANSECT,VALUE))
+#'         select=c(SITE,TRANSECT,VALUE,UNITS))
+#'         bBW$VALUE <- as.numeric(bBW$VALUE)
 #' bD <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & 
-#'         SAMPLE_TYPE=='PHAB_THAL',select=c(SITE,STATION,TRANSECT,VALUE))
+#'         SAMPLE_TYPE=='PHAB_THAL',select=c(SITE,STATION,TRANSECT,VALUE,UNITS))
+#'         bD$VALUE <- as.numeric(bD$VALUE)
 #' bInc <- subset(bankgeomEx,PARAMETER=='INCISED' & SAMPLE_TYPE=='PHAB_CHANBFRONT',
-#'         select=c(SITE,TRANSECT,VALUE))
+#'         select=c(SITE,TRANSECT,VALUE,UNITS))
+#'         bInc$VALUE <- as.numeric(bInc$VALUE)
 #' bWW <- subset(bankgeomEx,PARAMETER=='WETWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT',
-#'         select=c(SITE,TRANSECT,VALUE))
+#'         select=c(SITE,TRANSECT,VALUE,UNITS))
+#'         bWW$VALUE <- as.numeric(bWW$VALUE)
 #' wBH <- subset(bankgeomEx,PARAMETER=='BANKHGT' & SAMPLE_TYPE=='PHAB_CHANW',
-#'         select=c(SITE,TRANSECT,VALUE))
+#'         select=c(SITE,TRANSECT,VALUE,UNITS))
+#'         wBH$VALUE <- as.numeric(wBH$VALUE)
 #' wBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANW',
-#'         select=c(SITE,TRANSECT,VALUE))
+#'         select=c(SITE,TRANSECT,VALUE,UNITS))
+#'         wBW$VALUE <- as.numeric(wBW$VALUE)
 #' wD <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW',
-#'         select=c(SITE,STATION,TRANSECT,VALUE))
+#'         select=c(SITE,STATION,TRANSECT,VALUE,UNITS))
+#'         wD$VALUE <- as.numeric(wD$VALUE)
 #' wInc <- subset(bankgeomEx,PARAMETER=='INCISHGT' & SAMPLE_TYPE=='PHAB_CHANW',
-#'         select=c(SITE,TRANSECT,VALUE))
+#'         select=c(SITE,TRANSECT,VALUE,UNITS))
+#'         wInc$VALUE <- as.numeric(wInc$VALUE)
 #' wWW <- subset(thalwegEx,PARAMETER=='WETWIDTH', 
-#'         select=c(SITE,STATION,TRANSECT,VALUE))
+#'         select=c(SITE,STATION,TRANSECT,VALUE,UNITS))
+#'         wWW$VALUE <- as.numeric(wWW$VALUE)
 #' 
 #' chanmorphOut <- nrsaChannelMorphology(bBankHeight=bBH, bBankWidth=bBW,
 #' bDepth=bD, bIncisedHeight=bInc, bWettedWidth=bWW, wBankHeight=wBH,

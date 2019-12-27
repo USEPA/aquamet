@@ -74,9 +74,17 @@ the bank geometry and stream verification form data files.
 \examples{
   head(bankgeomEx)
   
-  bangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='ANGLE')
-  wangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='ANGLE')
-  wund <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='UNDERCUT')
+  bangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='ANGLE',
+      select = c('SITE','VALUE'))
+      bangle$SITE <- as.integer(bangle$SITE)
+  wangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='ANGLE',
+      select = c('SITE','VALUE'))
+      wangle$VALUE <- as.numeric(wangle$VALUE)
+      wangle$SITE <- as.integer(wangle$SITE)
+  wund <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='UNDERCUT',
+      select = c('SITE','VALUE'))
+      wund$VALUE <- as.numeric(wund$VALUE)
+      wund$SITE <- as.integer(wund$SITE)
   
   exBankMorph <- nrsaBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
   head(exBankMorph)

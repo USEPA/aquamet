@@ -21,7 +21,7 @@
 #' \item VALUE a character value of 0, P, or C representing the proximity 
 #' category.
 #' }
-#' @param commerical A data frame containing commercial human influence 
+#' @param commercial A data frame containing commercial human influence 
 #'  proximity class values from riparian zone, with the columns:
 #' \itemize{
 #' \item SITE an integer or character value identifying a single site 

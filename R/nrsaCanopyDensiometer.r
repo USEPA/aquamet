@@ -48,9 +48,11 @@
 #' head(channelcoverEx)
 #' channelcoverEx <- plyr::mutate(channelcoverEx, VALUE=as.numeric(VALUE))
 #' 
-#' bDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANB' & PARAMETER=='DENSIOM')
+#' bDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANB' & PARAMETER=='DENSIOM',
+#' select = c('SITE','VALUE'))
 #' 
-#' wDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='DENSIOM')
+#' wDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='DENSIOM',
+#' select = c('SITE','BANK','VALUE'))
 #' wDen <- plyr::rename(wDen,c('BANK'='DIRECTION'))
 #' 
 #' canDenOut <- nrsaCanopyDensiometer(bDensiom=bDen, wDensiom=wDen)

@@ -54,7 +54,8 @@ frame containing the invasive species/legacy riparian trees data file.
 head(invlegEx,10)
 # This example has no invasive species present
 
-noinv <- subset(invlegEx, PARAMETER=='NO_INVASIVES')     
+noinv <- subset(invlegEx, PARAMETER=='NO_INVASIVES',
+  select = c(SITE,VALUE))     
    
 invasiveOut <- nrsaInvasiveSpecies(none = noinv)
 

@@ -62,6 +62,16 @@ visit.
 category.
 }}
 
+\item{commercial}{A data frame containing commercial human influence 
+ proximity class values from riparian zone, with the columns:
+\itemize{
+\item SITE an integer or character value identifying a single site 
+visit.
+\item STATION a character value identifying the station within the SITE
+\item VALUE a character value of 0, P, or C representing the proximity 
+category.
+}}
+
 \item{commercial_dd}{A data frame containing commercial human influence 
  proximity class values from drawdown zone, with the columns:
 \itemize{
@@ -330,16 +340,6 @@ consists of the following values:
 
 \item{isUnitTest}{Logical argument to determine whether errors should be ignored.
 Should only be used for running a unit test. Default value is FALSE.}
-
-\item{commerical}{A data frame containing commercial human influence 
- proximity class values from riparian zone, with the columns:
-\itemize{
-\item SITE an integer or character value identifying a single site 
-visit.
-\item STATION a character value identifying the station within the SITE
-\item VALUE a character value of 0, P, or C representing the proximity 
-category.
-}}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

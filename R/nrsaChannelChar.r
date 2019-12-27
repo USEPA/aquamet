@@ -8,7 +8,7 @@
 #' channel constraint form for all reaches, with the following columns:
 #' \itemize{
 #'      \item SITE        integer or character specifying the site visit
-#'      \item VALUE       numeric or character values
+#'      \item VALUE       numeric values
 #' }
 #' Note: This value is simply copied to the output without change
 #' @param channelPattern  A data frame containing pattern type from 
@@ -36,7 +36,7 @@
 #' channel constraint form for all reaches, with the following columns:
 #' \itemize{
 #'     \item SITE        integer or character specifying the site visit
-#'     \item VALUE       numeric values
+#'     \item VALUE       character values
 #'     }
 #'  Note: This value is simply copied to the output without change
 #' 
@@ -45,7 +45,7 @@
 #' columns:
 #' \itemize{
 #'     \item SITE        integer or character specifying the site visit
-#'     \item VALUE       character or numeric values
+#'     \item VALUE       numeric values
 #'     }
 #'  Note: This value is simply copied to the output without change
 #'
@@ -79,7 +79,7 @@
 #' constraint form for all reaches, with the following columns:
 #' \itemize{
 #'     \item SITE  integer or character specifying the site visit
-#'     \item VALUE character or numeric values 
+#'     \item VALUE numeric values 
 #'  }
 #'  Note: This value is simply copied to the output without change.
 #' @param isUnitTest Logical argument to determine whether errors should be ignored.
@@ -106,16 +106,30 @@
 #' @examples
 #' head(chancharEx)
 #' 
-#' bkfW <- subset(chancharEx, PARAMETER=='BANKFULL')
-#' chanPat <- subset(chancharEx, PARAMETER=='PATTERN')
-#' conFeat <- subset(chancharEx, PARAMETER=='FEATURES')
-#' conMult <- subset(bankgeomEx, PARAMETER=='CONSTRT')
-#' conSing <- subset(chancharEx, PARAMETER=='CONSTRNT')
-#' conPer <- subset(chancharEx, PARAMETER=='PERCENT')
-#' seeOver <- subset(bankgeomEx, PARAMETER=='SEEOVRBK')
-#' shoreToVeg <- subset(chancharEx, PARAMETER=='SHOR2RIP')
-#' valCon <- subset(chancharEx, PARAMETER=='VALLYBOX')
-#' valWid <- subset(chancharEx, PARAMETER=='VALLEY')
+#' bkfW <- subset(chancharEx, PARAMETER=='BANKFULL',
+#' select = c('SITE','VALUE'))
+#'    bkfW$VALUE <- as.numeric(bkfW$VALUE)
+#' chanPat <- subset(chancharEx, PARAMETER=='PATTERN',
+#' select = c('SITE','VALUE'))
+#' conFeat <- subset(chancharEx, PARAMETER=='FEATURES',
+#' select = c('SITE','VALUE'))
+#' conMult <- subset(bankgeomEx, PARAMETER=='CONSTRT',
+#' select = c('SITE','VALUE'))
+#' conSing <- subset(chancharEx, PARAMETER=='CONSTRNT',
+#' select = c('SITE','VALUE'))
+#' conPer <- subset(chancharEx, PARAMETER=='PERCENT',
+#' select = c('SITE','VALUE'))
+#'   conPer$VALUE <- as.numeric(conPer$VALUE)
+#' seeOver <- subset(bankgeomEx, PARAMETER=='SEEOVRBK',
+#' select = c('SITE','VALUE'))
+#' shoreToVeg <- subset(chancharEx, PARAMETER=='SHOR2RIP',
+#' select = c('SITE','VALUE'))
+#'   shoreToVeg$VALUE <- as.numeric(shoreToVeg$VALUE)
+#' valCon <- subset(chancharEx, PARAMETER=='VALLYBOX',
+#' select = c('SITE','VALUE'))
+#' valWid <- subset(chancharEx, PARAMETER=='VALLEY',
+#' select = c('SITE','VALUE'))
+#'   valWid$VALUE <- as.numeric(valWid$VALUE)
 #' 
 #' chanCharOut <- nrsaChannelChar(bankfullWidth=bkfW, 
 #' channelPattern=chanPat, constraintFeatures=conFeat,

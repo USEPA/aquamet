@@ -34,7 +34,9 @@
 #' @examples 
 #' head(chandepthEx) 
 #' 
-#' bLitDep <- subset(chandepthEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER %in% c('POLE','SONAR'))
+#' bLitDep <- subset(chandepthEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & 
+#'   PARAMETER %in% c('POLE','SONAR'), select = c(SITE,VALUE))
+#'   bLitDep$VALUE <- as.numeric(bLitDep$VALUE)
 #' 
 #' litDepOut <- nrsaLittoralDepth(bLitDep)
 #' print(litDepOut)

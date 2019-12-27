@@ -46,10 +46,13 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
-#'   isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND',select=-PARAMETER)
+#'   isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND' & VALUE %in% c('YES','Y'),
+#'   select=-PARAMETER)
+#'   # isIsland has 0 values, so leave that argument blank (NULL)
 #'   depth <- subset(nlaPhabEx,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
+#'   depth$VALUE <- as.numeric(depth$VALUE)
 #'   
-#'   exStationInfo <- nlaStationInformation(isIsland, depth)
+#'   exStationInfo <- nlaStationInformation(stationDepth = depth)
 #'   
 #'   head(exStationInfo)
 #'  

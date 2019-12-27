@@ -85,12 +85,16 @@ wTr.1 <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' &
 
 wTr.2 <- plyr::mutate(wTr.1, VALUE=as.numeric(VALUE)) 
 
-wTr.3 <- merge(wTr.2, plyr::ddply(unique(subset(thalwegEx, SAMPLE_TYPE=='PHAB_THALW', 
-                             select=c('SITE','TRANSECT','STATION'))),
-             c('SITE','TRANSECT'), summarise, nSta = length(STATION)),
-                                     by = 'SITE') 
+uniqLoc <- unique(subset(thalwegEx, SAMPLE_TYPE=='PHAB_THALW', 
+ select = c(SITE,TRANSECT,STATION)))
+nStations <- stats::aggregate(x = list(nSta = uniqLoc$STATION), 
+    by = uniqLoc[c('SITE','TRANSECT')], FUN = length)
+
+wTr.3 <- merge(wTr.2, nStations, by = 'SITE') 
                                      
-wTr.4 <- plyr::ddply(wTr.3, c('SITE'), mutate, lastTran=max(TRANSECT)) 
+maxWTr <- stats::aggregate(x = list(lastTran = wTr.3$TRANSECT), by = wTr.3[c('SITE')], 
+       FUN = function(x){max(as.character(x))})
+wTr.4 <- merge(wTr.3, maxWTr)
 
 wTr.5 <- plyr::mutate(wTr.4, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) 
 
@@ -98,7 +102,8 @@ wTr.6 <- dplyr::select(wTr.5, -nSta,-lastTran)
 
 bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
 
-trDist <- rbind(wTr.6,bTr) \%>\% plyr::mutate(VALUE=as.numeric(VALUE))
+trDist <- rbind(wTr.6,bTr) 
+trDist$VALUE <- as.numeric(trDist$VALUE)
 
 generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,
 transectSpacing=trDist)

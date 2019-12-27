@@ -96,13 +96,13 @@
 #' @examples
 #' head(thalwegEx) 
 #' 
-#' bChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THAL')
-#' wChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THALW')
+#' bChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THAL',
+#' select = c('SITE','VALUE'))
+#' wChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THALW',
+#' select = c('SITE','VALUE'))
 #' 
 #' chanHabOut <- nrsaChannelHabitat(bChannelUnit=bChan, wChannelUnit=wChan)
 #' head(chanHabOut)
-
-
 nrsaChannelHabitat <- function(bChannelUnit = NULL
                               ,bDataInformation = data.frame(value=c('FA','RA','RI','GL','PO','CA','DR')
                                                             ,metsSuffix=c('fa','ra','ri','gl','pool','ca','dr')

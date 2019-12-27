@@ -156,7 +156,7 @@
 #' @examples 
 #' head(visripEx)
 #' 
-#' canCovLD <- dplyr::filter(visripEx,PARAMETER=='CANBTRE') %>% select(SITE,TRANSECT,BANK,VALUE)
+#' canCovLD <- subset(visripEx,PARAMETER=='CANBTRE', select=c(SITE,TRANSECT,BANK,VALUE))
 #' canCovSD <- subset(visripEx,PARAMETER=='CANSTRE',select=c('SITE','TRANSECT','BANK','VALUE'))
 #' canVegT <- subset(visripEx,PARAMETER=='CANVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
 #' gCovB <- subset(visripEx,PARAMETER=='BARE',select=c('SITE','TRANSECT','BANK','VALUE'))

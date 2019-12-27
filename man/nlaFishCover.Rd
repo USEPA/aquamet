@@ -309,7 +309,10 @@ habitat metrics for National Lakes Assessment (NLA) data.
   structures <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
   structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
   drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-  horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+  
+  horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',
+     select=-PARAMETER)
+  horizontalDistance_dd$VALUE <- with(horizontalDistance_dd, as.numeric(VALUE))
   
   # Use defaults for fillinDrawdown, createSyntheticCovers, and coverClassInfo
   # arguments
