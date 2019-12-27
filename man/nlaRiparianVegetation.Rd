@@ -289,6 +289,9 @@ the following columns:
        \item presence - logical values to specify presence or 
        absence of vegetation.
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

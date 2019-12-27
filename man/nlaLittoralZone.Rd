@@ -21,6 +21,9 @@ OTHER_XXXX, where XXXX represents the name of the other film type.
 
 \item{data2007}{A logical value taking the value TRUE if the data being 
 processed are from NLA 2007 and FALSE if not. The default value is FALSE.}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

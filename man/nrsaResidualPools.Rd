@@ -72,8 +72,10 @@ be written to the results folder if TRUE.}
 
 \item{oldeMethods}{logical value; if TRUE, uses deprecated SAS method 
 of starting initial pool dimensions in metsResidualPools.dimensions(), 
-otherwise uses current method.  Set to TRUE only for unit testing.  
-IT IS PROBABLY BEST TO NOT INCLUDE THIS IN THE USER DOCUMENTATION.}
+otherwise uses current method.  Set to TRUE only for unit testing.}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 

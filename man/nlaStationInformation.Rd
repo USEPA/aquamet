@@ -26,6 +26,9 @@ visit.
 \item VALUE a numeric values or a character value castable to numeric 
 containing the depth in meters at the station 
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

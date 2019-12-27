@@ -37,6 +37,9 @@ bank of the channel. Defaults to c('LF','RT').}
 \item{wChannelMid}{Character values listing the values of DIRECTION 
 which indicate that the counts were obtained midstream in the channel. 
 Defaults to c('CU','CL','CD','CR').}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

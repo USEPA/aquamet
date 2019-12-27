@@ -157,6 +157,9 @@ the following columns:
 Note that possible values for variables in the input data frame are
 provided in the document named "NRSA Documentation.pdf" included in the help
 directory for the package.}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 

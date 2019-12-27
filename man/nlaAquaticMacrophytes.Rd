@@ -56,6 +56,19 @@ sampled, with the columns:
 integer, from 0-4 containing the total macrophyte cover
 category.
 }}
+
+\item{dataInformation}{A data frame containing aquatic macrophyte 
+categorical values and corresponding numeric cover values used in 
+calculations. as well as indicators of cover type presence or absence 
+for each category. The default values (and required column names) are:
+\itemize{
+\item value c(NA,'0','1','2','3','4')
+\item weights c(NA,0,0.05,0.25,0.575,0.875)
+\item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
+}}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

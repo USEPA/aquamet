@@ -82,6 +82,8 @@
 #'     \item VALUE character or numeric values 
 #'  }
 #'  Note: This value is simply copied to the output without change.
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' NULL when metric calculation is not successful.  The data frame contains 
 #' the following columns:

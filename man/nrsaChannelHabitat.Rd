@@ -92,6 +92,9 @@ have the following columns:
                      pct_pool; if this column does not exist,
                      this metric will not be calculated.
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 

@@ -134,6 +134,9 @@ calculations. Expected to have the following columns:
              value used for mean cover
              calculations.
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -165,7 +168,8 @@ verification form data files.
 \examples{
 head(fishcoverEx)
 
-fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE',select=c(SITE,TRANSECT,VALUE)),
+fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE',
+                 select=c(SITE,TRANSECT,VALUE)),
 boulder=subset(fishcoverEx,PARAMETER=='BOULDR',select=c(SITE,TRANSECT,VALUE)),
 brush=subset(fishcoverEx,PARAMETER=='BRUSH',select=c(SITE,TRANSECT,VALUE)),
 liveTree=subset(fishcoverEx,PARAMETER=='LVTREE',select=c(SITE,TRANSECT,VALUE)),

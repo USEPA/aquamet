@@ -26,20 +26,29 @@ library(plyr)
 library(dplyr)
 ```
 
-#### Now, create the input datasets to run nlaBankFeatures() to obtain the BFXHORIZDIST_DD and BFXVERTHEIGHT_DD metric values. In this example, we create the data inputs within the function call itself.
+#### Now, create the input datasets to run nlaBankFeatures() to obtain the BFXHORIZDIST_DD and BFXVERTHEIGHT_DD metric values. 
+
+We create data frames for the inputs to the nlaBankFeatures() function first. For the emph{angle} input, we must change the VALUE of 'NEAR_VERTICAL_UNDERCUT' to 'NEAR_VERTICAL' because the function does not allow the former value and assumes it has been corrected to the latter. 
 
 ```{r dd}
-bfMets <- nlaBankFeatures(angle=subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER),
-                                  drawdown=subset(nlaPhabEx,PARAMETER=='DRAWDOWN',
-                                                  select=-PARAMETER),
-                                  horizontalDistance=subset(nlaPhabEx,PARAMETER=='HORIZ_DIST',
-                                                            select=-PARAMETER),
-                                  horizontalDistanceDrawdown=subset(nlaPhabEx,PARAMETER='HORIZ_DIST_DD',
-                                                                    select=-PARAMETER),
-                                  verticalHeight=subset(nlaPhabEx,PARAMETER=='VERT_DIST',
-                                                        select=-PARAMETER),
-                                  verticalHeightDrawdown=subset(nlaPhabEx,PARAMETER=='VERT_DIST_DD',
-                                                                select=-PARAMETER))
+angle <- subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER) %>% 
+  mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT','NEAR_VERTICAL',VALUE))
+
+drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN', select=-PARAMETER)
+
+horizontalDistance <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST', select=-PARAMETER) %>% 
+  mutate(VALUE = as.numeric(VALUE))
+
+horizontalDistanceDrawdown <- subset(nlaPhabEx,PARAMETER='HORIZ_DIST_DD', select=-PARAMETER) %>% 
+  mutate(VALUE = as.numeric(VALUE))
+
+verticalHeight <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) %>% 
+  mutate(VALUE = as.numeric(VALUE))
+
+verticalHeightDrawdown <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT_DD', select=-PARAMETER) %>% 
+  mutate(VALUE = as.numeric(VALUE))                                                            
+
+bfMets <- nlaBankFeatures(angle, drawdown, horizontalDistance, horizontalDistanceDrawdown, verticalHeight, verticalHeightDrawdown)
 
 ```
 
@@ -52,7 +61,7 @@ sitedata <- data.frame(SITE=c(6400, 6469, 6768, 6865, 6869, 7623, 8184, 8251, 86
                        ORIGIN=c('MAN_MADE', 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE', 'NATURAL', 
                                 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE'), stringsAsFactors=F)
 
-bfMets.wide <- reshape2::dcast(bfMets, SITE~METRIC, value.var='VALUE')
+bfMets.wide <- reshape2::dcast(bfMets, SITE~METRIC, value.var='VALUE') # Can use either reshape2 or data.table package, but input needs to be in data.table format if latter
 
 ddIn <- merge(sitedata, subset(bfMets.wide, select=c('SITE', 'BFXHORIZDIST_DD', 'BFXVERTHEIGHT_DD')), by='SITE')
 
@@ -62,7 +71,7 @@ ddOut <- nlaDrawdownIndicator(ddIn, sampID='SITE', bfxVertDD='BFXVERTHEIGHT_DD',
 ddOut
 
 ```
-#### Three sites have the value 'Not Assessed' assigned for vertDD_cond, which is the condition based only on vertical drawdown height. This occurs because the input metric, BFXVERTHEIGHT_DD is missing, primarliy due to missing data at one or more stations in each site. 
+ 
 
 *****
 
@@ -126,7 +135,7 @@ ripdistOut
 
 # 4) Calculating the Riparian Vegetation Complexity Indicator
 
-The nlaRipVegIndicator() function calculates the site-specific observed and expected riparian vegetation complexity and assigns condition based on aggregated Omernik ecoregion. Site-related inputs for each site include ecoregion, lake origin, latitude, longitude, lake area, and lake elevation. Physical habitat metric inputs include several metrics from the nlaRiparianVegetation(), nlaShorelineSubstrate(), and nlaHumanImpact() functions, so we must first run those functions. 
+The nlaRipVegIndicator() function calculates the site-specific observed and expected riparian vegetation complexity and assigns condition based on aggregated Omernik ecoregion. Site-related inputs for each site include ecoregion, lake origin, latitude, longitude, lake area, and lake elevation. Physical habitat metric inputs include several metrics from the nlaRiparianVegetation(), nlaShorelineSubstrate(), and nlaHumanImpact() functions, so we must first run those functions. For each of these functions, a number of input datasets are required. These can all be created from the example dataset by subsetting to specific parameters.
 
 ### Riparian vegetation metrics
 ```{r rv}
@@ -184,6 +193,7 @@ ss.wide <- dcast(ss, SITE~METRIC, value.var='VALUE') %>%
 ```
 
 ### Human influence metrics
+
 ```{r hi}
 buildings <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
 buildings_dd <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
@@ -289,7 +299,8 @@ snags_dd <- subset(nlaPhabEx,PARAMETER=='FC_SNAGS_DD',select=-PARAMETER)
 structures <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
 structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
 drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER) %>%
+  mutate(VALUE = as.numeric(VALUE)) # This one is manually converted to numeric because it is required by the function to be
 
 # Use default values for fillinDrawdown (TRUE), createSyntheticCovers (TRUE), 
 # and coverClassInfo:

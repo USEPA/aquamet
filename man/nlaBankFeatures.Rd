@@ -64,6 +64,9 @@ with the columns:
 numeric.
 }}
 
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
+
 \item{VerticalHeight}{A data frame containing the vertical 
 height from waterline to high water mark (m) when flooding is present, 
 with the columns:

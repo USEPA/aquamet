@@ -106,6 +106,9 @@ the following columns:
        \item weights - numeric values used to calculate numeric 
                   metrics.
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

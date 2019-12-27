@@ -105,6 +105,8 @@
 #'              value used for mean cover
 #'              calculations.
 #' }
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation is 
 #' not successful.  The data frame contains the following columns:
@@ -129,7 +131,8 @@
 #' @examples
 #' head(fishcoverEx)
 #' 
-#' fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE',select=c(SITE,TRANSECT,VALUE)),
+#' fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE',
+#'                  select=c(SITE,TRANSECT,VALUE)),
 #' boulder=subset(fishcoverEx,PARAMETER=='BOULDR',select=c(SITE,TRANSECT,VALUE)),
 #' brush=subset(fishcoverEx,PARAMETER=='BRUSH',select=c(SITE,TRANSECT,VALUE)),
 #' liveTree=subset(fishcoverEx,PARAMETER=='LVTREE',select=c(SITE,TRANSECT,VALUE)),

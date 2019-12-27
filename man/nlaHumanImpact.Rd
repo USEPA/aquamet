@@ -328,6 +328,9 @@ consists of the following values:
 \item presence c(FALSE,TRUE,TRUE)
 }}
 
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
+
 \item{commerical}{A data frame containing commercial human influence 
  proximity class values from riparian zone, with the columns:
 \itemize{

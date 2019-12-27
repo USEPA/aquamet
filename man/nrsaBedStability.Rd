@@ -119,6 +119,9 @@ channel width) for all reaches, with the following columns:
 \item SITE integer or character specifying the site visit
 \item VALUE numeric values
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

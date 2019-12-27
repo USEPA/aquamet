@@ -64,6 +64,9 @@ transect of all sites.  Expected to contain the columns:
                     for which the value was recorded.
      \item VALUE character values, either Coniferous or Deciduous.
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 

@@ -41,6 +41,9 @@ integer, containing the bank angle.
 }
 If this data frame is either not specified or has no data, these metrics 
 are not calculated.}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
