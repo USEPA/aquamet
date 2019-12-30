@@ -151,6 +151,8 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
+#'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
+#'   #  and VALUE
 #'   bedrock <- subset(nlaPhabEx,PARAMETER=='BS_BEDROCK',select=-PARAMETER)
 #'   boulder <- subset(nlaPhabEx,PARAMETER=='BS_BOULDER',select=-PARAMETER)
 #'   color <- subset(nlaPhabEx,PARAMETER=='BS_COLOR',select=-PARAMETER)

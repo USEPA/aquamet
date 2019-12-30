@@ -131,7 +131,10 @@
 #' @examples
 #' head(fishcoverEx)
 #' 
-#' fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE',
+#' # Subset example dataset within function to create inputs, keeping only SITE,
+#'   #  TRANSECT, and VALUE.
+#' fishCvrOut <- nrsaFishCover(
+#' algae=subset(fishcoverEx,PARAMETER=='ALGAE',
 #'                  select=c(SITE,TRANSECT,VALUE)),
 #' boulder=subset(fishcoverEx,PARAMETER=='BOULDR',select=c(SITE,TRANSECT,VALUE)),
 #' brush=subset(fishcoverEx,PARAMETER=='BRUSH',select=c(SITE,TRANSECT,VALUE)),
@@ -140,7 +143,8 @@
 #' overhang=subset(fishcoverEx,PARAMETER=='OVRHNG',select=c(SITE,TRANSECT,VALUE)),
 #' structures=subset(fishcoverEx,PARAMETER=='STRUCT',select=c(SITE,TRANSECT,VALUE)),
 #' undercut=subset(fishcoverEx,PARAMETER=='UNDCUT',select=c(SITE,TRANSECT,VALUE)),
-#' woodyDebris=subset(fishcoverEx,PARAMETER=='WOODY',select=c(SITE,TRANSECT,VALUE)))
+#' woodyDebris=subset(fishcoverEx,PARAMETER=='WOODY',select=c(SITE,TRANSECT,VALUE))
+#' )
 #' 
 #' head(fishCvrOut)
 

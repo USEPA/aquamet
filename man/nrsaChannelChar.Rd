@@ -131,31 +131,46 @@ containing the bank geometry and channel characteristics data files.
 \examples{
 head(chancharEx)
 
+# Must subset example dataset to create inputs, keeping only SITE
+  #  and VALUE
+# bankfullWidth
 bkfW <- subset(chancharEx, PARAMETER=='BANKFULL',
 select = c('SITE','VALUE'))
+# Make sure VALUE is numeric for this argument
    bkfW$VALUE <- as.numeric(bkfW$VALUE)
+# channelPattern
 chanPat <- subset(chancharEx, PARAMETER=='PATTERN',
 select = c('SITE','VALUE'))
+# constraintFeatures
 conFeat <- subset(chancharEx, PARAMETER=='FEATURES',
 select = c('SITE','VALUE'))
+# constraintMultiple 
 conMult <- subset(bankgeomEx, PARAMETER=='CONSTRT',
 select = c('SITE','VALUE'))
+# constraintSingle
 conSing <- subset(chancharEx, PARAMETER=='CONSTRNT',
 select = c('SITE','VALUE'))
+# constraintPercent
 conPer <- subset(chancharEx, PARAMETER=='PERCENT',
 select = c('SITE','VALUE'))
+  # Ensure value is numeric
   conPer$VALUE <- as.numeric(conPer$VALUE)
+# seeOverBank
 seeOver <- subset(bankgeomEx, PARAMETER=='SEEOVRBK',
 select = c('SITE','VALUE'))
+# shoreToVegDistance
 shoreToVeg <- subset(chancharEx, PARAMETER=='SHOR2RIP',
 select = c('SITE','VALUE'))
+  # Ensure value is numeric
   shoreToVeg$VALUE <- as.numeric(shoreToVeg$VALUE)
+# valleyConstraintUnseen
 valCon <- subset(chancharEx, PARAMETER=='VALLYBOX',
 select = c('SITE','VALUE'))
+# valleyWidth
 valWid <- subset(chancharEx, PARAMETER=='VALLEY',
 select = c('SITE','VALUE'))
   valWid$VALUE <- as.numeric(valWid$VALUE)
-
+# Use default isUnitTest value of FALSE
 chanCharOut <- nrsaChannelChar(bankfullWidth=bkfW, 
 channelPattern=chanPat, constraintFeatures=conFeat,
 constraintMultiple=conMult, constraintSingle=conSing,

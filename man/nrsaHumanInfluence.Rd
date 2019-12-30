@@ -208,7 +208,10 @@ a data frame containing the visible riparian damage data file.
 \examples{
 head(visripEx)
 
-huminflOut <- nrsaHumanInfluence(buildings=subset(visripEx,PARAMETER=='BUILD',
+# Subset example dataset within function to create inputs, keeping only SITE,
+  #  TRANSECT, and VALUE. 
+huminflOut <- nrsaHumanInfluence(
+buildings=subset(visripEx,PARAMETER=='BUILD',
  select = c(SITE,TRANSECT,VALUE)),
 landfillTrash=subset(visripEx,PARAMETER=='LANDFL',
  select = c(SITE,TRANSECT,VALUE)),
@@ -229,7 +232,8 @@ roadsRailroads=subset(visripEx,PARAMETER=='ROAD',
 rowcrops=subset(visripEx,PARAMETER=='ROW',
  select = c(SITE,TRANSECT,VALUE)),
 wallRevetment=subset(visripEx,PARAMETER=='WALL',
- select = c(SITE,TRANSECT,VALUE)))
+ select = c(SITE,TRANSECT,VALUE))
+ )
 
 head(huminflOut)
 }

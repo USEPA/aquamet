@@ -137,6 +137,8 @@ portion of the physical habitat metrics for National Lakes Assessment
 \examples{
   head(nlaPhabEx07)
   
+  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+  #  and VALUE
   artificial <- subset(nlaPhabEx07,PARAMETER=='COVER_ARTIFICIAL',select=-PARAMETER)
   boulders <- subset(nlaPhabEx07,PARAMETER=='COVER_BOULDERS',select=-PARAMETER)
   coverExtent <- subset(nlaPhabEx07,PARAMETER=='COVER_CLASS',select=-PARAMETER)

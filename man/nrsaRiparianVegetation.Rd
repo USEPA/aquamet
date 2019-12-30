@@ -189,6 +189,8 @@ frame containing the visible riparian damage data file.
 \examples{
 head(visripEx)
 
+# Subset visual riparian example dataset to create inputs to function, 
+#  keeping only SITE, TRANSECT, BANK, and VALUE. 
 canCovLD <- subset(visripEx,PARAMETER=='CANBTRE', select=c(SITE,TRANSECT,BANK,VALUE))
 canCovSD <- subset(visripEx,PARAMETER=='CANSTRE',select=c('SITE','TRANSECT','BANK','VALUE'))
 canVegT <- subset(visripEx,PARAMETER=='CANVEG',select=c('SITE','TRANSECT','BANK','VALUE'))

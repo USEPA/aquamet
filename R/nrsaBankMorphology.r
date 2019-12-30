@@ -57,15 +57,23 @@
 #' @examples
 #'   head(bankgeomEx)
 #'   
+#'   # Must subset example dataset to create inputs, keeping only SITE
+#'   #  and VALUE
+#'   # Boatable bank angle
 #'   bangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='ANGLE',
 #'       select = c('SITE','VALUE'))
+#'       # SITE must be an integer for this function in particular
 #'       bangle$SITE <- as.integer(bangle$SITE)
+#'   # Wadeable bank angle
 #'   wangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='ANGLE',
 #'       select = c('SITE','VALUE'))
-#'       wangle$VALUE <- as.numeric(wangle$VALUE)
+#'       # VALUE must be numeric for this argument
+#'       wangle$VALUE <- as.numeric(wangle$VALUE) 
 #'       wangle$SITE <- as.integer(wangle$SITE)
+#'   # Wadeable undercut bank measurements
 #'   wund <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='UNDERCUT',
 #'       select = c('SITE','VALUE'))
+#'       # VALUE must be numeric for this argument
 #'       wund$VALUE <- as.numeric(wund$VALUE)
 #'       wund$SITE <- as.integer(wund$SITE)
 #'   

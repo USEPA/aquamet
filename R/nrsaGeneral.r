@@ -53,35 +53,44 @@
 #' head(thalwegEx)
 #' head(changeomEx)
 #' 
+#' # Must carry out several calculations to provide inputs to function, 
+#' # including determining spacing between transects.
+#' 
+#' # sampledTransects argument
 #' sampTr <- unique(thalwegEx[,c('SITE','TRANSECT')])
+#' # sideChannels argument - if none present, leave out
 #' sideCh <- subset(thalwegEx,PARAMETER %in% c('SIDCHN','OFF_CHAN'),select=c(SITE,VALUE))
 #' 
 #' # Creating the transect spacing for wadeable streams is more complicated 
 #' # than for boatable streams because measurements are only made up to one 
 #' # station before the end of the reach. 
+#' # Keep increment value for wadeable sites, only present for transect A and
+#' #  station 0, then make sure it is numeric.
 #' wTr.1 <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & 
 #'        STATION==0 & SAMPLE_TYPE=='PHAB_THALW',select=c('SITE','VALUE')) 
 #' 
 #' wTr.2 <- plyr::mutate(wTr.1, VALUE=as.numeric(VALUE)) 
-#' 
+#' # Identify unique sampled SITE, TRANSECT, STATION combinations, then
+#' #   determine the number of stations for each SITE and TRANSECT
 #' uniqLoc <- unique(subset(thalwegEx, SAMPLE_TYPE=='PHAB_THALW', 
 #'  select = c(SITE,TRANSECT,STATION)))
 #' nStations <- stats::aggregate(x = list(nSta = uniqLoc$STATION), 
 #'     by = uniqLoc[c('SITE','TRANSECT')], FUN = length)
-#' 
+#' # Merge number of stations back with dataset
 #' wTr.3 <- merge(wTr.2, nStations, by = 'SITE') 
-#'                                      
+#' # Identify maximum TRANSECT sampled, merge back with dataset                                      
 #' maxWTr <- stats::aggregate(x = list(lastTran = wTr.3$TRANSECT), by = wTr.3[c('SITE')], 
 #'        FUN = function(x){max(as.character(x))})
 #' wTr.4 <- merge(wTr.3, maxWTr)
-#' 
+#' # Calculate space between transects for each transect at wadeable sites
 #' wTr.5 <- plyr::mutate(wTr.4, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) 
-#' 
+#' # Keep only necessary variables
 #' wTr.6 <- dplyr::select(wTr.5, -nSta,-lastTran)
-#' 
+#' # For boatable sites, just use actual transect spacing parameter
 #' bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
-#' 
+#' # combine wadeable and boatable transect spacing information
 #' trDist <- rbind(wTr.6,bTr) 
+#' # Ensure values are numeric
 #' trDist$VALUE <- as.numeric(trDist$VALUE)
 #' 
 #' generalOut <- nrsaGeneral(sampledTransects=sampTr, sideChannels=sideCh,

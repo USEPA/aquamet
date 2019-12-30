@@ -123,8 +123,12 @@ data frame containing the thalweg data file.
 \examples{
 head(thalwegEx) 
 
+# Must subset example dataset to create inputs, keeping only SITE
+  #  and VALUE
+# bChannelUnit
 bChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THAL',
 select = c('SITE','VALUE'))
+# wChannelUnit
 wChan <- subset(thalwegEx,PARAMETER=='CHANUNCD' & SAMPLE_TYPE=='PHAB_THALW',
 select = c('SITE','VALUE'))
 

@@ -183,33 +183,45 @@ verification form data files.
 head(bankgeomEx)
 head(thalwegEx)
 
+# Must subset example dataset to create inputs, keeping only SITE, TRANSECT,
+  #  VALUE, and UNITS, then make sure VALUE is numeric.
+# bBankHeight 
 bBH <- subset(bankgeomEx,PARAMETER=='BANKHT' & SAMPLE_TYPE=='PHAB_CHANBFRONT',
         select=c(SITE,TRANSECT,VALUE,UNITS))
         bBH$VALUE <- as.numeric(bBH$VALUE)
+# bBankWidth
 bBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT',
         select=c(SITE,TRANSECT,VALUE,UNITS))
         bBW$VALUE <- as.numeric(bBW$VALUE)
+# bDepth
 bD <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & 
         SAMPLE_TYPE=='PHAB_THAL',select=c(SITE,STATION,TRANSECT,VALUE,UNITS))
         bD$VALUE <- as.numeric(bD$VALUE)
+# bIncisedHeight
 bInc <- subset(bankgeomEx,PARAMETER=='INCISED' & SAMPLE_TYPE=='PHAB_CHANBFRONT',
         select=c(SITE,TRANSECT,VALUE,UNITS))
         bInc$VALUE <- as.numeric(bInc$VALUE)
+# bWettedWidth
 bWW <- subset(bankgeomEx,PARAMETER=='WETWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT',
         select=c(SITE,TRANSECT,VALUE,UNITS))
         bWW$VALUE <- as.numeric(bWW$VALUE)
+# wBankHeight
 wBH <- subset(bankgeomEx,PARAMETER=='BANKHGT' & SAMPLE_TYPE=='PHAB_CHANW',
         select=c(SITE,TRANSECT,VALUE,UNITS))
         wBH$VALUE <- as.numeric(wBH$VALUE)
+# wBankWidth
 wBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANW',
         select=c(SITE,TRANSECT,VALUE,UNITS))
         wBW$VALUE <- as.numeric(wBW$VALUE)
+# wDepth
 wD <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW',
         select=c(SITE,STATION,TRANSECT,VALUE,UNITS))
         wD$VALUE <- as.numeric(wD$VALUE)
+# wIncisedHeight
 wInc <- subset(bankgeomEx,PARAMETER=='INCISHGT' & SAMPLE_TYPE=='PHAB_CHANW',
         select=c(SITE,TRANSECT,VALUE,UNITS))
         wInc$VALUE <- as.numeric(wInc$VALUE)
+# wWettedWidth
 wWW <- subset(thalwegEx,PARAMETER=='WETWIDTH', 
         select=c(SITE,STATION,TRANSECT,VALUE,UNITS))
         wWW$VALUE <- as.numeric(wWW$VALUE)

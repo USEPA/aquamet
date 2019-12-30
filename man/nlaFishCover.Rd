@@ -292,6 +292,8 @@ habitat metrics for National Lakes Assessment (NLA) data.
 \examples{
   head(nlaPhabEx)
   
+  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+  #  and VALUE
   aquatic <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
   aquatic_dd <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
   boulders <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
@@ -310,6 +312,7 @@ habitat metrics for National Lakes Assessment (NLA) data.
   structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
   drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
   
+  # Ensure VALUE is numeric for this particular subset
   horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',
      select=-PARAMETER)
   horizontalDistance_dd$VALUE <- with(horizontalDistance_dd, as.numeric(VALUE))

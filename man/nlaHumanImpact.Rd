@@ -394,6 +394,8 @@ portion of the physical habitat metrics for National Lakes Assessment
 \examples{
   head(nlaPhabEx)
   
+  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+  #  and VALUE
   buildings <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
   buildings_dd <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
   commercial <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)

@@ -355,6 +355,8 @@ habitat data collected using the NLA protocol.
 \examples{
   head(nlaPhabEx)
   
+  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+  #  and VALUE
   bigTrees <- subset(nlaPhabEx,PARAMETER=='C_BIGTREES',select=-PARAMETER)
   bigTrees_dd <- subset(nlaPhabEx,PARAMETER=='C_BIGTREES_DD',select=-PARAMETER)
   smallTrees <- subset(nlaPhabEx,PARAMETER=='C_SMALLTREES',select=-PARAMETER)

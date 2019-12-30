@@ -101,13 +101,18 @@ habitat metrics for National Lakes Assessment (NLA) data.
 }
 \examples{
  head(nlaPhabEx)
-     
+  
+ # Must subset example dataset to create inputs, keeping only SITE, STATION,
+ #  and VALUE
+ # For angle subset, we must revalue NEAR_VERTICAL_UNDERCUT to NEAR_VERTICAL 
+ #  to work with function.
  angle <- subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER)  
  angle$VALUE <- with(angle, ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT',
                            'NEAR_VERTICAL',VALUE))
   
  drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN', select=-PARAMETER)
-  
+ 
+ # For most input subsets, we also need to make sure VALUE is numeric.
  horizontalDistance <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST', select=-PARAMETER)  
  horizontalDistance$VALUE <- with(horizontalDistance, as.numeric(VALUE))
     

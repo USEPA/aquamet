@@ -47,8 +47,11 @@ data frame containing the channel depth data file.
 \examples{
 head(chandepthEx) 
 
+# Subset channel depth example dataset to create input, keeping only SITE
+  #  and VALUE. This only applies to boatable sites.
 bLitDep <- subset(chandepthEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & 
   PARAMETER \%in\% c('POLE','SONAR'), select = c(SITE,VALUE))
+  # Ensure VALUE is numeric.
   bLitDep$VALUE <- as.numeric(bLitDep$VALUE)
 
 litDepOut <- nrsaLittoralDepth(bLitDep)

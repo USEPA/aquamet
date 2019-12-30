@@ -38,6 +38,8 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
+#'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
+#'   #  and VALUE
 #'   surfFilm <- subset(nlaPhabEx,PARAMETER=='SURFACE_FILM',select=-PARAMETER)
 #'
 #'   exLitZone <- nlaLittoralZone(surfFilm, data2007=FALSE)
