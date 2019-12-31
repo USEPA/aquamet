@@ -4,20 +4,25 @@
 \alias{nrsaLargeWoody}
 \title{Calculate NRSA Large Woody Debris Metrics}
 \usage{
-nrsaLargeWoody(bCounts = NULL, bDataInformation = data.frame(diameterClass =
-  rep(c("SMALL", "MEDIUM", "LARGE", "EXTRALARGE"), each = 3, times = 2),
-  lengthClass = rep(c("SMALL", "MEDIUM", "LARGE"), times = 4 * 2), locationClass
-  = rep(c("DRY", "WET"), each = 12), stringsAsFactors = FALSE) \%>\% mutate(name
-  = sprintf("\%s\%sD\%sL", substr(locationClass, 1, 1),
-  ifelse(substr(diameterClass, 1, 1) == "E", "X", substr(diameterClass, 1, 1)),
-  substr(lengthClass, 1, 1))), wCounts = NULL,
-  wDataInformation = data.frame(diameterClass = rep(c("SMALL", "MEDIUM",
-  "LARGE", "EXTRALARGE"), each = 3, times = 2), lengthClass = rep(c("SMALL",
-  "MEDIUM", "LARGE"), times = 4 * 2), locationClass = rep(c("DRY", "WET"), each
-  = 12), stringsAsFactors = FALSE) \%>\% mutate(name = sprintf("\%s\%sD\%sL",
-  substr(locationClass, 1, 1), ifelse(substr(diameterClass, 1, 1) == "E", "X",
-  substr(diameterClass, 1, 1)), substr(lengthClass, 1, 1))),
-  reachlength = NULL, meanBankfullWidth = NULL, isUnitTest = FALSE)
+nrsaLargeWoody(
+  bCounts = NULL,
+  bDataInformation = data.frame(diameterClass = rep(c("SMALL", "MEDIUM", "LARGE",
+    "EXTRALARGE"), each = 3, times = 2), lengthClass = rep(c("SMALL", "MEDIUM", "LARGE"),
+    times = 4 * 2), locationClass = rep(c("DRY", "WET"), each = 12), stringsAsFactors =
+    FALSE) \%>\% mutate(name = sprintf("\%s\%sD\%sL", substr(locationClass, 1, 1),
+    ifelse(substr(diameterClass, 1, 1) == "E", "X", substr(diameterClass, 1, 1)),
+    substr(lengthClass, 1, 1))),
+  wCounts = NULL,
+  wDataInformation = data.frame(diameterClass = rep(c("SMALL", "MEDIUM", "LARGE",
+    "EXTRALARGE"), each = 3, times = 2), lengthClass = rep(c("SMALL", "MEDIUM", "LARGE"),
+    times = 4 * 2), locationClass = rep(c("DRY", "WET"), each = 12), stringsAsFactors =
+    FALSE) \%>\% mutate(name = sprintf("\%s\%sD\%sL", substr(locationClass, 1, 1),
+    ifelse(substr(diameterClass, 1, 1) == "E", "X", substr(diameterClass, 1, 1)),
+    substr(lengthClass, 1, 1))),
+  reachlength = NULL,
+  meanBankfullWidth = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bCounts}{A data frame containing large woody debris class counts 
@@ -35,6 +40,24 @@ at each transect for boatable reaches , with the following columns:
                class
 }}
 
+\item{bDataInformation}{A data frame relating the class names used in 
+bCounts::CLASS to each combination of size and location classes.  
+Expected to have the following columns and values in 24 rows:
+\itemize{
+     \item diameterClass character value specifying diameter class: SMALL
+                MEDIUM, LARGE, EXTRALARGE, as defined in the NRSA
+                field protocol manual
+     \item lengthClass character value specifying length class: SMALL
+               MEDIUM, LARGE, as defined in the NRSA field protocol
+               manual
+     \item locationClass character value specifying location class: DRY, WET
+               as defined in the NRSA field protocol manual
+     \item name character value associated with each combination of
+                 diameter, length and channel location, as it occurs
+                 in the bCounts argument.
+}
+Default values are for EPA NARS processing.}
+
 \item{wCounts}{A data frame containing large woody debris class counts 
 at each transect for wadeable reaches , with the following columns:
 \itemize{
@@ -49,6 +72,24 @@ at each transect for wadeable reaches , with the following columns:
    \item VALUE character values specifying the influence 
                class
 }}
+
+\item{wDataInformation}{A data frame relating the class names used in 
+wCounts::CLASS to each combination of size and location classes.  
+Expected to have the following columns and values in 24 rows:
+\itemize{
+   \item diameterClass character value specifying diameter class: SMALL
+              MEDIUM, LARGE, EXTRALARGE, as defined in the NRSA
+              field protocol manual
+   \item lengthClass character value specifying length class: SMALL
+             MEDIUM, LARGE, as defined in the NRSA field protocol
+             manual
+   \item locationClass character value specifying location class: DRY, WET
+             as defined in the NRSA field protocol manual
+   \item name character value associated with each combination of
+               diameter, length and channel location, as it occurs
+               in the wCounts argument.
+}
+Default value is for EPA NARS processing.}
 
 \item{reachlength}{A data frame containing reach lengths in meters 
 for each site. Expected to contain the following columns:
@@ -66,41 +107,8 @@ columns:
 
 }}
 
-\item{bClassInfo}{A data frame relating the class names used in 
-bCounts::CLASS to each combination of size and location classes.  
-Expected to have the following columns and values in 24 rows:
-\itemize{
-     \item diam character value specifying diameter class: SMALL
-                MEDIUM, LARGE, EXTRALARGE, as defined in the NRSA
-                field protocol manual
-     \item len character value specifying length class: SMALL
-               MEDIUM, LARGE, as defined in the NRSA field protocol
-               manual
-     \item loc character value specifying location class: DRY, WET
-               as defined in the NRSA field protocol manual
-     \item CLASS character value associated with each combination of
-                 diameter, length and channel location, as it occurs
-                 in the bCounts argument.
-}
-Default values are for EPA NARS processing.}
-
-\item{wClassInfo}{A data frame relating the class names used in 
-wCounts::CLASS to each combination of size and location classes.  
-Expected to have the following columns and values in 24 rows:
-\itemize{
-   \item diam character value specifying diameter class: SMALL
-              MEDIUM, LARGE, EXTRALARGE, as defined in the NRSA
-              field protocol manual
-   \item len character value specifying length class: SMALL
-             MEDIUM, LARGE, as defined in the NRSA field protocol
-             manual
-   \item loc character value specifying location class: DRY, WET
-             as defined in the NRSA field protocol manual
-   \item CLASS character value associated with each combination of
-               diameter, length and channel location, as it occurs
-               in the wCounts argument.
-}
-Default value is for EPA NARS processing.}
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 

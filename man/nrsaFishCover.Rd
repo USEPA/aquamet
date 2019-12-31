@@ -4,17 +4,25 @@
 \alias{nrsaFishCover}
 \title{Calculate NRSA Fish Cover Metrics}
 \usage{
-nrsaFishCover(algae = NULL, boulder = NULL, brush = NULL,
-  liveTree = NULL, macrophytes = NULL, overhang = NULL,
-  structures = NULL, undercut = NULL, woodyDebris = NULL,
-  classInformation = data.frame(name = c("algae", "boulder", "brush",
-  "liveTree", "macrophytes", "overhang", "structures", "undercut",
-  "woodyDebris"), isBig = c(FALSE, TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE,
-  TRUE), isNatural = c(FALSE, TRUE, TRUE, TRUE, FALSE, TRUE, FALSE, TRUE, TRUE),
-  stringsAsFactors = FALSE), dataInformation = data.frame(value = c(NA, "0",
-  "1", "2", "3", "4"), presence = c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(),
-  weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE),
-  isUnitTest = FALSE)
+nrsaFishCover(
+  algae = NULL,
+  boulder = NULL,
+  brush = NULL,
+  liveTree = NULL,
+  macrophytes = NULL,
+  overhang = NULL,
+  structures = NULL,
+  undercut = NULL,
+  woodyDebris = NULL,
+  classInformation = data.frame(name = c("algae", "boulder", "brush", "liveTree",
+    "macrophytes", "overhang", "structures", "undercut", "woodyDebris"), isBig = c(FALSE,
+    TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE), isNatural = c(FALSE, TRUE, TRUE,
+    TRUE, FALSE, TRUE, FALSE, TRUE, TRUE), stringsAsFactors = FALSE),
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), presence = c(NA,
+    0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875),
+    stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{algae}{A data frame containing algae cover class data at each transect for
@@ -98,7 +106,7 @@ each transect for all reaches, with the following columns:
      \item VALUE numeric or character values
 }}
 
-\item{coverClassTypes}{A data frame containing group membership information 
+\item{classInformation}{A data frame containing group membership information 
 for each type of fish cover.  The default value for this argument 
 reproduces EPA NARS calculations.  Expected to have the following columns:
 \itemize{
@@ -109,23 +117,26 @@ reproduces EPA NARS calculations.  Expected to have the following columns:
                    is considered as large for analysis
        \item isNatural logical values specifying whether the class
                        is considered as natural for analysis
-}}
+ }}
 
-\item{coverCalculationValues}{A data frame specifying how cover class values 
+\item{dataInformation}{A data frame specifying how cover class values 
 are mapped to presence/absence and to characteristic cover fractions for 
 analysis.  The default value for this argument reproduces EPA NARS 
 calculations. Expected to have the following columns:
 \itemize{
        \item field character value specifying the codes
              used to record cover values
-       \item presence numeric value specifying whether the
-             cover value is present (1) or absent 
-             (0) or missing (NA), used for mean
+       \item presence logical value specifying whether the
+             cover value is present (TRUE) or absent 
+             (FALSE) or missing (NA), used for mean
              presence calculations.
        \item characteristicCover numeric value specifying the
              value used for mean cover
              calculations.
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -157,15 +168,20 @@ verification form data files.
 \examples{
 head(fishcoverEx)
 
-fishCvrOut <- nrsaFishCover(algae=subset(fishcoverEx,PARAMETER=='ALGAE'),
-boulder=subset(fishcoverEx,PARAMETER=='BOULDR'),
-brush=subset(fishcoverEx,PARAMETER=='BRUSH'),
-liveTree=subset(fishcoverEx,PARAMETER=='LVTREE'),
-macrophytes=subset(fishcoverEx,PARAMETER=='MACPHY'),
-overhang=subset(fishcoverEx,PARAMETER=='OVRHNG'),
-structures=subset(fishcoverEx,PARAMETER=='STRUCT'),
-undercut=subset(fishcoverEx,PARAMETER=='UNDCUT'),
-woodyDebris=subset(fishcoverEx,PARAMETER=='WOODY'))
+# Subset example dataset within function to create inputs, keeping only SITE,
+  #  TRANSECT, and VALUE.
+fishCvrOut <- nrsaFishCover(
+algae=subset(fishcoverEx,PARAMETER=='ALGAE',
+                 select=c(SITE,TRANSECT,VALUE)),
+boulder=subset(fishcoverEx,PARAMETER=='BOULDR',select=c(SITE,TRANSECT,VALUE)),
+brush=subset(fishcoverEx,PARAMETER=='BRUSH',select=c(SITE,TRANSECT,VALUE)),
+liveTree=subset(fishcoverEx,PARAMETER=='LVTREE',select=c(SITE,TRANSECT,VALUE)),
+macrophytes=subset(fishcoverEx,PARAMETER=='MACPHY',select=c(SITE,TRANSECT,VALUE)),
+overhang=subset(fishcoverEx,PARAMETER=='OVRHNG',select=c(SITE,TRANSECT,VALUE)),
+structures=subset(fishcoverEx,PARAMETER=='STRUCT',select=c(SITE,TRANSECT,VALUE)),
+undercut=subset(fishcoverEx,PARAMETER=='UNDCUT',select=c(SITE,TRANSECT,VALUE)),
+woodyDebris=subset(fishcoverEx,PARAMETER=='WOODY',select=c(SITE,TRANSECT,VALUE))
+)
 
 head(fishCvrOut)
 }

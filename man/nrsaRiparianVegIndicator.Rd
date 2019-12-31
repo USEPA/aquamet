@@ -4,8 +4,19 @@
 \alias{nrsaRiparianVegIndicator}
 \title{Assign NRSA Riparian Vegetation indicator condition class}
 \usage{
-nrsaRiparianVegIndicator(x, sampID = "UID", ecoreg, protocol, xcmgw, lat, lon,
-  area, elev, slope, xwidth)
+nrsaRiparianVegIndicator(
+  x,
+  sampID = "UID",
+  ecoreg,
+  protocol,
+  xcmgw,
+  lat,
+  lon,
+  area,
+  elev,
+  slope,
+  xwidth
+)
 }
 \arguments{
 \item{x}{A data frame containing, at minimum, the variables 

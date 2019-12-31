@@ -4,11 +4,19 @@
 \alias{nlaLittoralMacrohabitat}
 \title{Calculate NLA Littoral Macrohabitat Metrics}
 \usage{
-nlaLittoralMacrohabitat(artificial = NULL, boulders = NULL,
-  coverExtent = NULL, humanDisturbance = NULL, noCover = NULL,
-  substrate = NULL, vegetation = NULL, woody = NULL,
-  dataInformation = data.frame(value = c("NONE", "LOW", "MODERATE", "HEAVY"),
-  weights = c(0, 0.2, 0.5, 1), stringsAsFactors = FALSE), isUnitTest = FALSE)
+nlaLittoralMacrohabitat(
+  artificial = NULL,
+  boulders = NULL,
+  coverExtent = NULL,
+  humanDisturbance = NULL,
+  noCover = NULL,
+  substrate = NULL,
+  vegetation = NULL,
+  woody = NULL,
+  dataInformation = data.frame(value = c("NONE", "LOW", "MODERATE", "HEAVY"), weights =
+    c(0, 0.2, 0.5, 1), stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{artificial}{A data frame containing artificial fish cover type 
@@ -89,6 +97,18 @@ visit.
 \item VALUE a character value of X representing the woody fish cover 
 types selected.
 }}
+
+\item{dataInformation}{A data frame used to convert between 
+cover class codes to characteristic cover values. Expected to contain
+the following columns:
+\itemize{
+       \item value - values containing all expected values
+       \item weights - numeric values used to calculate numeric 
+                  metrics.
+}}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -117,6 +137,8 @@ portion of the physical habitat metrics for National Lakes Assessment
 \examples{
   head(nlaPhabEx07)
   
+  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+  #  and VALUE
   artificial <- subset(nlaPhabEx07,PARAMETER=='COVER_ARTIFICIAL',select=-PARAMETER)
   boulders <- subset(nlaPhabEx07,PARAMETER=='COVER_BOULDERS',select=-PARAMETER)
   coverExtent <- subset(nlaPhabEx07,PARAMETER=='COVER_CLASS',select=-PARAMETER)

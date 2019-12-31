@@ -18,7 +18,10 @@
 # require(RUnit)
 # require(dplyr)
 
-aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, struct=list(SITE='integer', VALUE='double'), rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE)
+aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, 
+                                       struct=list(SITE='integer', VALUE='double'), 
+                                       rangeLimits=NULL, legalValues=NULL, 
+                                       stopOnError=TRUE)
 # Used to standardize argument to aquamet functions. Returns a dataframe with
 # expected column names or NULL.
 #

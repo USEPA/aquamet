@@ -39,6 +39,17 @@
 #' integer, from 0-4 containing the total macrophyte cover
 #' category.
 #' }
+#' @param dataInformation A data frame containing aquatic macrophyte 
+#' categorical values and corresponding numeric cover values used in 
+#' calculations. as well as indicators of cover type presence or absence 
+#' for each category. The default values (and required column names) are:
+#' \itemize{
+#' \item value c(NA,'0','1','2','3','4')
+#' \item weights c(NA,0,0.05,0.25,0.575,0.875)
+#' \item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
+#' }
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -62,11 +73,14 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
+#'   # Subset dataset into individual parameter inputs, keeping only SITE, 
+#'   #   STATION, and VALUE
 #'   emerg <- subset(nlaPhabEx,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
 #'   float <- subset(nlaPhabEx,PARAMETER=='AM_FLOATING',select=-PARAMETER)
 #'   submerg <- subset(nlaPhabEx,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
 #'   totcvr <- subset(nlaPhabEx,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
 #'   
+#'   # Use above dataframes as inputs to function
 #'   exAquMacro <- nlaAquaticMacrophytes(emergent=emerg,
 #'   floating=float,submergent=submerg,totalCover=totcvr)
 #'   

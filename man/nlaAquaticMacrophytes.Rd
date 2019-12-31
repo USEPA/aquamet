@@ -4,11 +4,16 @@
 \alias{nlaAquaticMacrophytes}
 \title{Calculate NLA Aquatic Macrophyte Metrics}
 \usage{
-nlaAquaticMacrophytes(emergent = NULL, floating = NULL, submergent = NULL,
-  totalCover = NULL, dataInformation = data.frame(value = c(NA, "0", "1",
-  "2", "3", "4"), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence = c(NA,
-  0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), stringsAsFactors = FALSE),
-  isUnitTest = FALSE)
+nlaAquaticMacrophytes(
+  emergent = NULL,
+  floating = NULL,
+  submergent = NULL,
+  totalCover = NULL,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), presence = c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(),
+    stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{emergent}{A data frame containing emergent vegetation class values for sites 
@@ -51,6 +56,19 @@ sampled, with the columns:
 integer, from 0-4 containing the total macrophyte cover
 category.
 }}
+
+\item{dataInformation}{A data frame containing aquatic macrophyte 
+categorical values and corresponding numeric cover values used in 
+calculations. as well as indicators of cover type presence or absence 
+for each category. The default values (and required column names) are:
+\itemize{
+\item value c(NA,'0','1','2','3','4')
+\item weights c(NA,0,0.05,0.25,0.575,0.875)
+\item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
+}}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -78,11 +96,14 @@ habitat metrics for National Lakes Assessment (NLA) data.
 \examples{
   head(nlaPhabEx)
   
+  # Subset dataset into individual parameter inputs, keeping only SITE, 
+  #   STATION, and VALUE
   emerg <- subset(nlaPhabEx,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
   float <- subset(nlaPhabEx,PARAMETER=='AM_FLOATING',select=-PARAMETER)
   submerg <- subset(nlaPhabEx,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
   totcvr <- subset(nlaPhabEx,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
   
+  # Use above dataframes as inputs to function
   exAquMacro <- nlaAquaticMacrophytes(emergent=emerg,
   floating=float,submergent=submerg,totalCover=totcvr)
   

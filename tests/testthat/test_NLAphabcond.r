@@ -14,10 +14,10 @@ test_that("NLA riparian disturbance values correct",
             compOut <- merge(testCond.long,testOut.long,by=c('UID','variable'))
             expect_true(nrow(compOut)==20)
             
-            compCond <- filter(compOut,variable=='RDIS_COND')
+            compCond <- subset(compOut,variable=='RDIS_COND')
             expect_equal(compCond$value.x,compCond$value.y)
             
-            compNum <- filter(compOut,variable=='RDis_IX') %>% 
+            compNum <- subset(compOut,variable=='RDis_IX') %>% 
               plyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
             expect_equal(compNum$value.x,compNum$value.y,tolerance=0.0001)
           })
@@ -50,10 +50,10 @@ test_that("NLA riparian vegetation complexity values correct",
             compOut <- merge(testCond.long,testOut.long,by=c('UID','variable'))
             expect_true(nrow(compOut)==20)
             
-            compCond <- filter(compOut,variable=='RVEG_COND')
+            compCond <- subset(compOut,variable=='RVEG_COND')
             expect_equal(compCond$value.x,compCond$value.y)
             
-            compNum <- filter(compOut,variable=='RVegQc3OE') %>% 
+            compNum <- subset(compOut,variable=='RVegQc3OE') %>% 
               plyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
             expect_equal(compNum$value.x,compNum$value.y,tolerance=0.0001)
           })
@@ -73,12 +73,12 @@ test_that("NLA littoral vegetation complexity values correct",
             compOut <- merge(testCond.long,testOut.long,by=c('UID','variable'))
             expect_true(nrow(compOut)==20)
             
-            compCond <- filter(compOut,variable=='LITCVR_COND')
+            compCond <- subset(compOut,variable=='LITCVR_COND')
             expect_equal(compCond$value.x,compCond$value.y)
             
-            compNum <- filter(compOut,variable=='LitCvrQc3OE') %>% 
+            compNum <- subset(compOut,variable=='LitCvrQc3OE') %>% 
               plyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
-            expect_equal(compNum$value.x,compNum$value.y,tolerance=0.0001)
+            expect_equal(compNum$value.x,compNum$value.y,tolerance=0.00001)
           })
 
 # This one requires mixing the outputs from the two functions above 
@@ -113,10 +113,10 @@ test_that("NLA littoral and riparian vegetation complexity values correct",
             compOut <- merge(testCond.long,testOut.long,by=c('UID','variable'))
             expect_true(nrow(compOut)==20)
             
-            compCond <- filter(compOut,variable=='LITRIPCVR_COND')
+            compCond <- subset(compOut,variable=='LITRIPCVR_COND')
             expect_equal(compCond$value.x,compCond$value.y)
             
-            compNum <- filter(compOut,variable=='LitRipCvrQc3OE') %>% 
+            compNum <- subset(compOut,variable=='LitRipCvrQc3OE') %>% 
               plyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
             expect_equal(compNum$value.x,compNum$value.y,tolerance=0.0001)
           })

@@ -74,6 +74,16 @@
 #' \item VALUE a character value of X representing the woody fish cover 
 #' types selected.
 #' }
+#' @param dataInformation A data frame used to convert between 
+#' cover class codes to characteristic cover values. Expected to contain
+#' the following columns:
+#' \itemize{
+#'        \item value - values containing all expected values
+#'        \item weights - numeric values used to calculate numeric 
+#'                   metrics.
+#' }
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -97,6 +107,8 @@
 #' @examples
 #'   head(nlaPhabEx07)
 #'   
+#'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
+#'   #  and VALUE
 #'   artificial <- subset(nlaPhabEx07,PARAMETER=='COVER_ARTIFICIAL',select=-PARAMETER)
 #'   boulders <- subset(nlaPhabEx07,PARAMETER=='COVER_BOULDERS',select=-PARAMETER)
 #'   coverExtent <- subset(nlaPhabEx07,PARAMETER=='COVER_CLASS',select=-PARAMETER)

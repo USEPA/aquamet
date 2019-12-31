@@ -4,8 +4,18 @@
 \alias{nlaLitRipVegCompIndicator}
 \title{Calculate NLA Littoral-riparian Vegetation Complexity Indicator}
 \usage{
-nlaLitRipVegCompIndicator(x, sampID, lat, lon, lake_origin, area, elev, ecoreg,
-  rvegq, litcvrq)
+nlaLitRipVegCompIndicator(
+  x,
+  sampID,
+  lat,
+  lon,
+  lake_origin,
+  area,
+  elev,
+  ecoreg,
+  rvegq,
+  litcvrq
+)
 }
 \arguments{
 \item{x}{Input data frame containing other variables as specified in

@@ -4,9 +4,13 @@
 \alias{nrsaCanopyDensiometer}
 \title{Calculate NRSA Canopy Densiometer Metrics}
 \usage{
-nrsaCanopyDensiometer(bDensiom = NULL, wDensiom = NULL,
-  wChannelBank = c("LF", "RT"), wChannelMid = c("CU", "CL", "CD", "CR"),
-  isUnitTest = FALSE)
+nrsaCanopyDensiometer(
+  bDensiom = NULL,
+  wDensiom = NULL,
+  wChannelBank = c("LF", "RT"),
+  wChannelMid = c("CU", "CL", "CD", "CR"),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bDensiom}{A data frame containing canopy densiometer 
@@ -33,6 +37,9 @@ bank of the channel. Defaults to c('LF','RT').}
 \item{wChannelMid}{Character values listing the values of DIRECTION 
 which indicate that the counts were obtained midstream in the channel. 
 Defaults to c('CU','CL','CD','CR').}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -58,11 +65,19 @@ data frame containing the channel cover data file.
 }
 \examples{
 head(channelcoverEx)
+# Must subset example dataset to create inputs, keeping only SITE
+  #  and VALUE
+  # VALUE must be numeric for this function
 channelcoverEx <- plyr::mutate(channelcoverEx, VALUE=as.numeric(VALUE))
 
-bDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANB' & PARAMETER=='DENSIOM')
+# Boatable canopy density readings
+bDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANB' & PARAMETER=='DENSIOM',
+select = c('SITE','VALUE'))  
 
-wDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='DENSIOM')
+# Wadeable canopy density readings
+wDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='DENSIOM',
+select = c('SITE','BANK','VALUE'))
+# BANK is renamed DIRECTION for this input
 wDen <- plyr::rename(wDen,c('BANK'='DIRECTION'))
 
 canDenOut <- nrsaCanopyDensiometer(bDensiom=bDen, wDensiom=wDen)

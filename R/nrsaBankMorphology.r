@@ -31,6 +31,8 @@
 #' }
 #' If this data frame is either not specified or has no data, these metrics 
 #' are not calculated.
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -55,9 +57,25 @@
 #' @examples
 #'   head(bankgeomEx)
 #'   
-#'   bangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='ANGLE')
-#'   wangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='ANGLE')
-#'   wund <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='UNDERCUT')
+#'   # Must subset example dataset to create inputs, keeping only SITE
+#'   #  and VALUE
+#'   # Boatable bank angle
+#'   bangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER=='ANGLE',
+#'       select = c('SITE','VALUE'))
+#'       # SITE must be an integer for this function in particular
+#'       bangle$SITE <- as.integer(bangle$SITE)
+#'   # Wadeable bank angle
+#'   wangle <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='ANGLE',
+#'       select = c('SITE','VALUE'))
+#'       # VALUE must be numeric for this argument
+#'       wangle$VALUE <- as.numeric(wangle$VALUE) 
+#'       wangle$SITE <- as.integer(wangle$SITE)
+#'   # Wadeable undercut bank measurements
+#'   wund <- subset(bankgeomEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='UNDERCUT',
+#'       select = c('SITE','VALUE'))
+#'       # VALUE must be numeric for this argument
+#'       wund$VALUE <- as.numeric(wund$VALUE)
+#'       wund$SITE <- as.integer(wund$SITE)
 #'   
 #'   exBankMorph <- nrsaBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
 #'   head(exBankMorph)

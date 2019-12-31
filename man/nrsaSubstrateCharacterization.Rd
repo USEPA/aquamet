@@ -4,9 +4,16 @@
 \alias{nrsaSubstrateCharacterization}
 \title{Calculate NRSA Substrate Characterization Metrics}
 \usage{
-nrsaSubstrateCharacterization(bBottomDom = NULL, bBottomSec = NULL,
-  bShoreDom = NULL, bShoreSec = NULL, bSizeClass = NULL,
-  wSizeClass = NULL, wMezzoSizeClass = NULL, isUnitTest = FALSE)
+nrsaSubstrateCharacterization(
+  bBottomDom = NULL,
+  bBottomSec = NULL,
+  bShoreDom = NULL,
+  bShoreSec = NULL,
+  bSizeClass = NULL,
+  wSizeClass = NULL,
+  wMezzoSizeClass = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bBottomDom}{A data frame containing size class data for the dominant 
@@ -78,6 +85,9 @@ columns:
                   visit
        \item VALUE numeric or character values
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 

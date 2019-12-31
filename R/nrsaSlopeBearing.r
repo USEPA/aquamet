@@ -103,6 +103,8 @@
 #'        \item VALUE numeric value of data. Expected to be 
 #'                    expressed in percent slope.
 #' }
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful 
 #' or a character string containing an error message when metric 
 #' calculation is not successful.  The data frame contains the following 

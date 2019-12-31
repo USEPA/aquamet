@@ -21,6 +21,9 @@ have the following columns:
  The use of 'NONE' as a name is prohibited as that is left for use to 
  show where no invasives were found, and is thus not included in the 
  calculations of ip_score}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 
@@ -51,7 +54,8 @@ frame containing the invasive species/legacy riparian trees data file.
 head(invlegEx,10)
 # This example has no invasive species present
 
-noinv <- subset(invlegEx, PARAMETER=='NO_INVASIVES')     
+noinv <- subset(invlegEx, PARAMETER=='NO_INVASIVES',
+  select = c(SITE,VALUE))     
    
 invasiveOut <- nrsaInvasiveSpecies(none = noinv)
 

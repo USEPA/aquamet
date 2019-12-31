@@ -1,5 +1,5 @@
 #' @export
-#' @title Calculate NLA Aquatic Macrophyte Metrics
+#' @title Calculate NLA Bank Features Metrics
 #' @description This function calculates the bank features portion of the physical
 #' habitat metrics for National Lakes Assessment (NLA) data.  
 #' @param angle A data frame containing bank angle class values for sites 
@@ -37,7 +37,7 @@
 #' \item VALUE an numeric value, or character value that is castable to an 
 #' numeric.
 #' }
-#' @param VerticalHeight A data frame containing the vertical 
+#' @param verticalHeight A data frame containing the vertical 
 #' height from waterline to high water mark (m) when flooding is present, 
 #' with the columns:
 #' \itemize{
@@ -55,6 +55,8 @@
 #' \item VALUE an numeric value, or character value that is castable to an 
 #' numeric.
 #' }
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -75,16 +77,38 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples
-#'   head(nlaPhabEx)
-#'      
-#'   exBankFeatures <- nlaBankFeatures(angle=subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER),
-#'   drawdown=subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER),
-#'   horizontalDistance=subset(nlaPhabEx,PARAMETER=='HORIZ_DIST',select=-PARAMETER),
-#'   horizontalDistanceDrawdown=subset(nlaPhabEx,PARAMETER='HORIZ_DIST_DD',select=-PARAMETER),
-#'   verticalHeight=subset(nlaPhabEx,PARAMETER=='VERT_DIST',select=-PARAMETER),
-#'   verticalHeightDrawdown=subset(nlaPhabEx,PARAMETER=='VERT_DIST_DD',select=-PARAMETER))
+#'  head(nlaPhabEx)
 #'   
-#'   head(exBankFeatures)
+#'  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+#'  #  and VALUE
+#'  # For angle subset, we must revalue NEAR_VERTICAL_UNDERCUT to NEAR_VERTICAL 
+#'  #  to work with function.
+#'  angle <- subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER)  
+#'  angle$VALUE <- with(angle, ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT',
+#'                            'NEAR_VERTICAL',VALUE))
+#'   
+#'  drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN', select=-PARAMETER)
+#'  
+#'  # For most input subsets, we also need to make sure VALUE is numeric.
+#'  horizontalDistance <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST', select=-PARAMETER)  
+#'  horizontalDistance$VALUE <- with(horizontalDistance, as.numeric(VALUE))
+#'     
+#'  horizontalDistanceDrawdown <- subset(nlaPhabEx,PARAMETER='HORIZ_DIST_DD', 
+#'  select=-PARAMETER)  
+#'  horizontalDistanceDrawdown$VALUE <- with(horizontalDistanceDrawdown, 
+#'  as.numeric(VALUE))
+#'  
+#'  verticalHeight <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) 
+#'  verticalHeight$VALUE <- with(verticalHeight, as.numeric(VALUE))
+#'    
+#'  verticalHeightDrawdown <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT_DD', 
+#'            select=-PARAMETER)
+#'  verticalHeightDrawdown$VALUE <- with(verticalHeightDrawdown, as.numeric(VALUE)) 
+#'            
+#'  exBankFeatures <- nlaBankFeatures(angle, drawdown, 
+#'  horizontalDistance, horizontalDistanceDrawdown, verticalHeight, 
+#'  verticalHeightDrawdown)   
+#'  head(exBankFeatures)
 #'  
 #' @keywords survey
 #' 

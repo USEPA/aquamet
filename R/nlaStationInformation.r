@@ -24,6 +24,8 @@
 #' \item VALUE a numeric values or a character value castable to numeric 
 #' containing the depth in meters at the station 
 #' }
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -44,10 +46,16 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
-#'   isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND',select=-PARAMETER)
-#'   depth <- subset(nlaPhabEx,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
+#'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
+#'   #  and VALUE
+#'   isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND' & VALUE %in% c('YES','Y'),
+#'   select=-PARAMETER)
+#'   # isIsland has 0 values, so leave that argument blank (NULL)
 #'   
-#'   exStationInfo <- nlaStationInformation(isIsland, depth)
+#'   depth <- subset(nlaPhabEx,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
+#'   depth$VALUE <- as.numeric(depth$VALUE)
+#'   
+#'   exStationInfo <- nlaStationInformation(stationDepth = depth)
 #'   
 #'   head(exStationInfo)
 #'  

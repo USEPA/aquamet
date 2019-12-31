@@ -1,3 +1,5 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 sourceAquamet.r
+^doc$
+^Meta$

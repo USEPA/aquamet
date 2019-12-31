@@ -4,17 +4,27 @@
 \alias{nlaBottomSubstrate}
 \title{Calculate NLA Bottom Substrate Metrics}
 \usage{
-nlaBottomSubstrate(bedrock = NULL, boulder = NULL, color = NULL,
-  cobble = NULL, gravel = NULL, odor = NULL, organic = NULL,
-  sand = NULL, silt = NULL, wood = NULL,
-  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights
-  = c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence = as.logical(c(NA, 0, 1, 1, 1,
-  1)), stringsAsFactors = FALSE), classInformation = data.frame(name =
-  c("BEDROCK", "BOULDERS", "COBBLE", "GRAVEL", "SAND", "SILT", "ORGANIC",
-  "WOOD"), characteristicDiameter = c(gmean(c(4000, 8000)), gmean(c(250, 4000)),
-  gmean(c(64, 250)), gmean(c(2, 64)), gmean(c(0.06, 2)), gmean(c(0.001, 0.06)),
-  NA, NA), inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE,
-  FALSE), stringsAsFactors = FALSE), isUnitTest = FALSE)
+nlaBottomSubstrate(
+  bedrock = NULL,
+  boulder = NULL,
+  color = NULL,
+  cobble = NULL,
+  gravel = NULL,
+  odor = NULL,
+  organic = NULL,
+  sand = NULL,
+  silt = NULL,
+  wood = NULL,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), presence = as.logical(c(NA, 0, 1, 1, 1, 1)),
+    stringsAsFactors = FALSE),
+  classInformation = data.frame(name = c("BEDROCK", "BOULDERS", "COBBLE", "GRAVEL",
+    "SAND", "SILT", "ORGANIC", "WOOD"), characteristicDiameter = c(gmean(c(4000, 8000)),
+    gmean(c(250, 4000)), gmean(c(64, 250)), gmean(c(2, 64)), gmean(c(0.06, 2)),
+    gmean(c(0.001, 0.06)), NA, NA), inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE, TRUE,
+    TRUE, FALSE, FALSE), stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bedrock}{A data frame containing bedrock class values, 
@@ -125,28 +135,31 @@ integer, from 0-4 containing the wood bottom substrate cover
 category.
 }}
 
-\item{substrateCovers}{a data frame containing substrate cover category 
+\item{dataInformation}{a data frame containing substrate cover category 
 values (VALUE), the lower proportional cover value for each category (cover),
 and an indicator variable of presence of a substrate type for each category.
 The default values are:
 \itemize{
-\item VALUE '0', '1', '2', '3', '4', NA
-\item cover 0, 0.05, 0.25, 0.575, 0.875, NA
+\item value '0', '1', '2', '3', '4', NA
+\item weights 0, 0.05, 0.25, 0.575, 0.875, NA
 \item presence 0, 1, 1, 1, 1, NA
 }}
 
-\item{substrateSizes}{a data frame containing substrate class names (CLASS)
+\item{classInformation}{a data frame containing substrate class names (CLASS)
 and corresponding geometric mean of diameter ranges in mm (diam), as well as
 an indicator of whether to include the class in estimates of substrate size
 for the site. 
 The default values are: 
 \itemize{
-\item CLASS 'BEDROCK', 'BOULDERS','COBBLE', 'GRAVEL', 'SAND', 'SILT', 
+\item name 'BEDROCK', 'BOULDERS','COBBLE', 'GRAVEL', 'SAND', 'SILT', 
 'ORGANIC', 'WOOD'
-\item diam 5656.854, 1000, 126.4911, 11.31371, 0.3464102, 0.007745967, 
+\item characteristicDiameter 5656.854, 1000, 126.4911, 11.31371, 0.3464102, 0.007745967, 
 NA, NA  
 \item inPopulationEstimate TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -179,6 +192,8 @@ habitat metrics for National Lakes Assessment (NLA) data.
 \examples{
   head(nlaPhabEx)
   
+  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+  #  and VALUE
   bedrock <- subset(nlaPhabEx,PARAMETER=='BS_BEDROCK',select=-PARAMETER)
   boulder <- subset(nlaPhabEx,PARAMETER=='BS_BOULDER',select=-PARAMETER)
   color <- subset(nlaPhabEx,PARAMETER=='BS_COLOR',select=-PARAMETER)

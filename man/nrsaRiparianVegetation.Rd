@@ -4,14 +4,20 @@
 \alias{nrsaRiparianVegetation}
 \title{Calculate NRSA Riparian Vegetation Metrics}
 \usage{
-nrsaRiparianVegetation(canopyCoverLargeDiameter = NULL,
-  canopyCoverSmallDiameter = NULL, canopyVegetationType = NULL,
-  groundCoverBare = NULL, groundCoverNonwoody = NULL,
-  groundCoverWoody = NULL, understoryCoverNonwoody = NULL,
-  understoryCoverWoody = NULL, understoryVegetationType = NULL,
-  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights
-  = c(NA, 0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE),
-  isUnitTest = FALSE)
+nrsaRiparianVegetation(
+  canopyCoverLargeDiameter = NULL,
+  canopyCoverSmallDiameter = NULL,
+  canopyVegetationType = NULL,
+  groundCoverBare = NULL,
+  groundCoverNonwoody = NULL,
+  groundCoverWoody = NULL,
+  understoryCoverNonwoody = NULL,
+  understoryCoverWoody = NULL,
+  understoryVegetationType = NULL,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{canopyCoverLargeDiameter}{A data frame containing cover class 
@@ -140,17 +146,20 @@ columns:
      \item VALUE numeric or character values
 }}
 
-\item{coverCalculationValues}{A data frame used to convert between 
+\item{dataInformation}{A data frame used to convert between 
 cover class codes to characteristic cover values. Expected to contain
 the following columns:
 \itemize{
-       \item field character values containing all expected values
-       \item calc numeric values used to calculate numeric 
+       \item value - values containing all expected values
+       \item weights - numeric values used to calculate numeric 
                   metrics.
 }
 Note that possible values for variables in the input data frame are
 provided in the document named "NRSA Documentation.pdf" included in the help
 directory for the package.}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 
@@ -180,7 +189,9 @@ frame containing the visible riparian damage data file.
 \examples{
 head(visripEx)
 
-canCovLD <- dplyr::filter(visripEx,PARAMETER=='CANBTRE') \%>\% select(SITE,TRANSECT,BANK,VALUE)
+# Subset visual riparian example dataset to create inputs to function, 
+#  keeping only SITE, TRANSECT, BANK, and VALUE. 
+canCovLD <- subset(visripEx,PARAMETER=='CANBTRE', select=c(SITE,TRANSECT,BANK,VALUE))
 canCovSD <- subset(visripEx,PARAMETER=='CANSTRE',select=c('SITE','TRANSECT','BANK','VALUE'))
 canVegT <- subset(visripEx,PARAMETER=='CANVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
 gCovB <- subset(visripEx,PARAMETER=='BARE',select=c('SITE','TRANSECT','BANK','VALUE'))
@@ -200,9 +211,7 @@ groundCoverWoody = gCovW,
 understoryCoverNonwoody = undCNW,
 understoryCoverWoody = undCW,
 understoryVegetationType = undVT,
-coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
-                                  ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-                                  ,stringsAsFactors=FALSE))
+)
 
 head(exRipVegOut)                                   
 }

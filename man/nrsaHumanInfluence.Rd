@@ -4,12 +4,22 @@
 \alias{nrsaHumanInfluence}
 \title{Calculate NRSA Human Influence Metrics}
 \usage{
-nrsaHumanInfluence(buildings = NULL, landfillTrash = NULL, logging = NULL,
-  mining = NULL, parkLawn = NULL, pastureRangeHay = NULL,
-  pavementClearedlot = NULL, pipesInOut = NULL, roadsRailroads = NULL,
-  rowcrops = NULL, wallRevetment = NULL,
-  dataInformation = data.frame(value = c("0", "P", "C", "B"), weights = c(0,
-  0.666667, 1, 1.5), stringsAsFactors = FALSE), isUnitTest = FALSE)
+nrsaHumanInfluence(
+  buildings = NULL,
+  landfillTrash = NULL,
+  logging = NULL,
+  mining = NULL,
+  parkLawn = NULL,
+  pastureRangeHay = NULL,
+  pavementClearedlot = NULL,
+  pipesInOut = NULL,
+  roadsRailroads = NULL,
+  rowcrops = NULL,
+  wallRevetment = NULL,
+  dataInformation = data.frame(value = c("0", "P", "C", "B"), weights = c(0, 0.666667,
+    1, 1.5), stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{buildings}{A data frame containing building influence data 
@@ -126,16 +136,19 @@ data at each transect for all reaches, with the following columns:
                class
 }}
 
-\item{influenceWeights}{A data frame containing weighting values for 
+\item{dataInformation}{A data frame containing weighting values for 
 each influence class.  The default value for this argument reproduces EPA
 NARS calculations.  Expected to have the following columns:
 \itemize{
-   \item VALUE character codes used to specify each influence 
+   \item value character codes used to specify each influence 
                class
    \item weights numeric value used to weight each influence class
          in combined calculations
 
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -195,17 +208,32 @@ a data frame containing the visible riparian damage data file.
 \examples{
 head(visripEx)
 
-huminflOut <- nrsaHumanInfluence(buildings=subset(visripEx,PARAMETER=='BUILD'),
-landfillTrash=subset(visripEx,PARAMETER=='LANDFL'),
-logging=subset(visripEx,PARAMETER=='LOG'),
-mining=subset(visripEx,PARAMETER=='MINE'),
-parkLawn=subset(visripEx,PARAMETER=='PARK'),
-pastureRangeHay=subset(visripEx,PARAMETER=='PAST'),
-pavementClearedlot=subset(visripEx,PARAMETER=='PAVE'),
-pipesInOut=subset(visripEx,PARAMETER=='PIPES'),
-roadsRailroads=subset(visripEx,PARAMETER=='ROAD'),
-rowcrops=subset(visripEx,PARAMETER=='ROW'),
-wallRevetment=subset(visripEx,PARAMETER=='WALL'))
+# Subset example dataset within function to create inputs, keeping only SITE,
+  #  TRANSECT, and VALUE. 
+huminflOut <- nrsaHumanInfluence(
+buildings=subset(visripEx,PARAMETER=='BUILD',
+ select = c(SITE,TRANSECT,VALUE)),
+landfillTrash=subset(visripEx,PARAMETER=='LANDFL',
+ select = c(SITE,TRANSECT,VALUE)),
+logging=subset(visripEx,PARAMETER=='LOG',
+ select = c(SITE,TRANSECT,VALUE)),
+mining=subset(visripEx,PARAMETER=='MINE',
+ select = c(SITE,TRANSECT,VALUE)),
+parkLawn=subset(visripEx,PARAMETER=='PARK',
+ select = c(SITE,TRANSECT,VALUE)),
+pastureRangeHay=subset(visripEx,PARAMETER=='PAST',
+ select = c(SITE,TRANSECT,VALUE)),
+pavementClearedlot=subset(visripEx,PARAMETER=='PAVE',
+ select = c(SITE,TRANSECT,VALUE)),
+pipesInOut=subset(visripEx,PARAMETER=='PIPES',
+ select = c(SITE,TRANSECT,VALUE)),
+roadsRailroads=subset(visripEx,PARAMETER=='ROAD',
+ select = c(SITE,TRANSECT,VALUE)),
+rowcrops=subset(visripEx,PARAMETER=='ROW',
+ select = c(SITE,TRANSECT,VALUE)),
+wallRevetment=subset(visripEx,PARAMETER=='WALL',
+ select = c(SITE,TRANSECT,VALUE))
+ )
 
 head(huminflOut)
 }

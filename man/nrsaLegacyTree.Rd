@@ -4,8 +4,14 @@
 \alias{nrsaLegacyTree}
 \title{Calculate NRSA Legacy Riparian Trees Metrics}
 \usage{
-nrsaLegacyTree(dbhClass = NULL, distance = NULL, heightClass = NULL,
-  species = NULL, type = NULL, isUnitTest = FALSE)
+nrsaLegacyTree(
+  dbhClass = NULL,
+  distance = NULL,
+  heightClass = NULL,
+  species = NULL,
+  type = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{dbhClass}{A data frame containing dbh class values at each 
@@ -58,6 +64,9 @@ transect of all sites.  Expected to contain the columns:
                     for which the value was recorded.
      \item VALUE character values, either Coniferous or Deciduous.
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 

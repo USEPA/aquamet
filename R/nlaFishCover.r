@@ -185,15 +185,17 @@
 #' @param fillinDrawdown A logical value which specifies whether to use the
 #     DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
 #     The default value is TRUE.
-#' @param coverClassInfo A data frame containing the field fish cover
+#' @param dataInformation A data frame containing the field fish cover
 #' categorical values and corresponding numeric cover values used in calculations, 
 #' as well as indicators of cover type presence or absence for each category. The
 #' default values (and required column names) are:
 #' \itemize{
-#' \item field c(NA,'0','1','2','3','4')
-#' \item characteristicCover c(NA,0,0.05,0.25,0.575,0.875)
-#' \item presence c(NA,0,1,1,1,1) 
+#' \item value c(NA,'0','1','2','3','4')
+#' \item weights c(NA,0,0.05,0.25,0.575,0.875)
+#' \item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
 #' }  
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -241,6 +243,8 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
+#'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
+#'   #  and VALUE
 #'   aquatic <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
 #'   aquatic_dd <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
 #'   boulders <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
@@ -258,7 +262,11 @@
 #'   structures <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
 #'   structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
 #'   drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-#'   horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+#'   
+#'   # Ensure VALUE is numeric for this particular subset
+#'   horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',
+#'      select=-PARAMETER)
+#'   horizontalDistance_dd$VALUE <- with(horizontalDistance_dd, as.numeric(VALUE))
 #'   
 #'   # Use defaults for fillinDrawdown, createSyntheticCovers, and coverClassInfo
 #'   # arguments

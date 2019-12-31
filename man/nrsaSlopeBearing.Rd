@@ -4,10 +4,18 @@
 \alias{nrsaSlopeBearing}
 \title{Calculate NRSA Slope and Bearing Metrics}
 \usage{
-nrsaSlopeBearing(bBearing = NULL, bDistance = NULL, bSlope = NULL,
-  wBearing = NULL, wTransectSpacing = NULL, wProportion = NULL,
-  wSlope = NULL, gisSinuosity = NULL, gisSlope = NULL,
-  isUnitTest = FALSE)
+nrsaSlopeBearing(
+  bBearing = NULL,
+  bDistance = NULL,
+  bSlope = NULL,
+  wBearing = NULL,
+  wTransectSpacing = NULL,
+  wProportion = NULL,
+  wSlope = NULL,
+  gisSinuosity = NULL,
+  gisSlope = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bBearing}{A data frame containing bearing values recorded 
@@ -116,6 +124,9 @@ values for any reach.  Expected to include columns:
        \item VALUE numeric value of data. Expected to be 
                    expressed in percent slope.
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful 

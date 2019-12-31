@@ -21,7 +21,7 @@
 #' \item VALUE a character value of 0, P, or C representing the proximity 
 #' category.
 #' }
-#' @param commerical A data frame containing commercial human influence 
+#' @param commercial A data frame containing commercial human influence 
 #'  proximity class values from riparian zone, with the columns:
 #' \itemize{
 #' \item SITE an integer or character value identifying a single site 
@@ -259,15 +259,17 @@
 #' @param fillinDrawdown A logical value, which specifies whether to use the
 #' DRAWDOWN parameter to fill in unrecorded cover and horizontalDistance_dd 
 #' values. The default value is TRUE. 
-#' @param proximityWeights A data frame relating categorical proximity values 
+#' @param dataInformation A data frame relating categorical proximity values 
 #' to various numeric weights for different types of metrics. The default data frame
 #' consists of the following values:
 #' \itemize{
-#' \item proximity c('0','P','C')
-#' \item calc c(0.0, 0.5, 1.0)  
-#' \item circa c(0, 0, 1)
-#' \item present c(0, 1, 1)
+#' \item value c('0','P','C')
+#' \item weights c(0.0, 0.5, 1.0)  
+#' \item inStream c(0, 0, 1)
+#' \item presence c(FALSE,TRUE,TRUE)
 #' } 
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -317,6 +319,8 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
+#'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
+#'   #  and VALUE
 #'   buildings <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
 #'   buildings_dd <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
 #'   commercial <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)

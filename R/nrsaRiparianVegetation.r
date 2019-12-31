@@ -121,17 +121,19 @@
 #'                 at which the values were recorded.
 #'      \item VALUE numeric or character values
 #' }
-#' @param coverCalculationValues A data frame used to convert between 
+#' @param dataInformation A data frame used to convert between 
 #' cover class codes to characteristic cover values. Expected to contain
 #' the following columns:
 #' \itemize{
-#'        \item field character values containing all expected values
-#'        \item calc numeric values used to calculate numeric 
+#'        \item value - values containing all expected values
+#'        \item weights - numeric values used to calculate numeric 
 #'                   metrics.
 #' }
 #' Note that possible values for variables in the input data frame are
 #' provided in the document named "NRSA Documentation.pdf" included in the help
 #' directory for the package.
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful 
 #' or a character string containing an error message when metric 
 #' calculation is not successful.  The data frame contains the following 
@@ -154,7 +156,9 @@
 #' @examples 
 #' head(visripEx)
 #' 
-#' canCovLD <- dplyr::filter(visripEx,PARAMETER=='CANBTRE') %>% select(SITE,TRANSECT,BANK,VALUE)
+#' # Subset visual riparian example dataset to create inputs to function, 
+#' #  keeping only SITE, TRANSECT, BANK, and VALUE. 
+#' canCovLD <- subset(visripEx,PARAMETER=='CANBTRE', select=c(SITE,TRANSECT,BANK,VALUE))
 #' canCovSD <- subset(visripEx,PARAMETER=='CANSTRE',select=c('SITE','TRANSECT','BANK','VALUE'))
 #' canVegT <- subset(visripEx,PARAMETER=='CANVEG',select=c('SITE','TRANSECT','BANK','VALUE'))
 #' gCovB <- subset(visripEx,PARAMETER=='BARE',select=c('SITE','TRANSECT','BANK','VALUE'))
@@ -174,9 +178,7 @@
 #' understoryCoverNonwoody = undCNW,
 #' understoryCoverWoody = undCW,
 #' understoryVegetationType = undVT,
-#' coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
-#'                                   ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-#'                                   ,stringsAsFactors=FALSE))
+#' )
 #' 
 #' head(exRipVegOut)                                   
  

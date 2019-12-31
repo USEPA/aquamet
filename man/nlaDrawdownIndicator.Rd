@@ -4,8 +4,16 @@
 \alias{nlaDrawdownIndicator}
 \title{Calculate NLA Drawdown Indicator}
 \usage{
-nlaDrawdownIndicator(x, sampID, bfxVertDD, bfxHorizDD, ecoreg, lake_origin,
-  bfnHorizDD_nomod = NULL, bfnVertDD = NULL)
+nlaDrawdownIndicator(
+  x,
+  sampID,
+  bfxVertDD,
+  bfxHorizDD,
+  ecoreg,
+  lake_origin,
+  bfnHorizDD_nomod = NULL,
+  bfnVertDD = NULL
+)
 }
 \arguments{
 \item{x}{Input data frame containing other variables as specified in

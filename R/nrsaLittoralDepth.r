@@ -14,6 +14,8 @@
 #' Note that possible values for variables in the input data 
 #' frame are provided in the document named "NRSA Documentation.pdf" 
 #' included in the help directory for the package.
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful 
 #' or a character string containing an error message when metric 
 #' calculation is not successful.  The data frame contains the following 
@@ -32,7 +34,12 @@
 #' @examples 
 #' head(chandepthEx) 
 #' 
-#' bLitDep <- subset(chandepthEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & PARAMETER %in% c('POLE','SONAR'))
+#' # Subset channel depth example dataset to create input, keeping only SITE
+#'   #  and VALUE. This only applies to boatable sites.
+#' bLitDep <- subset(chandepthEx, SAMPLE_TYPE=='PHAB_CHANBFRONT' & 
+#'   PARAMETER %in% c('POLE','SONAR'), select = c(SITE,VALUE))
+#'   # Ensure VALUE is numeric.
+#'   bLitDep$VALUE <- as.numeric(bLitDep$VALUE)
 #' 
 #' litDepOut <- nrsaLittoralDepth(bLitDep)
 #' print(litDepOut)

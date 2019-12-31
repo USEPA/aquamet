@@ -4,8 +4,7 @@
 \alias{nlaStationInformation}
 \title{Calculate NLA Station Information Metrics}
 \usage{
-nlaStationInformation(isIsland = NULL, stationDepth = NULL,
-  isUnitTest = FALSE)
+nlaStationInformation(isIsland = NULL, stationDepth = NULL, isUnitTest = FALSE)
 }
 \arguments{
 \item{isIsland}{A data frame containing value indicating whether station is
@@ -27,6 +26,9 @@ visit.
 \item VALUE a numeric values or a character value castable to numeric 
 containing the depth in meters at the station 
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -55,10 +57,16 @@ to calculate island metrics will not be correct.
 \examples{
   head(nlaPhabEx)
   
-  isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND',select=-PARAMETER)
-  depth <- subset(nlaPhabEx,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
+  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+  #  and VALUE
+  isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND' & VALUE \%in\% c('YES','Y'),
+  select=-PARAMETER)
+  # isIsland has 0 values, so leave that argument blank (NULL)
   
-  exStationInfo <- nlaStationInformation(isIsland, depth)
+  depth <- subset(nlaPhabEx,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
+  depth$VALUE <- as.numeric(depth$VALUE)
+  
+  exStationInfo <- nlaStationInformation(stationDepth = depth)
   
   head(exStationInfo)
  

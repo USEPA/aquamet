@@ -4,10 +4,22 @@
 \alias{nrsaBedStability}
 \title{Calculate NRSA Bed Stability Metrics}
 \usage{
-nrsaBedStability(bXdepth = NULL, bSddepth = NULL, wXdepth = NULL,
-  wSddepth = NULL, lsub_dmm = NULL, lsub2dmm = NULL, rp100 = NULL,
-  v1w_msq = NULL, xbkf_h = NULL, xbkf_w = NULL, xfc_lwd = NULL,
-  xslope = NULL, xwidth = NULL, isUnitTest = FALSE)
+nrsaBedStability(
+  bXdepth = NULL,
+  bSddepth = NULL,
+  wXdepth = NULL,
+  wSddepth = NULL,
+  lsub_dmm = NULL,
+  lsub2dmm = NULL,
+  rp100 = NULL,
+  v1w_msq = NULL,
+  xbkf_h = NULL,
+  xbkf_w = NULL,
+  xfc_lwd = NULL,
+  xslope = NULL,
+  xwidth = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bXdepth}{A data frame containing depth means (units are m) 
@@ -107,6 +119,9 @@ channel width) for all reaches, with the following columns:
 \item SITE integer or character specifying the site visit
 \item VALUE numeric values
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 

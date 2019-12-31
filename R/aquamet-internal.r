@@ -12,7 +12,9 @@
 #' @description These are internal functions to aquamet and not intended for use on their own.
 #' @keywords internal
 #' @usage
-#' aquametStandardizeArgument(arg, ..., ifdf=NULL, struct=list(SITE='integer', VALUE='double'), rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE) 
+#' aquametStandardizeArgument(arg, ..., ifdf=NULL, 
+#' struct=list(SITE='integer', VALUE='double'), 
+#' rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE) 
 #' aquametStandardizeArgument.checkLegal(arg, expectedLegal)
 #' aquametStandardizeArgument.checkRange(arg, expectedRange)
 #' aquametStandardizeArgument.checkStructure(arg, expectedStruct)
@@ -23,7 +25,6 @@
 #' count(x)
 #' dfCompare(df1, df2, byVars, zeroFudge=1e-17, verbose=FALSE)
 #' dfLengthen(df, keys, name, value, values)
-#' dfWiden(df, keys, name, values, makeNumeric=TRUE)
 #' expand.data.frame(df, cols)
 #' fillinDrawdownData(df, fillinValue='0', fillinHORIZ_DIST_DD='0')
 #' fillinDrawdownData.expansion(df)
@@ -46,15 +47,10 @@
 #' nWadeableStationsPerTransect(thal)
 #' protectedMean(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...)
 #' protectedSum(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...)
-#' rename(df, old, new) 
 #' summaryby(xxx,yyy,zzz)
 #' trimws(text)
 #' uidCreate(df, keys, sep='+')
 #' uidSeparate(df, uidName, keyNames, sep='+')
-#' Dominance(df, topN=1)
-#' ShanDiversity(indata)
-#' tolindex(indata, taxalist)
-#' tolindexFish(indata, taxalist)
 #' nlaStationInformation.islandStations(df)
 #' nlaStationInformation.stationDepths(df)
 NULL

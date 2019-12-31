@@ -4,18 +4,26 @@
 \alias{nrsaChannelChar}
 \title{Calculate NRSA Channel Characteristic Metrics}
 \usage{
-nrsaChannelChar(bankfullWidth = NULL, channelPattern = NULL,
-  constraintFeatures = NULL, constraintMultiple = NULL,
-  constraintSingle = NULL, constraintPercent = NULL, seeOverBank = NULL,
-  shoreToVegDistance = NULL, valleyConstraintUnseen = NULL,
-  valleyWidth = NULL, isUnitTest = FALSE)
+nrsaChannelChar(
+  bankfullWidth = NULL,
+  channelPattern = NULL,
+  constraintFeatures = NULL,
+  constraintMultiple = NULL,
+  constraintSingle = NULL,
+  constraintPercent = NULL,
+  seeOverBank = NULL,
+  shoreToVegDistance = NULL,
+  valleyConstraintUnseen = NULL,
+  valleyWidth = NULL,
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{bankfullWidth}{A data frame containing bankfull width from 
 channel constraint form for all reaches, with the following columns:
 \itemize{
      \item SITE        integer or character specifying the site visit
-     \item VALUE       numeric or character values
+     \item VALUE       numeric values
 }
 Note: This value is simply copied to the output without change}
 
@@ -46,7 +54,7 @@ channel riparian forms for boatable reaches, with the following columns:
 channel constraint form for all reaches, with the following columns:
 \itemize{
     \item SITE        integer or character specifying the site visit
-    \item VALUE       numeric values
+    \item VALUE       character values
     }
  Note: This value is simply copied to the output without change}
 
@@ -55,7 +63,7 @@ estimates from channel constraint form for allreaches, with the following
 columns:
 \itemize{
     \item SITE        integer or character specifying the site visit
-    \item VALUE       character or numeric values
+    \item VALUE       numeric values
     }
  Note: This value is simply copied to the output without change}
 
@@ -89,9 +97,12 @@ columns:
 constraint form for all reaches, with the following columns:
 \itemize{
     \item SITE  integer or character specifying the site visit
-    \item VALUE character or numeric values 
+    \item VALUE numeric values 
  }
  Note: This value is simply copied to the output without change.}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -120,17 +131,46 @@ containing the bank geometry and channel characteristics data files.
 \examples{
 head(chancharEx)
 
-bkfW <- subset(chancharEx, PARAMETER=='BANKFULL')
-chanPat <- subset(chancharEx, PARAMETER=='PATTERN')
-conFeat <- subset(chancharEx, PARAMETER=='FEATURES')
-conMult <- subset(bankgeomEx, PARAMETER=='CONSTRT')
-conSing <- subset(chancharEx, PARAMETER=='CONSTRNT')
-conPer <- subset(chancharEx, PARAMETER=='PERCENT')
-seeOver <- subset(bankgeomEx, PARAMETER=='SEEOVRBK')
-shoreToVeg <- subset(chancharEx, PARAMETER=='SHOR2RIP')
-valCon <- subset(chancharEx, PARAMETER=='VALLYBOX')
-valWid <- subset(chancharEx, PARAMETER=='VALLEY')
-
+# Must subset example dataset to create inputs, keeping only SITE
+  #  and VALUE
+# bankfullWidth
+bkfW <- subset(chancharEx, PARAMETER=='BANKFULL',
+select = c('SITE','VALUE'))
+# Make sure VALUE is numeric for this argument
+   bkfW$VALUE <- as.numeric(bkfW$VALUE)
+# channelPattern
+chanPat <- subset(chancharEx, PARAMETER=='PATTERN',
+select = c('SITE','VALUE'))
+# constraintFeatures
+conFeat <- subset(chancharEx, PARAMETER=='FEATURES',
+select = c('SITE','VALUE'))
+# constraintMultiple 
+conMult <- subset(bankgeomEx, PARAMETER=='CONSTRT',
+select = c('SITE','VALUE'))
+# constraintSingle
+conSing <- subset(chancharEx, PARAMETER=='CONSTRNT',
+select = c('SITE','VALUE'))
+# constraintPercent
+conPer <- subset(chancharEx, PARAMETER=='PERCENT',
+select = c('SITE','VALUE'))
+  # Ensure value is numeric
+  conPer$VALUE <- as.numeric(conPer$VALUE)
+# seeOverBank
+seeOver <- subset(bankgeomEx, PARAMETER=='SEEOVRBK',
+select = c('SITE','VALUE'))
+# shoreToVegDistance
+shoreToVeg <- subset(chancharEx, PARAMETER=='SHOR2RIP',
+select = c('SITE','VALUE'))
+  # Ensure value is numeric
+  shoreToVeg$VALUE <- as.numeric(shoreToVeg$VALUE)
+# valleyConstraintUnseen
+valCon <- subset(chancharEx, PARAMETER=='VALLYBOX',
+select = c('SITE','VALUE'))
+# valleyWidth
+valWid <- subset(chancharEx, PARAMETER=='VALLEY',
+select = c('SITE','VALUE'))
+  valWid$VALUE <- as.numeric(valWid$VALUE)
+# Use default isUnitTest value of FALSE
 chanCharOut <- nrsaChannelChar(bankfullWidth=bkfW, 
 channelPattern=chanPat, constraintFeatures=conFeat,
 constraintMultiple=conMult, constraintSingle=conSing,

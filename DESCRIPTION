@@ -2,10 +2,10 @@ Package: aquamet
 Type: Package
 Title: Calculate NRSA and NLA metrics
 Version: 2.5.2
-Date: 2019-10-2
+Date: 2019-12-02
 Author: Karen Blocksom
 Depends:
-    R (>= 3.0)
+    R (>= 3.4)
 Imports:
     plyr,
     dplyr,
@@ -16,10 +16,10 @@ Imports:
     foreach,
     RUnit
 Maintainer: Karen Blocksom <blocksom.karen@epa.gov>
-Description: This package calculates fish, macroinvertebrate, and physical 
+Description: This package calculates physical 
     habitat metrics used in the National Rivers and Streams Assessment and the
     National Lakes Assessment. It also contains functions to assign condition
-    class for fish, macroinvertebrates, and physical habitat for NRSA and NLA.
+    class for physical habitat for NRSA and NLA.
 License: CC0
 Suggests:
     testthat,
@@ -27,4 +27,4 @@ Suggests:
     rmarkdown
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 7.0.1

@@ -4,16 +4,32 @@
 \alias{nlaFishCover}
 \title{Calculate NLA Fish Cover Metrics}
 \usage{
-nlaFishCover(aquatic = NULL, aquatic_dd = NULL, boulders = NULL,
-  boulders_dd = NULL, brush = NULL, brush_dd = NULL, ledges = NULL,
-  ledges_dd = NULL, livetrees = NULL, livetrees_dd = NULL,
-  overhang = NULL, overhang_dd = NULL, snags = NULL, snags_dd = NULL,
-  structures = NULL, structures_dd = NULL, drawdown = NULL,
-  horizontalDistance_dd = NULL, createSyntheticCovers = TRUE,
-  fillinDrawdown = TRUE, dataInformation = data.frame(value = c(NA, "0",
-  "1", "2", "3", "4"), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875), presence =
-  c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), stringsAsFactors = FALSE),
-  isUnitTest = FALSE)
+nlaFishCover(
+  aquatic = NULL,
+  aquatic_dd = NULL,
+  boulders = NULL,
+  boulders_dd = NULL,
+  brush = NULL,
+  brush_dd = NULL,
+  ledges = NULL,
+  ledges_dd = NULL,
+  livetrees = NULL,
+  livetrees_dd = NULL,
+  overhang = NULL,
+  overhang_dd = NULL,
+  snags = NULL,
+  snags_dd = NULL,
+  structures = NULL,
+  structures_dd = NULL,
+  drawdown = NULL,
+  horizontalDistance_dd = NULL,
+  createSyntheticCovers = TRUE,
+  fillinDrawdown = TRUE,
+  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA,
+    0, 0.05, 0.25, 0.575, 0.875), presence = c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(),
+    stringsAsFactors = FALSE),
+  isUnitTest = FALSE
+)
 }
 \arguments{
 \item{aquatic}{A data frame containing aquatic and inundated herbaceous 
@@ -213,15 +229,18 @@ drawdown exists at a site.
 
 \item{fillinDrawdown}{A logical value which specifies whether to use the}
 
-\item{coverClassInfo}{A data frame containing the field fish cover
+\item{dataInformation}{A data frame containing the field fish cover
 categorical values and corresponding numeric cover values used in calculations, 
 as well as indicators of cover type presence or absence for each category. The
 default values (and required column names) are:
 \itemize{
-\item field c(NA,'0','1','2','3','4')
-\item characteristicCover c(NA,0,0.05,0.25,0.575,0.875)
-\item presence c(NA,0,1,1,1,1) 
+\item value c(NA,'0','1','2','3','4')
+\item weights c(NA,0,0.05,0.25,0.575,0.875)
+\item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
 }}
+
+\item{isUnitTest}{Logical argument to determine whether errors should be ignored.
+Should only be used for running a unit test. Default value is FALSE.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -273,6 +292,8 @@ habitat metrics for National Lakes Assessment (NLA) data.
 \examples{
   head(nlaPhabEx)
   
+  # Must subset example dataset to create inputs, keeping only SITE, STATION,
+  #  and VALUE
   aquatic <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
   aquatic_dd <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
   boulders <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
@@ -290,7 +311,11 @@ habitat metrics for National Lakes Assessment (NLA) data.
   structures <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
   structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
   drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-  horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+  
+  # Ensure VALUE is numeric for this particular subset
+  horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',
+     select=-PARAMETER)
+  horizontalDistance_dd$VALUE <- with(horizontalDistance_dd, as.numeric(VALUE))
   
   # Use defaults for fillinDrawdown, createSyntheticCovers, and coverClassInfo
   # arguments

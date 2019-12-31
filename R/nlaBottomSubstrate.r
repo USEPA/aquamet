@@ -100,27 +100,29 @@
 #' integer, from 0-4 containing the wood bottom substrate cover
 #' category.
 #' }
-#' @param substrateCovers a data frame containing substrate cover category 
+#' @param dataInformation a data frame containing substrate cover category 
 #' values (VALUE), the lower proportional cover value for each category (cover),
 #' and an indicator variable of presence of a substrate type for each category.
 #' The default values are:
 #' \itemize{
-#' \item VALUE '0', '1', '2', '3', '4', NA
-#' \item cover 0, 0.05, 0.25, 0.575, 0.875, NA
+#' \item value '0', '1', '2', '3', '4', NA
+#' \item weights 0, 0.05, 0.25, 0.575, 0.875, NA
 #' \item presence 0, 1, 1, 1, 1, NA
 #' }  
-#' @param substrateSizes a data frame containing substrate class names (CLASS)
+#' @param classInformation a data frame containing substrate class names (CLASS)
 #' and corresponding geometric mean of diameter ranges in mm (diam), as well as
 #' an indicator of whether to include the class in estimates of substrate size
 #' for the site. 
 #' The default values are: 
 #' \itemize{
-#' \item CLASS 'BEDROCK', 'BOULDERS','COBBLE', 'GRAVEL', 'SAND', 'SILT', 
+#' \item name 'BEDROCK', 'BOULDERS','COBBLE', 'GRAVEL', 'SAND', 'SILT', 
 #' 'ORGANIC', 'WOOD'
-#' \item diam 5656.854, 1000, 126.4911, 11.31371, 0.3464102, 0.007745967, 
+#' \item characteristicDiameter 5656.854, 1000, 126.4911, 11.31371, 0.3464102, 0.007745967, 
 #' NA, NA  
 #' \item inPopulationEstimate TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE
 #' } 
+#' @param isUnitTest Logical argument to determine whether errors should be ignored.
+#' Should only be used for running a unit test. Default value is FALSE.
 #' @return Either a data frame when metric calculation is successful or a 
 #' character string containing an error message when metric calculation 
 #' is not successful. The data frame contains the following columns:
@@ -149,6 +151,8 @@
 #' @examples
 #'   head(nlaPhabEx)
 #'   
+#'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
+#'   #  and VALUE
 #'   bedrock <- subset(nlaPhabEx,PARAMETER=='BS_BEDROCK',select=-PARAMETER)
 #'   boulder <- subset(nlaPhabEx,PARAMETER=='BS_BOULDER',select=-PARAMETER)
 #'   color <- subset(nlaPhabEx,PARAMETER=='BS_COLOR',select=-PARAMETER)
