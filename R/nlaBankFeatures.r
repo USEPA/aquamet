@@ -165,6 +165,7 @@ nlaBankFeatures <- function(angle = NULL
 #    3/19/19 cws Added isUnitTest argument for consistency.
 #    3/21/19 cws Added validation checking of arguments. Modified unit test 
 #            accordingly.
+#   12/31/19 cws Allowing SITE to be character as well as integer in all arguments.
 #
 # Arguments:
 #   df = a data frame containing bank features data.  The data frame must
@@ -208,12 +209,12 @@ nlaBankFeatures <- function(angle = NULL
         return(rc)
         
     }
-    angle <- aquametStandardizeArgument(angle, ifdf=addParameter, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','FLAT','GRADUAL','STEEP','NEAR_VERTICAL')), 'ANGLE', stopOnError = !isUnitTest)
-    drawdown <- aquametStandardizeArgument(drawdown, ifdf=addParameter, struct=list(SITE='integer', STATION='character', VALUE=c('character')), legalValues=list(VALUE=c(NA,'','N','NO','Y','YES')), 'DRAWDOWN', stopOnError = !isUnitTest)
-    horizontalDistance <- aquametStandardizeArgument(horizontalDistance, ifdf=addParameter, struct=list(SITE='integer', STATION='character', VALUE=c('integer','double')), rangeLimits = list(VALUE=c(0,1000)), 'HORIZ_DIST', stopOnError = !isUnitTest)
-    horizontalDistanceDrawdown <- aquametStandardizeArgument(horizontalDistanceDrawdown, ifdf=addParameter, struct=list(SITE='integer', STATION='character', VALUE=c('integer','double')), rangeLimits = list(VALUE=c(0,200)), 'HORIZ_DIST_DD', stopOnError = !isUnitTest)
-    verticalHeight <- aquametStandardizeArgument(verticalHeight, ifdf=addParameter, struct=list(SITE='integer', STATION='character', VALUE=c('integer','double')), rangeLimits = list(VALUE=c(0,5)), 'VERT_HEIGHT', stopOnError = !isUnitTest)
-    verticalHeightDrawdown <- aquametStandardizeArgument(verticalHeightDrawdown, ifdf=addParameter, struct=list(SITE='integer', STATION='character', VALUE=c('integer','double')), rangeLimits = list(VALUE=c(0,100)), 'VERT_HEIGHT_DD', stopOnError = !isUnitTest)
+    angle <- aquametStandardizeArgument(angle, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c(NA,'','FLAT','GRADUAL','STEEP','NEAR_VERTICAL')), 'ANGLE', stopOnError = !isUnitTest)
+    drawdown <- aquametStandardizeArgument(drawdown, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('character')), legalValues=list(VALUE=c(NA,'','N','NO','Y','YES')), 'DRAWDOWN', stopOnError = !isUnitTest)
+    horizontalDistance <- aquametStandardizeArgument(horizontalDistance, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','double')), rangeLimits = list(VALUE=c(0,1000)), 'HORIZ_DIST', stopOnError = !isUnitTest)
+    horizontalDistanceDrawdown <- aquametStandardizeArgument(horizontalDistanceDrawdown, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','double')), rangeLimits = list(VALUE=c(0,200)), 'HORIZ_DIST_DD', stopOnError = !isUnitTest)
+    verticalHeight <- aquametStandardizeArgument(verticalHeight, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','double')), rangeLimits = list(VALUE=c(0,5)), 'VERT_HEIGHT', stopOnError = !isUnitTest)
+    verticalHeightDrawdown <- aquametStandardizeArgument(verticalHeightDrawdown, ifdf=addParameter, struct=list(SITE=c('integer','character'), STATION='character', VALUE=c('integer','double')), rangeLimits = list(VALUE=c(0,100)), 'VERT_HEIGHT_DD', stopOnError = !isUnitTest)
 
     df <- rbind(angle, drawdown, horizontalDistance, horizontalDistanceDrawdown, verticalHeight, verticalHeightDrawdown)
 	stdData <- nlaBankFeatures.standardizeData(df)

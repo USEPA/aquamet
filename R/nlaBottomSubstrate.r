@@ -270,6 +270,7 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #    3/21/19 cws Added validation checks of data and metadata; using metadata
 #            args in data validation.
 #    3/28/19 cws Standardized metadata argument naming
+#   12/31/19 cws Allowing SITE to be character as well as integer in all arguments.
 #
 # Arguments:
 #   df = a data frame containing bottom substrate data.  The data frame must
@@ -334,16 +335,16 @@ nlaBottomSubstrate <- function(bedrock=NULL
                                                   ,stopOnError = !isUnitTest
                                                   )
 
-    color <- aquametStandardizeArgument(color, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c('^(|BLACK|BROWN|GRAY|OTHER.*|RED)$', isrx=TRUE)), stopOnError = !isUnitTest)
-    odor <- aquametStandardizeArgument(odor, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues=list(VALUE=c('^(|ANOXIC|CHEMICAL|H2S|NONE|OTHER.*|OIL)$', isrx=TRUE)), stopOnError = !isUnitTest)
-    bedrock <- aquametStandardizeArgument(bedrock, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'BEDROCK', stopOnError = !isUnitTest)
-    boulder <- aquametStandardizeArgument(boulder, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'BOULDERS', stopOnError = !isUnitTest)
-    cobble <- aquametStandardizeArgument(cobble, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'COBBLE', stopOnError = !isUnitTest)
-    gravel <- aquametStandardizeArgument(gravel, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'GRAVEL', stopOnError = !isUnitTest)
-    organic <- aquametStandardizeArgument(organic, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'ORGANIC', stopOnError = !isUnitTest)
-    sand <- aquametStandardizeArgument(sand, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'SAND', stopOnError = !isUnitTest)
-    silt <- aquametStandardizeArgument(silt, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'SILT', stopOnError = !isUnitTest)
-    wood <- aquametStandardizeArgument(wood, ifdf=addClass, struct=c(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'WOOD', stopOnError = !isUnitTest)
+    color <- aquametStandardizeArgument(color, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c('^(|BLACK|BROWN|GRAY|OTHER.*|RED)$', isrx=TRUE)), stopOnError = !isUnitTest)
+    odor <- aquametStandardizeArgument(odor, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues=list(VALUE=c('^(|ANOXIC|CHEMICAL|H2S|NONE|OTHER.*|OIL)$', isrx=TRUE)), stopOnError = !isUnitTest)
+    bedrock <- aquametStandardizeArgument(bedrock, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'BEDROCK', stopOnError = !isUnitTest)
+    boulder <- aquametStandardizeArgument(boulder, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'BOULDERS', stopOnError = !isUnitTest)
+    cobble <- aquametStandardizeArgument(cobble, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'COBBLE', stopOnError = !isUnitTest)
+    gravel <- aquametStandardizeArgument(gravel, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'GRAVEL', stopOnError = !isUnitTest)
+    organic <- aquametStandardizeArgument(organic, ifdf=addClass, struct=list(SITE='integer', STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'ORGANIC', stopOnError = !isUnitTest)
+    sand <- aquametStandardizeArgument(sand, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'SAND', stopOnError = !isUnitTest)
+    silt <- aquametStandardizeArgument(silt, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'SILT', stopOnError = !isUnitTest)
+    wood <- aquametStandardizeArgument(wood, ifdf=addClass, struct=list(SITE=c('integer','character'), STATION='character', VALUE='character'), legalValues = list(VALUE=c(NA,'',dataInformation$value)), 'WOOD', stopOnError = !isUnitTest)
 
     substrateCovers <-dplyr::rename(dataInformation, VALUE=value, cover=weights)    
     substrateSizes <- dplyr::rename(classInformation, CLASS=name, diam=characteristicDiameter)
