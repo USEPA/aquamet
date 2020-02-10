@@ -219,6 +219,7 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #   10/30/19 cws Added HP, WD, OT classes to allowable boatable littoral data values. 
 #            Added FN to allowable boatable thalweg data values. Unit tests work
 #            without modification...
+#    1/06/20 cws Allowing OT as legal value for bSizeClass so we can recalculate 0809 values
 #
 # Arguments:
 # bBottomDom    dataframe containing size class data for the dominant 
@@ -336,7 +337,7 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
                                               )
     bSizeClass <- aquametStandardizeArgument(bSizeClass, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','BH','BL','CB','GR','SA','FN'))
+                                              ,legalValues = list(VALUE = c(NA,'','BH','BL','CB','GR','SA','FN', 'OT'))
                                               ,stopOnError = !isUnitTest
                                               )
     wSizeClass <- aquametStandardizeArgument(wSizeClass, ifdf=ifdf
