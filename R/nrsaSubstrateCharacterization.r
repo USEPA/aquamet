@@ -220,6 +220,7 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #            Added FN to allowable boatable thalweg data values. Unit tests work
 #            without modification...
 #    1/06/20 cws Allowing OT as legal value for bSizeClass so we can recalculate 0809 values
+#   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.#
 #
 # Arguments:
 # bBottomDom    dataframe containing size class data for the dominant 
@@ -745,7 +746,10 @@ intermediateMessage('d')
       pct_org <- ddply(subset(pct2,METRIC %in% c('pct_om','pct_wd')),c('SITE'),summarise
                        ,METRIC='pct_org',VALUE=sum(VALUE))
 
-      alln <- melt(subset(pct0,select=-n2),id.vars='SITE',variable.name='METRIC',value.name='VALUE')
+#      alln <- reshape2::melt(subset(pct0,select=-n2),id.vars='SITE',variable.name='METRIC',value.name='VALUE')
+      alln <- pct0 %>%
+              select(-n2) %>%
+              tidyr::gather(key='METRIC', value='VALUE', -SITE)
       pct3 <- rbind(subset(pct2,select=c('SITE','METRIC','VALUE')),pct_bigr,pct_bdrk,pct_safn,pct_sfgf,pct_org,alln)
       # Completed size classes percentages for streams
       intermediateMessage('.9')
@@ -783,8 +787,9 @@ intermediateMessage('d')
                         ,lsub_d84=quantile(lDiam,probs=0.84,names=FALSE,type=2,na.rm=TRUE)
                         ,lsub_dmm=mean(lDiam,na.rm=TRUE),lsubd_sd=sd(lDiam,na.rm=TRUE)
                         ,lsub_iqr=lsub_d75-lsub_d25)
-      ldRiv1mm.1 <- melt(ldRiv1mm,id.vars='SITE',variable.name='METRIC',value.name='VALUE',na.rm=FALSE)
-
+#      ldRiv1mm.1 <- reshape2::melt(ldRiv1mm,id.vars='SITE',variable.name='METRIC',value.name='VALUE',na.rm=FALSE)
+      ldRiv1mm.1 <- ldRiv1mm %>% tidyr::gather(key='METRIC', value='VALUE', -SITE)
+      
       intermediateMessage('.11')
 
       # put together this summaries

@@ -168,6 +168,7 @@ nrsaLegacyTree <- function(dbhClass = NULL
 #    3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull(). Replaced call to our rename() with dplyr::rename()
 #    3/25/19 cws Modified to use dplyr::rename()
+#   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #
 # ARGUMENTS:
 # dbhClass      dataframe containing dbh class values at each transect of all 
@@ -276,7 +277,11 @@ nrsaLegacyTree <- function(dbhClass = NULL
 df1 <- invasivelegacy %>% dplyr::rename(variable=PARAMETER, value=VALUE)
 
 # Casting (transforming) data using reshape2 package
-lt <- dcast(df1, SITE + TRANSECT ~ variable)
+# lt <- reshape2::dcast(df1, SITE + TRANSECT ~ variable)
+# print(str(lt))
+lt <- df1 %>% tidyr::spread(variable, value)
+# print(str(lt))
+
 lt$DBH      <- as.character(lt$DBH)
 #lt$NOT_VIS  <- as.character(lt$NOT_VIS)
 lt$SPECIES  <- as.character(lt$SPECIES)

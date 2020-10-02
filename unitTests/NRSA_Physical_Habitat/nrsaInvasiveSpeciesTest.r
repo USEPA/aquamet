@@ -11,6 +11,8 @@
 #  6/28/17 cws Updated nrsaInvasiveSpecies.ip_scoreTest() so row names in actual
 #          response match expected.
 #  3/12/19 cws Modified due to use of aquametStandardizeArgument.
+# 10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
+#
 #
 
 nrsaInvasiveSpeciesTest <- function()
@@ -21,7 +23,8 @@ nrsaInvasiveSpeciesTest <- function()
 
     selectSpeciesData <- function(spName) {
         spData <- nrsaInvasiveSpecies.createData() %>%
-                  dcast(SITE+TRANSECT~PARAMETER, value.var='VALUE') %>%
+#                  reshape2::dcast(SITE+TRANSECT~PARAMETER, value.var='VALUE') %>%
+                  tidyr::spread(PARAMETER, VALUE) %>%
                   within(VALUE <- ifelse(is.na(get(spName)), '', get(spName))) %>%
                   select(SITE, TRANSECT, VALUE)
         return(spData)

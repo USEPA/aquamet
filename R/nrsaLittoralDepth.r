@@ -90,6 +90,7 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
 #            column name from documentation
 #    3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull().
+#   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #
 # Arguments:
 # bLittoralDepth    dataframe containing littoral depth data in meters at each
@@ -150,8 +151,9 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
                             ,mxlit = max(VALUE, na.rm=TRUE)
                             ,mnlit = min(VALUE, na.rm=TRUE)
                             ) %>%
-            melt('SITE', variable.name='METRIC', value.name='VALUE')
-    
+            # reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE')
+            tidyr::gather(key=METRIC, value=VALUE, -SITE)
+        
     intermediateMessage('.2')
 
     intermediateMessage('. Done.', loc='end')

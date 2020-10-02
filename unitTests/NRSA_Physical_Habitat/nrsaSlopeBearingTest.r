@@ -24,6 +24,8 @@
 #          clearer. Or so I hope.
 #  3/15/19 cws Modified due to use of aquametStandardizeArgument
 #  3/25/19 cws Modified to use dplyr::rename()
+# 10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
+#
 #
 
 nrsaSlopeBearingTest <- function()
@@ -81,7 +83,8 @@ nrsaSlopeBearingTest.simplifiedArguments.crazyBearings <- function()
                                 ,sinu=  4/sqrt(0^2 + (cos(1*2*pi/360) + -1 + -1 + cos(359*2*pi/360))^2) # 13131.558738459949
                                 )
                      ) %>%
-                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+#                reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                tidyr::gather(key='METRIC', value='VALUE', -SITE) %>%
                 mutate(METRIC=as.character(METRIC))    
     actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(90,180,270,360), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
                               ,bDistance =        base %>% mutate(VALUE=1, LINE=as.integer(LINE))                               %>% select(SITE, TRANSECT, LINE, VALUE)
@@ -115,7 +118,8 @@ nrsaSlopeBearingTest.simplifiedArguments.missingUNITS <- function()
                                               )     # 1.217442832054
                                 )
                      ) %>%
-                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+#                reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                tidyr::gather(key='METRIC', value='VALUE', -SITE) %>%
                 mutate(METRIC=as.character(METRIC))
     actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(100,150,200,150), LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE)
                               ,bDistance =        base %>% mutate(VALUE=10, LINE=as.integer(LINE))                                                %>% select(SITE, TRANSECT, LINE, VALUE)
@@ -148,7 +152,8 @@ nrsaSlopeBearingTest.simplifiedArguments.missingMETHOD <- function()
                                               )     # 1.217442832054
                                 )
                      ) %>%
-                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+#                reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                tidyr::gather(key='METRIC', value='VALUE', -SITE) %>%
                 mutate(METRIC=as.character(METRIC))
     actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(VALUE=c(100,150,200,150), LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE)
                               ,bDistance =        base %>% mutate(VALUE=10, LINE=as.integer(LINE))                                                %>% select(SITE, TRANSECT, LINE, VALUE)
@@ -182,7 +187,8 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_A <-
                                               )     # 1.217442832054
                                 )
                      ) %>%
-                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+#                reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                tidyr::gather(key='METRIC', value='VALUE', -SITE) %>%
                 mutate(METRIC=as.character(METRIC))
     actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))), LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE)
                               ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0L, 3.3, ifelse(LINE==1, 3.3, 3.4))) %>% select(SITE, TRANSECT, LINE, VALUE)
@@ -218,7 +224,8 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine0_B <-
                                               )     # 1.217442832054
                                 )
                      ) %>%
-                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+#                reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                tidyr::gather(key='METRIC', value='VALUE', -SITE) %>%
                 mutate(METRIC=as.character(METRIC))
     actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', c(100,''), ifelse(TRANSECT=='B', c(150,NA), ifelse(TRANSECT=='C', 200, 150))) %>% as.numeric(), LINE=as.integer(LINE)) %>% select(SITE, TRANSECT, LINE, VALUE)
                               ,bDistance =        base %>% mutate(SITE=1L, VALUE=c(10,NA, 10,NA, 3.3,3.3,3.4, 5,5,0) %>% as.numeric(), LINE=as.integer(LINE))                                %>% select(SITE, TRANSECT, LINE, VALUE)
@@ -252,7 +259,8 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithElevationsOnLine012 <-
                                               )     # 1.217442832054
                                 )
                      ) %>%
-                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+#                reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                tidyr::gather(key='METRIC', value='VALUE', -SITE) %>%
                 mutate(METRIC=as.character(METRIC))
     actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
                               ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)), LINE=as.integer(LINE))               %>% select(SITE, TRANSECT, LINE, VALUE)
@@ -291,7 +299,8 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine0 <- fun
                                               )     # 1.217442832054
                                 )
                      ) %>%
-                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+#                reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                tidyr::gather(key='METRIC', value='VALUE', -SITE) %>%
                 mutate(METRIC=as.character(METRIC))
     expected <- expected %>%                                                                                         # values when PERCENTs are NOT filled in for absent subsightings
                 mutate(VALUE = ifelse(METRIC %in% c('xslope','xslope_field'), VALUE*0.33
@@ -331,7 +340,8 @@ nrsaSlopeBearingTest.simplifiedArguments.backsightingsWithPercentsOnLine012 <- f
                                               )     # 1.217442832054
                                 )
                      ) %>%
-                melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+#                reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE') %>%
+                tidyr::gather(key='METRIC', value='VALUE', -SITE) %>%
                 mutate(METRIC=as.character(METRIC))
     actual <- nrsaSlopeBearing(bBearing =         base %>% mutate(SITE=1L, VALUE=ifelse(TRANSECT=='A', 100, ifelse(TRANSECT=='B', 150, ifelse(TRANSECT=='C', 200,150))))
                               ,bDistance =        base %>% mutate(SITE=1L, VALUE=ifelse(LINE==0, 3.3, ifelse(LINE==1, 3.3, 3.4)))
