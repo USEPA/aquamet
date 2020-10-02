@@ -262,6 +262,7 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 #    3/21/19 cws Added validation checks to substrateCovers and substrateSizes
 #            arguments. Using substrateCovers to validate data arguments.
 #    3/28/19 cws Standardized metadata argument naming
+#    9/28/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #
 # Arguments:
 #   df = a data frame containing shoreline substrate data.  The data frame must
@@ -576,7 +577,8 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   # (requires same site visits in meanPresence and meanCover in same order)
   #
   # Initialize these metrics with missing values, and add classes
-  tt <- dcast(rbind(meanPresence,meanCover), SITE~METRIC, value.var='VALUE')
+  tt <- rbind(meanPresence, meanCover) %>%
+        tidyr::spread(METRIC, VALUE)
   modeClasses <- subset(tt, select='SITE')
   modeClasses$SSOPCLASS <- NA
   modeClasses$SSOFCLASS <- NA
@@ -612,13 +614,9 @@ nlaShorelineSubstrate <- function(bedrock = NULL
                                             )
   }
 
-  modeClasses <- within(melt(modeClasses, 'SITE'
-						    ,variable.name='METRIC'
-			                ,value.name='VALUE'
-			                )
-					   ,METRIC <- as.character(METRIC)
-			   		   )
-					   
+	modeClasses <- modeClasses %>%
+	               tidyr::gather(METRIC, VALUE, -SITE) %>%
+	               mutate(METRIC = as.character(METRIC))
   intermediateMessage('.10')
 
   # combine VALUEs into a dataframe

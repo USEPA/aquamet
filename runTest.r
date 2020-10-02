@@ -7,6 +7,7 @@
 #  5/15/15 cws Created
 #  1/04/16 cws updated pathList and fileList in testSuite arguments
 #  2/26/18 cws
+# 10/01/20 cws No longer using reshape2 package.
 #
 require(foreach)
 require(Hmisc)
@@ -14,7 +15,7 @@ require(Hmisc)
 require(RUnit)
 require(plyr)
 require(dplyr)
-require(reshape2)
+#require(reshape2)
 
 # Get aquamet function definitions
 srcList <- grep('^.+\\.[rR]$'

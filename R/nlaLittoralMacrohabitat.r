@@ -173,6 +173,7 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
 #            metadata argument. Modified to use dplyr::rename.
 #    3/26/19 cws Removed errant argument 'strings'.
 #    3/28/19 cws Standardized metadata argument naming
+#    9/28/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #
 # Arguments:
 #   df = a data frame containing littoral fish macrohabitat data.  The
@@ -367,9 +368,16 @@ nlaLittoralMacrohabitat.coverTypes <- function(df)
 	                                ))))))
 	                   ) %>%
 	             subset(PARAMETER != 'IGNORED_VALUE') %>%
-	             dcast(SITE~PARAMETER, value.var='VALUE')
+#	             dcast(SITE~PARAMETER, value.var='VALUE')
+                 tidyr::spread(PARAMETER, VALUE)
+# 	typeMeans0 <- within(melt(typeMeans, 'SITE', variable.name='PARAMETER', value.name='VALUE'), PARAMETER <- as.character(PARAMETER)) %>% dplyr::rename(METRIC=PARAMETER)
+# print(str(typeMeans0))
+	typeMeans <- typeMeans %>%
+	             tidyr::gather(PARAMETER, VALUE, -SITE) %>%
+	             mutate(PARAMETER = as.character(PARAMETER)) %>% 
+	             dplyr::rename(METRIC=PARAMETER)
+# print(str(typeMeans))
 
-	typeMeans <- within(melt(typeMeans, 'SITE', variable.name='PARAMETER', value.name='VALUE'), PARAMETER <- as.character(PARAMETER)) %>% dplyr::rename(METRIC=PARAMETER)
 	intermediateMessage('.6')
 	
 	rc <- rbind(nCoverLocs, typeMeans)

@@ -4,6 +4,8 @@
 #  7/10/17 cws renamed functions from metsFishCoverNLA* to nlaFishCover, changed
 #          from UID & RESULT to SITE and VALUE.
 #  3/22/19 cws Modified in response to validation checks in nlaFishCover
+# 10/01/20 cws Removed early return of dataframe from nlaFishCoverTest.withDrawDown
+#          that escaped my attention earlier after debugging. Unit test works
 #
 
 
@@ -141,7 +143,6 @@ nlaFishCoverTest.withDrawDown <- function()
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 	
 }

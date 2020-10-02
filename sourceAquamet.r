@@ -4,6 +4,7 @@
 # included in aquamet package.
 #
 #  1/04/16 cws Used to be aquamet.r, but that's now used for something else.
+# 10/01/20 cws No longer using reshape2 package.
 #
 
 require(foreach)
@@ -12,7 +13,7 @@ require(Hmisc)
 require(RUnit)
 require(plyr)
 require(dplyr)
-require(reshape2)
+#require(reshape2)
 
 # Get aquamet function definitions
 if(substr(getwd(),1,1) == 'C') {
@@ -33,5 +34,6 @@ for(path in aquametPathList) {
     srcList <- grep('^mets.+$', allsrcList, value = TRUE, invert = TRUE)
     for(src in srcList) 
         source(sprintf("%s/%s", path, src))
+    
 }
 source(sprintf('%s/R/sharedSupport.r',mainPath)) # overwrite defs on L:drive

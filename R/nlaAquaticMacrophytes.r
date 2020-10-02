@@ -138,6 +138,7 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
 #            data arguments
 #    3/28/19 cws Standardized metadata argument naming
 #   12/31/19 cws Allowing SITE to be character as well as integer in all arguments.
+#    9/25/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #
 # Arguments:
 #   df = a data frame containing aquatic macrophyte data.  The data frame must
@@ -320,14 +321,13 @@ nlaAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeig
 			 ,V  = sd(calc, na.rm=TRUE)
 			 ,N  = length(na.omit(calc))
 			 )
-	coverMets <- within(melt(tt, c('SITE','PARAMETER'), variable.name='met', value.name='VALUE')
-			,{PARAMETER <- paste0('AM', met
-								 ,ifelse(PARAMETER=='AM_TOTALCOVER', 'ALL', gsub('^AM_(.+)$', '\\1', PARAMETER))
-								 )
-			  met <- NULL
-			 }
-			)
-
+    coverMets <- tt %>% 
+                 tidyr::gather(key='met', value='VALUE', c('FC','V','N')) %>%
+                 mutate(PARAMETER = paste0('AM', met
+				    	    			  ,ifelse(PARAMETER=='AM_TOTALCOVER', 'ALL', gsub('^AM_(.+)$', '\\1', PARAMETER))
+							    	      )
+    			        ,met = NULL
+                        )
 	intermediateMessage('b')
 			
 	rc <- rbind(meanPresence, coverMets) %>% dplyr::rename(METRIC=PARAMETER)
