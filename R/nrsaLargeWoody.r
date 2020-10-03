@@ -277,6 +277,7 @@ nrsaLargeWoody <- function(bCounts=NULL
 #    3/29/19 cws Standardized metadata argument naming. Unit test modified 
 #            accordingly.
 #   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
+#            Removed commented out code using reshape2 functions.
 #
 # Arguments:
 # bCounts       dataframe containing large woody debris class counts at each 
@@ -1181,24 +1182,14 @@ nrsaLargeWoody <- function(bCounts=NULL
     intermediateMessage('end of mm', loc='end')
  # Transpose wide to long format
 
-#   metsfakeo <- reshape(xx, idvar=c('SITE'), direction='long'
-#                 ,varying=names(xx)[names(xx) != 'SITE']
-#                 ,times=names(xx)[names(xx) != 'SITE']
-#                 ,v.names='VALUE', timevar='METRIC'
-#    #             ,drop=c('numtran','xbkf_w','reachlen','protocol'
-#    #                   )
-#                 )
-#     metsfakeo <- reshape2::melt(xx, 'SITE', variable.name='METRIC', value.name='VALUE') %>% mutate(METRIC = as.character(METRIC))
-# print(str(metsfakeo))
-    metsfakeo <- xx %>%
-                 tidyr::gather(key="METRIC", value="VALUE", -SITE) %>%
-                 mutate(METRIC = as.character(METRIC))
-# print(str(metsfakeo))
-    
-  row.names(metsfakeo)<-NULL
+    mets <- xx %>%
+            tidyr::gather(key="METRIC", value="VALUE", -SITE) %>%
+            mutate(METRIC = as.character(METRIC))
+
+  row.names(mets)<-NULL
   
   intermediateMessage('  Done.', loc='end')
-  return(metsfakeo)
+  return(mets)
 }
 
 

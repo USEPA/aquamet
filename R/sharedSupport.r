@@ -270,16 +270,6 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 	# 	a) if prop_dd is 1 and cover_dd is not missing, then syn = cover_dd
 	#	b) if prop_dd is 0 and cover_lit is not missing, then syn = cover_lit
 	#	c) if both cover_dd and cover_lit are not missing, then syn = cover_dd OR cover_lit
-#print('coverData');print(head(coverData))
-# 	covers <- reshape2::dcast(within(subset(coverData, CLASS != 'HORIZ_DIST_DD')
-# 	                      ,{coverType <- gsub('^(.+)_DD$', '\\1', CLASS)
-# 							coverLocation <- ifelse(grepl('_DD$', CLASS), 'cover_dd', 'cover_lit')
-# 						   }
-# 		                  )
-# 				   ,SITE+STATION+coverType~coverLocation
-# 		           ,value.var='characteristicCover'
-# 				   )
-# print(str(covers))
 	covers <- coverData %>%
 	          subset(CLASS != 'HORIZ_DIST_DD') %>%
 	          mutate(coverType = gsub('^(.+)_DD$', '\\1', CLASS)
@@ -287,8 +277,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 	                ) %>%
 	          select(SITE, STATION, coverType, coverLocation, characteristicCover) %>%
 	          tidyr::spread(coverLocation, characteristicCover)
-# print(str(covers))
-	    
+
 #print('.0')	
 	covers <- merge(covers, props, by=c('SITE','STATION'), all.x=TRUE)
 #print('.1')	
@@ -389,15 +378,6 @@ calcSynInfluence <- function(influenceData) {
 	# 	a) if prop_dd is 1 and infl_dd is not missing, then syn = infl_dd
 	#	b) if prop_dd is 0 and infl_rip is not missing, then syn = infl_rip
 	#	c) if both infl_rip and infl_rip are equal, then syn = infl_dd OR infl_rip
-# 	influences <- reshape2::dcast(within(subset(influenceData, CLASS != 'HORIZ_DIST_DD')
-# 	                      	  ,{inflType <- gsub('^(.+)_DD$', '\\1', CLASS)
-# 								inflLocation <- ifelse(grepl('_DD$', CLASS), 'infl_dd', 'infl_rip')
-# 						   	   }
-# 		                      )
-# 				   	   ,SITE+STATION+inflType~inflLocation
-# 		           	   ,value.var='calc'
-# 				   	   )
-# print(str(influences))
 	influences <- influenceData %>%
 	              subset(CLASS != 'HORIZ_DIST_DD') %>%
 	              mutate(inflType = gsub('^(.+)_DD$', '\\1', CLASS)
@@ -405,7 +385,6 @@ calcSynInfluence <- function(influenceData) {
 						) %>%
 	              select(SITE, STATION, inflType, inflLocation, calc) %>% 
 	              tidyr::spread(inflLocation, calc)
-# print(str(influences))
 
 	influences <- merge(influences, props, by=c('SITE','STATION'), all.x=TRUE)
 

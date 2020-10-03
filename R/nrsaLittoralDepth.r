@@ -91,6 +91,7 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
 #    3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull().
 #   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
+#            Removed commented out code using reshape2 functions.
 #
 # Arguments:
 # bLittoralDepth    dataframe containing littoral depth data in meters at each
@@ -137,13 +138,6 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
 
     intermediateMessage('.1')
 
-#     mdx <- summaryby(depths, 'mean', "xlit")
-#     mds <- summaryby(depths, 'sd', "vlit")
-#     mdm <- summaryby(depths, 'max', "mxlit")
-#     mdn <- summaryby(depths, 'min', "mnlit")
-# 
-#     intermediateMessage('.2')
-#     mets <- rbind(mdx,mds,mdm,mdn)
     mets <- depths %>%
             group_by(SITE) %>%
             dplyr::summarise(xlit = protectedMean(VALUE, na.rm=TRUE)
@@ -151,7 +145,6 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
                             ,mxlit = max(VALUE, na.rm=TRUE)
                             ,mnlit = min(VALUE, na.rm=TRUE)
                             ) %>%
-            # reshape2::melt('SITE', variable.name='METRIC', value.name='VALUE')
             tidyr::gather(key=METRIC, value=VALUE, -SITE)
         
     intermediateMessage('.2')

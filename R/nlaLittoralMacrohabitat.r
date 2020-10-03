@@ -174,6 +174,7 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
 #    3/26/19 cws Removed errant argument 'strings'.
 #    3/28/19 cws Standardized metadata argument naming
 #    9/28/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
+#   10/02/20 cws Removed commented out code using reshape2 functions.
 #
 # Arguments:
 #   df = a data frame containing littoral fish macrohabitat data.  The
@@ -368,15 +369,12 @@ nlaLittoralMacrohabitat.coverTypes <- function(df)
 	                                ))))))
 	                   ) %>%
 	             subset(PARAMETER != 'IGNORED_VALUE') %>%
-#	             dcast(SITE~PARAMETER, value.var='VALUE')
                  tidyr::spread(PARAMETER, VALUE)
-# 	typeMeans0 <- within(melt(typeMeans, 'SITE', variable.name='PARAMETER', value.name='VALUE'), PARAMETER <- as.character(PARAMETER)) %>% dplyr::rename(METRIC=PARAMETER)
-# print(str(typeMeans0))
+
 	typeMeans <- typeMeans %>%
 	             tidyr::gather(PARAMETER, VALUE, -SITE) %>%
 	             mutate(PARAMETER = as.character(PARAMETER)) %>% 
 	             dplyr::rename(METRIC=PARAMETER)
-# print(str(typeMeans))
 
 	intermediateMessage('.6')
 	
@@ -398,13 +396,8 @@ nlaLittoralMacrohabitat.humanDist <- function(df, hdWeights)
 	# No mets if no data
 	if(nrow(humDist) == 0) return(NULL)				
 	
-	
-	# hdWeights <- data.frame(field=c('NONE','LOW','MODERATE','HEAVY')
-	# 		,calc =c(0, 0.2, 0.5, 1.0)
-	# )
 	humDist <- merge(humDist, hdWeights, by.x='VALUE', by.y='field')
-	
-	
+
 	weightedDist <- aggregate(list(VALUE = humDist$calc)
 			,list(SITE = humDist$SITE)
 			,mean, na.rm=TRUE
