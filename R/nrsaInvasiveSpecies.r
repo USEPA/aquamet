@@ -183,6 +183,10 @@ nrsaInvasiveSpecies.ip_score <- function(individualMets)
 # Calculate ip_score as the sum of occurrences of individual species, not 
 # including f_none if it appears.
 {   
+    # Handle times when data provided has zero rows.
+    if(is.null(individualMets)) 
+        return(NULL)
+    
     sitesWithSpecies <- ddply(subset(individualMets, METRIC!='f_none')
                         ,c('SITE')
                         ,summarise

@@ -92,6 +92,8 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
 #            absentAsNull().
 #   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #            Removed commented out code using reshape2 functions.
+#   11/04/20 cws Casting output to data.frame so it is not tibble (tbl, tbl_df).
+#            No change in unit test required.
 #
 # Arguments:
 # bLittoralDepth    dataframe containing littoral depth data in meters at each
@@ -145,7 +147,8 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
                             ,mxlit = max(VALUE, na.rm=TRUE)
                             ,mnlit = min(VALUE, na.rm=TRUE)
                             ) %>%
-            tidyr::gather(key=METRIC, value=VALUE, -SITE)
+            tidyr::gather(key=METRIC, value=VALUE, -SITE) %>% 
+            as.data.frame()
         
     intermediateMessage('.2')
 

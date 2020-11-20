@@ -145,6 +145,7 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
 #            isUnitTest to allow capturing of error messages during unit tests.
 #    3/22/19 cws Modified to use dplyr::rename()
 #   12/31/19 cws Allowing SITE to be character in wAngle and bUndercut arguments.
+#   10/13/20 cws Modified input validation to allow NA and '' values of bAngle
 # 
 # ARGUMENTS:
 #   bAngle      dataframe containing bank angle class value for sites sampled using
@@ -190,7 +191,7 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
     # wUndercut <- absentAsNULL(wUndercut)
     bAngle <- aquametStandardizeArgument(bAngle
                                         ,struct=list(SITE=c('integer','character'), VALUE='character')
-                                        ,legalValues=list(VALUE=c('0-5', '5-30', '30-75', '75-100'))
+                                        ,legalValues=list(VALUE=c(NA, '', '0-5', '5-30', '30-75', '75-100'))
                                         ,stopOnError = !isUnitTest
                                         )
     wAngle <- aquametStandardizeArgument(wAngle

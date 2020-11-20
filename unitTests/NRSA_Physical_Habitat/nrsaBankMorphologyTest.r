@@ -5,6 +5,8 @@
 # 10/21/15 cws Calling nrsaBankMorphology instead of nrsaBankMorphology.1.
 #  2/27/18 cws changing calls to nrsaBankMorphology to reflect new structure 
 #          checking. Extended unit test to check for problematic arguments.
+# 10/13/20 cws Modified expxected values when testing the input validation after
+#          extending those values to include missing values
 #
 
 nrsaBankMorphologyTest <- function ()
@@ -89,7 +91,7 @@ nrsaBankMorphologyTest <- function ()
                                           select(SITE, VALUE)
                                 ,isUnitTest=TRUE
                                 )
-    expected <- paste("You blockhead, argument <<bAngle>> failed the check for illegal values: Column VALUE is expected to have values <0-5,5-30,30-75,75-100>, but has illegal values <low>"
+    expected <- paste("You blockhead, argument <<bAngle>> failed the check for illegal values: Column VALUE is expected to have values <NA,,0-5,5-30,30-75,75-100>, but has illegal values <low>"
                      ,"Warning for argument <<wAngle>> while performing range check: Column VALUE has 0 values below 0, and 107 values above 180"
                      ,"Warning for argument <<wUndercut>> while performing range check: Column VALUE has 0 values below 0, and 103 values above 1"
                      ,sep='. '

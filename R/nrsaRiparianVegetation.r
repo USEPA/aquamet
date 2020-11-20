@@ -193,8 +193,8 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                   ,understoryCoverNonwoody = NULL
                                   ,understoryCoverWoody = NULL
                                   ,understoryVegetationType = NULL
-                                  ,dataInformation = data.frame(value=c(NA,'0','1','2','3','4')
-                                                               ,weights=c(NA,0,0.05,0.25,0.575,0.875)
+                                  ,dataInformation = data.frame(value=c(NA,'','0','1','2','3','4')
+                                                               ,weights=c(NA,NA,0,0.05,0.25,0.575,0.875)
                                                                ,stringsAsFactors=FALSE
                                                                )
                                   ,isUnitTest = FALSE
@@ -236,6 +236,9 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
 #    3/20/19 cws Added structure checks for coverCalculationValues and using
 #            values of field in the legal values check of the data arguments.
 #    3/29/19 cws Standardized metadata argument naming
+#   10/13/20 cws Added '' as legal value in dataInformation argument, and removed
+#            internal version of that object. Added 'E' as legal canopy and
+#            understory type.
 ##
 # Arguments:
 # canopyCoverLargeDiameter  dataframe containing cover class values for large 
@@ -399,11 +402,11 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
     #                ,absentAsNULL(understoryCoverWoody, ifdf, 'UNDWDY')
     #                ,absentAsNULL(understoryVegetationType, ifdf, 'UNDERVEG')
     #                )
-    dataInformation <- aquametStandardizeArgument(dataInformation
-                                                 ,struct = list(value = c('character','integer'), weights='double')
-                                                 ,rangeLimits = list(weights = c(0,1))
-                                                 ,legalValues = list(value = c(NA,'','0','1','2','3','4'))
-                                                 )
+    # dataInformation <- aquametStandardizeArgument(dataInformation
+    #                                              ,struct = list(value = c('character','integer'), weights='double')
+    #                                              ,rangeLimits = list(weights = c(0,1))
+    #                                              ,legalValues = list(value = c(NA,'','0','1','2','3','4'))
+    #                                              )
     visrip <- rbind(aquametStandardizeArgument(canopyCoverLargeDiameter, ifdf=ifdf, 'CANBTRE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
@@ -416,7 +419,7 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                               )
                    ,aquametStandardizeArgument(canopyVegetationType, ifdf=ifdf, 'CANVEG'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = c(NA,'','C','D','M','N'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = c(NA,'','C','D','E','M','N'))
                                               ,stopOnError = !isUnitTest
                                               )
                    ,aquametStandardizeArgument(groundCoverBare, ifdf=ifdf, 'BARE'
@@ -446,7 +449,7 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                               )
                    ,aquametStandardizeArgument(understoryVegetationType, ifdf=ifdf, 'UNDERVEG'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
-                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = c(NA,'','C','D','M','N'))
+                                              ,legalValues = list(BANK = c('LF','RT'), VALUE = c(NA,'','C','D','E','M','N'))
                                               ,stopOnError = !isUnitTest
                                               )
                    )

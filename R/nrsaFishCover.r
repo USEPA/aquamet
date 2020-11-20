@@ -165,9 +165,9 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                                                                  )
                                                      ,stringsAsFactors=FALSE
                                                      )
-                         ,dataInformation=data.frame(value=c(NA,'0','1','2','3','4')
-                                                    ,presence=c(NA,0L,1L,1L,1L,1L) %>% as.logical()
-                                                    ,weights=c(NA,0,0.05,0.25,0.575,0.875)
+                         ,dataInformation=data.frame(value=c(NA,'','0','1','2','3','4')
+                                                    ,presence=c(NA,NA,0L,1L,1L,1L,1L) %>% as.logical()
+                                                    ,weights=c(NA,NA,0,0.05,0.25,0.575,0.875)
                                                     ,stringsAsFactors=FALSE
                                                     )
                          ,isUnitTest=FALSE
@@ -220,6 +220,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 #            for legal checks of VALUE in data arguments.
 #    3/22/19 cws Modified to use dplyr::rename()
 #    3/28/19 cws Standardized metadata argument naming
+#   10/13/20 cws Modified to allow '' values in input.
 #
 # ARGUMENTS:
 # algae       dataframe containing algae cover class data at each transect for

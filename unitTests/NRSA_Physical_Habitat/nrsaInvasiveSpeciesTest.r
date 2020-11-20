@@ -12,6 +12,7 @@
 #          response match expected.
 #  3/12/19 cws Modified due to use of aquametStandardizeArgument.
 # 10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
+# 11/04/20 cws Added test case to make sure zero-row inputs are handled well.
 #
 #
 
@@ -70,6 +71,12 @@ nrsaInvasiveSpeciesTest <- function()
                ,"Error: nrsaInvasiveSpecies is broken when 'no invasives' data is absent."
                )
     
+    # Test calculations with zero row inputs
+    actual <- nrsaInvasiveSpecies(AA=data.frame(SITE=as.integer(NULL), VALUE=as.character(NULL), stringsAsFactors=FALSE))
+    checkEquals(NULL, actual
+               ,"Error: nrsaInvasiveSpecies is broken when input has zero rows."
+               )
+
     # Test calculations with no data at all
     actual <- nrsaInvasiveSpecies()
     checkEquals(NULL, actual

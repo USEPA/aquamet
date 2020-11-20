@@ -2,7 +2,8 @@
 # RUnit tests
 #
 #  3/12/19 cws Modified due to use of aquametStandardizeArgument
-#  3/29/19 cws Standardized metadata argument naming
+#  3/29/19 cws Standardized metadata argument naming.
+# 10/13/20 cws Added '' as legal value in dataInformation
 #
 
 nrsaRiparianVegetationTest <- function()
@@ -24,8 +25,8 @@ nrsaRiparianVegetationTest <- function()
                                      ,understoryCoverNonwoody = subset(ripData, PARAMETER=='UNDNWDY') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
                                      ,understoryCoverWoody = subset(ripData, PARAMETER=='UNDWDY') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
                                      ,understoryVegetationType = subset(ripData, PARAMETER=='UNDERVEG') %>% dplyr::rename(BANK=TRANSDIR) %>% select(SITE, TRANSECT, BANK, VALUE)
-                                     ,dataInformation = data.frame(value=c(NA,'0','1','2','3','4')
-                                                                  ,weights=c(NA,0,0.05,0.25,0.575,0.875)
+                                     ,dataInformation = data.frame(value=c(NA,'','0','1','2','3','4')
+                                                                  ,weights=c(NA,NA,0,0.05,0.25,0.575,0.875)
                                                                   ,stringsAsFactors=FALSE
                                                                   )
                                      )
