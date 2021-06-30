@@ -26,6 +26,8 @@
 #  3/25/19 cws Modified to use dplyr::rename()
 # 10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 # 11/24/20 cws Created nrsaSlopeBearing.adjustElevationsTest
+#  6/30/21 cws Modified nrsaSlopeBearing.adjustElevationsTest to cast expected 
+#          results to dataframe, which wasn't needed earlier.
 #
 
 nrsaSlopeBearingTest <- function()
@@ -9216,7 +9218,8 @@ nrsaSlopeBearing.adjustElevationsTest <- function()
                                      ,SLOPE * PROPORTION/100
                                      ,SLOPE
                                      )
-                      )
+                      ) %>%
+                data.frame()
     actual <- nrsaSlopeBearing.adjustElevations(testData)
 #return(list(e=expected %>% arrange(SITE, TRANSECT, LINE), a=actual %>% arrange(SITE, TRANSECT, LINE)))
     
