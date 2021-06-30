@@ -25,7 +25,7 @@
 #  3/15/19 cws Modified due to use of aquametStandardizeArgument
 #  3/25/19 cws Modified to use dplyr::rename()
 # 10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
-#
+# 11/24/20 cws Created nrsaSlopeBearing.adjustElevationsTest
 #
 
 nrsaSlopeBearingTest <- function()
@@ -9129,6 +9129,102 @@ nrsaSlopeBearingTest.makeGisCalcs <- function()
     gisCalcs <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
     close(tc)
     return(gisCalcs)
+}
+
+nrsaSlopeBearing.adjustElevationsTest <- function()
+# unit tets for nrsaSlopeBearing.adjustElevations
+{
+    testDataFramework <- expand.grid(TRANSECT=LETTERS[1:4]
+                                    ,LINE=0:3
+                                    ,stringsAsFactors=FALSE
+                                    ) %>%
+                         mutate(SLOPE = ''
+                               ,SLOPE.UNITS= ''
+                               ,PROPORTION=''
+                               ,BEARING=''
+                               ,TRANSPC=''
+                               ,x = '', y = '', z = '' # other columns that may be there
+                               )
+    testData <- rbind(testDataFramework %>%
+                      mutate(SITE='pctNoGaps'
+                            ,SLOPE = LINE+1
+                            ,UNITS.SLOPE='PERCENT'
+                            ,PROPORTION = 25
+                            )
+                     ,testDataFramework %>%
+                      mutate(SITE='pctAllGaps'
+                            ,SLOPE = ifelse(LINE > 0, NA, 5)
+                            ,UNITS.SLOPE='PERCENT'
+                            ,PROPORTION = ifelse(LINE > 0, NA, 100)
+                            )
+                     ,testDataFramework %>%
+                      mutate(SITE='pctSomeGaps'
+                            ,SLOPE = ifelse(TRANSECT %in% c('C','D') & LINE > 0, NA, LINE+1)
+                            ,UNITS.SLOPE='PERCENT'
+                            ,PROPORTION = ifelse(TRANSECT %in% c('C','D')
+                                                ,ifelse(LINE > 0, NA, 100)
+                                                ,25
+                                                )
+                            )
+                     ,testDataFramework %>%
+                      mutate(SITE='elevNoGaps'
+                            ,SLOPE = LINE+1
+                            ,UNITS.SLOPE='CM'
+                            ,PROPORTION = 25
+                            )
+                     ,testDataFramework %>%
+                      mutate(SITE='elevAllGaps'
+                            ,SLOPE = ifelse(LINE > 0, NA, 5)
+                            ,UNITS.SLOPE='CM'
+                            ,PROPORTION = ifelse(LINE > 0, NA, 100)
+                            )
+                     ,testDataFramework %>%
+                      mutate(SITE='elevSomeGaps'
+                            ,SLOPE = ifelse(TRANSECT %in% c('C','D') & LINE > 0, NA, LINE+1)
+                            ,UNITS.SLOPE='CM'
+                            ,PROPORTION = ifelse(TRANSECT %in% c('C','D')
+                                                ,ifelse(LINE > 0, NA, 100)
+                                                ,25
+                                                )
+                            )
+                     ,testDataFramework %>%
+                      mutate(SITE='degNoGaps'
+                            ,SLOPE = LINE+1
+                            ,UNITS.SLOPE='DEGREES'
+                            ,PROPORTION = 25
+                            )
+                     ,testDataFramework %>%
+                      mutate(SITE='degAllGaps'
+                            ,SLOPE = ifelse(LINE > 0, NA, 5)
+                            ,UNITS.SLOPE='DEGREES'
+                            ,PROPORTION = ifelse(LINE > 0, NA, 100)
+                            )
+                     ,testDataFramework %>%
+                      mutate(SITE='degSomeGaps'
+                            ,SLOPE = ifelse(TRANSECT %in% c('C','D') & LINE > 0, NA, LINE+1)
+                            ,UNITS.SLOPE='DEGREES'
+                            ,PROPORTION = ifelse(TRANSECT %in% c('C','D')
+                                                ,ifelse(LINE > 0, NA, 100)
+                                                ,25
+                                                )
+                            )
+                     )
+    
+    expected <- testData %>%
+                mutate(SLOPE = ifelse((SITE == 'ElevAllGaps') | 
+                                      (SITE == 'ElevSomeGaps' & TRANSECT %in% LETTERS[3:4])
+                                     ,SLOPE * PROPORTION/100
+                                     ,SLOPE
+                                     )
+                      )
+    actual <- nrsaSlopeBearing.adjustElevations(testData)
+#return(list(e=expected %>% arrange(SITE, TRANSECT, LINE), a=actual %>% arrange(SITE, TRANSECT, LINE)))
+    
+    checkEquals(expected %>% arrange(SITE, TRANSECT, LINE)
+               ,actual %>% arrange(SITE, TRANSECT, LINE)
+               ,"Incorrect results from nrsaSlopeBearing.adjustElevations"
+               )
+    
 }
 
 # end of file
