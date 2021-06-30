@@ -9,6 +9,7 @@
 #  6/29/17 cws Renamed from metsAquaticMacrophytesTest to nlasAquaticMacrophytesTest.
 #          Using unit test with 2007 data as 2012 data test was not functioning.
 #          Reverted change to single AMVEMERGENT.
+#  6/30/21 cws Comparing values as numeric rather than character values
 #
 
 nlaAquaticMacrophytesTest <- function()
@@ -31,7 +32,12 @@ nlaAquaticMacrophytesTest <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-16)
+#return(list(e=expected %>% arrange(SITE, METRIC), a=actual %>% arrange(SITE, METRIC)))
+	diff <- dfCompare(expected %>% mutate(VALUE = as.numeric(VALUE))
+	                 ,actual %>% mutate(VALUE = as.numeric(VALUE))
+	                 ,c('SITE','METRIC'), zeroFudge=1e-16
+	                 )
+#return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics")
 	
 	# Test cases when no data is sent
