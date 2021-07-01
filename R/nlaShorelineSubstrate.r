@@ -263,6 +263,8 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 #            arguments. Using substrateCovers to validate data arguments.
 #    3/28/19 cws Standardized metadata argument naming
 #    9/28/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
+#    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#            pivot_wider
 #
 # Arguments:
 #   df = a data frame containing shoreline substrate data.  The data frame must
@@ -578,7 +580,8 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   #
   # Initialize these metrics with missing values, and add classes
   tt <- rbind(meanPresence, meanCover) %>%
-        tidyr::spread(METRIC, VALUE)
+        # tidyr::spread(METRIC, VALUE)
+        tidyr::pivot_wider(names_from=METRIC, values_from=VALUE)
   modeClasses <- subset(tt, select='SITE')
   modeClasses$SSOPCLASS <- NA
   modeClasses$SSOFCLASS <- NA
@@ -615,7 +618,8 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   }
 
 	modeClasses <- modeClasses %>%
-	               tidyr::gather(METRIC, VALUE, -SITE) %>%
+	               # tidyr::gather(METRIC, VALUE, -SITE) %>%
+	               tidyr::pivot_longer(c(-SITE), names_to='METRIC', values_to='VALUE') %>%
 	               mutate(METRIC = as.character(METRIC))
   intermediateMessage('.10')
 

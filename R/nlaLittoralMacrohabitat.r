@@ -175,6 +175,8 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
 #    3/28/19 cws Standardized metadata argument naming
 #    9/28/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #   10/02/20 cws Removed commented out code using reshape2 functions.
+#    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#            pivot_wider
 #
 # Arguments:
 #   df = a data frame containing littoral fish macrohabitat data.  The
@@ -369,10 +371,12 @@ nlaLittoralMacrohabitat.coverTypes <- function(df)
 	                                ))))))
 	                   ) %>%
 	             subset(PARAMETER != 'IGNORED_VALUE') %>%
-                 tidyr::spread(PARAMETER, VALUE)
-
+                 # tidyr::spread(PARAMETER, VALUE)
+	             tidyr::pivot_wider(names_from=PARAMETER, values_from=VALUE)
+	
 	typeMeans <- typeMeans %>%
-	             tidyr::gather(PARAMETER, VALUE, -SITE) %>%
+	             # tidyr::gather(PARAMETER, VALUE, -SITE) %>%
+	             tidyr::pivot_longer(c(-SITE), names_to='PARAMETER', values_to='VALUE') %>%
 	             mutate(PARAMETER = as.character(PARAMETER)) %>% 
 	             dplyr::rename(METRIC=PARAMETER)
 

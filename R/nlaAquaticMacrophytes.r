@@ -139,6 +139,8 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
 #    3/28/19 cws Standardized metadata argument naming
 #   12/31/19 cws Allowing SITE to be character as well as integer in all arguments.
 #    9/25/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
+#    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#            pivot_wider
 #
 # Arguments:
 #   df = a data frame containing aquatic macrophyte data.  The data frame must
@@ -322,7 +324,8 @@ nlaAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeig
 			 ,N  = length(na.omit(calc))
 			 )
     coverMets <- tt %>% 
-                 tidyr::gather(key='met', value='VALUE', c('FC','V','N')) %>%
+                 #tidyr::gather(key='met', value='VALUE', c('FC','V','N')) %>%
+                 tidyr::pivot_longer(c(FC,V,N), names_to='met', values_to='VALUE') %>%
                  mutate(PARAMETER = paste0('AM', met
 				    	    			  ,ifelse(PARAMETER=='AM_TOTALCOVER', 'ALL', gsub('^AM_(.+)$', '\\1', PARAMETER))
 							    	      )
