@@ -278,6 +278,8 @@ nrsaLargeWoody <- function(bCounts=NULL
 #            accordingly.
 #   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #            Removed commented out code using reshape2 functions.
+#    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#            pivot_wider
 #
 # Arguments:
 # bCounts       dataframe containing large woody debris class counts at each 
@@ -1183,8 +1185,10 @@ nrsaLargeWoody <- function(bCounts=NULL
  # Transpose wide to long format
 
     mets <- xx %>%
-            tidyr::gather(key="METRIC", value="VALUE", -SITE) %>%
-            mutate(METRIC = as.character(METRIC))
+            # tidyr::gather(key="METRIC", value="VALUE", -SITE) %>%
+            # mutate(METRIC = as.character(METRIC))
+            tidyr::pivot_longer(-SITE, names_to='METRIC', values_to='VALUE') %>%
+            data.frame()
 
   row.names(mets)<-NULL
   

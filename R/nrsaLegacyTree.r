@@ -170,6 +170,8 @@ nrsaLegacyTree <- function(dbhClass = NULL
 #    3/25/19 cws Modified to use dplyr::rename()
 #   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #            Removed commented out code using reshape2 functions.
+#    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#            pivot_wider
 #
 # ARGUMENTS:
 # dbhClass      dataframe containing dbh class values at each transect of all 
@@ -277,7 +279,8 @@ nrsaLegacyTree <- function(dbhClass = NULL
 ##  Renaming PARAMETER and RESULT to variable and value
 df1 <- invasivelegacy %>% dplyr::rename(variable=PARAMETER, value=VALUE)
 
-lt <- df1 %>% tidyr::spread(variable, value)
+# lt <- df1 %>% tidyr::spread(variable, value)
+lt <- df1 %>% tidyr::pivot_wider(names_from=variable, values_from=value)
 
 lt$DBH      <- as.character(lt$DBH)
 #lt$NOT_VIS  <- as.character(lt$NOT_VIS)

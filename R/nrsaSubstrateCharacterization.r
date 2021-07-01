@@ -222,6 +222,8 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #    1/06/20 cws Allowing OT as legal value for bSizeClass so we can recalculate 0809 values
 #   10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.#
 #            Removed commented out code using reshape2 functions.
+#    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#            pivot_wider
 #
 # Arguments:
 # bBottomDom    dataframe containing size class data for the dominant 
@@ -749,7 +751,8 @@ intermediateMessage('d')
 
       alln <- pct0 %>%
               select(-n2) %>%
-              tidyr::gather(key='METRIC', value='VALUE', -SITE)
+              # tidyr::gather(key='METRIC', value='VALUE', -SITE)
+              tidyr::pivot_longer(-SITE, names_to='METRIC', values_to='VALUE')
       pct3 <- rbind(subset(pct2,select=c('SITE','METRIC','VALUE')),pct_bigr,pct_bdrk,pct_safn,pct_sfgf,pct_org,alln)
       # Completed size classes percentages for streams
       intermediateMessage('.9')
@@ -787,7 +790,8 @@ intermediateMessage('d')
                         ,lsub_d84=quantile(lDiam,probs=0.84,names=FALSE,type=2,na.rm=TRUE)
                         ,lsub_dmm=mean(lDiam,na.rm=TRUE),lsubd_sd=sd(lDiam,na.rm=TRUE)
                         ,lsub_iqr=lsub_d75-lsub_d25)
-      ldRiv1mm.1 <- ldRiv1mm %>% tidyr::gather(key='METRIC', value='VALUE', -SITE)
+      ldRiv1mm.1 <- ldRiv1mm %>% # tidyr::gather(key='METRIC', value='VALUE', -SITE)
+                    tidyr::pivot_longer(-SITE, names_to='METRIC', values_to='VALUE')
       
       intermediateMessage('.11')
 

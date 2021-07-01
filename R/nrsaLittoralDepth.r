@@ -94,6 +94,8 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
 #            Removed commented out code using reshape2 functions.
 #   11/04/20 cws Casting output to data.frame so it is not tibble (tbl, tbl_df).
 #            No change in unit test required.
+#    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#            pivot_wider
 #
 # Arguments:
 # bLittoralDepth    dataframe containing littoral depth data in meters at each
@@ -147,7 +149,8 @@ nrsaLittoralDepth <- function(bLittoralDepth=NULL, isUnitTest=FALSE) {
                             ,mxlit = max(VALUE, na.rm=TRUE)
                             ,mnlit = min(VALUE, na.rm=TRUE)
                             ) %>%
-            tidyr::gather(key=METRIC, value=VALUE, -SITE) %>% 
+            # tidyr::gather(key=METRIC, value=VALUE, -SITE) %>% 
+            tidyr::pivot_longer(-SITE, names_to='METRIC', values_to='VALUE') %>%
             as.data.frame()
         
     intermediateMessage('.2')
