@@ -83,6 +83,8 @@
 #          Changed PARAMETER to CLASS in normalizedCover.
 #  7/11/17 cws Changed PARAMETER to CLASS in all remaining functions.
 #  3/25/19 cws Modified to use dplyr::rename()
+#  7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#          pivot_wider
 #
 ################################################################################
 
@@ -276,7 +278,8 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 					,coverLocation = ifelse(grepl('_DD$', CLASS), 'cover_dd', 'cover_lit')
 	                ) %>%
 	          select(SITE, STATION, coverType, coverLocation, characteristicCover) %>%
-	          tidyr::spread(coverLocation, characteristicCover)
+	          # tidyr::spread(coverLocation, characteristicCover)
+	          tidyr::pivot_wider(names_from=coverLocation, values_from=characteristicCover)
 
 #print('.0')	
 	covers <- merge(covers, props, by=c('SITE','STATION'), all.x=TRUE)
@@ -384,7 +387,8 @@ calcSynInfluence <- function(influenceData) {
 						,inflLocation = ifelse(grepl('_DD$', CLASS), 'infl_dd', 'infl_rip')
 						) %>%
 	              select(SITE, STATION, inflType, inflLocation, calc) %>% 
-	              tidyr::spread(inflLocation, calc)
+	              # tidyr::spread(inflLocation, calc)
+	              tidyr::pivot_wider(names_from=inflLocation, values_from=calc)
 
 	influences <- merge(influences, props, by=c('SITE','STATION'), all.x=TRUE)
 
