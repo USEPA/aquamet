@@ -13,6 +13,8 @@
 #  3/12/19 cws Modified due to use of aquametStandardizeArgument.
 # 10/02/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 # 11/04/20 cws Added test case to make sure zero-row inputs are handled well.
+#  7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
+#          pivot_wider
 #
 #
 
@@ -25,7 +27,8 @@ nrsaInvasiveSpeciesTest <- function()
     selectSpeciesData <- function(spName) {
         spData <- nrsaInvasiveSpecies.createData() %>%
 #                  reshape2::dcast(SITE+TRANSECT~PARAMETER, value.var='VALUE') %>%
-                  tidyr::spread(PARAMETER, VALUE) %>%
+                  # tidyr::spread(PARAMETER, VALUE) %>%
+                  tidyr::pivot_wider(names_from=PARAMETER, values_from=VALUE) %>%
                   within(VALUE <- ifelse(is.na(get(spName)), '', get(spName))) %>%
                   select(SITE, TRANSECT, VALUE)
         return(spData)
