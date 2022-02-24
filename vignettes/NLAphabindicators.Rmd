@@ -39,7 +39,7 @@ drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN', select=-PARAMETER)
 horizontalDistance <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST', select=-PARAMETER) %>% 
   mutate(VALUE = as.numeric(VALUE))
 
-horizontalDistanceDrawdown <- subset(nlaPhabEx,PARAMETER='HORIZ_DIST_DD', select=-PARAMETER) %>% 
+horizontalDistanceDrawdown <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD', select=-PARAMETER) %>% 
   mutate(VALUE = as.numeric(VALUE))
 
 verticalHeight <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) %>% 

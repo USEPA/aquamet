@@ -20,8 +20,8 @@ nlaShorelineSubstrate(
   classInformation = data.frame(name = c("BEDROCK", "BOULDERS", "COBBLE", "GRAVEL",
     "SAND", "SILT", "ORGANIC", "WOOD"), characteristicDiameter = c(gmean(c(4000, 8000)),
     gmean(c(250, 4000)), gmean(c(64, 250)), gmean(c(2, 64)), gmean(c(0.06, 2)),
-    gmean(c(0.001, 0.06)), NA, NA), inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE, TRUE,
-    TRUE, FALSE, FALSE), stringsAsFactors = FALSE),
+    gmean(c(0.001, 0.06)), NA, NA), inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE,
+    TRUE, TRUE, FALSE, FALSE), stringsAsFactors = FALSE),
   isUnitTest = FALSE
 )
 }

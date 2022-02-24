@@ -7,17 +7,17 @@
 nrsaChannelHabitat(
   bChannelUnit = NULL,
   bDataInformation = data.frame(value = c("FA", "RA", "RI", "GL", "PO", "CA", "DR"),
-    metsSuffix = c("fa", "ra", "ri", "gl", "pool", "ca", "dr"), name = c("FALLS", "RAPID",
-    "RIFFLE", "GLIDE", "POOL", "CASCADE", "DRY"), isFast = c(TRUE, TRUE, TRUE, FALSE,
-    FALSE, TRUE, NA), stringsAsFactors = FALSE),
+    metsSuffix = c("fa", "ra", "ri", "gl", "pool", "ca", "dr"), name = c("FALLS",
+    "RAPID", "RIFFLE", "GLIDE", "POOL", "CASCADE", "DRY"), isFast = c(TRUE, TRUE, TRUE,
+    FALSE, FALSE, TRUE, NA), stringsAsFactors = FALSE),
   wChannelUnit = NULL,
   wDataInformation = data.frame(value = c("FA", "CA", "RA", "RI", "GL", "PB", "PP",
-    "PD", "PL", "PT", "P", "DR"), metsSuffix = c("fa", "ca", "ra", "ri", "gl", "pb", "pp",
-    "pd", "pl", "pt", "p", "dr"), name = c("FALLS", "CASCADE", "RAPID", "RIFFLE", "GLIDE",
-    "POOL_B", "POOL_PLUNGE", "POOL_D", "POOL_LATERAL", "POOL_TRENCH", "POOL", "DRY"),
-    isFast = c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
-    NA), isPool = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE,
-    FALSE), stringsAsFactors = FALSE),
+    "PD", "PL", "PT", "P", "DR"), metsSuffix = c("fa", "ca", "ra", "ri", "gl", "pb",
+    "pp", "pd", "pl", "pt", "p", "dr"), name = c("FALLS", "CASCADE", "RAPID", "RIFFLE",
+    "GLIDE", "POOL_B", "POOL_PLUNGE", "POOL_D", "POOL_LATERAL", "POOL_TRENCH", "POOL",
+    "DRY"), isFast = c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
+    FALSE, NA), isPool = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE,
+    TRUE, TRUE, FALSE), stringsAsFactors = FALSE),
   isUnitTest = FALSE
 )
 }

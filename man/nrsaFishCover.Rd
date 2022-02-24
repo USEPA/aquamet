@@ -18,9 +18,9 @@ nrsaFishCover(
     "macrophytes", "overhang", "structures", "undercut", "woodyDebris"), isBig = c(FALSE,
     TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE), isNatural = c(FALSE, TRUE, TRUE,
     TRUE, FALSE, TRUE, FALSE, TRUE, TRUE), stringsAsFactors = FALSE),
-  dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), presence = c(NA,
-    0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875),
-    stringsAsFactors = FALSE),
+  dataInformation = data.frame(value = c(NA, "", "0", "1", "2", "3", "4"), presence =
+    c(NA, NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(), weights = c(NA, NA, 0, 0.05, 0.25,
+    0.575, 0.875), stringsAsFactors = FALSE),
   isUnitTest = FALSE
 )
 }
