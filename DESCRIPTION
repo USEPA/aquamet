@@ -2,10 +2,10 @@ Package: aquamet
 Type: Package
 Title: Calculate NRSA and NLA physical habitat metrics
 Version: 2.5.5
-Date: 2021-1-29
+Date: 2022-5-10
 Author: Karen Blocksom
 Depends:
-    R (>= 3.4)
+    R (>= 4.0)
 Imports:
     plyr,
     dplyr,
@@ -14,7 +14,8 @@ Imports:
     gtools,
     stringr,
     foreach,
-    RUnit
+    RUnit,
+    tidyr
 Maintainer: Karen Blocksom <blocksom.karen@epa.gov>
 Description: This package calculates physical 
     habitat metrics used in the National Rivers and Streams Assessment and the
