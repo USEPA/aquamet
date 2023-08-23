@@ -16,8 +16,8 @@ nrsaHumanInfluence(
   roadsRailroads = NULL,
   rowcrops = NULL,
   wallRevetment = NULL,
-  dataInformation = data.frame(value = c("0", "P", "C", "B"), weights = c(0, 0.666667,
-    1, 1.5), stringsAsFactors = FALSE),
+  dataInformation = data.frame(value = c("0", "P", "C", "B"), weights = c(0, 0.666667, 1,
+    1.5), stringsAsFactors = FALSE),
   isUnitTest = FALSE
 )
 }
