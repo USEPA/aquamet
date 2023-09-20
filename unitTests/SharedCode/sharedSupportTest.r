@@ -188,7 +188,7 @@ calcSynInfluenceTest <- function()
 #	return(diffs)
 	checkEquals(NULL, diffs, "Incorrect calculation of synthesized influence without assumptions")
 	
-	
+	# Test again
 #	# Test calculations with assumptions
 #	expected <- calcSynCoversTest.expectedWithAssumptions()
 #	actual <- calcSynCovers(testData, 15, TRUE)
@@ -200,11 +200,12 @@ calcSynInfluenceTest <- function()
 }
 
 
+
 calcSynInfluenceTest.testData <- function()
 # Unit test for calcSynCovers 
 {
 	tc <- textConnection("SITE	STATION	CLASS		VALUE	calc
-						  1		A		HI_X			0		0.0			# Data with no missing or absent values, and HORIZ_DIST_DD between 0 and 15
+						  1		A		HI_X			0		0.0			# Data with no missing or absent values, and HORIZ_DIST_DD between 1 and 15
 						  1		A		HI_X_DD			0		0.0
 						  1		A		HI_Y			0		0.0
 						  1		A		HI_Y_DD			C		1.0
@@ -229,6 +230,31 @@ calcSynInfluenceTest.testData <- function()
 						  1		E		HI_Y			P		0.5
 						  1		E		HI_Y_DD			C		1.0
 						  1		E		HORIZ_DIST_DD	10		NA		
+						  11	A		HI_X			0		0.0			# Data with no missing or absent values, and HORIZ_DIST_DD between 0 and 15
+						  11	A		HI_X_DD			0		0.0         # used to test upper and lower limits of drawdown proportions
+						  11	A		HI_Y			0		0.0
+						  11	A		HI_Y_DD			C		1.0
+						  11	A		HORIZ_DIST_DD	0.5		NA
+						  11	B		HI_X			0		0.0
+						  11	B		HI_X_DD			P		0.5
+						  11	B		HI_Y			C		1.0
+						  11	B		HI_Y_DD			0		0.0
+						  11	B		HORIZ_DIST_DD	0.5		NA
+						  11	C		HI_X			C		1.0
+						  11	C		HI_X_DD			C		1.0
+						  11	C		HI_Y			C		1.0
+						  11	C		HI_Y_DD			P		0.5
+						  11	C		HORIZ_DIST_DD	1.0		NA		
+						  11	D		HI_X			P		0.5
+						  11	D		HI_X_DD			0		0
+						  11	D		HI_Y			P		0.5
+						  11	D		HI_Y_DD			C		1.0
+						  11	D		HORIZ_DIST_DD	15		NA		
+						  11	E		HI_X			P		0.5
+						  11	E		HI_X_DD			P		0.5
+						  11	E		HI_Y			P		0.5
+						  11	E		HI_Y_DD			C		1.0
+						  11	E		HORIZ_DIST_DD	20		NA		
 						  2		A		HI_X			0		0.0			# Data with no missing or absent values, and HORIZ_DIST_DD greather than 15
 						  2		A		HI_X_DD			0		0.0
 						  2		A		HI_Y			0		0.0
@@ -336,15 +362,25 @@ calcSynInfluenceTest.expected <- function()
 {
 	tc <- textConnection("SITE STATION CLASS VALUE                     calc
 							1       A  HI_X_SYN     NA 0.0000000000000000000000
-							1       A  HI_Y_SYN     NA 1.0000000000000000000000
-							1       B  HI_X_SYN     NA 0.5000000000000000000000
+							1       A  HI_Y_SYN     NA 0.3333333333333333333333
+							1       B  HI_X_SYN     NA 0.3333333333333333333333
 							1       B  HI_Y_SYN     NA 0.3333333333333333333333
 							1       C  HI_X_SYN     NA 1.0000000000000000000000
 							1       C  HI_Y_SYN     NA 0.6666666666666669666666
 							1       D  HI_X_SYN     NA 0.1666666666666666666666
-							1       D  HI_Y_SYN     NA 1.0000000000000000000000
+							1       D  HI_Y_SYN     NA 0.8333333333333333333333
 							1       E  HI_X_SYN     NA 0.5000000000000000000000
-							1       E  HI_Y_SYN     NA 1.0000000000000000000000
+							1       E  HI_Y_SYN     NA 0.8333333333333333333333
+							11      A  HI_X_SYN     NA 0.0000000000000000000000
+							11      A  HI_Y_SYN     NA 0.0000000000000000000000
+							11      B  HI_X_SYN     NA 0.0000000000000000000000
+							11      B  HI_Y_SYN     NA 1.0000000000000000000000
+							11      C  HI_X_SYN     NA 1.0000000000000000000000
+							11      C  HI_Y_SYN     NA 0.9666666666666666666667
+							11      D  HI_X_SYN     NA 0.0000000000000000000000
+							11      D  HI_Y_SYN     NA 1.0000000000000000000000
+							11      E  HI_X_SYN     NA 0.5000000000000000000000
+							11      E  HI_Y_SYN     NA 1.0000000000000000000000
 							2       A  HI_X_SYN     NA 0.0000000000000000000000
 							2       A  HI_Y_SYN     NA 1.0000000000000000000000
 							2       B  HI_X_SYN     NA 0.5000000000000000000000

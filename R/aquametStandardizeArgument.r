@@ -13,6 +13,7 @@
 #          unit testing, at least for now.
 #  3/21/19 cws Extended to allow a single regular expression to be used to 
 #          specify legal values. Unit test extended accordingly.
+#  8/07/23 cws Extended to allow arguments to be written to csv
 #
 
 # require(RUnit)
@@ -21,7 +22,10 @@
 aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, 
                                        struct=list(SITE='integer', VALUE='double'), 
                                        rangeLimits=NULL, legalValues=NULL, 
-                                       stopOnError=TRUE)
+                                       stopOnError=TRUE
+                                      ,metsFuncName = as.character(sys.call(sys.parent())[1])
+                                      ,argSavePath = NULL
+                                      )
 # Used to standardize argument to aquamet functions. Returns a dataframe with
 # expected column names or NULL.
 #
@@ -57,9 +61,34 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL,
 # stopOnError logical value determining whether detection of an error causes the
 #           process to stop with a descriptive error message, or if that messge
 #           is merely returned and the processing allowed to continue.
+# metsFuncName character string specifying the name of the aquament metric calculating
+#           function in which aquametStandardizeArgument() is called. Default
+#           value consists of function calls that should resolve to this name
+# argSavePath character string specifying the path to which argument values are
+#           written as csv files, or NULL if no such files should be created. 
 #
 {
-    if(is.null(arg)) {
+    op <- options(digits=22)
+    on.exit(options(op))
+    
+    # If desired, write argument as it was passed to csv. This should be
+    # done *prior* to any desired modification to record the objects as they 
+    # were provided.
+    if(!is.null(argSavePath)) {
+        argName <- deparse(substitute(arg))
+        fname <- sprintf('%s/%s_%s_%s.csv'
+                       ,argSavePath
+                       ,metsFuncName
+                       ,argName
+                       ,gsub(' ', '_', gsub('[-:]', '', Sys.time())) 
+                       )
+        err <- write.csv(arg, fname, row.names=FALSE)
+        if(!is.null(err)) {
+            print("!!!! Error writing %s: %s", fname, err)
+        }
+    }
+    
+     if(is.null(arg)) {
         rc <- NULL
     }
     else if(!is.data.frame(arg)) {
@@ -115,6 +144,7 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL,
             #rc <- NULL
         }
         
+        # Modify the argument as called to do so
         if(is.function(ifdf)) {
             rc <- ifdf(arg, ...)
         } else {

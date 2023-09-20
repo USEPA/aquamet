@@ -364,12 +364,19 @@ calcSynInfluence <- function(influenceData) {
 # Values of VALUE is castable to numeric, at least for CLASS=='HORIZ_DIST_DD'
 #
 
-	maxDrawdown <- 15
+	maxDrawdown <- 15   # maximum amount of drawdown to consider in synthetic plot
+	                    # plots with drawdowns this length or larger are considered entirely drawdown
+	minDrawdown <- 1.0  # minimum amount of drawdown to consider in synthetic plot.
+	                    # plots with smaller drawdown distances are considered to be entirely riparian
+	zeroish <- 1e-15    # value that is considered to be close to zero considering
+	                    # floating point issues.
 	
 	# Determine proportion for each station:
 	props <- within(subset(influenceData, CLASS=='HORIZ_DIST_DD')
 	               ,{VALUE <- as.numeric(VALUE)
-					 prop_dd <- ifelse(VALUE < maxDrawdown, VALUE/maxDrawdown, 1)	# i.e. min(1, as.numeric(VALUE)/15)
+					 prop_dd <- ifelse(VALUE < minDrawdown, 0
+					           ,ifelse(VALUE < maxDrawdown, VALUE/maxDrawdown, 1
+					            ))	
 					 prop_rip <- 1 - prop_dd
 				    }
 			       )[c('SITE','STATION','prop_rip','prop_dd')]
@@ -381,6 +388,7 @@ calcSynInfluence <- function(influenceData) {
 	# 	a) if prop_dd is 1 and infl_dd is not missing, then syn = infl_dd
 	#	b) if prop_dd is 0 and infl_rip is not missing, then syn = infl_rip
 	#	c) if both infl_rip and infl_rip are equal, then syn = infl_dd OR infl_rip
+    #      regardless of the proportion, so proportions can be missing
 	influences <- influenceData %>%
 	              subset(CLASS != 'HORIZ_DIST_DD') %>%
 	              mutate(inflType = gsub('^(.+)_DD$', '\\1', CLASS)
@@ -394,34 +402,65 @@ calcSynInfluence <- function(influenceData) {
 
 	inflProps <- within(influences	
 					   ,{basicSyntheticInfl <- ifelse(is.na(prop_dd)
-						                             ,ifelse(abs(infl_rip - infl_dd) < 1e-15, infl_rip	# case (c)
-																	 						, NA
+						                             ,ifelse(abs(infl_rip - infl_dd) < 1e-15
+						                                    ,infl_rip	# case (c)
+															,NA
 						                                    )
-											  ,ifelse(abs(prop_dd) < 1e-15, infl_rip					# case (b); also
-															  											# infl_dd should be zero here.
-															  											# ignore any illogical cases
+											  ,ifelse(abs(prop_dd) < 1e-15
+											         ,infl_rip					# case (b); also
+																				# infl_dd should be zero here.
+																				# ignore any illogical cases
 											  ,ifelse(is.na(infl_dd), NA
 						                      ,ifelse(infl_dd == 1.0
-							  						 ,ifelse(abs(prop_dd) < 1e-15, infl_rip				# this case is illogical, 
-															 					 , 1.0
+							  						 ,ifelse(abs(prop_dd) < 1e-15
+							  						        ,infl_rip			# this case is illogical, 
+															,1.0
 															)
 											  ,ifelse(infl_dd == 0.5
-							  						 ,ifelse(abs(prop_dd - 1) < 1e-15, infl_dd			# case (a)
-													 ,ifelse(is.na(infl_rip), NA
-					 								 ,ifelse(infl_rip == 1.0, prop_dd * infl_dd + prop_rip * infl_rip
-															                , 0.5
+							  						 ,ifelse(abs(prop_dd - 1) < 1e-15
+							  						        ,infl_dd			# case (a)
+													 ,ifelse(is.na(infl_rip)
+													        ,NA
+					 								 ,ifelse(infl_rip == 1.0
+					 								        ,prop_dd * infl_dd + prop_rip * infl_rip
+															,0.5
 	 														)))
 											  ,ifelse(infl_dd == 0.0
-													 ,ifelse(abs(prop_dd - 1) < 1e-15, infl_dd			# case (a)
-													 ,ifelse(is.na(infl_rip), NA
-							                                                , prop_dd * infl_dd + prop_rip * infl_rip
+													 ,ifelse(abs(prop_dd - 1) < 1e-15
+													        ,infl_dd			# case (a)
+													 ,ifelse(is.na(infl_rip)
+													        ,NA
+							                                ,prop_dd * infl_dd + prop_rip * infl_rip
 													  ))
-													,NA													# unexpected infl_dd value
+													,NA							# unexpected infl_dd value
 											   ))))))
 													
 						 syn <- as.numeric(substr(as.character(basicSyntheticInfl), 1, 18))
 					    }
 					   )
+    inflProps <- influences %>%
+                 mutate(basicSyntheticInfl = # Handle missing values when possible
+                                             ifelse(is.na(prop_rip) | is.na(prop_dd)
+                                                   ,ifelse(is.na(infl_dd) | is.na(infl_rip)
+                                                          ,NA       # Unable to determine
+                                                   ,ifelse(abs(infl_dd - infl_rip) < zeroish
+                                                          ,infl_dd  # case c
+                                                          ,NA       # Unable to determine
+                                                    ))
+                                            ,ifelse(is.na(infl_rip)
+                                                   ,ifelse(abs(prop_dd - 1) < zeroish & !is.na(infl_dd)
+                                                          ,infl_dd  # case a
+                                                          ,NA       # Unable to determine
+                                                          )
+                                            ,ifelse(is.na(infl_dd)
+                                                   ,ifelse(abs(prop_dd) < zeroish & !is.na(infl_rip)
+                                                          ,infl_rip # case b
+                                                          ,NA       # Unable to determine
+                                                          )
+                                                   ,prop_dd * infl_dd + prop_rip * infl_rip
+                                             )))
+					   ,syn = as.numeric(substr(as.character(basicSyntheticInfl), 1, 18))
+                       )
 
 	# Reorganize calculation to long format with expected CLASS name
 	rc <- within(inflProps
@@ -432,6 +471,108 @@ calcSynInfluence <- function(influenceData) {
 		        )[c('SITE','STATION','CLASS','VALUE','calc')]
 
 	return(rc)
+}
+
+calcSynInfluenceTest2 <- function() {
+    # this is used to compare previous synthetic values to current ones, dammit
+	maxDrawdown <- 15   # maximum amount of drawdown to consider in synthetic plot
+	                    # plots with drawdowns this length or larger are considered entirely drawdown
+	minDrawdown <- 1.0  # minimum amount of drawdown to consider in synthetic plot.
+	                    # plots with smaller drawdown distances are considered to be entirely riparian
+	zeroish <- 1e-15    # value that is considered to be close to zero considering
+	                    # floating point issues.
+	# Copied old version of syn code
+    previousSyn <- function(influences) {
+    	inflProps <- within(influences	
+	    				   ,{basicSyntheticInfl <- ifelse(is.na(prop_dd)
+		    				                             ,ifelse(abs(infl_rip - infl_dd) < 1e-15
+			    			                                    ,infl_rip	# case (c)
+				    											,NA
+					    	                                    )
+						    					  ,ifelse(abs(prop_dd) < 1e-15
+							    				         ,infl_rip					# case (b); also
+								    												# infl_dd should be zero here.
+									    											# ignore any illogical cases
+										    	  ,ifelse(is.na(infl_dd), NA
+						                          ,ifelse(infl_dd == 1.0
+							  					    	 ,ifelse(abs(prop_dd) < 1e-15
+							  						            ,infl_rip			# this case is illogical, 
+														    	,1.0
+															    )
+    											  ,ifelse(infl_dd == 0.5
+	    						  						 ,ifelse(abs(prop_dd - 1) < 1e-15
+		    					  						        ,infl_dd			# case (a)
+			    										 ,ifelse(is.na(infl_rip)
+				    									        ,NA
+					     								 ,ifelse(infl_rip == 1.0
+					 	    							        ,prop_dd * infl_dd + prop_rip * infl_rip
+							    								,0.5
+	 							    							)))
+									    		  ,ifelse(infl_dd == 0.0
+										    			 ,ifelse(abs(prop_dd - 1) < 1e-15
+											    		        ,infl_dd			# case (a)
+												    	 ,ifelse(is.na(infl_rip)
+													            ,NA
+							                                    ,prop_dd * infl_dd + prop_rip * infl_rip
+    													  ))
+	    												,NA							# unexpected infl_dd value
+		    									   ))))))
+			    										
+				    		 syn <- as.numeric(substr(as.character(basicSyntheticInfl), 1, 18))
+					        }
+					       )
+    	return(inflProps)
+    }
+    # Copied new version of syn code
+    currentSyn <- function(influences) {
+        inflProps <- influences %>%
+                     mutate(basicSyntheticInfl = # Handle missing values when possible
+                                                 ifelse(is.na(prop_rip) | is.na(prop_dd)
+                                                       ,ifelse(is.na(infl_dd) | is.na(infl_rip)
+                                                              ,NA       # Unable to determine
+                                                       ,ifelse(abs(infl_dd - infl_rip) < zeroish
+                                                              ,infl_dd  # case c
+                                                              ,NA       # Unable to determine
+                                                        ))
+                                                ,ifelse(is.na(infl_rip)
+                                                       ,ifelse(abs(prop_dd - 1) < zeroish & !is.na(infl_dd)
+                                                              ,infl_dd  # case a
+                                                              ,NA       # Unable to determine
+                                                              )
+                                                ,ifelse(is.na(infl_dd)
+                                                       ,ifelse(abs(prop_dd) < zeroish & !is.na(infl_rip)
+                                                              ,infl_rip # case b
+                                                              ,NA       # Unable to determine
+                                                              )
+                                                       ,prop_dd * infl_dd + prop_rip * infl_rip
+                                                 )))
+    					   ,syn = as.numeric(substr(as.character(basicSyntheticInfl), 1, 18))
+                           )
+        return(inflProps)
+    }
+    
+    testInfluences <- expand.grid(prop_rip = c(NA, 0, .01, .1, .2, .5, .99, .1)
+                                 ,infl_rip = c(NA, 0, 0.5, 1) #c(NA, 0, .1, .5, .9, 1)
+                                 ,infl_dd  = c(NA, 0, 0.5, 1) #c(NA, 0, .1, .5, .9, 1)
+                                 ,stringsAsFactors = FALSE
+                                 ) %>%
+                      mutate(prop_dd = 1-prop_rip
+                            ,SITE = 1:nrow(.)
+                            ,STATION = 'Q'
+                            )
+
+    # rc <- merge(previousSyn(testInfluences) %>% 
+    #             dplyr::rename(pBasic=basicSyntheticInfl, pSyn=syn)
+    #            ,c%>% 
+    #             select(-prop_rip, -infl_rip, -infl_dd, -prop_dd) %>% 
+    #             dplyr::rename(cBasic=basicSyntheticInfl, cSyn=syn)
+    #            ,by=c('SITE','STATION')
+    #            )
+    rc <- merge(testInfluences %>% select(SITE, STATION, prop_rip, prop_dd, infl_rip, infl_dd)
+               ,dfDifferences(previousSyn(testInfluences), currentSyn(testInfluences), c('SITE','STATION'))
+               ,c('SITE','STATION')
+               )
+    return(rc)
 }
 
 
