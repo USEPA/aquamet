@@ -3,3 +3,5 @@
 sourceAquamet.r
 ^doc$
 ^Meta$
+runTest.r
+unitTests

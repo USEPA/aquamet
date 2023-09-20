@@ -4,10 +4,10 @@ citEntry(
    entry="Manual",
    title="aquamet: Aquatic Metrics Calculation",
    author="Curt W. Seeliger, Karen A. Blocksom, and Thomas M. Kincaid",
-   year=2015,
-   note="R package version 2.4",
+   year=2021,
+   note="R package version 2.5.4",
    url="http://www.epa.gov/nheerl/arm/",
-   textVersion=paste("Seeliger, C. W., Blocksom, K. A., and Kincaid, T. M. (2014).",
+   textVersion=paste("Seeliger, C. W., Blocksom, K. A., and Kincaid, T. M. (2021).",
                       "aquamet: Aquatic Metrics Calculation.",
                       "R package version 2.4.",
                       "URL: http://www.epa.gov/nheerl/arm/.")

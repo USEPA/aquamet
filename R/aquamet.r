@@ -11,6 +11,7 @@
 #' @importFrom stringr str_detect 
 #' @importFrom stats aggregate ave coef median na.omit quantile reshape sd weights
 #' @importFrom utils read.table write.csv
+#' @importFrom tidyr pivot_longer pivot_wider
 #' @import foreach
 #' @import RUnit
 #' @keywords package
@@ -39,5 +40,6 @@ if(getRversion() >= "3.0") utils::globalVariables(c('ECO9','gf','fp','HABITAT','
                   'p75H','p75V','p95H','p95V','poolID','resp','respAdj','sddepth',
                   'sizen','ssiNatBedBld','startLOC','sumVal','taxCat','uid',
                   'upperPct','value','vertDD','vertDD_cond','vertDD_cond17',
-                  'width','x','xcb_hnag','xdepth'))
+                  'width','x','xcb_hnag','xdepth', 'FC', 'V','N','met','variable',
+                  'inflType', 'inflLocation', 'coverLocation'))
 ## NULL
