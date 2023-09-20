@@ -116,6 +116,7 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
                                          ,wSizeClass=NULL
                                          ,wMezzoSizeClass=NULL
                                          ,isUnitTest=FALSE
+                                         ,argSavePath = NULL
                                          ) {
 
 # TODO: add arguments bSizeClassInfo and wSizeClassInfo to specify size class
@@ -224,6 +225,8 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #            Removed commented out code using reshape2 functions.
 #    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
 #            pivot_wider
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # Arguments:
 # bBottomDom    dataframe containing size class data for the dominant 
@@ -283,6 +286,9 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #                                       visit
 #                           VALUE       numeric or character values
 #
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
+#
 #
 #   Note that possible values for variables in the input data frame are
 #   provided in the document named "NRSA Documentation.pdf" included in the help
@@ -323,36 +329,43 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                               ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
     bBottomSec <- aquametStandardizeArgument(bBottomSec, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                               ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
     bShoreDom <-  aquametStandardizeArgument(bShoreDom, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                               ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
     bShoreSec <-  aquametStandardizeArgument(bShoreSec, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                               ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
-                                              )
+                                             ,argSavePath = argSavePath
+                                             )
     bSizeClass <- aquametStandardizeArgument(bSizeClass, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                               ,legalValues = list(VALUE = c(NA,'','BH','BL','CB','GR','SA','FN', 'OT'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
     wSizeClass <- aquametStandardizeArgument(wSizeClass, ifdf=ifdf
                                               ,struct = list(SITE=c('integer','character'), VALUE=c('character'))
                                               ,legalValues = list(VALUE = c(NA,'','BL','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
     wMezzoSizeClass <- aquametStandardizeArgument(wMezzoSizeClass, ifdf=ifdf
                                               ,struct = list(SITE=c('integer','character'), VALUE=c('character'))
                                               ,legalValues = list(VALUE = c(NA,'','BL','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
 
 

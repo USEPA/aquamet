@@ -172,6 +172,7 @@ nrsaLargeWoody <- function(bCounts=NULL
                           ,reachlength = NULL
                           ,meanBankfullWidth = NULL
                           ,isUnitTest = FALSE
+                          ,argSavePath = NULL
                           ) {
 ################################################################################
 # Function: 
@@ -280,6 +281,8 @@ nrsaLargeWoody <- function(bCounts=NULL
 #            Removed commented out code using reshape2 functions.
 #    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
 #            pivot_wider
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # Arguments:
 # bCounts       dataframe containing large woody debris class counts at each 
@@ -350,6 +353,9 @@ nrsaLargeWoody <- function(bCounts=NULL
 #                       SITE        integer or character specifying the site visit
 #                       VALUE       numeric values
 #
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
+#
 # Output:
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
@@ -415,6 +421,7 @@ nrsaLargeWoody <- function(bCounts=NULL
                                                                      ,locationClass=c('DRY','WET')
                                                                      )
                                                   ,stopOnError = !isUnitTest
+                                                  ,argSavePath = argSavePath
                                                   )
     intermediateMessage('.2')
     wDataInformation <- aquametStandardizeArgument(wDataInformation, ifdf=NULL
@@ -424,6 +431,7 @@ nrsaLargeWoody <- function(bCounts=NULL
                                                                      ,locationClass=c('DRY','WET')
                                                                      )
                                                   ,stopOnError = !isUnitTest
+                                                  ,argSavePath = argSavePath
                                                   )
     intermediateMessage('.3')
     boats <- aquametStandardizeArgument(bCounts, ifdf=ifdfRecode, bDataInformation
@@ -431,6 +439,7 @@ nrsaLargeWoody <- function(bCounts=NULL
                                        ,legalValues = list(CLASS = bDataInformation$name)
                                        ,rangeLimits = list(VALUE=c(0,50))
                                        ,stopOnError = !isUnitTest
+                                       ,argSavePath = argSavePath
                                        )
     intermediateMessage('.4')
     wades <- aquametStandardizeArgument(wCounts, ifdf=ifdfRecode, wDataInformation
@@ -438,6 +447,7 @@ nrsaLargeWoody <- function(bCounts=NULL
                                        ,legalValues = list(CLASS = wDataInformation$name)
                                        ,rangeLimits = list(VALUE=c(0,50))
                                        ,stopOnError = !isUnitTest
+                                       ,argSavePath = argSavePath
                                        )
 
     intermediateMessage('.5')

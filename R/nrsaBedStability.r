@@ -119,6 +119,7 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
                             ,v1w_msq = NULL, xbkf_h = NULL, xbkf_w = NULL
                             ,xfc_lwd = NULL, xslope = NULL, xwidth = NULL
                             ,isUnitTest=FALSE
+                            ,argSavePath = NULL
                             ) {
 # nrsaBedStability <- function(bankgeometry, thalweg, visits, channelgeometry,
 #   channelcrosssection, littoral, wood, fishcover, gisCalcs=NULL) {
@@ -196,6 +197,8 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
 #   01/11/13 tmk: Inserted code to convert factors in the input data frames to
 #            character variables.
 #    2/23/16 cws Updated argument descriptions
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # ARGUMENTS:
 # bXdepth       dataframe containing depth means (units are m) for boatable 
@@ -265,6 +268,8 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
 #               all reaches, with the following columns:
 #                   SITE     integer or character specifying the site visit
 #                   VALUE    numeric values 
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
 #
 # Output:
 #   Either a data frame when metric calculation is successful or a NULL
@@ -307,19 +312,19 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
         return(rc)
     }
     a<-1+2
-    bXdepth  <- aquametStandardizeArgument(bXdepth, 'xdepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)))
-    bSddepth <- aquametStandardizeArgument(bSddepth, 'sddepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)))
-    wXdepth  <- aquametStandardizeArgument(wXdepth, 'xdepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)))
-    wSddepth <- aquametStandardizeArgument(wSddepth, 'sddepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)))
-    lsub_dmm <- aquametStandardizeArgument(lsub_dmm, 'lsub_dmm', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'))
-    lsub2dmm <- aquametStandardizeArgument(lsub2dmm, 'lsub2dmm', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'))
-    rp100    <- aquametStandardizeArgument(rp100, 'rp100', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)))
-    v1w_msq  <- aquametStandardizeArgument(v1w_msq, 'v1w_msq', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,1)))
-    xbkf_h   <- aquametStandardizeArgument(xbkf_h, 'xbkf_h', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,15)))
-    xbkf_w   <- aquametStandardizeArgument(xbkf_w, 'xbkf_w', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,100)))
-    xfc_lwd  <- aquametStandardizeArgument(xfc_lwd, 'xfc_lwd', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,1)))
-    xslope   <- aquametStandardizeArgument(xslope, 'xslope', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)))
-    xwidth   <- aquametStandardizeArgument(xwidth, 'xwidth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,100)))
+    bXdepth  <- aquametStandardizeArgument(bXdepth, 'xdepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)),argSavePath = argSavePath)
+    bSddepth <- aquametStandardizeArgument(bSddepth, 'sddepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)),argSavePath = argSavePath)
+    wXdepth  <- aquametStandardizeArgument(wXdepth, 'xdepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)),argSavePath = argSavePath)
+    wSddepth <- aquametStandardizeArgument(wSddepth, 'sddepth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)),argSavePath = argSavePath)
+    lsub_dmm <- aquametStandardizeArgument(lsub_dmm, 'lsub_dmm', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'),argSavePath = argSavePath)
+    lsub2dmm <- aquametStandardizeArgument(lsub2dmm, 'lsub2dmm', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'),argSavePath = argSavePath)
+    rp100    <- aquametStandardizeArgument(rp100, 'rp100', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,NA)),argSavePath = argSavePath)
+    v1w_msq  <- aquametStandardizeArgument(v1w_msq, 'v1w_msq', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,1)),argSavePath = argSavePath)
+    xbkf_h   <- aquametStandardizeArgument(xbkf_h, 'xbkf_h', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,15)),argSavePath = argSavePath)
+    xbkf_w   <- aquametStandardizeArgument(xbkf_w, 'xbkf_w', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,100)),argSavePath = argSavePath)
+    xfc_lwd  <- aquametStandardizeArgument(xfc_lwd, 'xfc_lwd', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,1)),argSavePath = argSavePath)
+    xslope   <- aquametStandardizeArgument(xslope, 'xslope', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,20)),argSavePath = argSavePath)
+    xwidth   <- aquametStandardizeArgument(xwidth, 'xwidth', ifdf=ifdf, struct=list(SITE=c('integer','character'), VALUE='double'), rangeLimits = list(VALUE=c(0,100)),argSavePath = argSavePath)
     
     mets <- rbind(absentAsNULL(bXdepth,  ifdf, 'xdepth')
                  ,absentAsNULL(bSddepth, ifdf, 'sddepth')

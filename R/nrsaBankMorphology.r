@@ -83,7 +83,7 @@
 #' @keywords survey
 #' 
 
-nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitTest=FALSE) {
+nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitTest=FALSE, argSavePath = NULL) {
 
 ################################################################################
 # Function: nrsaBankMorphology
@@ -146,6 +146,8 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
 #    3/22/19 cws Modified to use dplyr::rename()
 #   12/31/19 cws Allowing SITE to be character in wAngle and bUndercut arguments.
 #   10/13/20 cws Modified input validation to allow NA and '' values of bAngle
+#    8/07/23 cws Added additional arguments for aquamentStandardizeArguments to
+#            allow argument values to be written to csv files.
 # 
 # ARGUMENTS:
 #   bAngle      dataframe containing bank angle class value for sites sampled using
@@ -164,6 +166,8 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
 #                           visit.
 #                   VALUE   an integer value, or character value that is castable
 #                           to an integer, containing the bank angle.
+#   argSavePath character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
 #
 # Output:
 #   Either a data frame when metric calculation is successful or a character
@@ -193,16 +197,19 @@ nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitT
                                         ,struct=list(SITE=c('integer','character'), VALUE='character')
                                         ,legalValues=list(VALUE=c(NA, '', '0-5', '5-30', '30-75', '75-100'))
                                         ,stopOnError = !isUnitTest
+                                        ,argSavePath = argSavePath
                                         )
     wAngle <- aquametStandardizeArgument(wAngle
                                         ,struct=list(SITE=c('integer','character'), VALUE=c('integer','double'))
                                         ,rangeLimits = list(VALUE=c(0, 180))
                                         ,stopOnError = !isUnitTest
+                                        ,argSavePath = argSavePath
                                         )
     wUndercut <- aquametStandardizeArgument(wUndercut
                                            ,struct=list(SITE=c('integer','character'), VALUE=c('integer','double'))
                                            ,rangeLimits = list(VALUE=c(0, 1))
                                            ,stopOnError = !isUnitTest
+                                           ,argSavePath = argSavePath
                                            )
     if(isUnitTest) {
         errs <- NULL

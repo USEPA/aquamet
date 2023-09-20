@@ -218,6 +218,7 @@ nrsaHumanInfluence <- function(buildings = NULL
                                                            ,stringsAsFactors=FALSE
                                                            )
                               ,isUnitTest = FALSE
+                              ,argSavePath = NULL
                               ) {
 
 ################################################################################
@@ -295,6 +296,8 @@ nrsaHumanInfluence <- function(buildings = NULL
 #            and using those values in subsequent legal values checks of data.
 #    3/25/19 cws Modified to use dplyr::rename()
 #    3/29/19 cws Standardized metadata argument naming
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 #  TODO: rewrite interior. Add use of influenceWeights and test it.  Make PARAMETER
 #        values less cryptic.
@@ -397,6 +400,9 @@ nrsaHumanInfluence <- function(buildings = NULL
 #                       weights numeric value used to weight each influence class
 #                               in combined calculations
 #
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
+#
 #
 # Output:
 #   Either a data frame when metric calculation is successful or a character
@@ -440,61 +446,73 @@ nrsaHumanInfluence <- function(buildings = NULL
     dataInformation <- aquametStandardizeArgument(dataInformation, ifdf=NULL
                                                  ,struct = list(value = 'character', weights='double')
                                                  ,legalValues = list(value = c(NA,'','0','P','C','B'))
+                                                 ,argSavePath = argSavePath
                                                  )
     df <- rbind(aquametStandardizeArgument(buildings, ifdf=ifdf,  'BUILD'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(landfillTrash, ifdf=ifdf, 'LANDFL'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(logging, ifdf=ifdf, 'LOG'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(mining, ifdf=ifdf,  'MINE'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(parkLawn, ifdf=ifdf, 'PARK'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(pastureRangeHay, ifdf=ifdf, 'PAST'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(pavementClearedlot, ifdf=ifdf, 'PAVE'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(pipesInOut, ifdf=ifdf, 'PIPES'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(roadsRailroads, ifdf=ifdf, 'ROAD'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(rowcrops, ifdf=ifdf, 'ROW'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                ,aquametStandardizeArgument(wallRevetment, ifdf=ifdf, 'WALL'
                                           ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
                                           ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) #list(VALUE = c(NA,'','0','P','C','B'))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )
                )
 

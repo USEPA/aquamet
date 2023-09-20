@@ -66,6 +66,7 @@
 
 nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('LF','RT'), wChannelMid=c('CU','CL','CD','CR')                          
                                  ,isUnitTest = FALSE
+                                 ,argSavePath = NULL
                                  )
 {
 ################################################################################
@@ -112,6 +113,8 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
 #   10/05/18 cws Using aquametStandardizeArgument, unit test modified accordingly
 #    3/19/19 cws Added isUnitTest argument for consistency with other functions
 #    3/20/19 cws Added legal value check of DIRECTION values in wDensiom argument.
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # TODO: use ddply instead of summaryby. 
 #
@@ -137,6 +140,8 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
 # wChannelMid   character values listing the values of DIRECTION which indicate
 #               that the counts were obtained midstream in the channel.  
 #               Defaults to c('CU','CL','CD','CR').
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
 #
 # Output:
 #   Either a data frame when metric calculation is successful or a NULL
@@ -175,12 +180,14 @@ nrsaCanopyDensiometer <- function(bDensiom=NULL, wDensiom=NULL, wChannelBank=c('
                                           ,struct=list(SITE=c('integer','character'), VALUE='double')
                                           ,rangeLimits = list(VALUE=c(0,20))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )   
     wDensiom <- aquametStandardizeArgument(wDensiom, 'xdepth', ifdf=ifdfWadeable
                                           ,struct = list(SITE=c('integer','character'), DIRECTION='character', VALUE='double')
                                           ,LegalValues = list(DIRECTION = c(wChannelBank, wChannelMid))
                                           ,rangeLimits = list(VALUE=c(0,20))
                                           ,stopOnError = !isUnitTest
+                                          ,argSavePath = argSavePath
                                           )   
     
     mdx <- NULL

@@ -140,6 +140,7 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
                                                             ,stringsAsFactors=FALSE
                                                             )
                               ,isUnitTest = FALSE
+                              ,argSavePath = NULL
                               ) {
 
 ################################################################################
@@ -193,6 +194,8 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
 #            wChannelUnitCodeList. Using the code columns of each for legal 
 #            values of VALUE in bChannelUnit and wChannelUnit arguments.
 #    3/28/19 cws Standardized metadata argument naming
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # TODO: Update unit test to see whether DR is handled properly
 #
@@ -271,6 +274,9 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
 #                                       pct_pool; if this column does not exist,
 #                                       this metric will not be calculated.
 #
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
+#
 # Output:
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
@@ -303,15 +309,18 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
     # wChannelUnit = absentAsNULL(wChannelUnit, ifdf, wChannelUnitCodeList$code)
     bDataInformation <- aquametStandardizeArgument(bDataInformation
                                                   ,struct = list(value = 'character', metsSuffix='character', name = 'character', isFast = 'logical')
+                                                  ,argSavePath = argSavePath
                                                   )
     wDataInformation <- aquametStandardizeArgument(wDataInformation
                                                   ,struct = list(value = 'character', metsSuffix='character', name = 'character', isFast = 'logical', isPool = 'logical')
+                                                  ,argSavePath = argSavePath
                                                   )
     bChannelUnit = aquametStandardizeArgument(bChannelUnit
                                              #,ifdf, bChannelUnitCodeList$code
                                              ,struct = list(SITE=c('integer','character'), VALUE='character')
                                              ,legalValues = list(VALUE=c(NA, '', bDataInformation$value)) #c(NA, '', 'FA','RA','RI','GL','PO','CA','DR'))
                                              ,stopOnError = !isUnitTest
+                                             ,argSavePath = argSavePath
                                              )
     wChannelUnit = aquametStandardizeArgument(wChannelUnit
                                              #,ifdf, wChannelUnitCodeList$code
@@ -321,6 +330,7 @@ nrsaChannelHabitat <- function(bChannelUnit = NULL
                                                                        # ,'P','DR'#,'SB'
                                                                        # ))
                                              ,stopOnError = !isUnitTest
+                                             ,argSavePath = argSavePath
                                              )
     intermediateMessage('.1')
     

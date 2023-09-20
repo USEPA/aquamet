@@ -198,6 +198,7 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                                                ,stringsAsFactors=FALSE
                                                                )
                                   ,isUnitTest = FALSE
+                                  ,argSavePath = NULL
                                   ) {
 
 ################################################################################
@@ -239,6 +240,8 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
 #   10/13/20 cws Added '' as legal value in dataInformation argument, and removed
 #            internal version of that object. Added 'E' as legal canopy and
 #            understory type.
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 ##
 # Arguments:
 # canopyCoverLargeDiameter  dataframe containing cover class values for large 
@@ -356,6 +359,9 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
 #                           calc    numeric values used to calculate numeric 
 #                                   metrics.
 # 
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
+#
 #   Note that possible values for variables in the input data frame are
 #   provided in the document named "NRSA Documentation.pdf" included in the help
 #   directory for the package.
@@ -411,46 +417,55 @@ nrsaRiparianVegetation <- function(canopyCoverLargeDiameter = NULL
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(canopyCoverSmallDiameter, ifdf=ifdf, 'CANSTRE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(canopyVegetationType, ifdf=ifdf, 'CANVEG'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = c(NA,'','C','D','E','M','N'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(groundCoverBare, ifdf=ifdf, 'BARE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(groundCoverNonwoody, ifdf=ifdf, 'GCNWDY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(groundCoverWoody, ifdf=ifdf, 'GCWDY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(understoryCoverNonwoody, ifdf=ifdf, 'UNDNWDY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(understoryCoverWoody, ifdf=ifdf, 'UNDWDY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = dataInformation$value) # as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(understoryVegetationType, ifdf=ifdf, 'UNDERVEG'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', BANK='character', VALUE=c('integer','character'))
                                               ,legalValues = list(BANK = c('LF','RT'), VALUE = c(NA,'','C','D','E','M','N'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    )
     if(is.null(visrip)) return(NULL)

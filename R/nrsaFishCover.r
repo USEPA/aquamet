@@ -171,6 +171,7 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                                                     ,stringsAsFactors=FALSE
                                                     )
                          ,isUnitTest=FALSE
+                         ,argSavePath = NULL
                          ) {
 ################################################################################
 # Function: metsFishCover
@@ -221,6 +222,8 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 #    3/22/19 cws Modified to use dplyr::rename()
 #    3/28/19 cws Standardized metadata argument naming
 #   10/13/20 cws Modified to allow '' values in input.
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # ARGUMENTS:
 # algae       dataframe containing algae cover class data at each transect for
@@ -313,6 +316,9 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
 #                                                   value used for mean cover
 #                                                   calculations.
 #
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
+#
 # Output:
 #   Either a data frame when metric calculation is successful or a character
 #   string containing an error message when metric calculation is not
@@ -363,57 +369,68 @@ nrsaFishCover <- function(algae=NULL, boulder=NULL, brush=NULL
                                                                      ,isBig = c(FALSE, TRUE)
                                                                      ,isNatural = c(FALSE, TRUE)
                                                                      )
+                                                  ,argSavePath = argSavePath
                                                   )
     dataInformation <- aquametStandardizeArgument(dataInformation
                                                  ,struct = list(value=c('integer','character'), presence=c('integer','logical'), weights='double')
                                                  ,legalValues = list(presence=c(NA,FALSE, TRUE))
                                                  ,rangeCheck = list(characteristicCover=c(0,1))
+                                                 ,argSavePath = argSavePath
                                                  )
 
     fcData <- rbind(aquametStandardizeArgument(algae, ifdf=ifdf, 'ALGAE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = dataInformation$value) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(boulder, ifdf=ifdf, 'BOULDR'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(brush, ifdf=ifdf, 'BRUSH'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(liveTree, ifdf=ifdf, 'LVTREE'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(macrophytes, ifdf=ifdf, 'MACPHY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(overhang, ifdf=ifdf, 'OVRHNG'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(structures, ifdf=ifdf, 'STRUCT'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(undercut, ifdf=ifdf, 'UNDERCUT'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    ,aquametStandardizeArgument(woodyDebris, ifdf=ifdf, 'WOODY'
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('integer','character'))
                                               ,legalValues = list(VALUE = c(NA, '', dataInformation$value)) # list(VALUE = as.integer(c(NA,0,1,2,3,4)))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
                    )
 

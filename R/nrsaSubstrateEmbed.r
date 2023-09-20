@@ -38,7 +38,10 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 
-nrsaSubstrateEmbed <- function(percentEmbedded=NULL, isUnitTest=FALSE) {
+nrsaSubstrateEmbed <- function(percentEmbedded=NULL
+                              ,isUnitTest=FALSE
+                              ,argSavePath = NULL
+                              ) {
 
 ################################################################################
 # Function: metsSubstrateEmbed
@@ -79,6 +82,8 @@ nrsaSubstrateEmbed <- function(percentEmbedded=NULL, isUnitTest=FALSE) {
 #    3/16/16 cws Documenting arguments in comments at top.
 #    3/18/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull().
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # Arguments:
 # percentEmbedded   dataframe containing size class data for the dominant 
@@ -92,6 +97,9 @@ nrsaSubstrateEmbed <- function(percentEmbedded=NULL, isUnitTest=FALSE) {
 #                               were obtained at the bank or somewhere in the
 #                               channel
 #                   VALUE       character values
+#
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
 #
 #   Note that possible values for variables in the input data frame are
 #   provided in the document named "NRSA Documentation.pdf" included in the help
@@ -129,6 +137,7 @@ nrsaSubstrateEmbed <- function(percentEmbedded=NULL, isUnitTest=FALSE) {
                                                  ,legalValues = list(ONBANK=c(NA,TRUE,FALSE))
                                                  ,rangeLimits = list(VALUE=c(0,100))
                                                  ,stopOnError = !isUnitTest
+                                                 ,argSavePath = argSavePath
                                                  )
     if(is.null(percentEmbedded)) {
     intermediateMessage('.  no data', loc='end')

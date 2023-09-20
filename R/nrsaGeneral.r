@@ -101,9 +101,9 @@
 nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSpacing = NULL
                        ,sideChannelTransects = c('XA','XB','XC','XD','XE','XF','XG','XH','XI','XJ','XK')
                        ,isUnitTest = FALSE
+                       ,argSavePath = NULL
                        ) {
-  
-   
+
 ################################################################################
 # Function: metsGeneral
 # Title: Calculate NRSA General Metrics
@@ -161,6 +161,8 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
 #    3/18/19 cws Changed to use aquametStandardizeArgument() instead of 
 #            absentAsNull(). Also modified to treat '' values the same as NA
 #            for consistency. Unit test modified accordingly.
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # ARGUMENTS:
 # sampledTransects  dataframe containing only the list of transects sampled for
@@ -188,6 +190,9 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
 #                      used to specify whether a transect is located on a side
 #                      channel.  Default value is for EPA NARS use (XA, XB, etc.)
 #                      which occur parallel to main channel transects A, B, etc.
+#
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
 #
 # Output:
 #   Either a data frame when metric calculation is successful or a character
@@ -230,16 +235,19 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
     sampledTransects <- aquametStandardizeArgument(sampledTransects, ifdf=ifdfTransects
                                                   ,struct = list(SITE=c('integer','character'), TRANSECT='character')
                                                   ,stopOnError = !isUnitTest
+                                                  ,argSavePath = argSavePath
                                                   )
     sideChannels <- aquametStandardizeArgument(sideChannels, ifdf=ifdf
                                               ,struct = list(SITE=c('integer','character'), VALUE=c('character'))
                                               ,legalValues = list(VALUE = c(NA,'','N','Y'))
                                               ,stopOnError = !isUnitTest
+                                              ,argSavePath = argSavePath
                                               )
     transectSpacing <- aquametStandardizeArgument(transectSpacing, ifdf=ifdfValues
                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('double'))
                                                  ,rangeLimits = list(VALUE = c(15,1000))
                                                  ,stopOnError = !isUnitTest
+                                                 ,argSavePath = argSavePath
                                                  )
 
 

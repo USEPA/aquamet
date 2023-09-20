@@ -83,7 +83,15 @@
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 
 
-nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transectSpacing=NULL, writeIntermediateFiles=FALSE, oldeMethods=FALSE, isUnitTest=FALSE) {
+nrsaResidualPools <- function(bDepth=NULL
+                             ,wDepth=NULL
+                             ,siteSlopes=NULL
+                             ,transectSpacing=NULL
+                             ,writeIntermediateFiles=FALSE
+                             ,oldeMethods=FALSE
+                             ,isUnitTest=FALSE
+                             ,argSavePath = NULL
+                             ) {
 
 ################################################################################
 # Function: nrsaResidualPools
@@ -167,6 +175,8 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
 #          protocols.
 #  3/13/19 cws Changed to use aquametStandardizeArgument() instead of 
 #          absentAsNull().
+#  8/07/23 cws Added argSavePath argument, as newly needed for 
+#          aquametStandardizeArgument
 #
 # ARGUMENTS:
 # bDepth          dataframe containing thalweg depths for boatable reaches, with
@@ -220,6 +230,9 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
 #           initial pool dimensions in metsResidualPools.dimensions(), otherwise
 #           uses current method.  Set to TRUE only for unit testing.  IT IS
 #           PROBABLY BEST TO NOT INCLUDE THIS IN THE USER DOCUMENTATION.
+#
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
 #
     intermediateMessage('Residual Pools calculations', loc='start')
 
@@ -283,21 +296,25 @@ nrsaResidualPools <- function(bDepth=NULL, wDepth=NULL, siteSlopes=NULL, transec
                                         ,struct = list(SITE=c('integer','character'), TRANSECT='character', STATION='integer', VALUE=c('double'), UNITS='character')
                                         ,rangeLimits = list(VALUE=c(0,30))
                                         ,stopOnError = !isUnitTest
+                                        ,argSavePath = argSavePath
                                         ) # in M
     wDepth <- aquametStandardizeArgument(wDepth, ifdf=ifdfTransectStation, 'DEPTH'
                                         ,struct = list(SITE=c('integer','character'), TRANSECT='character', STATION='integer', VALUE=c('double'))
                                         ,rangeLimits = list(VALUE=c(0,200))
                                         ,stopOnError = !isUnitTest
+                                        ,argSavePath = argSavePath
                                         ) # in CM
     siteSlopes <- aquametStandardizeArgument(siteSlopes, ifdf=ifdfMetric, 'xslope'
                                             ,struct = list(SITE=c('integer','character'), VALUE=c('double'))
                                             ,rangeLimits = list(VALUE=c(0,20))
                                             ,stopOnError = !isUnitTest
+                                            ,argSavePath = argSavePath
                                             )
     transectSpacing <- aquametStandardizeArgument(transectSpacing, ifdf=ifdfTransect, 'ACTRANSP'
                                                  ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('double'))
                                                  ,rangeLimits = list(VALUE=c(10, 1000))
                                                  ,stopOnError = !isUnitTest
+                                                 ,argSavePath = argSavePath
                                                  ) # in M
 
     if((is.null(bDepth) & is.null(wDepth)) | is.null(siteSlopes) | is.null(transectSpacing)) return(NULL)

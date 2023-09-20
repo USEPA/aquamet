@@ -167,6 +167,7 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
                            ,valleyConstraintUnseen = NULL   # both, on channel constraint form
                            ,valleyWidth = NULL              # both, on channel constraint form
                            ,isUnitTest = FALSE
+                           ,argSavePath = NULL
                            ) {
   
 ################################################################################
@@ -212,6 +213,8 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
 #            UID and RESULT.
 #    2/23/16 cws Updated argument descriptions, and cleaned up comments a tad.
 #    2/26/19 cws Changed to use aquametStandardizeArgument() instead of absentAsNull()
+#    8/07/23 cws Added argSavePath argument, as newly needed for 
+#            aquametStandardizeArgument
 #
 # ARGUMENTS:
 # bankfullWidth     dataframe containing bankfull width from channel constraint  
@@ -277,6 +280,9 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
 #                       VALUE       character or numeric values 
 #                   Note: This value is simply copied to the output without change
 #
+# argSavePath   character string specifying the path to which data arguments are
+#               saved as csv files, or NULL if those files are not to be written.
+#
 # Output:
 #   Either a data frame when metric calculation is successful or a NULL
 #   when metric calculation is not successful.  The data frame contains the 
@@ -310,51 +316,61 @@ nrsaChannelChar <- function(bankfullWidth = NULL            # both, on channel c
                                                ,struct = list(SITE=c('integer','character'), VALUE=c('integer','character','double'))
                                                ,rangeLimits = list(VALUE=c(0, 500))
                                                ,stopOnError = !isUnitTest
+                                               ,argSavePath = argSavePath
                                                )  
     channelPattern <- aquametStandardizeArgument(channelPattern
                                                 ,struct = list(SITE=c('integer','character'), VALUE='character')
                                                 ,legalValues = list(VALUE=c(NA,'','SINGLE','ANASTOM','BRAIDED'))
                                                 ,stopOnError = !isUnitTest
+                                                ,argSavePath = argSavePath
                                                 ) 
     constraintFeatures <- aquametStandardizeArgument(constraintFeatures
                                                     ,struct=list(SITE=c('integer','character'), VALUE='character')
                                                     ,legalValues = list(VALUE=c(NA,'','BEDROCK','HILLSLOPE','TERRACE','HUMAN','NOCONST'))
                                                     ,stopOnError = !isUnitTest
+                                                    ,argSavePath = argSavePath
                                                     ) 
     constraintMultiple <- aquametStandardizeArgument(constraintMultiple
                                                     ,struct=list(SITE=c('integer','character'), VALUE='character')
                                                     ,legalValues = list(VALUE=c(NA,'','B','C','N','U'))
                                                     ,stopOnError = !isUnitTest
+                                                    ,argSavePath = argSavePath
                                                     )
     constraintPercent <- aquametStandardizeArgument(constraintPercent
                                                    ,struct=list(SITE=c('integer','character'), VALUE=c('integer','character','double'))
                                                    ,rangeLimits = list(VALUE=c(0, 100))
                                                    ,stopOnError = !isUnitTest
+                                                   ,argSavePath = argSavePath
                                                    )
     constraintSingle <- aquametStandardizeArgument(constraintSingle
                                                   ,struct=list(SITE=c('integer','character'), VALUE='character')
                                                   ,legalValues = list(VALUE=c(NA, '','CON_VSHAPED','CON_BROAD','UNC_NARROW','UNC_BROAD'))
                                                   ,stopOnError = !isUnitTest
+                                                  ,argSavePath = argSavePath
                                                   ) 
     seeOverBank <- aquametStandardizeArgument(seeOverBank
                                              ,struct=list(SITE=c('integer','character'), VALUE='character')
                                              ,legalValues = list(VALUE=c(NA, '', 'N', 'NO', 'Y', 'YES'))
                                              ,stopOnError = !isUnitTest
+                                             ,argSavePath = argSavePath
                                              ) 
     shoreToVegDistance <- aquametStandardizeArgument(shoreToVegDistance
                                                     ,struct=list(SITE=c('integer','character'), VALUE=c('integer','character','double'))
                                                     ,rangeLimits = list(VALUE=c(0, 500))
                                                     ,stopOnError = !isUnitTest
+                                                    ,argSavePath = argSavePath
                                                     ) 
     valleyConstraintUnseen <- aquametStandardizeArgument(valleyConstraintUnseen
                                                         ,struct=list(SITE=c('integer','character'), VALUE='character')
                                                         ,legalValues = list(VALUE=c('','Y'))
                                                         ,stopOnError = !isUnitTest
+                                                        ,argSavePath = argSavePath
                                                         ) 
     valleyWidth <- aquametStandardizeArgument(valleyWidth
                                              ,struct=list(SITE=c('integer','character'), VALUE=c('integer','character','double'))
                                              ,rangeLimits = list(VALUE=c(0, 3000))
                                              ,stopOnError = !isUnitTest
+                                             ,argSavePath = argSavePath
                                              ) 
 
     intermediateMessage('.2')
