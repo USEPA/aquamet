@@ -186,19 +186,17 @@ calcSynInfluenceTest <- function()
 	
 	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 #	return(diffs)
-	checkEquals(NULL, diffs, "Incorrect calculation of synthesized influence without assumptions")
+	checkEquals(NULL, diffs, "Incorrect calculation of synthesized influence")
 	
-	# Test again
-#	# Test calculations with assumptions
-#	expected <- calcSynCoversTest.expectedWithAssumptions()
-#	actual <- calcSynCovers(testData, 15, TRUE)
-#	
-#	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
-##	return(diffs)
-#	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers with assumptions")
-	
-}
+	# Test again with data exercising all possible conditions
+	testData <- calcSynInfluenceTest.testDataFullSet()
+	expected <- calcSynInfluenceTest.expectedFullSet()
+	actual <- calcSynInfluence(testData)
+	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-6)
+#	return(diffs)
+	checkEquals(NULL, diffs, "Incorrect calculation of synthesized influence testing full set of conditions")
 
+}
 
 
 calcSynInfluenceTest.testData <- function()
@@ -440,6 +438,241 @@ calcSynInfluenceTest.expectedWithAssumptions <- function()
 	return(expected)
 }
 
+
+calcSynInfluenceTest.testDataFullSet <- function()
+{
+    rc <- 	expand.grid(X =    c(NA, '', '0', 'P', 'C')
+                       ,X_DD = c(NA, '', '0', 'P', 'C')
+                       ,HORIZ_DIST_DD = c(NA, '', 0, 0.5, 1, 5, 15, 20)
+                       ,stringsAsFactors = FALSE
+                       ) %>%
+            mutate(SITE = 1:nrow(.)
+                  ,STATION = 'T'
+                  ) %>%
+            pivot_longer(c(-SITE, -STATION), names_to='CLASS', values_to='VALUE') %>%
+            mutate(calc = ifelse(CLASS == 'HORIZ_DIST_DD', NA
+                         ,ifelse(VALUE %in% '0', 0.0
+                         ,ifelse(VALUE %in% 'P', 0.5
+                         ,ifelse(VALUE %in% 'C', 1.0, NA
+                          ))))
+                  )
+    return(rc)
+}
+
+calcSynInfluenceTest.expectedFullSet <- function()
+{
+    tc <- textConnection("SITE STATION CLASS VALUE       calc
+                             1       T X_SYN    NA         NA
+                             2       T X_SYN    NA         NA
+                             3       T X_SYN    NA         NA
+                             4       T X_SYN    NA         NA
+                             5       T X_SYN    NA         NA
+                             6       T X_SYN    NA         NA
+                             7       T X_SYN    NA         NA
+                             8       T X_SYN    NA         NA
+                             9       T X_SYN    NA         NA
+                            10       T X_SYN    NA         NA
+                            11       T X_SYN    NA         NA
+                            12       T X_SYN    NA         NA
+                            13       T X_SYN    NA 0.00000000
+                            14       T X_SYN    NA         NA
+                            15       T X_SYN    NA         NA
+                            16       T X_SYN    NA         NA
+                            17       T X_SYN    NA         NA
+                            18       T X_SYN    NA         NA
+                            19       T X_SYN    NA 0.50000000
+                            20       T X_SYN    NA         NA
+                            21       T X_SYN    NA         NA
+                            22       T X_SYN    NA         NA
+                            23       T X_SYN    NA         NA
+                            24       T X_SYN    NA         NA
+                            25       T X_SYN    NA 1.00000000
+                            26       T X_SYN    NA         NA
+                            27       T X_SYN    NA         NA
+                            28       T X_SYN    NA         NA
+                            29       T X_SYN    NA         NA
+                            30       T X_SYN    NA         NA
+                            31       T X_SYN    NA         NA
+                            32       T X_SYN    NA         NA
+                            33       T X_SYN    NA         NA
+                            34       T X_SYN    NA         NA
+                            35       T X_SYN    NA         NA
+                            36       T X_SYN    NA         NA
+                            37       T X_SYN    NA         NA
+                            38       T X_SYN    NA 0.00000000
+                            39       T X_SYN    NA         NA
+                            40       T X_SYN    NA         NA
+                            41       T X_SYN    NA         NA
+                            42       T X_SYN    NA         NA
+                            43       T X_SYN    NA         NA
+                            44       T X_SYN    NA 0.50000000
+                            45       T X_SYN    NA         NA
+                            46       T X_SYN    NA         NA
+                            47       T X_SYN    NA         NA
+                            48       T X_SYN    NA         NA
+                            49       T X_SYN    NA         NA
+                            50       T X_SYN    NA 1.00000000
+                            51       T X_SYN    NA         NA
+                            52       T X_SYN    NA         NA
+                            53       T X_SYN    NA 0.00000000
+                            54       T X_SYN    NA 0.50000000
+                            55       T X_SYN    NA 1.00000000
+                            56       T X_SYN    NA         NA
+                            57       T X_SYN    NA         NA
+                            58       T X_SYN    NA 0.00000000
+                            59       T X_SYN    NA 0.50000000
+                            60       T X_SYN    NA 1.00000000
+                            61       T X_SYN    NA         NA
+                            62       T X_SYN    NA         NA
+                            63       T X_SYN    NA 0.00000000
+                            64       T X_SYN    NA 0.50000000
+                            65       T X_SYN    NA 1.00000000
+                            66       T X_SYN    NA         NA
+                            67       T X_SYN    NA         NA
+                            68       T X_SYN    NA 0.00000000
+                            69       T X_SYN    NA 0.50000000
+                            70       T X_SYN    NA 1.00000000
+                            71       T X_SYN    NA         NA
+                            72       T X_SYN    NA         NA
+                            73       T X_SYN    NA 0.00000000
+                            74       T X_SYN    NA 0.50000000
+                            75       T X_SYN    NA 1.00000000
+                            76       T X_SYN    NA         NA
+                            77       T X_SYN    NA         NA
+                            78       T X_SYN    NA 0.00000000
+                            79       T X_SYN    NA 0.50000000
+                            80       T X_SYN    NA 1.00000000
+                            81       T X_SYN    NA         NA
+                            82       T X_SYN    NA         NA
+                            83       T X_SYN    NA 0.00000000
+                            84       T X_SYN    NA 0.50000000
+                            85       T X_SYN    NA 1.00000000
+                            86       T X_SYN    NA         NA
+                            87       T X_SYN    NA         NA
+                            88       T X_SYN    NA 0.00000000
+                            89       T X_SYN    NA 0.50000000
+                            90       T X_SYN    NA 1.00000000
+                            91       T X_SYN    NA         NA
+                            92       T X_SYN    NA         NA
+                            93       T X_SYN    NA 0.00000000
+                            94       T X_SYN    NA 0.50000000
+                            95       T X_SYN    NA 1.00000000
+                            96       T X_SYN    NA         NA
+                            97       T X_SYN    NA         NA
+                            98       T X_SYN    NA 0.00000000
+                            99       T X_SYN    NA 0.50000000
+                           100       T X_SYN    NA 1.00000000
+                           101       T X_SYN    NA         NA
+                           102       T X_SYN    NA         NA
+                           103       T X_SYN    NA         NA
+                           104       T X_SYN    NA         NA
+                           105       T X_SYN    NA         NA
+                           106       T X_SYN    NA         NA
+                           107       T X_SYN    NA         NA
+                           108       T X_SYN    NA         NA
+                           109       T X_SYN    NA         NA
+                           110       T X_SYN    NA         NA
+                           111       T X_SYN    NA         NA
+                           112       T X_SYN    NA         NA
+                           113       T X_SYN    NA 0.00000000
+                           114       T X_SYN    NA 0.46666667
+                           115       T X_SYN    NA 0.93333333
+                           116       T X_SYN    NA         NA
+                           117       T X_SYN    NA         NA
+                           118       T X_SYN    NA 0.03333333
+                           119       T X_SYN    NA 0.50000000
+                           120       T X_SYN    NA 0.96666667
+                           121       T X_SYN    NA         NA
+                           122       T X_SYN    NA         NA
+                           123       T X_SYN    NA 0.06666667
+                           124       T X_SYN    NA 0.53333333
+                           125       T X_SYN    NA 1.00000000
+                           126       T X_SYN    NA         NA
+                           127       T X_SYN    NA         NA
+                           128       T X_SYN    NA         NA
+                           129       T X_SYN    NA         NA
+                           130       T X_SYN    NA         NA
+                           131       T X_SYN    NA         NA
+                           132       T X_SYN    NA         NA
+                           133       T X_SYN    NA         NA
+                           134       T X_SYN    NA         NA
+                           135       T X_SYN    NA         NA
+                           136       T X_SYN    NA         NA
+                           137       T X_SYN    NA         NA
+                           138       T X_SYN    NA 0.00000000
+                           139       T X_SYN    NA 0.33333333
+                           140       T X_SYN    NA 0.66666667
+                           141       T X_SYN    NA         NA
+                           142       T X_SYN    NA         NA
+                           143       T X_SYN    NA 0.16666667
+                           144       T X_SYN    NA 0.50000000
+                           145       T X_SYN    NA 0.83333333
+                           146       T X_SYN    NA         NA
+                           147       T X_SYN    NA         NA
+                           148       T X_SYN    NA 0.33333333
+                           149       T X_SYN    NA 0.66666667
+                           150       T X_SYN    NA 1.00000000
+                           151       T X_SYN    NA         NA
+                           152       T X_SYN    NA         NA
+                           153       T X_SYN    NA         NA
+                           154       T X_SYN    NA         NA
+                           155       T X_SYN    NA         NA
+                           156       T X_SYN    NA         NA
+                           157       T X_SYN    NA         NA
+                           158       T X_SYN    NA         NA
+                           159       T X_SYN    NA         NA
+                           160       T X_SYN    NA         NA
+                           161       T X_SYN    NA 0.00000000
+                           162       T X_SYN    NA 0.00000000
+                           163       T X_SYN    NA 0.00000000
+                           164       T X_SYN    NA 0.00000000
+                           165       T X_SYN    NA 0.00000000
+                           166       T X_SYN    NA 0.50000000
+                           167       T X_SYN    NA 0.50000000
+                           168       T X_SYN    NA 0.50000000
+                           169       T X_SYN    NA 0.50000000
+                           170       T X_SYN    NA 0.50000000
+                           171       T X_SYN    NA 1.00000000
+                           172       T X_SYN    NA 1.00000000
+                           173       T X_SYN    NA 1.00000000
+                           174       T X_SYN    NA 1.00000000
+                           175       T X_SYN    NA 1.00000000
+                           176       T X_SYN    NA         NA
+                           177       T X_SYN    NA         NA
+                           178       T X_SYN    NA         NA
+                           179       T X_SYN    NA         NA
+                           180       T X_SYN    NA         NA
+                           181       T X_SYN    NA         NA
+                           182       T X_SYN    NA         NA
+                           183       T X_SYN    NA         NA
+                           184       T X_SYN    NA         NA
+                           185       T X_SYN    NA         NA
+                           186       T X_SYN    NA 0.00000000
+                           187       T X_SYN    NA 0.00000000
+                           188       T X_SYN    NA 0.00000000
+                           189       T X_SYN    NA 0.00000000
+                           190       T X_SYN    NA 0.00000000
+                           191       T X_SYN    NA 0.50000000
+                           192       T X_SYN    NA 0.50000000
+                           193       T X_SYN    NA 0.50000000
+                           194       T X_SYN    NA 0.50000000
+                           195       T X_SYN    NA 0.50000000
+                           196       T X_SYN    NA 1.00000000
+                           197       T X_SYN    NA 1.00000000
+                           198       T X_SYN    NA 1.00000000
+                           199       T X_SYN    NA 1.00000000
+                           200       T X_SYN    NA 1.00000000        
+                         "
+                        )
+	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL) %>%
+	      mutate(STATION = 'T')
+	rm(tc)
+	
+	# rc$VALUE <- as.numeric(NA)
+	# rc$STATION <- as.character(rc$STATION)
+
+	return(rc)
+}
 
 countTest <- function() {
 # Performs tests on count().

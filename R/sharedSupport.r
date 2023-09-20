@@ -400,44 +400,45 @@ calcSynInfluence <- function(influenceData) {
 
 	influences <- merge(influences, props, by=c('SITE','STATION'), all.x=TRUE)
 
-	inflProps <- within(influences	
-					   ,{basicSyntheticInfl <- ifelse(is.na(prop_dd)
-						                             ,ifelse(abs(infl_rip - infl_dd) < 1e-15
-						                                    ,infl_rip	# case (c)
-															,NA
-						                                    )
-											  ,ifelse(abs(prop_dd) < 1e-15
-											         ,infl_rip					# case (b); also
-																				# infl_dd should be zero here.
-																				# ignore any illogical cases
-											  ,ifelse(is.na(infl_dd), NA
-						                      ,ifelse(infl_dd == 1.0
-							  						 ,ifelse(abs(prop_dd) < 1e-15
-							  						        ,infl_rip			# this case is illogical, 
-															,1.0
-															)
-											  ,ifelse(infl_dd == 0.5
-							  						 ,ifelse(abs(prop_dd - 1) < 1e-15
-							  						        ,infl_dd			# case (a)
-													 ,ifelse(is.na(infl_rip)
-													        ,NA
-					 								 ,ifelse(infl_rip == 1.0
-					 								        ,prop_dd * infl_dd + prop_rip * infl_rip
-															,0.5
-	 														)))
-											  ,ifelse(infl_dd == 0.0
-													 ,ifelse(abs(prop_dd - 1) < 1e-15
-													        ,infl_dd			# case (a)
-													 ,ifelse(is.na(infl_rip)
-													        ,NA
-							                                ,prop_dd * infl_dd + prop_rip * infl_rip
-													  ))
-													,NA							# unexpected infl_dd value
-											   ))))))
-													
-						 syn <- as.numeric(substr(as.character(basicSyntheticInfl), 1, 18))
-					    }
-					   )
+	# inflProps <- within(influences	
+	# 				   ,{basicSyntheticInfl <- ifelse(is.na(prop_dd)
+	# 					                             ,ifelse(abs(infl_rip - infl_dd) < 1e-15
+	# 					                                    ,infl_rip	# case (c)
+	# 														,NA
+	# 					                                    )
+	# 										  ,ifelse(abs(prop_dd) < 1e-15
+	# 										         ,infl_rip					# case (b); also
+	# 																			# infl_dd should be zero here.
+	# 																			# ignore any illogical cases
+	# 										  ,ifelse(is.na(infl_dd), NA
+	# 					                      ,ifelse(infl_dd == 1.0
+	# 						  						 ,ifelse(abs(prop_dd) < 1e-15
+	# 						  						        ,infl_rip			# this case is illogical, 
+	# 														,1.0
+	# 														)
+	# 										  ,ifelse(infl_dd == 0.5
+	# 						  						 ,ifelse(abs(prop_dd - 1) < 1e-15
+	# 						  						        ,infl_dd			# case (a)
+	# 												 ,ifelse(is.na(infl_rip)
+	# 												        ,NA
+	# 				 								 ,ifelse(infl_rip == 1.0
+	# 				 								        ,prop_dd * infl_dd + prop_rip * infl_rip
+	# 														,0.5
+	#  														)))
+	# 										  ,ifelse(infl_dd == 0.0
+	# 												 ,ifelse(abs(prop_dd - 1) < 1e-15
+	# 												        ,infl_dd			# case (a)
+	# 												 ,ifelse(is.na(infl_rip)
+	# 												        ,NA
+	# 						                                ,prop_dd * infl_dd + prop_rip * infl_rip
+	# 												  ))
+	# 												,NA							# unexpected infl_dd value
+	# 										   ))))))
+	# 												
+	# 					 syn <- as.numeric(substr(as.character(basicSyntheticInfl), 1, 18))
+	# 				    }
+	# 				   )
+
     inflProps <- influences %>%
                  mutate(basicSyntheticInfl = # Handle missing values when possible
                                              ifelse(is.na(prop_rip) | is.na(prop_dd)
