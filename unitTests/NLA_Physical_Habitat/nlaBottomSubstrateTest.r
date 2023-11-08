@@ -20,10 +20,31 @@ nlaBottomSubstrateTest <- function()
 # years is the coding of odor and color, and the code (and 2007 test data) are
 # modified to use the 2012 coding.
 {
+    nlaBottomSubstrateTest.handmadeData()   # Utilize handcreated data to look for odd cases
     nlaBottomSubstrateTest.fullData()       # all arguments present with all codes
     nlaBottomSubstrateTest.absentData()     # some arguments present
     nlaBottomSubstrateTest.partialData()    # all arguments present but not all codes
 #    nlaBottomSubstrateTest.miscodedData()   # all arguments present but codes are not expected.
+}
+
+nlaBottomSubstrateTest.handmadeData <- function()
+#
+{
+    testInfo <- nlaBottomSubstrateTest.createHandmadeTestData()
+    
+    # Check just nlaBottomSubstrate.populationEstimates
+
+    actual <- nlaBottomSubstrate.populationEstimates(testInfo$testData
+                                                    ,nlaBottomSubstrateTest.createClassInformation() %>%
+                                                     dplyr::rename(CLASS = name
+                                                                  ,diam = characteristicDiameter
+                                                                  )
+                                                    ) %>%
+               arrange(SITE, METRIC) %>% 
+               select(SITE, METRIC, VALUE, everything() )
+    checkEquals(testInfo$expected, actual, 'Unexpected results with handmade data')
+    
+    # Check entire nlaBottomSubstrate
 }
 
 nlaBottomSubstrateTest.fullData <- function()
@@ -716,6 +737,172 @@ nlaBottomSubstrateTest.createTestData <- function()
 	return(fake)		
 }
 
+nlaBottomSubstrateTest.createHandmadeTestData <- function()
+# Returns dataframe with hand made test data that is created to make specific
+# tests:
+# SITE  Description
+#   1   Calculation with single substrate at single station
+#   2   Calculation with 2 substrates at single station
+#   3   Calculation with single substrate at multiple stations
+#   4   Calculation with 2 substrates in multiple stations
+{
+    testData <- rbind(data.frame(SITE=1L, STATION='A', CLASS='BOULDERS', VALUE='4'
+                          ,stringsAsFactors=FALSE
+                          )
+               ,data.frame(SITE=2L, STATION='A', CLASS=c('BOULDERS','SILT'), VALUE='3'
+                          ,stringsAsFactors=FALSE
+                          )
+               ,data.frame(SITE=3L, STATION=c('A','B'), CLASS=c('BOULDERS'), VALUE='4'
+                          ,stringsAsFactors=FALSE
+                          )
+               ,data.frame(SITE=4L, STATION=c('A','A','B','B')
+                          ,CLASS=c('BOULDERS','SILT','COBBLE','SAND'), VALUE='3'
+                          ,stringsAsFactors=FALSE
+                          )
+               ,data.frame(SITE=5L, STATION=c('A','A','B','B','C','C','C','C')
+                          ,CLASS=c('BOULDERS','SILT', 'COBBLE','SAND'
+                                  ,'SAND','GRAVEL','BEDROCK','SILT'
+                                  )
+                          ,VALUE=c('4','1', '3','2', '4','3','2','0')
+                          ,stringsAsFactors=FALSE
+                          )
+               ,data.frame(SITE=6L, STATION=c('A','A','B','B','C','C','D','D')
+                          ,CLASS=c('BOULDERS','SILT', 'COBBLE','SAND'
+                                  ,'SAND','GRAVEL', 'BEDROCK','SILT'
+                                  )
+                          ,VALUE=c('','2', NA, '2', '','0', NA,'0')
+                          ,stringsAsFactors=FALSE
+                          )
+               ) %>%
+          merge(nlaBottomSubstrateTest.createClassInformation() %>%
+                dplyr::rename(CLASS = name
+                             ,diam = characteristicDiameter
+                             )
+               ,by='CLASS'
+               ,all.x=TRUE
+               ) %>%
+          merge(nlaBottomSubstrateTest.createDataInformation() %>%
+                dplyr::rename(VALUE = value
+                             ,cover = weights
+                             )
+               ,by='VALUE'
+               ,all.x=TRUE
+               ) %>%
+          select(SITE, STATION, CLASS, VALUE, diam, inPopulationEstimate, cover, presence)
+
+        
+    stationMeansAt5 <- c(A=mean(c(log10(1000*0.875/(0.875+0.05)), log10(7.745967e-03 * 0.05/(0.875+0.05)))
+                               ,na.rm=TRUE)
+                        ,B=mean(c(log10(1.2649110640673517e+02*0.575/(0.575+0.25)), log10(3.4641016151377546e-01 * 0.25/(0.575+0.25)))
+                               ,na.rm=TRUE)
+                        ,C=mean(c(log10(3.4641016151377546e-01 * 0.875/(0.875+0.575+0.25+0)), log10(1.1313708498984761e+01 * 0.575/(0.875+0.575+0.25+0))
+                                 ,log10(5.6568542494923804e+03 * 0.25/(0.875+0.575+0.25+0)), log10(7.7459666924148338e-03 * 0.00/(0.875+0.575+0.25+0) * NA) )
+                                 ,na.rm=TRUE)
+                        )
+    stationMeansAt6 <- c(A=mean(c(log10(1.0000000000000000e+03 * NA/(2)), log10(7.7459666924148338e-03 *  2/(2)) ), na.rm=TRUE)
+                        ,B=mean(c(log10(1.2649110640673517e+02 * NA/(2)), log10(3.4641016151377546e-01 *  2/(2)) ), na.rm=TRUE)
+                        ,C=mean(c(log10(1.1313708498984761e+01 * NA/(0)), log10(3.4641016151377546e-01 * NA/(0)) ), na.rm=TRUE)
+                        ,D=mean(c(log10(5.6568542494923804e+03 * NA/(0)), log10(7.7459666924148338e-03 *  0/(0)) ), na.rm=TRUE) 
+                        )
+    results <- rbind(data.frame(SITE=1L  # A has all boulders
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          )
+                               ,VALUE =  c(3.0,      NA,       3.0
+                                          ,3.0,      3.0,      3.0,       3.0
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=2L  # A has equal boulders and silt
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          )
+                               ,VALUE =  c(0.14350781693193, NA, 0.14350781693193
+                                          ,0.14350781693193, 0.14350781693193, 0.14350781693193, 0.14350781693193)
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=3L  # A and B have all boulders
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          )
+                               ,VALUE =  c(3.0,      0.0,       3.0
+                                          ,3.0,       3.0,       3.0,       3.0
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=4L  # A has equal boulders and silt, B has equal cobbles and sand
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          )
+                               ,VALUE =  c(0.331651564221918,0.266075439093198,0.14350781693193
+                                          ,0.14350781693193, 0.331651564221918, 0.51979531151190628, 0.51979531151190628
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=5L  # Three transects and a mix of substrates and covers
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          )
+                               ,VALUE =  c(mean(stationMeansAt5, na.rm=TRUE)
+                                          ,sd(stationMeansAt5, na.rm=TRUE)
+                                          ,quantile(stationMeansAt5, 0.16, type = 2)
+                                         ,quantile(stationMeansAt5, 0.25, type = 2)
+                                          ,quantile(stationMeansAt5, 0.50, type = 2)
+                                          ,quantile(stationMeansAt5, 0.75, type = 2)
+                                          ,quantile(stationMeansAt5, 0.84, type = 2)
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=6L  # Transects with missing values and zeros
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          )
+                               ,VALUE =  c(mean(stationMeansAt6, na.rm=TRUE)
+                                          ,sd(stationMeansAt6, na.rm=TRUE)
+                                          ,quantile(stationMeansAt6, 0.16, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt6, 0.25, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt6, 0.50, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt6, 0.75, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt6, 0.84, type = 2, na.rm=TRUE)
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ) %>%
+               arrange(SITE, METRIC) %>% select(SITE, METRIC, VALUE)
+    
+    rc <- list(testData=testData, expected=results)
+    return(rc)
+}
+
+nlaBottomSubstrateTest.createClassInformation <- function()
+# Returns dataframe with standard structure of classInformation argument
+{
+    rc <- data.frame(name=c('BEDROCK', 'BOULDERS'
+                            ,'COBBLE',  'GRAVEL'
+                            ,'SAND',    'SILT'
+                            ,'ORGANIC', 'WOOD'
+                            )
+                    ,characteristicDiameter=c(gmean(c(4000,8000)), gmean(c(250,4000))
+                                             ,gmean(c(64,250)),    gmean(c(2,64))
+                                             ,gmean(c(0.06,2)),    gmean(c(0.001,0.06))
+                       	                     ,NA,                  NA
+                       	                     )
+                    ,inPopulationEstimate = c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, FALSE, FALSE)
+                    ,stringsAsFactors=FALSE
+                    )
+    return(rc)
+}
+
+nlaBottomSubstrateTest.createDataInformation <- function()
+# Returns dataframe with standard structure of dataInformation argument
+{
+    rc <- data.frame(value	 = c(NA, '0', '1', '2', '3', '4')
+                    ,weights = c(NA, 0, 0.05, 0.25, 0.575, 0.875)
+					,presence= c(NA, 0, 1, 1, 1, 1) %>% as.logical()
+                    ,stringsAsFactors=FALSE
+                    )
+    return(rc)
+}
 
 nlaBottomSubstrateTest.createExpectedResults <- function()
 # Expected values taken from 2007 database and edited to correct

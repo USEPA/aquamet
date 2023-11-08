@@ -351,8 +351,8 @@ nlaBottomSubstrate <- function(bedrock=NULL
 
     substrate <- rbind(bedrock, boulder, cobble, gravel, organic, sand, silt, wood)
   	bsData <- nlaBottomSubstrate.setupForParticleCalculations(substrate, substrateCovers, substrateSizes)
+#print('bsDdata'); print(str(bsData)); print(bsData %>% subset(SITE==7519) %>% arrange(SITE, STATION, CLASS))
   	intermediateMessage('.1')
-	
   	indivPresence <- nlaBottomSubstrate.indivPresence(bsData)
   	intermediateMessage('.2')
   	variety <- nlaBottomSubstrate.variety(bsData)
@@ -521,22 +521,25 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
     
 	# Determine normalized coversof mineral substrates, and use those to weight
 	# the characteristic diameters for determining diameter percentiles at each 
-	# site.
+	# site. If the cover of a substrate class is zero, change it to NA to remove
+    # it from the calculation
 	mineralCover <- subset(bsData, CLASS %in% subset(substrateSizes, inPopulationEstimate)$CLASS
                           ,select=names(bsData)[names(bsData) != 'normCover']
                           )
+	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))
+
   	mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
 	intermediateMessage('.a')
-	
-	mineralCover$wtLDiam <- with(mineralCover, lDiam * normCover)
-  	diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtLDiam)
+
+	mineralCover$wtDiam <- with(mineralCover, log10(diam * normCover) )
+
+  	diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtDiam)
                               ,list(SITE=mineralCover$SITE
                                    ,STATION=mineralCover$STATION
                                    ) 
                               ,mean, na.rm=TRUE
                               )
     intermediateMessage('.b')
-
 
 	# Estimate measures of logged diameter populations: mean, sd, percentiles.
 	# Percentiles use the type 2 algorithm because it matches what was used

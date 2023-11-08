@@ -508,6 +508,7 @@ nlaShorelineSubstrate <- function(bedrock = NULL
                         #                  )
                         ,select=names(sscover)[names(sscover) != 'normCover']
                   )
+	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))                ### NEW
   mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
   
   # tt <- merge(mineralCover, substrateSizes
@@ -516,9 +517,11 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   #            ) %>%
   #       mutate(lDiam = log10(diam))
   #  tt$wtLDiam <- tt$lDiam * tt$normCover
-    mineralCover <- mineralCover %>% mutate(lDiam = log10(diam), wtLDiam = lDiam * normCover)
+#    mineralCover <- mineralCover %>% mutate(lDiam = log10(diam), wtLDiam = lDiam * normCover) #### OLD
+   mineralCover <- mineralCover %>% mutate(wtDiam = log10(diam * normCover))                   #### NEW
 
-  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtLDiam)
+#  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtLDiam)                           #### OLD
+  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtDiam)                             #### NEW
                             ,list('SITE'=mineralCover$SITE
                                  ,'STATION'=mineralCover$STATION
                                  ) 

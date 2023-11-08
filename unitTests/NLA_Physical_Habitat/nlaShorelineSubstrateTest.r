@@ -9,8 +9,8 @@
 nlaShorelineSubstrateTest <- function()
 # Unit test for nlaShorelineSubstrate
 {
+	#nlaShorelineSubstrateTest.handmadeData()
 	nlaShorelineSubstrateTest.2007()
-	
 }
 
 
@@ -938,6 +938,26 @@ nlaShorelineSubstrateTest.expectedResults2007 <- function()
 	close(tc)
 			
 	return(fake)			
+}
+
+nlaShorelineSubstrateTest.handmadeData <- function()
+# Unit test for nlaShorelineSubstrate that uses hand made data. This handmade
+# data and expected results are based on unit tests for Bottom Substrate metrics.
+{
+    testInfo <- nlaBottomSubstrateTest.createHandmadeTestData()
+    
+    # Check just nlaShorelineSubstrate.populationEstimates
+    actual <- nlaShorelineSubstrate.populationEstimates(testInfo$testData
+                                                    ,nlaBottomSubstrateTest.createClassInformation() %>%
+                                                     dplyr::rename(CLASS = name
+                                                                  ,diam = characteristicDiameter
+                                                                  )
+                                                    ) %>%
+               arrange(SITE, METRIC) %>% 
+               select(SITE, METRIC, VALUE, everything() )
+    checkEquals(testInfo$expected, actual, 'Unexpected results with handmade data')
+    
+    # Check entire nlaBottomSubstrate
 }
 
 

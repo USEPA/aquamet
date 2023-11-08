@@ -5,6 +5,10 @@
 #          calcSynCoversTest, calcSynInfluenceTest, fillinDrawdownDataTest and modalClassesTest.
 #  7/11/17 cws Changed PARAMETER to CLASS in all remaining functions.
 #  3/26/19 cws Modified to use dplyr::rename()
+#  9/20/23 cws Updated calcSynInfluenceTest to be more comprehensive and address
+#          corrections to calcSynInfluence.
+#  9/21/23 cws Updated calcSynCoversTest to cover corrected handling of lower
+#          limit of horizontal drawdown distance. Unit test updated as well.
 #
 # RUnit tests
 
@@ -56,6 +60,11 @@ calcSynCoversTest.testData <- function()
 						  1		D		FC_Y			3		0.575
 						  1		D		FC_Y_DD			2		0.25
 						  1		D		HORIZ_DIST_DD	20		NA		
+						  1		E		FC_X			3		0.575
+						  1		E		FC_X_DD			4		0.875
+						  1		E		FC_Y			3		0.575
+						  1		E		FC_Y_DD			2		0.25
+						  1		E		HORIZ_DIST_DD	0.5		NA		
 						  2		A		FC_X			0		0			# data with missing & absent values
 						  2		A		FC_X_DD			foo		NA
 						  2		A		FC_Y			2		0.25
@@ -125,6 +134,8 @@ calcSynCoversTest.expected <- function()
 							1       C  FC_Y_SYN 0.358333333333333
 							1       D  FC_X_SYN 0.875000000000000
 							1       D  FC_Y_SYN 0.250000000000000
+							1       E  FC_X_SYN 0.575000000000000
+							1       E  FC_Y_SYN 0.575000000000000
 							2       A  FC_X_SYN        NA
 							2       A  FC_Y_SYN        NA
 							2       B  FC_X_SYN 0.291666666666667
@@ -360,15 +371,15 @@ calcSynInfluenceTest.expected <- function()
 {
 	tc <- textConnection("SITE STATION CLASS VALUE                     calc
 							1       A  HI_X_SYN     NA 0.0000000000000000000000
-							1       A  HI_Y_SYN     NA 0.3333333333333333333333
-							1       B  HI_X_SYN     NA 0.3333333333333333333333
+							1       A  HI_Y_SYN     NA 1.0000000000000000000000 # would be 1/3 except for spatial relationship
+							1       B  HI_X_SYN     NA 0.5000000000000000000000 # would be 1/3 except for spatial relationship
 							1       B  HI_Y_SYN     NA 0.3333333333333333333333
 							1       C  HI_X_SYN     NA 1.0000000000000000000000
 							1       C  HI_Y_SYN     NA 0.6666666666666669666666
 							1       D  HI_X_SYN     NA 0.1666666666666666666666
-							1       D  HI_Y_SYN     NA 0.8333333333333333333333
+							1       D  HI_Y_SYN     NA 1.0000000000000000000000 # would be 5/6 except for spatial relationship
 							1       E  HI_X_SYN     NA 0.5000000000000000000000
-							1       E  HI_Y_SYN     NA 0.8333333333333333333333
+							1       E  HI_Y_SYN     NA 1.0000000000000000000000 # would be 5/6 except for spatial relationship
 							11      A  HI_X_SYN     NA 0.0000000000000000000000
 							11      A  HI_Y_SYN     NA 0.0000000000000000000000
 							11      B  HI_X_SYN     NA 0.0000000000000000000000
@@ -579,13 +590,13 @@ calcSynInfluenceTest.expectedFullSet <- function()
                            115       T X_SYN    NA 0.93333333
                            116       T X_SYN    NA         NA
                            117       T X_SYN    NA         NA
-                           118       T X_SYN    NA 0.03333333
+                           118       T X_SYN    NA 0.50000000 # would be 1/30 except for spatial relationship
                            119       T X_SYN    NA 0.50000000
                            120       T X_SYN    NA 0.96666667
-                           121       T X_SYN    NA         NA
-                           122       T X_SYN    NA         NA
-                           123       T X_SYN    NA 0.06666667
-                           124       T X_SYN    NA 0.53333333
+                           121       T X_SYN    NA 1.00000000 # would be NA except for spatial relationship
+                           122       T X_SYN    NA 1.00000000 # would be 5/6 except for spatial relationship
+                           123       T X_SYN    NA 1.00000000 # would be 2/30 except for spatial relationship
+                           124       T X_SYN    NA 1.00000000 # would be 16/30 except for spatial relationship
                            125       T X_SYN    NA 1.00000000
                            126       T X_SYN    NA         NA
                            127       T X_SYN    NA         NA
@@ -604,13 +615,13 @@ calcSynInfluenceTest.expectedFullSet <- function()
                            140       T X_SYN    NA 0.66666667
                            141       T X_SYN    NA         NA
                            142       T X_SYN    NA         NA
-                           143       T X_SYN    NA 0.16666667
+                           143       T X_SYN    NA 0.50000000 # would be 1/6 except for spatial relationship
                            144       T X_SYN    NA 0.50000000
                            145       T X_SYN    NA 0.83333333
-                           146       T X_SYN    NA         NA
-                           147       T X_SYN    NA         NA
-                           148       T X_SYN    NA 0.33333333
-                           149       T X_SYN    NA 0.66666667
+                           146       T X_SYN    NA 1.00000000 # would be NA except for spatial relationship
+                           147       T X_SYN    NA 1.00000000 # would be NA except for spatial relationship
+                           148       T X_SYN    NA 1.00000000 # would be 1/3 except for spatial relationship
+                           149       T X_SYN    NA 1.00000000 # would be 2/3 except for spatial relationship
                            150       T X_SYN    NA 1.00000000
                            151       T X_SYN    NA         NA
                            152       T X_SYN    NA         NA
