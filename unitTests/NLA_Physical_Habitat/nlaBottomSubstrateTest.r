@@ -42,9 +42,19 @@ nlaBottomSubstrateTest.handmadeData <- function()
                                                     ) %>%
                arrange(SITE, METRIC) %>% 
                select(SITE, METRIC, VALUE, everything() )
-    checkEquals(testInfo$expected, actual, 'Unexpected results with handmade data')
+    checkEquals(testInfo$expected, actual, 'Unexpected population estimate results with handmade data')
     
     # Check entire nlaBottomSubstrate
+    actual <- nlaBottomSubstrate(testInfo$testData
+                                                    ,nlaBottomSubstrateTest.createClassInformation() %>%
+                                                     dplyr::rename(CLASS = name
+                                                                  ,diam = characteristicDiameter
+                                                                  )
+                                ) %>%
+               arrange(SITE, METRIC) %>% 
+               select(SITE, METRIC, VALUE, everything() )
+    checkEquals(testInfo$expected, actual, 'Unexpected results with handmade data')
+
 }
 
 nlaBottomSubstrateTest.fullData <- function()
