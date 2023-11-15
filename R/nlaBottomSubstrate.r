@@ -531,7 +531,7 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
   	mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
 	intermediateMessage('.a')
 
-	mineralCover$wtDiam <- with(mineralCover, log10(diam * normCover) )
+	mineralCover$wtDiam <- with(mineralCover, normCover * log10(diam) )
 
   	diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtDiam)
                               ,list(SITE=mineralCover$SITE
