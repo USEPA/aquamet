@@ -265,6 +265,11 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 #    9/28/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
 #            pivot_wider
+#   11/16/23 cws Added calculation of ssxldia_wfc, analogous to bsxldia_wfc. 
+#            Modified population distribution metrics to be based (again) on
+#            the cover-weighted log10(diameters) rather than the 
+#            log10(cover-weighted diameters). Also removed substrates with zero 
+#            covers from calculation of station mean diameters.
 #
 # Arguments:
 #   df = a data frame containing shoreline substrate data.  The data frame must
@@ -508,7 +513,7 @@ nlaShorelineSubstrate <- function(bedrock = NULL
                         #                  )
                         ,select=names(sscover)[names(sscover) != 'normCover']
                   )
-	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))                ### NEW
+	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))                ### NEW and correct
   mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
   
   # tt <- merge(mineralCover, substrateSizes
@@ -517,15 +522,15 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   #            ) %>%
   #       mutate(lDiam = log10(diam))
   #  tt$wtLDiam <- tt$lDiam * tt$normCover
-#    mineralCover <- mineralCover %>% mutate(lDiam = log10(diam), wtLDiam = lDiam * normCover) #### OLD
-   mineralCover <- mineralCover %>% mutate(wtDiam = log10(diam * normCover))                   #### NEW
+    mineralCover <- mineralCover %>% mutate(lDiam = log10(diam), wtLDiam = lDiam * normCover) #### OLD and correct
+#   mineralCover <- mineralCover %>% mutate(wtDiam = log10(diam * normCover))                   #### NEW
 
-#  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtLDiam)                           #### OLD
-  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtDiam)                             #### NEW
+  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtLDiam)                           #### OLD and correct
+#  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtDiam)                             #### NEW
                             ,list('SITE'=mineralCover$SITE
                                  ,'STATION'=mineralCover$STATION
                                  ) 
-                            ,mean, na.rm=TRUE
+                            ,sum, na.rm=TRUE
                             )
 
   intermediateMessage('.8')
@@ -574,6 +579,14 @@ nlaShorelineSubstrate <- function(bedrock = NULL
                  )
   p84LDia$METRIC <- 'SS84LDIA'
 
+    # Calculate mean substrate size without cover-based weights. This is at least
+    # mathematically defensible, even if it does not include cover values
+    ssxldia_uwd <- mineralCover %>%
+                   subset(cover > 0) %>%
+                   mutate(lDiam = log10(diam)) %>%
+                   group_by(SITE) %>%
+                   summarise(VALUE = protectedMean(lDiam, na.rm=TRUE, inf.rm=TRUE, nan.rm=TRUE)) %>%
+                   mutate(METRIC = 'SSXLDIA_UWD')
 
   intermediateMessage('.9')
 
@@ -625,11 +638,35 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 	               tidyr::pivot_longer(c(-SITE), names_to='METRIC', values_to='VALUE') %>%
 	               mutate(METRIC = as.character(METRIC))
   intermediateMessage('.10')
+  
+    # Estimate mean logged particle size from fractional cover and characteristic
+    # diameter of each particle size present.
+    ssxldia_wfc <- meanCover %>%
+  	               subset(METRIC %in% c('SSFCBEDROCK','SSFCBOULDERS','SSFCCOBBLE'
+  	                                   ,'SSFCGRAVEL', 'SSFCSAND',    'SSFCSILT'
+  	                                   )
+  	                     ) %>%
+  	               mutate(CLASS = sub('^SSFC(.+)$', '\\1', METRIC)) %>%
+  	               merge(substrateSizes %>% 
+  	                     select(CLASS, diam)
+  	                    ,by='CLASS'
+  	                    ,all.x=TRUE
+  	                    ) %>%
+  	               subset(!(is.na(VALUE))) %>%
+  	               subset(VALUE > 0) %>%
+  	               group_by(SITE) %>%
+  	               summarise(VALUE = protectedSum(as.numeric(VALUE) * log10(diam)
+  	                                              ,na.rm=TRUE, nan.rm=TRUE, inf.rm=TRUE
+  	                                              )
+  	                        ) %>%
+  	               mutate(METRIC = 'SSXLDIA_WFC')
+    intermediateMessage('.11')
 
   # combine VALUEs into a dataframe
   ssMets <- rbind(meanPresence, meanCover, ssiVariety, sdCover, countSubstrates
 				 ,meanLDia, sdLDia, p16LDia, p25LDia, p50LDia, p75LDia, p84LDia
 				 ,modeClasses
+				 ,ssxldia_wfc, ssxldia_uwd
 				 )
   intermediateMessage(' Done.', loc='end')
 

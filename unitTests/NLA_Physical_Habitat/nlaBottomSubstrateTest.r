@@ -11,6 +11,12 @@
 #  7/11/17 cws Split substrate argument into individual classes, to be consistent
 #          with general interface.
 #  7/17/17 cws Changed boulders argument to boulder, so all the classes are singular.
+# 11/15/23 cws Extended unit testing with nlaBottomSubstrateTest.handmadeData and
+#          nlaBottomSubstrateTest.createHandmadeTestData. This focusses only on 
+#          nlaBottomSubstrate.populationEstimates currently, but will eventually
+#          be extended to cover nlaBottomSubstrate as a whole. The other unit 
+#          tests have NOT been updated to reflect the change in weighting the
+#          diameters that were recently made based on input from Phil Kaufmann.
 #
 
 
@@ -835,36 +841,44 @@ nlaBottomSubstrateTest.createHandmadeTestData <- function()
     results <- rbind(data.frame(SITE=1L  # A has all boulders
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          ,'BSXLDIA_UWD'
                                           )
                                ,VALUE =  c(3.0,      NA,       3.0
                                           ,3.0,      3.0,      3.0,       3.0
+                                          ,3.0
                                           )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=2L  # A has equal boulders and silt
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          ,'BSXLDIA_UWD'
                                           )
                                #  # These values are log10(wt*diam), which is wrong
                                # ,VALUE =  c(0.14350781693193, NA, 0.14350781693193
                                #            ,0.14350781693193, 0.14350781693193, 0.14350781693193, 0.14350781693193)
                                # These values are wt*log10(diam), which is less wrong
                                ,VALUE =  c(0.22226890629795548, NA, 0.22226890629795548
-                                          ,0.22226890629795548, 0.22226890629795548, 0.22226890629795548, 0.22226890629795548)
+                                          ,0.22226890629795548, 0.22226890629795548, 0.22226890629795548, 0.22226890629795548
+                                          ,0.44453781259591096
+                                          )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=3L  # A and B have all boulders
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          ,'BSXLDIA_UWD'
                                           )
                                ,VALUE =  c(3.0,      0.0,       3.0
                                           ,3.0,       3.0,       3.0,       3.0
+                                          ,3.0
                                           )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=4L  # A has equal boulders and silt, B has equal cobbles and sand
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          ,'BSXLDIA_UWD'
                                           )
                                #  # These values are log10(wt*diam), which is wrong
                                # ,VALUE =  c(0.331651564221918,0.266075439093198,0.14350781693193
@@ -873,26 +887,30 @@ nlaBottomSubstrateTest.createHandmadeTestData <- function()
                                # These values are wt*log10(diam), which is less wrong
                                ,VALUE = c(0.31634077994294962, 0.13303771954659882, 0.22226890629795548
                                          ,0.22226890629795548, 0.31634077994294962, 0.41041265358794377, 0.41041265358794377
+                                         ,0.63268155988589925
                                          )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=5L  # Three transects and a mix of substrates and covers
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          ,'BSXLDIA_UWD'
                                           )
                                ,VALUE =  c(mean(stationMeansAt5, na.rm=TRUE)
                                           ,sd(stationMeansAt5, na.rm=TRUE)
                                           ,quantile(stationMeansAt5, 0.16, type = 2)
-                                         ,quantile(stationMeansAt5, 0.25, type = 2)
+                                          ,quantile(stationMeansAt5, 0.25, type = 2)
                                           ,quantile(stationMeansAt5, 0.50, type = 2)
                                           ,quantile(stationMeansAt5, 0.75, type = 2)
                                           ,quantile(stationMeansAt5, 0.84, type = 2)
+                                          ,0.9823566909358995
                                           )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=6L  # Transects with missing values and zeros
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                          ,'BSXLDIA_UWD'
                                           )
                                ,VALUE =  c(mean(stationMeansAt6, na.rm=TRUE)
                                           ,sd(stationMeansAt6, na.rm=TRUE)
@@ -901,6 +919,7 @@ nlaBottomSubstrateTest.createHandmadeTestData <- function()
                                           ,quantile(stationMeansAt6, 0.50, type = 2, na.rm=TRUE)
                                           ,quantile(stationMeansAt6, 0.75, type = 2, na.rm=TRUE)
                                           ,quantile(stationMeansAt6, 0.84, type = 2, na.rm=TRUE)
+                                          ,-1.2856668758921828 # sand and silt are only present sizes
                                           )
                                ,stringsAsFactors=FALSE
                                )

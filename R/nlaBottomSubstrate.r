@@ -271,6 +271,10 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #            args in data validation.
 #    3/28/19 cws Standardized metadata argument naming
 #   12/31/19 cws Allowing SITE to be character as well as integer in all arguments.
+#   11/16/23 cws Modified station-level summaries in population estimates to be
+#            sum of weighted diameters rather than mean of those values. Modified
+#            bsxldia_wfc as well to be sum of diameters weighted by site level
+#            fractional cover instead of the mean of those values.
 #
 # Arguments:
 #   df = a data frame containing bottom substrate data.  The data frame must
@@ -364,6 +368,43 @@ nlaBottomSubstrate <- function(bedrock=NULL
   	modeCover <- nlaBottomSubstrate.modeCover(indivPresence, indivCover)
   	intermediateMessage('.6')
 	
+# print(str(indivCover)); print(str(substrateSizes)); # DEBUG STUFF
+# print(str(indivCover %>%
+#   	               mutate(CLASS = sub('^BSFC(.+)$', '\\1', METRIC)) %>%
+#   	               merge(substrateSizes %>% 
+#   	                     select(CLASS, diam)
+#   	                    ,by='CLASS'
+#   	                    ,all.x=TRUE
+#   	                    )))
+# print(indivCover %>%
+#   	               mutate(CLASS = sub('^BSFC(.+)$', '\\1', METRIC)) %>%
+#   	               merge(substrateSizes %>% 
+#   	                     select(CLASS, diam)
+#   	                    ,by='CLASS'
+#   	                    ,all.x=TRUE
+#   	                    ) %>% subset(SITE %in% c(2008542, 6160)) )
+
+  	bsxldia_wfc <- indivCover %>%
+  	               subset(METRIC %in% c('BSFCBEDROCK','BSFCBOULDERS','BSFCCOBBLE'
+  	                                   ,'BSFCGRAVEL', 'BSFCSAND',    'BSFCSILT'
+  	                                   )
+  	                     ) %>%
+  	               mutate(CLASS = sub('^BSFC(.+)$', '\\1', METRIC)) %>%
+  	               merge(substrateSizes %>% 
+  	                     select(CLASS, diam)
+  	                    ,by='CLASS'
+  	                    ,all.x=TRUE
+  	                    ) %>%
+  	               subset(!(is.na(VALUE))) %>%
+  	               subset(VALUE > 0) %>%
+  	               group_by(SITE) %>%
+  	               summarise(VALUE = protectedSum(as.numeric(VALUE) * log10(diam)
+  	                                              ,na.rm=TRUE, nan.rm=TRUE, inf.rm=TRUE
+  	                                              )
+  	                        ) %>%
+  	               mutate(METRIC = 'BSXLDIA_WFC')
+# print( bsxldia_wfc %>% subset(SITE %in% c(2008542, 6160)) ) # DEBUG STUFF
+  	intermediateMessage('.wfc')
 	
   	indivColor <- nlaBottomSubstrate.indivColor(color)
   	intermediateMessage('.7')
@@ -379,6 +420,7 @@ nlaBottomSubstrate <- function(bedrock=NULL
 	
 	mets <- rbind(indivPresence, variety, indivCover, populationEstimates, modeCover
 			   	 ,indivColor, modeColor, indivOdor, modeOdor
+			   	 ,bsxldia_wfc
 			   	 )
 	intermediateMessage(' Done.', loc='end')
 	
@@ -537,9 +579,18 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
                               ,list(SITE=mineralCover$SITE
                                    ,STATION=mineralCover$STATION
                                    ) 
-                              ,mean, na.rm=TRUE
+                              ,sum, na.rm=TRUE
                               )
     intermediateMessage('.b')
+    
+    # Calculate mean substrate size without cover-based weights. This is at least
+    # mathematically defensible, even if it does not include cover values
+    bsxldia_uwd <- mineralCover %>%
+                   subset(cover > 0) %>%
+                   mutate(lDiam = log10(diam)) %>%
+                   group_by(SITE) %>%
+                   summarise(VALUE = protectedMean(lDiam, na.rm=TRUE, inf.rm=TRUE, nan.rm=TRUE)) %>%
+                   mutate(METRIC = 'BSXLDIA_UWD')
 
 	# Estimate measures of logged diameter populations: mean, sd, percentiles.
 	# Percentiles use the type 2 algorithm because it matches what was used
@@ -590,7 +641,10 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
 
   	intermediateMessage('.d')
 	
-	rc <- rbind(meanLDia, sdLDia, p16LDia, p25LDia, p50LDia, p75LDia, p84LDia)
+	rc <- rbind(meanLDia, sdLDia
+	           ,p16LDia, p25LDia, p50LDia, p75LDia, p84LDia
+	           ,bsxldia_uwd
+	           )
 
 	return(rc)
 }
