@@ -48,6 +48,7 @@ nlaBottomSubstrateTest.handmadeData <- function()
                                                     ) %>%
                arrange(SITE, METRIC) %>% 
                select(SITE, METRIC, VALUE, everything() )
+    dd <- dfDifferences(testInfo$expected, actual, c('SITE','METRIC'), zeroFudge = 1e-9)
     checkEquals(testInfo$expected, actual, 'Unexpected population estimate results with handmade data')
     
     # Check entire nlaBottomSubstrate - needs arguments fleshed out
@@ -757,38 +758,112 @@ nlaBottomSubstrateTest.createHandmadeTestData <- function()
 # Returns dataframe with hand made test data that is created to make specific
 # tests:
 # SITE  Description
-#   1   Calculation with single substrate at single station
-#   2   Calculation with 2 substrates at single station
-#   3   Calculation with single substrate at multiple stations
-#   4   Calculation with 2 substrates in multiple stations
+#   1   1 mineral substrate at single station
+#   2   2 mineral substrates at single station
+#   3   1 mineral substrate at multiple stations
+#   4   2 mineral substrates in multiple stations
+#   5   6 mineral substrates in multiple stations
+#   6   6 mineral substrates in multiple stations with some missing values
+#   7   1 mineral substrate and two nonmineral substrates at single station
+#   8   6 mineral substrates and two nonmineral substrates at multiple stations
+# 100   1 mineral substrate at single station with cover = 0
+# 101   1 mineral substrate at single station with missing cover value
+# 102   1 mineral substrate with missing cover and 1 nonmineral substrate at single station
+# 103   2 mineral substrates at single station, one with missing values
+# 104   0 mineral substrates and two nonmineral substrates at single station
+# 110   6 mineral substrates and two nonmineral substrates at multiple stations, several missing cover values 
 {
     testData <- rbind(data.frame(SITE=1L, STATION='A', CLASS='BOULDERS', VALUE='4'
-                          ,stringsAsFactors=FALSE
-                          )
-               ,data.frame(SITE=2L, STATION='A', CLASS=c('BOULDERS','SILT'), VALUE='3'
-                          ,stringsAsFactors=FALSE
-                          )
-               ,data.frame(SITE=3L, STATION=c('A','B'), CLASS=c('BOULDERS'), VALUE='4'
-                          ,stringsAsFactors=FALSE
-                          )
-               ,data.frame(SITE=4L, STATION=c('A','A','B','B')
-                          ,CLASS=c('BOULDERS','SILT','COBBLE','SAND'), VALUE='3'
-                          ,stringsAsFactors=FALSE
-                          )
-               ,data.frame(SITE=5L, STATION=c('A','A','B','B','C','C','C','C')
-                          ,CLASS=c('BOULDERS','SILT', 'COBBLE','SAND'
-                                  ,'SAND','GRAVEL','BEDROCK','SILT'
-                                  )
-                          ,VALUE=c('4','1', '3','2', '4','3','2','0')
-                          ,stringsAsFactors=FALSE
-                          )
-               ,data.frame(SITE=6L, STATION=c('A','A','B','B','C','C','D','D')
-                          ,CLASS=c('BOULDERS','SILT', 'COBBLE','SAND'
-                                  ,'SAND','GRAVEL', 'BEDROCK','SILT'
-                                  )
-                          ,VALUE=c('','2', NA, '2', '','0', NA,'0')
-                          ,stringsAsFactors=FALSE
-                          )
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=2L, STATION='A', CLASS=c('BOULDERS','SILT'), VALUE='3'
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=3L, STATION=c('A','B'), CLASS=c('BOULDERS'), VALUE='4'
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=4L, STATION=c('A','A','B','B')
+                                ,CLASS=c('BOULDERS','SILT','COBBLE','SAND'), VALUE='3'
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=5L, STATION=c('A','A','B','B','C','C','C','C')
+                                ,CLASS=c('BOULDERS','SILT', 'COBBLE','SAND'
+                                        ,'SAND','GRAVEL','BEDROCK','SILT'
+                                        )
+                                ,VALUE=c('4','1', '3','2', '4','3','2','0')
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=6L, STATION=c('A','A','B','B','C','C','D','D')
+                                ,CLASS=c('BOULDERS','SILT', 'COBBLE','SAND'
+                                        ,'SAND','GRAVEL', 'BEDROCK','SILT'
+                                        )
+                                ,VALUE=c('','2', NA, '2', '','0', NA,'0')
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=7L, STATION='A'          # based on site 1
+                                ,CLASS=c('BOULDERS','WOOD','ORGANIC')
+                                ,VALUE='4'
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=8L                       # based on site 5
+                                ,STATION=c('A','A','A'
+                                          ,'B','B','B','B'
+                                          ,'C','C','C','C','C'
+                                          )
+                                ,CLASS=c('BOULDERS','SILT','WOOD'
+                                        ,'COBBLE','SAND','ORGANIC','WOOD'
+                                        ,'SAND','GRAVEL','BEDROCK','SILT','ORGANIC'
+                                        )
+                                ,VALUE=c('4','1','2'
+                                        ,'3','2','1','4'
+                                        ,'4','3','2','0','3')
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=100L, STATION='A'          # based on site 1
+                                ,CLASS=c('BOULDERS')
+                                ,VALUE='0'
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=101L, STATION='A'          # based on site 1
+                                ,CLASS=c('BOULDERS')
+                                ,VALUE=''
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=102L, STATION='A'          # based on site 7
+                                ,CLASS=c('BOULDERS','WOOD','ORGANIC')
+                                ,VALUE=c(NA, '1', '2')
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=103L, STATION='A'            # based on site 1
+                                ,CLASS=c('BOULDERS','SILT'), VALUE=c('3','NA')
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=104L, STATION='A'          # based on site 7
+                                ,CLASS=c('WOOD','ORGANIC')
+                                ,VALUE=c('1', '2')
+                                ,stringsAsFactors=FALSE
+                                )
+                     ,data.frame(SITE=110L
+                                ,STATION=c('A','A','A'
+                                          ,'B','B','B','B'
+                                          ,'C','C','C','C','C'
+                                          ,'D','D'
+                                          ,'E'
+                                          )
+                                ,CLASS=c('BOULDERS','SILT','WOOD'
+                                        ,'COBBLE','SAND','ORGANIC','WOOD'
+                                        ,'SAND','GRAVEL','BEDROCK','SILT','ORGANIC'
+                                        ,'WOOD','ORGANIC'
+                                        ,'SAND'
+                                        )
+                                ,VALUE=c('', '1', '2'
+                                        ,NA, '2', '1', NA
+                                        ,'0','3', '2', '0', '3'
+                                        ,NA, ''
+                                        ,'0'
+                                        )
+                                ,stringsAsFactors=FALSE
+                                )
                ) %>%
           merge(nlaBottomSubstrateTest.createClassInformation() %>%
                 dplyr::rename(CLASS = name
@@ -806,95 +881,108 @@ nlaBottomSubstrateTest.createHandmadeTestData <- function()
                ) %>%
           select(SITE, STATION, CLASS, VALUE, diam, inPopulationEstimate, cover, presence)
 
-    # # These are log10(wt*diam)        
-    # stationMeansAt5 <- c(A=mean(c(log10(1000*0.875/(0.875+0.05)), log10(7.745967e-03 * 0.05/(0.875+0.05)))
-    #                            ,na.rm=TRUE)
-    #                     ,B=mean(c(log10(1.2649110640673517e+02*0.575/(0.575+0.25)), log10(3.4641016151377546e-01 * 0.25/(0.575+0.25)))
-    #                            ,na.rm=TRUE)
-    #                     ,C=mean(c(log10(3.4641016151377546e-01 * 0.875/(0.875+0.575+0.25+0)), log10(1.1313708498984761e+01 * 0.575/(0.875+0.575+0.25+0))
-    #                              ,log10(5.6568542494923804e+03 * 0.25/(0.875+0.575+0.25+0)), log10(7.7459666924148338e-03 * 0.00/(0.875+0.575+0.25+0) * NA) )
-    #                              ,na.rm=TRUE)
-    #                     )
-    # These are wt*log10(diam)
-    stationMeansAt5 <- c(A=mean(c(log10(1000)*0.875/(0.875+0.05), log10(7.745967e-03) * 0.05/(0.875+0.05))
-                               ,na.rm=TRUE)
-                        ,B=mean(c(log10(1.2649110640673517e+02)*0.575/(0.575+0.25), log10(3.4641016151377546e-01) * 0.25/(0.575+0.25))
-                               ,na.rm=TRUE)
-                        ,C=mean(c(log10(3.4641016151377546e-01) * 0.875/(0.875+0.575+0.25+0), log10(1.1313708498984761e+01) * 0.575/(0.875+0.575+0.25+0)
-                                 ,log10(5.6568542494923804e+03) * 0.25/(0.875+0.575+0.25+0), log10(7.7459666924148338e-03) * 0.00/(0.875+0.575+0.25+0) * NA )
-                                 ,na.rm=TRUE)
+    stationMeansAt4 <- c(A=protectedSum(c(log10(1000) * 0.5, log10(7.7459666924148338e-03) * 0.5),na.rm=TRUE)
+                        ,B=protectedSum(c(log10(3.4641016151377546e-01) * 0.5, log10(1.2649110640673517e+02) * 0.5),na.rm=TRUE)
                         )
-    
-    # # These are log10(wt*di)
-    # stationMeansAt6 <- c(A=mean(c(log10(1.0000000000000000e+03 * NA/(2)), log10(7.7459666924148338e-03 *  2/(2)) ), na.rm=TRUE)
-    #                     ,B=mean(c(log10(1.2649110640673517e+02 * NA/(2)), log10(3.4641016151377546e-01 *  2/(2)) ), na.rm=TRUE)
-    #                     ,C=mean(c(log10(1.1313708498984761e+01 * NA/(0)), log10(3.4641016151377546e-01 * NA/(0)) ), na.rm=TRUE)
-    #                     ,D=mean(c(log10(5.6568542494923804e+03 * NA/(0)), log10(7.7459666924148338e-03 *  0/(0)) ), na.rm=TRUE) 
-    #                     )
-    # These are wt*log10(diam)
-    stationMeansAt6 <- c(A=mean(c(log10(1.0000000000000000e+03) * NA/(2), log10(7.7459666924148338e-03) *  2/(2) ), na.rm=TRUE)
-                        ,B=mean(c(log10(1.2649110640673517e+02) * NA/(2), log10(3.4641016151377546e-01) *  2/(2) ), na.rm=TRUE)
-                        ,C=mean(c(log10(1.1313708498984761e+01) * NA/(0), log10(3.4641016151377546e-01) * NA/(0) ), na.rm=TRUE)
-                        ,D=mean(c(log10(5.6568542494923804e+03) * NA/(0), log10(7.7459666924148338e-03) *  0/(0) ), na.rm=TRUE) 
+    stationMeansAt5 <- c(A=protectedSum(c(log10(1000)*0.875/(0.875+0.05), log10(7.745967e-03) * 0.05/(0.875+0.05))
+                                       ,na.rm=TRUE)
+                        ,B=protectedSum(c(log10(1.2649110640673517e+02)*0.575/(0.575+0.25), log10(3.4641016151377546e-01) * 0.25/(0.575+0.25))
+                                       ,na.rm=TRUE)
+                        ,C=protectedSum(c(log10(3.4641016151377546e-01) * 0.875/(0.875+0.575+0.25+0), log10(1.1313708498984761e+01) * 0.575/(0.875+0.575+0.25+0)
+                                         ,log10(5.6568542494923804e+03) * 0.25/(0.875+0.575+0.25+0), log10(7.7459666924148338e-03) * 0.00/(0.875+0.575+0.25+0) * NA )
+                                       ,na.rm=TRUE)
+                        )
+    stationMeansAt6 <- c(A=protectedSum(c(log10(1.0000000000000000e+03) * NA/(2), log10(7.7459666924148338e-03) *  2/(2) ), na.rm=TRUE)
+                        ,B=protectedSum(c(log10(1.2649110640673517e+02) * NA/(2), log10(3.4641016151377546e-01) *  2/(2) ), na.rm=TRUE)
+                        ,C=protectedSum(c(log10(1.1313708498984761e+01) * NA/(0), log10(3.4641016151377546e-01) * NA/(0) ), na.rm=TRUE)
+                        ,D=protectedSum(c(log10(5.6568542494923804e+03) * NA/(0), log10(7.7459666924148338e-03) *  0/(0) ), na.rm=TRUE) 
+                        )
+    stationMeansAt6 <- c(A=protectedSum(c(log10(1.0000000000000000e+03) * NA/(2), log10(7.7459666924148338e-03) *  2/(2) ), na.rm=TRUE)
+                        ,B=protectedSum(c(log10(1.2649110640673517e+02) * NA/(2), log10(3.4641016151377546e-01) *  2/(2) ), na.rm=TRUE)
+                        ,C=protectedSum(c(log10(1.1313708498984761e+01) * NA/(0), log10(3.4641016151377546e-01) * NA/(0) ), na.rm=TRUE)
+                        ,D=protectedSum(c(log10(5.6568542494923804e+03) * NA/(0), log10(7.7459666924148338e-03) *  0/(0) ), na.rm=TRUE) 
+                        )
+    stationMeansAt110<-c(A=protectedSum(c(log10(1.0000000000000000e+03) * NA/(1), log10(7.7459666924148338e-03) *  0.05/(0.05), log10(NA) * NA/(0.05) ), na.rm=TRUE)
+                        ,B=protectedSum(c(log10(1.2649110640673517e+02) * NA/(0.25)
+                                         ,log10(3.4641016151377546e-01) * 0.25/(0.25)
+                                         ,log10(NA) * 0.05/(0.25)
+                                         ,log10(NA) * NA/(0.25) 
+                                         )
+                                       ,na.rm=TRUE
+                                       )
+                        ,C=protectedSum(c(log10(3.4641016151377546e-01) * NA/(0+0.575+0.25+0)
+                                         ,log10(1.1313708498984761e+01) * 0.575/(0+0.575+0.25)
+                                         ,log10(5.6568542494923804e+03) * 0.25/(0+0.575+0.25+0)
+                                         ,log10(NA) * NA/(0+0.575+0.25+0) 
+                                         ,log10(NA) * 0.575/(0+0.575+0.25+0)
+                                         )
+                                       ,na.rm=TRUE
+                                       )
+                        ,D=protectedSum(c(log10(NA) * NA/(0), log10(NA) *  0/(0) ), na.rm=TRUE) 
+                        ,E=protectedSum(c(log10(3.4641016151377546e-01) * NA/(0)), na.rm=TRUE) 
                         )
 
     results <- rbind(data.frame(SITE=1L  # A has all boulders
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
-                                          ,'BSXLDIA_UWD'
+#                                          ,'BSXLDIA_UWD'
                                           )
                                ,VALUE =  c(3.0,      NA,       3.0
                                           ,3.0,      3.0,      3.0,       3.0
-                                          ,3.0
+#                                          ,3.0
                                           )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=2L  # A has equal boulders and silt
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
-                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
-                                          ,'BSXLDIA_UWD'
+                                          ,'BS25LDIA','BS50LDIA'
+                                          ,'BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
                                           )
-                               #  # These values are log10(wt*diam), which is wrong
-                               # ,VALUE =  c(0.14350781693193, NA, 0.14350781693193
-                               #            ,0.14350781693193, 0.14350781693193, 0.14350781693193, 0.14350781693193)
-                               # These values are wt*log10(diam), which is less wrong
-                               ,VALUE =  c(0.22226890629795548, NA, 0.22226890629795548
-                                          ,0.22226890629795548, 0.22226890629795548, 0.22226890629795548, 0.22226890629795548
-                                          ,0.44453781259591096
+                               # These values are  = 0.5*log10(1000) + 0.5*log10(7.7459666924148338e-03)
+                               ,VALUE =  c(0.44453781259591096, NA, 0.44453781259591096
+                                          ,0.44453781259591096, 0.44453781259591096
+                                          ,0.44453781259591096, 0.44453781259591096
+#                                          ,0.44453781259591096
                                           )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=3L  # A and B have all boulders
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
-                                          ,'BSXLDIA_UWD'
+#                                          ,'BSXLDIA_UWD'
                                           )
                                ,VALUE =  c(3.0,      0.0,       3.0
                                           ,3.0,       3.0,       3.0,       3.0
-                                          ,3.0
+#                                          ,3.0
                                           )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=4L  # A has equal boulders and silt, B has equal cobbles and sand
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
-                                          ,'BSXLDIA_UWD'
+#                                          ,'BSXLDIA_UWD'
                                           )
-                               #  # These values are log10(wt*diam), which is wrong
-                               # ,VALUE =  c(0.331651564221918,0.266075439093198,0.14350781693193
-                               #            ,0.14350781693193, 0.331651564221918, 0.51979531151190628, 0.51979531151190628
-                               #            )
                                # These values are wt*log10(diam), which is less wrong
-                               ,VALUE = c(0.31634077994294962, 0.13303771954659882, 0.22226890629795548
-                                         ,0.22226890629795548, 0.31634077994294962, 0.41041265358794377, 0.41041265358794377
-                                         ,0.63268155988589925
+                               # ,VALUE = c(0.31634077994294962, 0.13303771954659882, 0.22226890629795548
+                               #           ,0.22226890629795548, 0.31634077994294962, 0.41041265358794377, 0.41041265358794377
+                               #           ,0.63268155988589925
+                               #           )
+                               ,VALUE = c(mean(stationMeansAt4, na.rm=TRUE)
+                                         ,sd(stationMeansAt4, na.rm=TRUE)
+                                         ,quantile(stationMeansAt4, 0.16, type = 2)
+                                         ,quantile(stationMeansAt4, 0.25, type = 2)
+                                         ,quantile(stationMeansAt4, 0.50, type = 2)
+                                         ,quantile(stationMeansAt4, 0.75, type = 2)
+                                         ,quantile(stationMeansAt4, 0.84, type = 2)
+#                                         ,??
                                          )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=5L  # Three transects and a mix of substrates and covers
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
-                                          ,'BSXLDIA_UWD'
+#                                          ,'BSXLDIA_UWD'
                                           )
                                ,VALUE =  c(mean(stationMeansAt5, na.rm=TRUE)
                                           ,sd(stationMeansAt5, na.rm=TRUE)
@@ -903,14 +991,14 @@ nlaBottomSubstrateTest.createHandmadeTestData <- function()
                                           ,quantile(stationMeansAt5, 0.50, type = 2)
                                           ,quantile(stationMeansAt5, 0.75, type = 2)
                                           ,quantile(stationMeansAt5, 0.84, type = 2)
-                                          ,0.9823566909358995
+#                                          ,0.9823566909358995
                                           )
                                ,stringsAsFactors=FALSE
                                )
                     ,data.frame(SITE=6L  # Transects with missing values and zeros
                                ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
                                           ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
-                                          ,'BSXLDIA_UWD'
+#                                          ,'BSXLDIA_UWD'
                                           )
                                ,VALUE =  c(mean(stationMeansAt6, na.rm=TRUE)
                                           ,sd(stationMeansAt6, na.rm=TRUE)
@@ -919,7 +1007,105 @@ nlaBottomSubstrateTest.createHandmadeTestData <- function()
                                           ,quantile(stationMeansAt6, 0.50, type = 2, na.rm=TRUE)
                                           ,quantile(stationMeansAt6, 0.75, type = 2, na.rm=TRUE)
                                           ,quantile(stationMeansAt6, 0.84, type = 2, na.rm=TRUE)
-                                          ,-1.2856668758921828 # sand and silt are only present sizes
+#                                          ,-1.2856668758921828 # sand and silt are only present sizes
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=7L  # Is site 1 with nonmineral substrate
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
+                                          )
+                               ,VALUE =  c(3.0,      NA,       3.0
+                                          ,3.0,      3.0,      3.0,       3.0
+#                                          ,3.0
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=8L  # Is site 5 with nonmineral substrate
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
+                                          )
+                               ,VALUE =  c(mean(stationMeansAt5, na.rm=TRUE)
+                                          ,sd(stationMeansAt5, na.rm=TRUE)
+                                          ,quantile(stationMeansAt5, 0.16, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt5, 0.25, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt5, 0.50, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt5, 0.75, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt5, 0.84, type = 2, na.rm=TRUE)
+#                                          ,0.9823566909358995
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=100L  # A has all boulders and 0 cover value
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
+                                          )
+                               ,VALUE =  c(NA,       NA,       NA
+                                          ,NA,       NA,       NA,        NA
+#                                         ,NA
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=101L  # A has all boulders and NA cover value
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
+                                          )
+                               ,VALUE =  c(NA,       NA,       NA
+                                          ,NA,       NA,       NA,        NA
+#                                         ,NA
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=102L  # A has boulders with NA cover value and nonmineral substrates
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
+                                          )
+                               ,VALUE =  c(NA,       NA,       NA
+                                          ,NA,       NA,       NA,        NA
+#                                         ,NA
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=103L  # A has two substrates boulder with cover value and one that is missing.
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
+                                          )
+                               ,VALUE =  c(3.0,      NA,       3.0
+                                          ,3.0,      3.0,      3.0,       3.0
+#                                          ,3.0
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=104L  # A has only nonmineral substrates
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
+                                          )
+                               ,VALUE =  c(NA,       NA,       NA
+                                          ,NA,       NA,       NA,        NA
+#                                         ,NA
+                                          )
+                               ,stringsAsFactors=FALSE
+                               )
+                    ,data.frame(SITE=110L 
+                               ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                          ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+#                                          ,'BSXLDIA_UWD'
+                                          )
+                               ,VALUE =  c(mean(stationMeansAt110, na.rm=TRUE)
+                                          ,sd(stationMeansAt110, na.rm=TRUE)
+                                          ,quantile(stationMeansAt110, 0.16, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt110, 0.25, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt110, 0.50, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt110, 0.75, type = 2, na.rm=TRUE)
+                                          ,quantile(stationMeansAt110, 0.84, type = 2, na.rm=TRUE)
+#                                          ,0.9823566909358995
                                           )
                                ,stringsAsFactors=FALSE
                                )

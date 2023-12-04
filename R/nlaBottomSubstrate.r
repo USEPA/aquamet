@@ -275,6 +275,9 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #            sum of weighted diameters rather than mean of those values. Modified
 #            bsxldia_wfc as well to be sum of diameters weighted by site level
 #            fractional cover instead of the mean of those values.
+#   11/30/23 cws Using protectedSum and protectedMean in nlaBottomSubstrate.populationEstimates
+#            to avoid station means of 0 instead of NA when mineral substrate
+#            covers are all zero or missing at a station.
 #
 # Arguments:
 #   df = a data frame containing bottom substrate data.  The data frame must
@@ -355,6 +358,8 @@ nlaBottomSubstrate <- function(bedrock=NULL
 
     substrate <- rbind(bedrock, boulder, cobble, gravel, organic, sand, silt, wood)
   	bsData <- nlaBottomSubstrate.setupForParticleCalculations(substrate, substrateCovers, substrateSizes)
+# print(bsData %>% arrange(SITE, STATION, CLASS) %>% select(SITE, STATION, CLASS, VALUE, everything()) %>% head(20))
+# print(bsData %>% arrange(SITE, STATION, CLASS) %>% select(SITE, STATION, CLASS, VALUE, everything()) %>% tail(20))
 #print('bsDdata'); print(str(bsData)); print(bsData %>% subset(SITE==7519) %>% arrange(SITE, STATION, CLASS))
   	intermediateMessage('.1')
   	indivPresence <- nlaBottomSubstrate.indivPresence(bsData)
@@ -565,39 +570,39 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
 	# the characteristic diameters for determining diameter percentiles at each 
 	# site. If the cover of a substrate class is zero, change it to NA to remove
     # it from the calculation
-	mineralCover <- subset(bsData, CLASS %in% subset(substrateSizes, inPopulationEstimate)$CLASS
-                          ,select=names(bsData)[names(bsData) != 'normCover']
+    mineralCover <- bsData %>% 
+                    mutate(cover = ifelse(cover==0, NA
+                                  ,ifelse(!inPopulationEstimate, NA, cover
+                                   ))
                           )
-	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))
-
+# 	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))
   	mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
 	intermediateMessage('.a')
 
 	mineralCover$wtDiam <- with(mineralCover, normCover * log10(diam) )
-
   	diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtDiam)
                               ,list(SITE=mineralCover$SITE
                                    ,STATION=mineralCover$STATION
                                    ) 
-                              ,sum, na.rm=TRUE
+                              ,protectedSum, na.rm=TRUE
                               )
     intermediateMessage('.b')
-    
-    # Calculate mean substrate size without cover-based weights. This is at least
-    # mathematically defensible, even if it does not include cover values
-    bsxldia_uwd <- mineralCover %>%
-                   subset(cover > 0) %>%
-                   mutate(lDiam = log10(diam)) %>%
-                   group_by(SITE) %>%
-                   summarise(VALUE = protectedMean(lDiam, na.rm=TRUE, inf.rm=TRUE, nan.rm=TRUE)) %>%
-                   mutate(METRIC = 'BSXLDIA_UWD')
+
+    # # Calculate mean substrate size without cover-based weights. This is at least
+    # # mathematically defensible, even if it does not include cover values
+    # bsxldia_uwd <- mineralCover %>%
+    #                subset(cover > 0) %>%
+    #                mutate(lDiam = log10(diam)) %>%
+    #                group_by(SITE) %>%
+    #                summarise(VALUE = protectedMean(lDiam, na.rm=TRUE, inf.rm=TRUE, nan.rm=TRUE)) %>%
+    #                mutate(METRIC = 'BSXLDIA_UWD')
 
 	# Estimate measures of logged diameter populations: mean, sd, percentiles.
 	# Percentiles use the type 2 algorithm because it matches what was used
 	# in SAS by default.
   	tt <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
                    ,list(SITE=diamSubstrate$SITE)
-                   ,mean, na.rm=TRUE
+                   ,protectedMean, na.rm=TRUE
                    )
   	meanLDia <- within(tt, METRIC <- 'BSXLDIA')
 
@@ -643,7 +648,7 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
 	
 	rc <- rbind(meanLDia, sdLDia
 	           ,p16LDia, p25LDia, p50LDia, p75LDia, p84LDia
-	           ,bsxldia_uwd
+#	           ,bsxldia_uwd
 	           )
 
 	return(rc)
