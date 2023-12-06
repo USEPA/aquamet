@@ -278,6 +278,9 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #   11/30/23 cws Using protectedSum and protectedMean in nlaBottomSubstrate.populationEstimates
 #            to avoid station means of 0 instead of NA when mineral substrate
 #            covers are all zero or missing at a station.
+#   12/06/23 cws Removed BS prefix from nlaBottomSubstrate.populationEstimates
+#            metrics names so that function can be used with shoreline substrate
+#            data as well. Those prefixes are now added by the calling environement.
 #
 # Arguments:
 #   df = a data frame containing bottom substrate data.  The data frame must
@@ -369,6 +372,9 @@ nlaBottomSubstrate <- function(bedrock=NULL
   	indivCover <- nlaBottomSubstrate.indivCover(bsData)
   	intermediateMessage('.4')
   	populationEstimates <- nlaBottomSubstrate.populationEstimates(bsData, substrateSizes)
+  	if(!is.null(populationEstimates)) 
+  	    populationEstimates <- populationEstimates %>%
+  	                           mutate(METRIC = paste0('BS', METRIC))
   	intermediateMessage('.5')
   	modeCover <- nlaBottomSubstrate.modeCover(indivPresence, indivCover)
   	intermediateMessage('.6')
@@ -607,13 +613,13 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
                    ,list(SITE=diamSubstrate$SITE)
                    ,protectedMean, na.rm=TRUE
                    )
-  	meanLDia <- within(tt, METRIC <- 'BSXLDIA')
+  	meanLDia <- within(tt, METRIC <- 'XLDIA')
 
     tt <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
                    ,list(SITE=diamSubstrate$SITE)
                    ,sd, na.rm=TRUE
                    )
-    sdLDia <- within(tt, METRIC <- 'BSVLDIA')
+    sdLDia <- within(tt, METRIC <- 'VLDIA')
 
 	intermediateMessage('.c')
 	
@@ -621,31 +627,31 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
                    ,list(SITE=diamSubstrate$SITE)
                    ,quantile, 0.16, na.rm=TRUE, names=FALSE, type=2
                    )
-    p16LDia <- within(tt, METRIC <- 'BS16LDIA')
+    p16LDia <- within(tt, METRIC <- '16LDIA')
 
     tt <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
                    ,list(SITE=diamSubstrate$SITE)
                    ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
                    )
-    p25LDia <- within(tt, METRIC <- 'BS25LDIA')
+    p25LDia <- within(tt, METRIC <- '25LDIA')
 
     tt <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
                    ,list(SITE=diamSubstrate$SITE)
                    ,quantile, 0.50, na.rm=TRUE, names=FALSE, type=2
                    )
-    p50LDia <- within(tt, METRIC <- 'BS50LDIA')
+    p50LDia <- within(tt, METRIC <- '50LDIA')
 
     tt <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
                    ,list(SITE=diamSubstrate$SITE)
                    ,quantile, 0.75, na.rm=TRUE, names=FALSE, type=2
                    )
-    p75LDia <- within(tt, METRIC <- 'BS75LDIA')
+    p75LDia <- within(tt, METRIC <- '75LDIA')
 
     tt <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
                    ,list(SITE=diamSubstrate$SITE)
                    ,quantile, 0.84, na.rm=TRUE, names=FALSE, type=2
                    )
-    p84LDia <- within(tt, METRIC <- 'BS84LDIA')
+    p84LDia <- within(tt, METRIC <- '84LDIA')
 
   	intermediateMessage('.d')
 	

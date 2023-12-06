@@ -52,6 +52,7 @@ nlaBottomSubstrateTest.handmadeData <- function()
                                                                   )
                                                     ) %>%
                arrange(SITE, METRIC) %>% 
+               mutate(METRIC = paste0('BS', METRIC)) %>%
                select(SITE, METRIC, VALUE, everything() )
     dd <- dfDifferences(testInfo$expected, actual, c('SITE','METRIC'), zeroFudge = 1e-9)
     checkEquals(testInfo$expected, actual, 'Unexpected population estimate results with handmade data')
