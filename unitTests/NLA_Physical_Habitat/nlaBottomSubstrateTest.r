@@ -17,6 +17,11 @@
 #          be extended to cover nlaBottomSubstrate as a whole. The other unit 
 #          tests have NOT been updated to reflect the change in weighting the
 #          diameters that were recently made based on input from Phil Kaufmann.
+# 12/05/23 cws Updated unit tests for hand made data and the tests using 2007
+#          data. Note: Unit test now uses dfDifferences instead of dfCompare, so
+#          that function will have to be added to aquamet.
+# 12/05/23 cws Updated .absentData and .partialData parts of tests to use
+#          dfDifferences instead of dfComparison to handle changed values bet ter.
 #
 
 
@@ -106,8 +111,10 @@ nlaBottomSubstrateTest.fullData <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics")
 	
-	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics")
+	# ignore bsxldia_wfc as it is currently a temporary metric. It will be added
+	# in to tests if it becomes permanent.
+	dd <- dfDifferences(expected, actual %>% subset(METRIC %nin% 'BSXLDIA_WFC'), c('SITE','METRIC'), zeroFudge=1e-14)
+	checkTrue(nrow(subset(dd, type == 'diff')) == 0, "Incorrect calculation of metrics")
 }
 
 nlaBottomSubstrateTest.absentData <- function()
@@ -145,12 +152,9 @@ nlaBottomSubstrateTest.absentData <- function()
 	                                    select(SITE, STATION, VALUE)
 	                            )
 	
-	diff <- dfCompare(expected %>% subset(METRIC %nin% c('BSFBLACK','BSFBROWN','BSFGRAY','BSFRED','BSFOTHERCOLOR','BSNCOLOR','BSOCOLOR'))
-	                 ,actual
-	                 ,c('SITE','METRIC'), zeroFudge=1e-14
-	                 )
-	checkTrue(is.null(diff), "Incorrect calculation of metrics when color is NULL")
-	
+	dd <- dfDifferences(expected, actual %>% subset(METRIC %nin% 'BSXLDIA_WFC'), c('SITE','METRIC'), zeroFudge=1e-14)
+	checkTrue(nrow(subset(dd, type == 'diff')) == 0, "Incorrect calculation of metrics when color is NULL")
+	          
 	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>% 
 	                                   select(SITE, STATION, VALUE)
 	                            ,odor=NULL
@@ -180,11 +184,8 @@ nlaBottomSubstrateTest.absentData <- function()
 	                                    select(SITE, STATION, VALUE)
 	                            )
 	
-	diff <- dfCompare(expected %>% subset(METRIC %nin% c('BSFANOXIC','BSFCHEMICAL','BSFH2S','BSFNONEODOR','BSFOIL','BSFOTHERODOR','BSNODOR','BSOODOR'))
-	                 ,actual
-	                 ,c('SITE','METRIC'), zeroFudge=1e-14
-	                 )
-	checkTrue(is.null(diff), "Incorrect calculation of metrics when odor is NULL")
+	dd <- dfDifferences(expected, actual %>% subset(METRIC %nin% 'BSXLDIA_WFC'), c('SITE','METRIC'), zeroFudge=1e-14)
+	checkTrue(nrow(subset(dd, type == 'diff')) == 0, "Incorrect calculation of metrics when odor is NULL")
 	
 	actual <- nlaBottomSubstrate(color=testData %>% subset(PARAMETER %in% 'BS_COLOR') %>% 
 	                                   select(SITE, STATION, VALUE)
@@ -193,16 +194,9 @@ nlaBottomSubstrateTest.absentData <- function()
 	                            # all substrates default to null so are not specified
 	                            )
 	
-	diff <- dfCompare(expected %>% subset(METRIC %in% c('BSFBLACK','BSFBROWN','BSFGRAY','BSFRED','BSFOTHERCOLOR','BSNCOLOR','BSOCOLOR'
-	                                                   ,'BSFANOXIC','BSFCHEMICAL','BSFH2S','BSFNONEODOR','BSFOIL','BSFOTHERODOR','BSNODOR','BSOODOR'
-	                                                   )
-	                                     )
-	                 ,actual
-	                 ,c('SITE','METRIC'), zeroFudge=1e-14
-	                 )
-	checkTrue(is.null(diff), "Incorrect calculation of metrics when substrate is NULL")
-	
-	
+	dd <- dfDifferences(expected, actual %>% subset(METRIC %nin% 'BSXLDIA_WFC'), c('SITE','METRIC'), zeroFudge=1e-14)
+	checkTrue(nrow(subset(dd, type == 'diff')) == 0, "Incorrect calculation of metrics when substrate is NULL")
+
 }
 
 nlaBottomSubstrateTest.partialData <- function()
@@ -263,11 +257,8 @@ nlaBottomSubstrateTest.partialData <- function()
 	                                    select(SITE, STATION, VALUE)
 	                            )
 	
-	diff <- dfCompare(expected 
-	                ,actual
-	                ,c('SITE','METRIC'), zeroFudge=1e-14
-	                )
-	checkTrue(is.null(diff), "Incorrect calculation of metrics when color BROWN is all absent")
+	dd <- dfDifferences(expected, actual %>% subset(METRIC %nin% 'BSXLDIA_WFC'), c('SITE','METRIC'), zeroFudge=1e-14)
+	checkTrue(nrow(subset(dd, type == 'diff')) == 0, "Incorrect calculation of metrics when color BROWN is all absent")
 	
 
 	# Test case when data have no NONE odor
@@ -329,11 +320,8 @@ nlaBottomSubstrateTest.partialData <- function()
 	                        ,VALUE
 	                        )))))
 	                  )
-	diff <- dfCompare(expected 
-	                 ,actual
-	                 ,c('SITE','METRIC'), zeroFudge=1e-14
-	                 )
-	checkTrue(is.null(diff), "Incorrect calculation of metrics when odor NONE is all missing")
+	dd <- dfDifferences(expected, actual %>% subset(METRIC %nin% 'BSXLDIA_WFC'), c('SITE','METRIC'), zeroFudge=1e-14)
+	checkTrue(nrow(subset(dd, type == 'diff')) == 0, "Incorrect calculation of metrics when odor NONE is all missing")
 	
 	
 	# Test case when data have no SAND substrate is not implemented, would require
@@ -1149,14 +1137,427 @@ nlaBottomSubstrateTest.createDataInformation <- function()
 nlaBottomSubstrateTest.createExpectedResults <- function()
 # Expected values taken from 2007 database and edited to correct
 # for floating point issues and change in how counts of absent data
-# are handled (changed from 0 to NA).
+# are handled (changed from 0 to NA). The values have also been updated to 
+# reflect subsequent corrections in calculations. These are calculated explicitely
+# using the stationMeans* vectors and corrections dataframe
 {
+    
+    corrections <- function() {
+        # This function was used to hand calculate expected changes in the 
+        # substrate diameter distribution estimation metrics. The values
+        # calculated for the VALUE columns are copy/pasted into the numericValue
+        # columns and then compared as an anchor against inadvertent changes made
+        # over time to the supporting functions.  These copy/pasted values are
+        # the same ones that were used to update the expected values that are
+        # returned, below. No return value is expected
+        stationMeans7470 <-function() {
+                           c(A=protectedSum(c(log10(NA) * NA/(0.25)
+                                             ,log10(7.7459666924148338e-03) *  0.25/(0.25)
+                                             )
+                                           , na.rm=TRUE)
+                            ,B=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.05/(0.05) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,C=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.05/(0.05) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,D=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.05/(0.05) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,E=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.05/(0.05) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,'F'=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0.0) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,G=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0.0) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,H=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0.0) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,I=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0.0) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,J=protectedSum(c(log10(NA) * NA/(0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0.0) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ) %>% 
+                            return()
+    }
+        stationMeans7472 <-function() {
+                           c(A=protectedSum(c(log10(3.4641016151377546e-01) * 0.25/(0.25+0.575)
+                                             ,log10(7.7459666924148338e-03) *  0.575/(0.25+0.575)
+                                             ,log10(NA) *  NA/(0.25+0.575)
+                                             )
+                                           , na.rm=TRUE)
+                            ,B=protectedSum(c(log10(3.4641016151377546e-01) * 0.25/(0.25+0.875)
+                                             ,log10(7.7459666924148338e-03) * 0.875/(0.25+0.875) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,C=protectedSum(c(log10(7.7459666924148338e-03) * 0.875/(0.875+0)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,D=protectedSum(c(log10(7.7459666924148338e-03) * 0.25/(0.25+0.575)
+                                             ,log10(1.1313708498984761e+01) * 0.575/(0.25+0.575) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,E=protectedSum(c(log10(3.4641016151377546e-01) * 0.25/(0.25+0.575)
+                                             ,log10(7.7459666924148338e-03) * 0.575/(0.25+0.575)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,'F'=protectedSum(c(log10(3.4641016151377546e-01) * 0.575/(0.575+0.575)
+                                             ,log10(7.7459666924148338e-03) * 0.575/(0.575+0.575)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,G=protectedSum(c(log10(7.7459666924148338e-03) * 0.875/(0.875) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,H=protectedSum(c(log10(3.4641016151377546e-01) * 0.575/(0.575+0.575)
+                                             ,log10(7.7459666924148338e-03) * 0.575/(0.575+0.575)
+                                             ,log10(NA) * NA/(0.575+0.575)
+                                             ,log10(NA) * NA/(0.575+0.575)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,I=protectedSum(c(log10(3.4641016151377546e-01) * 0.875/(0.875+0.25)
+                                             ,log10(7.7459666924148338e-03) * 0.25/(0.875+0.25)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,J=protectedSum(c(log10(3.4641016151377546e-01) * 0.875/(0.875+0.25)
+                                             ,log10(7.7459666924148338e-03) * 0.25/(0.875+0.25)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ) %>% 
+                            return()
+                        }
+        stationMeans7498 <-function() {
+                           c(B=protectedSum(c(log10(3.4641016151377546e-01) * 0.25/(0.25+0.25)
+                                             ,log10(7.7459666924148338e-03) * 0.25/(0.25+0.25) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,C=protectedSum(c(log10(7.7459666924148338e-03) * 0.875/(0.875) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,H=protectedSum(c(log10(3.4641016151377546e-01) * 0.05/(0.05+0.875+0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.875/(0.05+0.875+0.05) 
+                                             ,log10(1.1313708498984761e+01) * 0.05/(0.05+0.875+0.05) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,I=protectedSum(c(log10(3.4641016151377546e-01) * 0.05/(0.05+0.575+0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.575/(0.05+0.575+0.05) 
+                                             ,log10(1.1313708498984761e+01) * 0.05/(0.05+0.575+0.05) 
+                                             ,log10(NA) * NA/(0.05+0.575+0.05) 
+                                             ,log10(NA) * NA/(0.05+0.575+0.05) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,J=protectedSum(c(log10(3.4641016151377546e-01) * 0.25/(0.25+0.25+0.05+0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.25/(0.25+0.25+0.05+0.05) 
+                                             ,log10(1.2649110640673517e+02) * 0.05/(0.25+0.25+0.05+0.05) 
+                                             ,log10(1.1313708498984761e+01) * 0.05/(0.25+0.25+0.05+0.05) 
+                                             ,log10(NA) * NA/(0.25+0.25+0.05+0.05) 
+                                             ,log10(NA) * NA/(0.25+0.25+0.05+0.05) 
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ) %>% 
+                            return()
+    }
+        stationMeans7519 <-function() {
+                           c(A=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0.05+0.05+0.25+0.875+0)
+                                             ,log10(1.0000000000000000e+03) * 0.05/(0+0.05+0.05+0.25+0.875+0)
+                                             ,log10(1.2649110640673517e+02) * 0.05/(0+0.05+0.05+0.25+0.875+0)
+                                             ,log10(1.1313708498984761e+01) * 0.25/(0+0.05+0.05+0.25+0.875+0)
+                                             ,log10(3.4641016151377546e-01) * 0.875/(0+0.05+0.05+0.25+0.875+0)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0+0.05+0.05+0.25+0.875+0)
+                                             ,log10(NA)                     * NA/(0+0.05+0.05+0.25+0.875+0)
+                                             ,log10(NA)                     * NA/(0+0.05+0.05+0.25+0.875+0)
+                                             )
+                                           , na.rm=TRUE)
+                            ,B=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0+0.05+0.575+0.575+0.05)
+                                             ,log10(1.0000000000000000e+03) * 0.0/(0+0+0.05+0.575+0.575+0.05)
+                                             ,log10(1.2649110640673517e+02) * 0.05/(0+0+0.05+0.575+0.575+0.05)
+                                             ,log10(1.1313708498984761e+01) * 0.575/(0+0+0.05+0.575+0.575+0.05)
+                                             ,log10(3.4641016151377546e-01) * 0.575/(0+0+0.05+0.575+0.575+0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.05/(0+0+0.05+0.575+0.575+0.05)
+                                             ,log10(NA)                     * NA/(0+0+0.05+0.575+0.575+0.05)
+                                             ,log10(NA)                     * NA/(0+0+0.05+0.575+0.575+0.05)
+                                             )
+                                           , na.rm=TRUE)
+                            ,C=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0+0+0+0.05+0.875)
+                                             ,log10(1.0000000000000000e+03) * 0.0/(0+0+0+0+0.05+0.875)
+                                             ,log10(1.2649110640673517e+02) * 0.0/(0+0+0+0+0.05+0.875)
+                                             ,log10(1.1313708498984761e+01) * 0.0/(0+0+0+0+0.05+0.875)
+                                             ,log10(3.4641016151377546e-01) * 0.05/(0+0+0+0+0.05+0.875)
+                                             ,log10(7.7459666924148338e-03) * 0.875/(0+0+0+0+0.05+0.875)
+                                             ,log10(NA)                     * NA/(0+0+0+0+0.05+0.875)
+                                             ,log10(NA)                     * NA/(0+0+0+0+0.05+0.875)
+                                             )
+                                           , na.rm=TRUE)
+                            ,D=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0+0.575+0.575+0.25+0)
+                                             ,log10(1.0000000000000000e+03) * 0.0/(0+0+0.575+0.575+0.25+0)
+                                             ,log10(1.2649110640673517e+02) * 0.575/(0+0+0.575+0.575+0.25+0)
+                                             ,log10(1.1313708498984761e+01) * 0.575/(0+0+0.575+0.575+0.25+0)
+                                             ,log10(3.4641016151377546e-01) * 0.25/(0+0+0.575+0.575+0.25+0)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0+0+0.575+0.575+0.25+0)
+                                             ,log10(NA)                     * NA/(0+0+0.575+0.575+0.25+0)
+                                             ,log10(NA)                     * NA/(0+0+0.575+0.575+0.25+0)
+                                             )
+                                           , na.rm=TRUE)
+                            ,E=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0.05+0.575+0.25+0.25+0)
+                                             ,log10(1.0000000000000000e+03) * 0.05/(0+0.05+0.575+0.25+0.25+0)
+                                             ,log10(1.2649110640673517e+02) * 0.575/(0+0.05+0.575+0.25+0.25+0)
+                                             ,log10(1.1313708498984761e+01) * 0.25/(0+0.05+0.575+0.25+0.25+0)
+                                             ,log10(3.4641016151377546e-01) * 0.25/(0+0.05+0.575+0.25+0.25+0)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0+0.05+0.575+0.25+0.25+0)
+                                             ,log10(NA)                     * NA/(0+0.05+0.575+0.25+0.25+0)
+                                             ,log10(NA)                     * NA/(0+0.05+0.575+0.25+0.25+0)
+                                             )
+                                           , na.rm=TRUE)
+                            ,'F'=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0+0.05+0.25+0.875+0)
+                                               ,log10(1.0000000000000000e+03) * 0.0/(0+0+0.05+0.25+0.875+0)
+                                               ,log10(1.2649110640673517e+02) * 0.05/(0+0+0.05+0.25+0.875+0)
+                                               ,log10(1.1313708498984761e+01) * 0.25/(0+0+0.05+0.25+0.875+0)
+                                               ,log10(3.4641016151377546e-01) * 0.875/(0+0+0.05+0.25+0.875+0)
+                                               ,log10(7.7459666924148338e-03) * 0.0/(0+0+0.05+0.25+0.875+0)
+                                               ,log10(NA)                     * NA/(0+0+0.05+0.25+0.875+0)
+                                               ,log10(NA)                     * NA/(0+0+0.05+0.25+0.875+0)
+                                               )
+                                           , na.rm=TRUE)
+                            ,G=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0+0.05+0.25+0.875+0)
+                                             ,log10(1.0000000000000000e+03) * 0.0/(0+0+0.05+0.25+0.875+0)
+                                             ,log10(1.2649110640673517e+02) * 0.05/(0+0+0.05+0.25+0.875+0)
+                                             ,log10(1.1313708498984761e+01) * 0.25/(0+0+0.05+0.25+0.875+0)
+                                             ,log10(3.4641016151377546e-01) * 0.875/(0+0+0.05+0.25+0.875+0)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0+0+0.05+0.25+0.875+0)
+                                             ,log10(NA)                     * NA/(0+0+0.05+0.25+0.875+0)
+                                             ,log10(NA)                     * NA/(0+0+0.05+0.25+0.875+0) 
+                                             )
+                                           , na.rm=TRUE)
+                            ,H=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0+0+0.05+0.875+0)
+                                             ,log10(1.0000000000000000e+03) * 0.0/(0+0+0+0.05+0.875+0)
+                                             ,log10(1.2649110640673517e+02) * 0.0/(0+0+0+0.05+0.875+0)
+                                             ,log10(1.1313708498984761e+01) * 0.05/(0+0+0+0.05+0.875+0)
+                                             ,log10(3.4641016151377546e-01) * 0.875/(0+0+0+0.05+0.875+0)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0+0+0+0.05+0.875+0)
+                                             ,log10(NA)                     * NA/(0+0+0+0.05+0.875+0) 
+                                             ,log10(NA)                     * NA/(0+0+0+0.05+0.875+0) 
+                                             )
+                                           , na.rm=TRUE)
+                            ,I=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0+0.05+0.05+0.875+0)
+                                             ,log10(1.0000000000000000e+03) * 0.0/(0+0+0.05+0.05+0.875+0)
+                                             ,log10(1.2649110640673517e+02) * 0.05/(0+0+0.05+0.05+0.875+0)
+                                             ,log10(1.1313708498984761e+01) * 0.05/(0+0+0.05+0.05+0.875+0)
+                                             ,log10(3.4641016151377546e-01) * 0.875/(0+0+0.05+0.05+0.875+0)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0+0+0.05+0.05+0.875+0)
+                                             ,log10(NA)                     * NA/(0+0+0.05+0.05+0.875+0) 
+                                             ,log10(NA)                     * NA/(0+0+0.05+0.05+0.875+0) 
+                                             )
+                                           , na.rm=TRUE)
+                            ,J=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0+0+0.25+0.875+0.05)
+                                             ,log10(1.0000000000000000e+03) * 0.0/(0+0+0+0.25+0.875+0.05)
+                                             ,log10(1.2649110640673517e+02) * 0.0/(0+0+0+0.25+0.875+0.05)
+                                             ,log10(1.1313708498984761e+01) * 0.25/(0+0+0+0.25+0.875+0.05)
+                                             ,log10(3.4641016151377546e-01) * 0.875/(0+0+0+0.25+0.875+0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.05/(0+0+0+0.25+0.875+0.05)
+                                             ,log10(NA)                     * NA/(0+0+0+0.25+0.875+0.05) 
+                                             ,log10(NA)                     * NA/(0+0+0+0.25+0.875+0.05) 
+                                             )
+                                           , na.rm=TRUE)
+                            ,K=protectedSum(c(log10(5.6568542494923804e+03) * 0.0/(0+0.05+0.575+0.25+0.05+0.0)
+                                             ,log10(1.0000000000000000e+03) * 0.05/(0+0.05+0.575+0.25+0.05+0.0)
+                                             ,log10(1.2649110640673517e+02) * 0.575/(0+0.05+0.575+0.25+0.05+0.0)
+                                             ,log10(1.1313708498984761e+01) * 0.25/(0+0.05+0.575+0.25+0.05+0.0)
+                                             ,log10(3.4641016151377546e-01) * 0.05/(0+0.05+0.575+0.25+0.05+0.0)
+                                             ,log10(7.7459666924148338e-03) * 0.0/(0+0.05+0.575+0.25+0.05+0.0)
+                                             ,log10(NA)                     * NA/(0+0.05+0.575+0.25+0.05+0.05) 
+                                             ,log10(NA)                     * NA/(0+0.05+0.575+0.25+0.05+0.05) 
+                                             )
+                                           , na.rm=TRUE)
+                            ) %>% 
+                            return()
+    }
+        stationMeans7545 <-function() {
+                           c(A=protectedSum(c(log10(1.1313708498984761e+01) * 0.05/(0.05+0+0.875)
+                                             ,log10(3.4641016151377546e-01) * 0.0/(0.05+0+0.875)
+                                             ,log10(7.7459666924148338e-03) * 0.875/(0.05+0+0.875)
+                                             )
+                                           , na.rm=TRUE)
+                            ,B=protectedSum(c(log10(1.1313708498984761e+01) * 0.05/(0.05+0+0.875)
+                                             ,log10(3.4641016151377546e-01) * 0.0/(0.05+0+0.875)
+                                             ,log10(7.7459666924148338e-03) * 0.875/(0.05+0+0.875)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,C=protectedSum(c(log10(7.7459666924148338e-03) * 0.875/(0.875)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,D=protectedSum(c(log10(7.7459666924148338e-03) * 0.875/(0.875)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,E=protectedSum(c(log10(7.7459666924148338e-03) * 0.875/(0.875)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,'F'=protectedSum(c(log10(7.7459666924148338e-03) * 0.875/(0.875)
+                                               )
+                                             ,na.rm=TRUE
+                                             )
+                            ,G=protectedSum(c(log10(1.1313708498984761e+01) * 0.875/(0.875+0.05+0.05)
+                                             ,log10(3.4641016151377546e-01) * 0.05/(0.875+0.05+0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.05/(0.875+0.05+0.05)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,H=protectedSum(c(
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,I=protectedSum(c(log10(1.1313708498984761e+01) * 0.875/(0.875+0.05+0.05)
+                                             ,log10(3.4641016151377546e-01) * 0.05/(0.875+0.05+0.05)
+                                             ,log10(7.7459666924148338e-03) * 0.05/(0.875+0.05+0.05)
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ,J=protectedSum(c(
+                                             )
+                                           ,na.rm=TRUE
+                                           )
+                            ) %>% 
+                            return()
+        }
+        
+        expectedValues <- rbind(data.frame(SITE=7470L
+                                          ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                                     ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                                     )
+                                          ,VALUE =  c(mean(stationMeans7470(), na.rm=TRUE)
+                                                     ,sd(stationMeans7470(), na.rm=TRUE)
+                                                     ,quantile(stationMeans7470(), 0.16, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7470(), 0.25, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7470(), 0.50, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7470(), 0.75, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7470(), 0.84, type = 2, na.rm=TRUE)
+                                                     )
+                                          ,numericValue = c(-2.1109243748081781, 0, -2.1109243748081781
+                                                           ,-2.1109243748081781, -2.1109243748081781, -2.1109243748081781
+                                                           ,-2.1109243748081781
+                                                           )
+                                          ,stringsAsFactors=FALSE
+                                          )
+                               ,data.frame(SITE=7472L
+                                          ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                                     ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                                     )
+                                          ,VALUE =  c(mean(stationMeans7472(), na.rm=TRUE)
+                                                     ,sd(stationMeans7472(), na.rm=TRUE)
+                                                     ,quantile(stationMeans7472(), 0.16, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7472(), 0.25, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7472(), 0.50, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7472(), 0.75, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7472(), 0.84, type = 2, na.rm=TRUE)
+                                                     )
+                                          ,numericValue = c(-1.3318586676482462, 0.673963393956167, -2.1109243748081781
+                                                           ,-1.7441432641788468, -1.4482175953756364, -0.827190487605519
+                                                           ,-0.827190487605519)
+                                          ,stringsAsFactors=FALSE
+                                          )
+                               ,data.frame(SITE=7498L 
+                                          ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                                     ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                                     )
+                                          ,VALUE =  c(mean(stationMeans7498(), na.rm=TRUE)
+                                                     ,sd(stationMeans7498(), na.rm=TRUE)
+                                                     ,quantile(stationMeans7498(), 0.16, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7498(), 0.25, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7498(), 0.50, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7498(), 0.75, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7498(), 0.84, type = 2, na.rm=TRUE)
+                                                     )
+                                          ,numericValue = c(-1.5646523356289272, 0.518096354069875, -2.1109243748081781
+                                                           ,-1.8639990231433521, -1.75425442240343, -1.2856668758921828
+                                                           ,-0.808416981897494)
+                                          ,stringsAsFactors=FALSE
+                                   )
+                               ,data.frame(SITE=7519L 
+                                          ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                                     ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                                     )
+                                          ,VALUE =  c(mean(stationMeans7519(), na.rm=TRUE)
+                                                     ,sd(stationMeans7519(), na.rm=TRUE)
+                                                     ,quantile(stationMeans7519(), 0.16, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7519(), 0.25, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7519(), 0.50, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7519(), 0.75, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7519(), 0.84, type = 2, na.rm=TRUE)
+                                                     )
+                                          ,numericValue = c(0.157310533304395, 1.0201101423027534, -0.37857076282483
+                                                           ,-0.251358929278533, -0.0292374119844957, 1.2138607264594956
+                                                           ,1.3395407973115689)
+                                          ,stringsAsFactors=FALSE
+                                          )
+                               ,data.frame(SITE=7545L 
+                                          ,METRIC = c('BSXLDIA','BSVLDIA','BS16LDIA'
+                                                     ,'BS25LDIA','BS50LDIA','BS75LDIA','BS84LDIA'
+                                                     )
+                                          ,VALUE =  c(mean(stationMeans7545(), na.rm=TRUE)
+                                                     ,sd(stationMeans7545(), na.rm=TRUE)
+                                                     ,quantile(stationMeans7545(), 0.16, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7545(), 0.25, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7545(), 0.50, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7545(), 0.75, type = 2, na.rm=TRUE)
+                                                     ,quantile(stationMeans7545(), 0.84, type = 2, na.rm=TRUE)
+                                                     )
+                                          ,numericValue = c(-1.3370094543968030, 1.32953177691563, -2.1109243748081781
+                                                           ,-2.1109243748081781, -2.02539655427758, -0.563094533985428
+                                                           ,0.813679665776127)
+                                          ,stringsAsFactors=FALSE
+                                          )
+                               )
+        probs <- expectedValues %>% subset(abs(VALUE - numericValue) >= 1e-15)
+        checkTrue(nrow(probs) == 0, "Apparent change in results from protectedSum, protectedmean or quantile functions")
+        #return(expectedValues)
+    }
+    corrections()
+    
 	tc <- textConnection("  SITE         METRIC                VALUE
-							7470       BS16LDIA   -0.351820729134696
-							7470       BS25LDIA   -0.351820729134696
-							7470       BS50LDIA   -0.175910364567348
-							7470       BS75LDIA                    0
-							7470       BS84LDIA                    0
+							7470       BS16LDIA   -2.11092437480818  # -0.351820729134696
+							7470       BS25LDIA   -2.11092437480818  # -0.351820729134696
+							7470       BS50LDIA   -2.11092437480818  # -0.175910364567348
+							7470       BS75LDIA   -2.11092437480818  #                  0
+							7470       BS84LDIA   -2.11092437480818  #                  0
 							7470      BSFANOXIC                    0
 							7470       BSFBLACK                    0
 							7470       BSFBROWN                    1
@@ -1204,17 +1605,17 @@ nlaBottomSubstrateTest.createExpectedResults <- function()
 							7470    BSVBOULDERS                    0
 							7470      BSVCOBBLE                    0
 							7470      BSVGRAVEL                    0
-							7470        BSVLDIA    0.185425805354467
+							7470        BSVLDIA                    0  #  0.185425805354467
 							7470     BSVORGANIC   0.0681886701716996
 							7470        BSVSAND                    0
 							7470        BSVSILT   0.0681886701716996
 							7470        BSVWOOD                    0
-							7470        BSXLDIA   -0.175910364567348
+							7470        BSXLDIA   -2.11092437480818  # -0.175910364567348
 							7472       BS16LDIA    -2.11092437480818
-							7472       BS25LDIA   -0.872071632089423
-							7472       BS50LDIA   -0.241369599229273
-							7472       BS75LDIA   -0.137865081267586
-							7472       BS84LDIA   -0.137865081267586
+							7472       BS25LDIA   -1.74414326417884680 # -0.872071632089423
+							7472       BS50LDIA   -1.44821759537563644 # -0.241369599229273
+							7472       BS75LDIA   -0.82719048760551872 # -0.137865081267586
+							7472       BS84LDIA   -0.82719048760551872 # -0.137865081267586
 							7472      BSFANOXIC                    0
 							7472       BSFBLACK                    0
 							7472       BSFBROWN    0.666666666666667
@@ -1262,17 +1663,17 @@ nlaBottomSubstrateTest.createExpectedResults <- function()
 							7472    BSVBOULDERS                    0
 							7472      BSVCOBBLE                    0
 							7472      BSVGRAVEL    0.284536687292995
-							7472        BSVLDIA    0.804326386435922
-							7472     BSVORGANIC   0.0163299316185545
+							7472        BSVLDIA    0.67396339395616733 # 0.804326386435922
+							7472     BSVORGANIC    0.0163299316185545
 							7472        BSVSAND    0.270211661745652
 							7472        BSVSILT    0.291531608432167
-							7472        BSVWOOD   0.0242115714971883
-							7472        BSXLDIA   -0.685627559710669
-							7498       BS16LDIA    -2.11092437480818
-							7498       BS25LDIA   -0.642833437946091
-							7498       BS50LDIA   -0.310666503857225
-							7498       BS75LDIA   -0.292375737067238
-							7498       BS84LDIA   -0.134736163649582
+							7472        BSVWOOD    0.0242115714971883
+							7472        BSXLDIA   -1.33185866764824623 # -0.685627559710669
+							7498       BS16LDIA   -2.11092437480817807 # -2.11092437480818
+							7498       BS25LDIA   -1.86399902314335209 # -0.642833437946091
+							7498       BS50LDIA   -1.75425442240342933 # -0.310666503857225
+							7498       BS75LDIA   -1.28566687589218276 # -0.292375737067238
+							7498       BS84LDIA   -0.80841698189749411 # -0.134736163649582
 							7498      BSFANOXIC                  0.4
 							7498       BSFBLACK                  0.6
 							7498       BSFBROWN                  0.2
@@ -1320,17 +1721,17 @@ nlaBottomSubstrateTest.createExpectedResults <- function()
 							7498    BSVBOULDERS                    0
 							7498      BSVCOBBLE   0.0412393049421161
 							7498      BSVGRAVEL   0.0102372273898992
-							7498        BSVLDIA    0.811052186323006
+							7498        BSVLDIA  0.51809635406987520 # 0.811052186323006
 							7498     BSVORGANIC   0.0393957560775182
 							7498        BSVSAND    0.221878070499023
 							7498        BSVSILT    0.268462338469131
 							7498        BSVWOOD   0.0393957560775182
-							7498        BSXLDIA   -0.698307243465663
-							7519       BS16LDIA  -0.0630951271374716
-							7519       BS25LDIA  -0.0418931548797554
-							7519       BS50LDIA -0.00487290199741594
-							7519       BS75LDIA    0.202310121076583
-							7519       BS84LDIA    0.223256799551928
+							7498        BSXLDIA -1.56465233562892725 # -0.698307243465663
+							7519       BS16LDIA -0.37857076282482960 # -0.0630951271374716
+							7519       BS25LDIA -0.25135892927853259 # -0.0418931548797554
+							7519       BS50LDIA -0.02923741198449574 # -0.00487290199741594
+							7519       BS75LDIA  1.21386072645949561 #  0.202310121076583
+							7519       BS84LDIA  1.33954079731156894 #  0.223256799551928
 							7519      BSFANOXIC                    0
 							7519       BSFBLACK                    0
 							7519       BSFBROWN                    1
@@ -1378,17 +1779,17 @@ nlaBottomSubstrateTest.createExpectedResults <- function()
 							7519    BSVBOULDERS   0.0207144738430341
 							7519      BSVCOBBLE    0.223459164284133
 							7519      BSVGRAVEL    0.11836016317692		# modified to accomodate floating point diff
-							7519        BSVLDIA    0.170018357050459
+							7519        BSVLDIA  1.02011014230275343 # 0.170018357050459
 							7519     BSVORGANIC    0.125515403373414
 							7519        BSVSAND    0.312010618893256
 							7519        BSVSILT    0.174454307624145
 							7519        BSVWOOD   0.0219263592510881
-							7519        BSXLDIA   0.0262184222173992
-							7545       BS16LDIA    -2.11092437480818
-							7545       BS25LDIA    -2.11092437480818
-							7545       BS50LDIA    -1.37877364302859
-							7545       BS75LDIA   -0.187698177995143
-							7545       BS84LDIA    0.271226555258709
+							7519        BSXLDIA   0.15731053330439523 # 0.0262184222173992
+							7545       BS16LDIA  -2.11092437480817807 #  -2.11092437480818
+							7545       BS25LDIA  -2.11092437480817807 #  -2.11092437480818
+							7545       BS50LDIA  -2.02539655427758047 #  -1.37877364302859
+							7545       BS75LDIA  -0.56309453398542786 # -0.187698177995143
+							7545       BS84LDIA   0.81367966577612716 # 0.271226555258709
 							7545      BSFANOXIC                    0
 							7545       BSFBLACK                    0
 							7545       BSFBROWN                    1
@@ -1436,12 +1837,12 @@ nlaBottomSubstrateTest.createExpectedResults <- function()
 							#7545    BSVBOULDERS                   NA	# absent data no longer included in mets
 							#7545      BSVCOBBLE                   NA	# absent data no longer included in mets
 							7545      BSVGRAVEL     0.48692673430615
-							7545        BSVLDIA     1.08496515094688
+							7545        BSVLDIA   1.32953177691563074 #  1.08496515094688
 							#7545     BSVORGANIC                   NA	# absent data no longer included in mets
 							7545        BSVSAND   0.0296077061122885
 							7545        BSVSILT    0.431475761475635
 							#7545        BSVWOOD                   NA	# absent data no longer included in mets
-							7545        BSXLDIA    -1.14931127640166
+							7545        BSXLDIA  -1.33700945439680297 #  -1.14931127640166
 					")
 	
 	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)

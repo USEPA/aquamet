@@ -389,25 +389,29 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #   	                    ,all.x=TRUE
 #   	                    ) %>% subset(SITE %in% c(2008542, 6160)) )
 
-  	bsxldia_wfc <- indivCover %>%
-  	               subset(METRIC %in% c('BSFCBEDROCK','BSFCBOULDERS','BSFCCOBBLE'
-  	                                   ,'BSFCGRAVEL', 'BSFCSAND',    'BSFCSILT'
-  	                                   )
-  	                     ) %>%
-  	               mutate(CLASS = sub('^BSFC(.+)$', '\\1', METRIC)) %>%
-  	               merge(substrateSizes %>% 
-  	                     select(CLASS, diam)
-  	                    ,by='CLASS'
-  	                    ,all.x=TRUE
-  	                    ) %>%
-  	               subset(!(is.na(VALUE))) %>%
-  	               subset(VALUE > 0) %>%
-  	               group_by(SITE) %>%
-  	               summarise(VALUE = protectedSum(as.numeric(VALUE) * log10(diam)
-  	                                              ,na.rm=TRUE, nan.rm=TRUE, inf.rm=TRUE
-  	                                              )
+  	bsxldia_wfc <- NULL
+  	if(!is.null(indivCover)) {
+      	bsxldia_wfc <- indivCover %>%
+  	                   subset(METRIC %in% c('BSFCBEDROCK','BSFCBOULDERS','BSFCCOBBLE'
+  	                                       ,'BSFCGRAVEL', 'BSFCSAND',    'BSFCSILT'
+  	                                       )
+  	                         ) %>%
+      	               mutate(CLASS = sub('^BSFC(.+)$', '\\1', METRIC)) %>%
+  	                   merge(substrateSizes %>% 
+  	                         select(CLASS, diam)
+  	                        ,by='CLASS'
+  	                        ,all.x=TRUE
   	                        ) %>%
-  	               mutate(METRIC = 'BSXLDIA_WFC')
+      	               subset(!(is.na(VALUE))) %>%
+  	                   subset(VALUE > 0) %>%
+  	                   group_by(SITE) %>%
+  	                   summarise(VALUE = protectedSum(as.numeric(VALUE) * log10(diam)
+  	                                                  ,na.rm=TRUE, nan.rm=TRUE, inf.rm=TRUE
+  	                                                  )
+  	                            ) %>%
+      	               mutate(METRIC = 'BSXLDIA_WFC')
+  	}
+  	
 # print( bsxldia_wfc %>% subset(SITE %in% c(2008542, 6160)) ) # DEBUG STUFF
   	intermediateMessage('.wfc')
 	
@@ -575,7 +579,6 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
                                   ,ifelse(!inPopulationEstimate, NA, cover
                                    ))
                           )
-# 	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))
   	mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
 	intermediateMessage('.a')
 
