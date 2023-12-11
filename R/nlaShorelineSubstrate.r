@@ -499,94 +499,98 @@ nlaShorelineSubstrate <- function(bedrock = NULL
   intermediateMessage('.7')
 
 
-  # Calculations using characteristic diameters of the substrate are based
-  # on mean diameter*cover values at each transect.  Cover values are 
-  # normalized prior to their use as weights for these means.
-  #
-  # Determine mean diameters, weighted by the normalized covers.  Note that
-  # the normalization includes non-mineral substrates, but the following
-  # calculations do not take them into account as they have no meaningful 
-  # diameter.
-  mineralCover <- subset(sscover, inPopulationEstimate
-                        # ,CLASS %in% c('BEDROCK','BOULDERS','COBBLE'
-                        #                  ,'GRAVEL', 'SAND', 'SILT'
-                        #                  )
-                        ,select=names(sscover)[names(sscover) != 'normCover']
-                  )
-	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))                ### NEW and correct
-  mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
-  
-  # tt <- merge(mineralCover, substrateSizes
-  #            ,by.x='CLASS', by.y='CLASS'
-  #            ,all.x=TRUE
-  #            ) %>%
-  #       mutate(lDiam = log10(diam))
-  #  tt$wtLDiam <- tt$lDiam * tt$normCover
-    mineralCover <- mineralCover %>% mutate(lDiam = log10(diam), wtLDiam = lDiam * normCover) #### OLD and correct
-#   mineralCover <- mineralCover %>% mutate(wtDiam = log10(diam * normCover))                   #### NEW
-
-  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtLDiam)                           #### OLD and correct
-#  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtDiam)                             #### NEW
-                            ,list('SITE'=mineralCover$SITE
-                                 ,'STATION'=mineralCover$STATION
-                                 ) 
-                            ,sum, na.rm=TRUE
-                            )
-
-  intermediateMessage('.8')
-
-
-  # Estimate measures of diameter populations
-  meanLDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
-                 ,list('SITE'=diamSubstrate$SITE)
-                 ,mean, na.rm=TRUE
-                 )
-  meanLDia$METRIC <- 'SSXLDIA'
-
-  sdLDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
-                 ,list('SITE'=diamSubstrate$SITE)
-                 ,sd, na.rm=TRUE
-                 )
-  sdLDia$METRIC <- 'SSVLDIA'
-
-  p16LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
-                 ,list('SITE'=diamSubstrate$SITE)
-                 ,quantile, 0.16, na.rm=TRUE, names=FALSE, type=2
-                 )
-  p16LDia$METRIC <- 'SS16LDIA'
-
-  p25LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
-                 ,list('SITE'=diamSubstrate$SITE)
-                 ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
-                 )
-  p25LDia$METRIC <- 'SS25LDIA'
-
-  p50LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
-                 ,list('SITE'=diamSubstrate$SITE)
-                 ,quantile, 0.50, na.rm=TRUE, names=FALSE, type=2
-                 )
-  p50LDia$METRIC <- 'SS50LDIA'
-
-  p75LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
-                 ,list('SITE'=diamSubstrate$SITE)
-                 ,quantile, 0.75, na.rm=TRUE, names=FALSE, type=2
-                 )
-  p75LDia$METRIC <- 'SS75LDIA'
-
-  p84LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
-                 ,list('SITE'=diamSubstrate$SITE)
-                 ,quantile, 0.84, na.rm=TRUE, names=FALSE, type=2
-                 )
-  p84LDia$METRIC <- 'SS84LDIA'
-
-    # Calculate mean substrate size without cover-based weights. This is at least
-    # mathematically defensible, even if it does not include cover values
-    ssxldia_uwd <- mineralCover %>%
-                   subset(cover > 0) %>%
-                   mutate(lDiam = log10(diam)) %>%
-                   group_by(SITE) %>%
-                   summarise(VALUE = protectedMean(lDiam, na.rm=TRUE, inf.rm=TRUE, nan.rm=TRUE)) %>%
-                   mutate(METRIC = 'SSXLDIA_UWD')
+	populationEstimates <- nlaBottomSubstrate.populationEstimates(sscover, substrateSizes)
+  	if(!is.null(populationEstimates)) 
+  	    populationEstimates <- populationEstimates %>%
+  	                           mutate(METRIC = paste0('SS', METRIC))
+#   # Calculations using characteristic diameters of the substrate are based
+#   # on mean diameter*cover values at each transect.  Cover values are 
+#   # normalized prior to their use as weights for these means.
+#   #
+#   # Determine mean diameters, weighted by the normalized covers.  Note that
+#   # the normalization includes non-mineral substrates, but the following
+#   # calculations do not take them into account as they have no meaningful 
+#   # diameter.
+#   mineralCover <- subset(sscover, inPopulationEstimate
+#                         # ,CLASS %in% c('BEDROCK','BOULDERS','COBBLE'
+#                         #                  ,'GRAVEL', 'SAND', 'SILT'
+#                         #                  )
+#                         ,select=names(sscover)[names(sscover) != 'normCover']
+#                   )
+# 	mineralCover <- mineralCover %>% mutate(cover = ifelse(cover==0, NA, cover))                ### NEW and correct
+#   mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
+#   
+#   # tt <- merge(mineralCover, substrateSizes
+#   #            ,by.x='CLASS', by.y='CLASS'
+#   #            ,all.x=TRUE
+#   #            ) %>%
+#   #       mutate(lDiam = log10(diam))
+#   #  tt$wtLDiam <- tt$lDiam * tt$normCover
+#     mineralCover <- mineralCover %>% mutate(lDiam = log10(diam), wtLDiam = lDiam * normCover) #### OLD and correct
+# #   mineralCover <- mineralCover %>% mutate(wtDiam = log10(diam * normCover))                   #### NEW
+# 
+#   diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtLDiam)                           #### OLD and correct
+# #  diamSubstrate <- aggregate(list(meanLDiam = mineralCover$wtDiam)                             #### NEW
+#                             ,list('SITE'=mineralCover$SITE
+#                                  ,'STATION'=mineralCover$STATION
+#                                  ) 
+#                             ,sum, na.rm=TRUE
+#                             )
+# 
+#   intermediateMessage('.8')
+# 
+# 
+#   # Estimate measures of diameter populations
+#   meanLDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
+#                  ,list('SITE'=diamSubstrate$SITE)
+#                  ,mean, na.rm=TRUE
+#                  )
+#   meanLDia$METRIC <- 'SSXLDIA'
+# 
+#   sdLDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
+#                  ,list('SITE'=diamSubstrate$SITE)
+#                  ,sd, na.rm=TRUE
+#                  )
+#   sdLDia$METRIC <- 'SSVLDIA'
+# 
+#   p16LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
+#                  ,list('SITE'=diamSubstrate$SITE)
+#                  ,quantile, 0.16, na.rm=TRUE, names=FALSE, type=2
+#                  )
+#   p16LDia$METRIC <- 'SS16LDIA'
+# 
+#   p25LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
+#                  ,list('SITE'=diamSubstrate$SITE)
+#                  ,quantile, 0.25, na.rm=TRUE, names=FALSE, type=2
+#                  )
+#   p25LDia$METRIC <- 'SS25LDIA'
+# 
+#   p50LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
+#                  ,list('SITE'=diamSubstrate$SITE)
+#                  ,quantile, 0.50, na.rm=TRUE, names=FALSE, type=2
+#                  )
+#   p50LDia$METRIC <- 'SS50LDIA'
+# 
+#   p75LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
+#                  ,list('SITE'=diamSubstrate$SITE)
+#                  ,quantile, 0.75, na.rm=TRUE, names=FALSE, type=2
+#                  )
+#   p75LDia$METRIC <- 'SS75LDIA'
+# 
+#   p84LDia <- aggregate(list(VALUE = diamSubstrate$meanLDiam)
+#                  ,list('SITE'=diamSubstrate$SITE)
+#                  ,quantile, 0.84, na.rm=TRUE, names=FALSE, type=2
+#                  )
+#   p84LDia$METRIC <- 'SS84LDIA'
+# 
+#     # Calculate mean substrate size without cover-based weights. This is at least
+#     # mathematically defensible, even if it does not include cover values
+#     ssxldia_uwd <- mineralCover %>%
+#                    subset(cover > 0) %>%
+#                    mutate(lDiam = log10(diam)) %>%
+#                    group_by(SITE) %>%
+#                    summarise(VALUE = protectedMean(lDiam, na.rm=TRUE, inf.rm=TRUE, nan.rm=TRUE)) %>%
+#                    mutate(METRIC = 'SSXLDIA_UWD')
 
   intermediateMessage('.9')
 
@@ -664,9 +668,10 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 
   # combine VALUEs into a dataframe
   ssMets <- rbind(meanPresence, meanCover, ssiVariety, sdCover, countSubstrates
-				 ,meanLDia, sdLDia, p16LDia, p25LDia, p50LDia, p75LDia, p84LDia
+#				 ,meanLDia, sdLDia, p16LDia, p25LDia, p50LDia, p75LDia, p84LDia
+                 ,populationEstimates
 				 ,modeClasses
-				 ,ssxldia_wfc, ssxldia_uwd
+#				 ,ssxldia_wfc, ssxldia_uwd
 				 )
   intermediateMessage(' Done.', loc='end')
 

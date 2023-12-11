@@ -584,7 +584,7 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
                     mutate(cover = ifelse(cover==0, NA
                                   ,ifelse(!inPopulationEstimate, NA, cover
                                    ))
-                          )
+                          ) %>% select(setdiff(names(bsData),'normCover'))
   	mineralCover <- normalizedCover(mineralCover, 'cover', 'normCover')
 	intermediateMessage('.a')
 
