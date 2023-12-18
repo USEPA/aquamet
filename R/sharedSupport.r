@@ -270,6 +270,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 	                    # plots with smaller drawdown distances are considered to be entirely riparian
 	zeroish <- 1e-15    # value that is considered to be close to zero considering
 	                    # floating point issues.
+# print('coverData'); print(coverData %>% subset(SITE==2 & STATION %in% c('E')))
 	
 	# Determine proportion for each station:
 	props <- within(subset(coverData, CLASS=='HORIZ_DIST_DD')
@@ -280,6 +281,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 					 prop_lit <- 1 - prop_dd
 				    }
 			       )[c('SITE','STATION','prop_lit','prop_dd')]
+# print('props'); print(props %>% subset(SITE==2 & STATION %in% c('E')))
 
 	# Calculate synthetic value based on the dd/rip proportions.
 	# There are three cases where we can determine the synthetic value without 
@@ -300,6 +302,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 #print('.0')	
 	covers <- merge(covers, props, by=c('SITE','STATION'), all.x=TRUE)
 #print('.1')	
+# print('covers'); print(covers %>% subset(SITE==2 & STATION %in% c('E')) %>% data.frame())
 	
 	coverProps <- within(covers	
 					    ,{assumptionMade <- assumptions & is.na(prop_dd) & is.na(cover_dd) & !is.na(cover_lit)
@@ -319,6 +322,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 					     }
 					    )
 #print('.2')	
+# print('coverProps'); print(coverProps %>% subset(SITE==2 & STATION %in% c('E')) %>% data.frame())
 
 	# Reorganize calculation to long format with expected CLASS name
 	rc <- within(coverProps

@@ -277,7 +277,8 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #            fractional cover instead of the mean of those values.
 #   11/30/23 cws Using protectedSum and protectedMean in nlaBottomSubstrate.populationEstimates
 #            to avoid station means of 0 instead of NA when mineral substrate
-#            covers are all zero or missing at a station.
+#            covers are all zero or missing at a station. Handles edge cases when
+#            no mineral substrate covers occur at a station.
 #   12/06/23 cws Removed BS prefix from nlaBottomSubstrate.populationEstimates
 #            metrics names so that function can be used with shoreline substrate
 #            data as well. Those prefixes are now added by the calling environement.

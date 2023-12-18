@@ -9,6 +9,9 @@
 #          corrections to calcSynInfluence.
 #  9/21/23 cws Updated calcSynCoversTest to cover corrected handling of lower
 #          limit of horizontal drawdown distance. Unit test updated as well.
+# 12/18/23 cws Corrected test data so cover codes accurately reflect 
+#          characteristicCover values, and checked results for 15 m maximum
+#          drawdown amount with handCalculations() function.
 #
 # RUnit tests
 
@@ -22,8 +25,15 @@ calcSynCoversTest <- function()
 	
 	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
 #	return(diffs)
-	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers without assumptions")
+	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers with maxDrawdown=15 and without assumptions")
 	
+	expected <- calcSynCoversTest.expected_10m()
+	actual <- calcSynCovers(testData, 10, FALSE)
+	
+	diffs <- dfCompare(expected, actual, c('SITE','STATION','CLASS'), zeroFudge=1e-15)
+#	return(diffs)
+	checkEquals(NULL, diffs, "Incorrect calculation of synthesized covers with maxDrawdown=10 and  without assumptions")
+DEACTIVATED('Need to do 10 meter littoral zone checks...')	
 	
 	# Test calculations with assumptions
 	expected <- calcSynCoversTest.expectedWithAssumptions()
@@ -84,20 +94,20 @@ calcSynCoversTest.testData <- function()
 						  2		D		FC_Y_DD			2		0.25
 						  2		D		HORIZ_DIST_DD	20		NA	
 						  2		E		FC_X			3		0.575		# are missing DD values handled when prop_dd=0?
-						  2		E		FC_X_DD			4		NA
-						  2		E		FC_Y			3		NA
+						  2		E		FC_X_DD			foo		NA
+						  2		E		FC_Y			foo		NA
 						  2		E		FC_Y_DD			2		0.25
-						  2		E		HORIZ_DIST_DD	0		NA	
-						  2		F		FC_X			3		NA			# are missing rip values handled when prop_dd=1?
+						  2		E		HORIZ_DIST_DD	10		NA	
+						  2		F		FC_X			foo		NA			# are missing rip values handled when prop_dd=1?
 						  2		F		FC_X_DD			4		0.875
 						  2		F		FC_Y			3		0.575
-						  2		F		FC_Y_DD			2		NA
-						  2		F		HORIZ_DIST_DD	20		NA	
+						  2		F		FC_Y_DD			foo		NA
+						  2		F		HORIZ_DIST_DD	10		NA	
 						  2		G		FC_X			3		0.575		# case when prop_dd is missing
 						  2		G		FC_X_DD			4		0.875
-						  2		G		FC_Y			3		0.25
+						  2		G		FC_Y			2		0.25
 						  2		G		FC_Y_DD			2		0.25
-						  2		G		HORIZ_DIST_DD	NA		NA	
+						  2		G		HORIZ_DIST_DD	foo		NA	
 						  3		A		FC_X			3		0.575		# exercise assumption cases with missing distance
 						  3		A		FC_X_DD			NA		NA
 						  3		A		FC_Y			NA		NA
@@ -125,6 +135,118 @@ calcSynCoversTest.testData <- function()
 
 calcSynCoversTest.expected <- function()
 {
+    handCalculations <- function() {
+        # Based on current test data, and using 15 meters as the maximum drawdown
+        # syn Cover = prop_dd * cover_dd + prop_lit * cover_lit
+        #           = (horizDistDD/15) * cover_dd + (1-horizDistDD/15) * cover_lit
+        expected <- rbind(data.frame(SITE = 1,STATION = 'A', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (0/15)*0.05 + (1-(0/15))*0.00
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'A', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (0/15)*0.575 + (1-(0/15))*0.25
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'B', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (10/15)*0.00 + (1-(10/15))*0.875
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'B', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (10/15)*0.25 + (1-(10/15))*0.05
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'C', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (10/15)*0.875 + (1-(10/15))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'C', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (10/15)*0.25 + (1-(10/15))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'D', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (1)*0.875 + (1-(1))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'D', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (1)*0.25 + (1-(1))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'E', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (0)*0.875 + (1-(0))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 1,STATION = 'E', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (0)*0.25 + (1-(0))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         
+                         ,data.frame(SITE = 2,STATION = 'A', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (NA/15)*NA + (1-(NA/15))*0.00
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'A', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (NA/15)*0.575 + (1-(NA/15))*0.25
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'B', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (10/15)*0.00 + (1-(10/15))*0.875
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'B', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (10/15)*NA + (1-(10/15))*0.05
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'C', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (10/15)*NA + (1-(10/15))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'C', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (10/15)*0.25 + (1-(10/15))*NA
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'D', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (1)*0.875 + (1-(1))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'D', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (1)*0.25 + (1-(1))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'E', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (0)*NA + (1-(0))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'E', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (0)*NA + (1-(0))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'F', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (10/15)*0.875 + (1-(10/15))*NA
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'F', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (10/15)*NA + (1-(10/15))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'G', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (NA)*0.875 + (1-(NA))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 2,STATION = 'G', CLASS='FC_Y_SYN'
+                                     # note: flood and drawdown covers are same,
+                                     # so synthetic value is same no matter what
+                                     # drawdown distance is.
+                                    ,characteristicCover = 0.25 # (NA)*0.25 + (1-(NA))*0.25
+                                    ,stringsAsFactors=FALSE)
+                         
+                         ,data.frame(SITE = 3,STATION = 'A', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (NA/15)*NA + (1-(NA/15))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 3,STATION = 'A', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (NA/15)*0.25 + (1-(NA/15))*NA
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 3,STATION = 'B', CLASS='FC_X_SYN'
+                                    # zero DD means we ignore missing DD cover
+                                    #,characteristicCover = (0/15)*NA + (1-(0/15))*0.575
+                                    ,characteristicCover = (0/15)*0.00 + (1-(0/15))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 3,STATION = 'B', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (0/15)*0.25 + (1-(0/15))*NA
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 3,STATION = 'C', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (10/15)*NA + (1-(10/15))*0.575
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 3,STATION = 'C', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (10/15)*0.25 + (1-(10/15))*NA
+                                    ,stringsAsFactors=FALSE)
+                         
+                         ,data.frame(SITE = 5,STATION = 'A', CLASS='FC_X_SYN'
+                                    ,characteristicCover = (NA/15)*NA + (1-(NA/15))*0.875
+                                    ,stringsAsFactors=FALSE)
+                         ,data.frame(SITE = 5,STATION = 'A', CLASS='FC_Y_SYN'
+                                    ,characteristicCover = (NA/15)*0.875 + (1-(NA/15))*NA
+                                    ,stringsAsFactors=FALSE)
+                         ) %>%
+            mutate(SITE = as.integer(SITE))
+    }
+    
 	tc <- textConnection("  SITE STATION CLASS    characteristicCover
 							1       A  FC_X_SYN 0.000000000000000
 							1       A  FC_Y_SYN 0.250000000000000
@@ -144,9 +266,9 @@ calcSynCoversTest.expected <- function()
 							2       C  FC_Y_SYN        NA
 							2       D  FC_X_SYN 0.875000000000000
 							2       D  FC_Y_SYN 0.250000000000000
-							2       E  FC_X_SYN 0.575000000000000
+							2       E  FC_X_SYN NA		# 0.575000000000000
 							2       E  FC_Y_SYN NA		# 0.575000000000000
-							2       F  FC_X_SYN 0.875000000000000
+							2       F  FC_X_SYN NA		# 0.875000000000000
 							2       F  FC_Y_SYN NA		# 0.250000000000000
 							2       G  FC_X_SYN NA		# 0.875000000000000
 							2       G  FC_Y_SYN 0.250000000000000
@@ -161,7 +283,8 @@ calcSynCoversTest.expected <- function()
 						 ")			
 	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	rm(tc)
-	
+
+	checkEquals(rc, handCalculations(), "Difference between expected and handCalculations")
 	rc$VALUE <- as.numeric(NA)
 	rc$assumptionMade <- FALSE
 	
