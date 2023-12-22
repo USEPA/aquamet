@@ -6,6 +6,8 @@
 #  3/22/19 cws Modified in response to validation checks in nlaFishCover
 # 10/01/20 cws Removed early return of dataframe from nlaFishCoverTest.withDrawDown
 #          that escaped my attention earlier after debugging. Unit test works
+# 12/21/23 cws Updated unit test to align with earlier changes (late 2023) in
+#          calculations.
 #
 
 
@@ -23,7 +25,6 @@ nlaFishCover.splitParameterNamesTest <- function()
 }
 
 
-
 nlaFishCoverTest <- function()
 # unit test for nlaFishCover
 {
@@ -31,7 +32,6 @@ nlaFishCoverTest <- function()
 	nlaFishCoverTest.withDrawDown()	
 	nlaFishCoverTest.withDrawDownAndFillin()
 }
-
 
 
 nlaFishCoverTest.2007 <- function()
@@ -102,7 +102,6 @@ nlaFishCoverTest.2007 <- function()
 	expected <- "Data for both horizontalDistance_dd is required to calculate synthetic drawdown cover values.  Either provide that data or set createSyntheticCovers to FALSE"
 	checkEquals(expected, actual, "Incorrect response when attempting to fill-in drawdown values without that data")
 }
-
 
 
 nlaFishCoverTest.withDrawDown <- function()
@@ -2183,7 +2182,6 @@ nlaFishCoverTest.createTestDataWithDrawDown <- function()
 }
 
 
-
 nlaFishCoverTest.expectedResultsWithDrawDown <- function()
 # Expected results for test data with drawdown values using 10 m maximum riparian drawdown
 {
@@ -3715,6 +3713,7 @@ nlaFishCoverTest.expectedResults.handCalculations <- function()
     return(byHand)
 }
 
+
 nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
 # Expected results for test data with drawdown values which were NOT 'filled in' based
 # on the value of the DRAWDOWN parameter.  These values were calculated with SAS on
@@ -4729,7 +4728,6 @@ nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
     
     return(fake)
 }
-
 
 
 nlaFishCoverTest.expectedResultsWithDrawDownAndFillin <- function()
@@ -5896,7 +5894,6 @@ nlaFishCoverTest.expectedResultsWithDrawDownAndFillin <- function()
 	return(fake)
 		 
 }
-					
 
 
 nlaFishCoverTest.expectedResultsWithDrawDownWith15mRiparian <- function()
@@ -6880,7 +6877,5 @@ nlaFishCoverTest.expectedResultsWithDrawDownWith15mRiparian <- function()
 	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
 	return(rc)
 }
-
-
 
 # end of file
