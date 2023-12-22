@@ -15,7 +15,8 @@ nrsaChannelMorphology(
   wDepth = NULL,
   wIncisedHeight = NULL,
   wWettedWidth = NULL,
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

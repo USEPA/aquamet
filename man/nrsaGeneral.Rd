@@ -10,7 +10,8 @@ nrsaGeneral(
   transectSpacing = NULL,
   sideChannelTransects = c("XA", "XB", "XC", "XD", "XE", "XF", "XG", "XH", "XI", "XJ",
     "XK"),
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

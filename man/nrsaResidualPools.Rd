@@ -11,7 +11,8 @@ nrsaResidualPools(
   transectSpacing = NULL,
   writeIntermediateFiles = FALSE,
   oldeMethods = FALSE,
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

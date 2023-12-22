@@ -16,7 +16,8 @@ nrsaRiparianVegetation(
   understoryVegetationType = NULL,
   dataInformation = data.frame(value = c(NA, "", "0", "1", "2", "3", "4"), weights =
     c(NA, NA, 0, 0.05, 0.25, 0.575, 0.875), stringsAsFactors = FALSE),
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

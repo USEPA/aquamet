@@ -18,7 +18,8 @@ nrsaChannelHabitat(
     "DRY"), isFast = c(TRUE, TRUE, TRUE, TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE,
     FALSE, NA), isPool = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE,
     TRUE, TRUE, FALSE), stringsAsFactors = FALSE),
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

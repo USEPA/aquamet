@@ -18,7 +18,8 @@ nrsaBedStability(
   xfc_lwd = NULL,
   xslope = NULL,
   xwidth = NULL,
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

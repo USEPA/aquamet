@@ -15,7 +15,8 @@ nrsaChannelChar(
   shoreToVegDistance = NULL,
   valleyConstraintUnseen = NULL,
   valleyWidth = NULL,
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

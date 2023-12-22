@@ -4,7 +4,11 @@
 \alias{nrsaSubstrateEmbed}
 \title{Calculate NRSA Substrate Embeddedness Metrics}
 \usage{
-nrsaSubstrateEmbed(percentEmbedded = NULL, isUnitTest = FALSE)
+nrsaSubstrateEmbed(
+  percentEmbedded = NULL,
+  isUnitTest = FALSE,
+  argSavePath = NULL
+)
 }
 \arguments{
 \item{percentEmbedded}{A data frame containing size class data 

@@ -21,7 +21,8 @@ nrsaLargeWoody(
     substr(lengthClass, 1, 1))),
   reachlength = NULL,
   meanBankfullWidth = NULL,
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{
