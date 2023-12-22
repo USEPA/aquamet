@@ -92,6 +92,8 @@
 #          plots into account dammit dammit)
 #  9/21/23 cws Corrected calcSynCovers to handle lower limit of horizontal 
 #          drawdown distance. Unit test updated as well.
+# 12/19/23 cws Removed hardcoding of maxDrawdown argument value in calcSynCovers.
+#          Unit test updated to test both 10 and 15 meter distances.
 #
 ################################################################################
 
@@ -264,7 +266,7 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 # Values of VALUE is numeric, at least for CLASS=='HORIZ_DIST_DD'
 #
 
-	maxDrawdown <- 15   # maximum amount of drawdown to consider in synthetic plot
+#	maxDrawdown <- 15   # maximum amount of drawdown to consider in synthetic plot
 	                    # plots with drawdowns this length or larger are considered entirely drawdown
 	minDrawdown <- 1.0  # minimum amount of drawdown to consider in synthetic plot.
 	                    # plots with smaller drawdown distances are considered to be entirely riparian

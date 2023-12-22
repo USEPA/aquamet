@@ -591,7 +591,6 @@ nlaFishCover <- function(aquatic = NULL
 						 ,coverSuffix = ifelse(splitParams$suffix == '', '_LIT', splitParams$suffix)
 						 ,CLASS = splitParams$base
 				         )
-						 
 	intermediateMessage('.7')
 
 	

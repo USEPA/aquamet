@@ -5,7 +5,7 @@
 #
 #  1/04/16 cws Used to be aquamet.r, but that's now used for something else.
 # 10/01/20 cws No longer using reshape2 package.
-#
+# 12/19/23 cws Added tidyr requirement for dfDifferences which uses pivot_wider
 
 require(foreach)
 require(Hmisc)
@@ -13,6 +13,7 @@ require(Hmisc)
 require(RUnit)
 require(plyr)
 require(dplyr)
+require(tidyr)
 #require(reshape2)
 
 # Get aquamet function definitions

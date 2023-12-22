@@ -148,7 +148,6 @@ nlaFishCoverTest.withDrawDown <- function()
 }
 
 
-
 nlaFishCoverTest.withDrawDownAndFillin <- function()
 # Tests fish cover calculation with drawdown data, and filling in drawdown values.
 {
@@ -182,10 +181,10 @@ nlaFishCoverTest.withDrawDownAndFillin <- function()
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-9)
+return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 	
 }
-
 
 
 nlaFishCoverTest.createTestData2007 <- function()
@@ -723,7 +722,6 @@ nlaFishCoverTest.createTestData2007 <- function()
 }
 
 
-
 nlaFishCoverTest.expectedResults2007 <- function()
 # Values expected based on test data.  These were taken directly from tblPHABMET_LONG
 # in the 2007 NLA databse.
@@ -1102,6 +1100,8 @@ nlaFishCoverTest.createTestDataWithDrawDown <- function()
 #	6235	Incomplete data at stations all stations A-J; H is entirely absent, and DRAWDOWN all NO
 #	6281	Full complement of data stations A - I; J is absent, and DRAWDOWN all YES
 #	6449	Full complement of data stations A - J plus K and L stations, and DRAWDOWN all YES
+#           This site needs by-hand recalculation because earlier station means were
+#           miscalculated, see history of calcSynCover and changes late in 2023.
 #	6683	Data missing at all but station J, and DRAWDOWN all missing except YES at J
 #	7263	Drawdown absent for Aquatic and snags at all stations but A, and DRAWDOWN never missing
 #	7913	Data very incomplete (1-4 rows) at each station, and DRAWDOWN all NO
@@ -1113,6 +1113,8 @@ nlaFishCoverTest.createTestDataWithDrawDown <- function()
 #tt<-subset(fc12, SITE %in% c(6160,6189,6227,6235,6281,6449,6683,7263,7913,1000057))
 #tt <- tt[order(tt$SITE,tt$STATION,tt$PARAMETER),]	
 {
+    # Values that came from prior calculations.
+    testDataValues <- function() {
 	tc <- textConnection("	SITE SAMPLE_TYPE STATION        PARAMETER VALUE FLAG  FORM_TYPE
 							6160        PHAB       A       FC_AQUATIC      1 NA   PHAB_FRONT
 							6160        PHAB       A    FC_AQUATIC_DD      2 NA   PHAB_FRONT
@@ -2165,13 +2167,18 @@ nlaFishCoverTest.createTestDataWithDrawDown <- function()
 							1000057     PHAB       J         DRAWDOWN     NO ''       eForms
 						 ")
 		 
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	within(fake
-		  ,{SAMPLE_TYPE <- 'PHAB'
-			FLAG <- as.character(NA)
-			FORM_TYPE <- 'PHAB_FRONT'
-		   }
-          )
+	    fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+	    return(fake)
+    }
+    
+# 	within(fake
+# 		  ,{SAMPLE_TYPE <- 'PHAB'
+# 			FLAG <- as.character(NA)
+# 			FORM_TYPE <- 'PHAB_FRONT'
+# 		   }
+#           )
+    fake <- testDataValues()
+
 	return(fake)
 }
 
@@ -2180,6 +2187,8 @@ nlaFishCoverTest.createTestDataWithDrawDown <- function()
 nlaFishCoverTest.expectedResultsWithDrawDown <- function()
 # Expected results for test data with drawdown values using 10 m maximum riparian drawdown
 {
+    # Values that came from prior calculations.
+    earlyCalculatedValues <- function() {
 	tc <- textConnection("	SITE              METRIC                       VALUE
 							6160      FCFPAQUATIC_DD  1.000000000000000000000000
 							6227      FCFPAQUATIC_DD  0.400000000000000022204460
@@ -3519,17 +3528,192 @@ nlaFishCoverTest.expectedResultsWithDrawDown <- function()
 #							1000057         FCNALL_SYN0  0.000000000000000000000000
 						 ")
 		 
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	within(fake
-		  ,{SAMPLE_TYPE <- 'PHAB'
-			FLAG <- as.character(NA)
-			FORM_TYPE <- 'PHAB_FRONT'
-		   }
-          )
+	    fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    }
+
+    fake <- earlyCalculatedValues()
+    
 	return(fake)
 }
 
 
+nlaFishCoverTest.expectedResults.handCalculations <- function()
+# Returns dataframe with expected metrics values. Rather than hardcode these
+# values, it 'shows the work' of the individual calculations based on the current
+# input values.
+{
+    
+    handCalculations6449 <- function() {
+        # calculations of SIMulated fractional cover values at site 6449
+        # Values at each station are fracFlood*coverFlood + fracDD*coverDD
+        aquatic <-    c((1)*0.05 + (1-(1))*0.05      # A
+                       ,(1-(1.1/10))*0.05 + (1.1/10)*0.05 # B
+                       ,(1)*0.05 + (1-(1))*0.05      # C
+                       ,(1)*0.05 + (1-(1))*0.00      # D
+                       ,(1)*0.05 + (1-(1))*0.00      # E
+                       ,(1)*0.05 + (1-(1))*0.05      # F
+                       ,(1)*0.05 + (1-(1))*0.05      # G
+                       ,(1)*0.05 + (1-(1))*0.05      # H
+                       ,(1)*0.05 + (1-(1))*0.00      # I
+                       ,(1)*0.05 + (1-(1))*0.05      # J
+                       ,(1)*0.05 + (1-(1))*0.05      # K
+                       ,(1)*0.05 + (1-(1))*0.00      # L
+                       )
+        boulders <-   c((1)*0.00 + (1-(1))*0.00      # A
+                       ,(1-(1.1/10))*0.00 + (1.1/10)*0.00 # B
+                       ,(1)*0.00 + (1-(1))*0.00      # C
+                       ,(1)*0.05 + (1-(1))*0.05      # D
+                       ,(1)*0.00 + (1-(1))*0.00      # E
+                       ,(1)*0.00 + (1-(1))*0.05      # F
+                       ,(1)*0.05 + (1-(1))*0.575     # G
+                       ,(1)*0.00 + (1-(1))*0.00      # H
+                       ,(1)*0.00 + (1-(1))*0.05      # I
+                       ,(1)*0.00 + (1-(1))*0.25      # J
+                       ,(1)*0.00 + (1-(1))*0.05      # K
+                       ,(1)*0.00 + (1-(1))*0.05      # L
+                       )
+        brush <-      c((1)*0.05 + (1-(1))*0.05      # A
+                       ,(1-(1.1/10))*0.05 + (1.1/10)*0.05 # B
+                       ,(1)*0.05 + (1-(1))*0.25      # C
+                       ,(1)*0.05 + (1-(1))*0.25      # D
+                       ,(1)*0.05 + (1-(1))*0.05      # E
+                       ,(1)*0.05 + (1-(1))*0.05      # F
+                       ,(1)*0.00 + (1-(1))*0.00      # G
+                       ,(1)*0.00 + (1-(1))*0.00      # H
+                       ,(1)*0.05 + (1-(1))*0.05      # I
+                       ,(1)*0.00 + (1-(1))*0.05      # J
+                       ,(1)*0.00 + (1-(1))*0.00      # K
+                       ,(1)*0.00 + (1-(1))*0.05      # L
+                       )
+        ledges <-     c((1)*0.00 + (1-(1))*0.00      # A
+                       ,(1-(1.1/10))*0.00 + (1.1/10)*0.00 # B
+                       ,(1)*0.00 + (1-(1))*0.00      # C
+                       ,(1)*0.00 + (1-(1))*0.00      # D
+                       ,(1)*0.00 + (1-(1))*0.00      # E
+                       ,(1)*0.00 + (1-(1))*0.00      # F
+                       ,(1)*0.00 + (1-(1))*0.00      # G
+                       ,(1)*0.00 + (1-(1))*0.00      # H
+                       ,(1)*0.00 + (1-(1))*0.00      # I
+                       ,(1)*0.00 + (1-(1))*0.05      # J
+                       ,(1)*0.05 + (1-(1))*0.05      # K
+                       ,(1)*0.00 + (1-(1))*0.00      # L
+                       )
+        livetrees <- c((1)*0.00 + (1-(1))*0.00      # A
+                      ,(1-(1.1/10))*0.00 + (1.1/10)*0.00 # B
+                      ,(1)*0.05 + (1-(1))*0.25      # C
+                      ,(1)*0.00 + (1-(1))*0.00      # D
+                      ,(1)*0.00 + (1-(1))*0.00      # E
+                      ,(1)*0.00 + (1-(1))*0.00      # F
+                      ,(1)*0.00 + (1-(1))*0.00      # G
+                      ,(1)*0.00 + (1-(1))*0.00      # H
+                      ,(1)*0.00 + (1-(1))*0.00      # I
+                      ,(1)*0.00 + (1-(1))*0.00      # J
+                      ,(1)*0.00 + (1-(1))*0.00      # K
+                      ,(1)*0.00 + (1-(1))*0.00      # L
+                      )
+        overhang <-  c((1)*0.05 + (1-(1))*0.00      # A
+                      ,(1-(1.1/10))*0.05 + (1.1/10)*0.25 # B
+                      ,(1)*0.25 + (1-(1))*0.575     # C
+                      ,(1)*0.05 + (1-(1))*0.25      # D
+                      ,(1)*0.00 + (1-(1))*0.00      # E
+                      ,(1)*0.00 + (1-(1))*0.05      # F
+                      # NA ignored because it has zero weight
+                      ,(1)*0.00#+ (1-(1))*NA        # G 
+                      ,(1)*0.00 + (1-(1))*0.00      # H
+                      ,(1)*0.00 + (1-(1))*0.00      # I
+                      ,(1)*0.00 + (1-(1))*0.00      # J
+                      ,(1)*0.00 + (1-(1))*0.00      # K
+                      ,(1)*0.00 + (1-(1))*0.00      # L
+                      ) 
+        snags <-    c((1)*0.00 + (1-(1))*0.00      # A
+                     ,(1-(1.1/10))*0.00 + (1.1/10)*0.00 # B
+                     ,(1)*0.00 + (1-(1))*0.00      # C
+                     ,(1)*0.00 + (1-(1))*0.00      # D
+                     ,(1)*0.00 + (1-(1))*0.00      # E
+                     ,(1)*0.00 + (1-(1))*0.00      # F
+                     ,(1)*0.00 + (1-(1))*0.00      # G
+                     ,(1)*0.00 + (1-(1))*0.00      # H
+                     ,(1)*0.00 + (1-(1))*0.00      # I
+                     ,(1)*0.00 + (1-(1))*0.00      # J
+                     ,(1)*0.00 + (1-(1))*0.00      # K
+                     ,(1)*0.00 + (1-(1))*0.00      # L
+                     ) 
+        structures<-c((1)*0.00 + (1-(1))*0.00      # A
+                     ,(1-(1.1/10))*0.00 + (1.1/10)*0.00 # B
+                     ,(1)*0.00 + (1-(1))*0.00      # C
+                     ,(1)*0.05 + (1-(1))*0.05      # D
+                     ,(1)*0.05 + (1-(1))*0.05      # E
+                     ,(1)*0.05 + (1-(1))*0.05      # F
+                     ,(1)*0.05 + (1-(1))*0.05      # G
+                     ,(1)*0.05 + (1-(1))*0.05      # H
+                     ,(1)*0.00 + (1-(1))*0.00      # I
+                     ,(1)*0.00 + (1-(1))*0.05      # J
+                     ,(1)*0.05 + (1-(1))*0.05      # K
+                     ,(1)*0.05 + (1-(1))*0.05      # L
+                     )
+        rc <- data.frame(# Fractional cover means
+                         FCFCAQUATIC_SIM =  aquatic %>% protectedMean(na.rm=TRUE)
+                        ,FCFCBOULDERS_SIM = boulders %>% protectedMean(na.rm=TRUE)
+                        ,FCFCBRUSH_SIM =    brush %>% protectedMean(na.rm=TRUE)
+                        ,FCFCLEDGES_SIM =   ledges %>% protectedMean(na.rm=TRUE)
+                        ,FCFCLIVETREES_SIM =livetrees %>% protectedMean(na.rm=TRUE)
+                        ,FCFCOVERHANG_SIM = overhang %>% protectedMean(na.rm=TRUE)
+                        ,FCFCSNAGS_SIM =    snags %>% protectedMean(na.rm=TRUE)
+                        ,FCFCSTRUCTURES_SIM=structures %>% protectedMean(na.rm=TRUE)
+                         # Fractional cover presence means
+                        ,FCFPAQUATIC_SIM =  protectedMean(aquatic > 0, na.rm=TRUE)
+                        ,FCFPBOULDERS_SIM = protectedMean(boulders > 0, na.rm=TRUE)
+                        ,FCFPBRUSH_SIM =    protectedMean(brush > 0, na.rm=TRUE)
+                        ,FCFPLEDGES_SIM =   protectedMean(ledges > 0, na.rm=TRUE)
+                        ,FCFPLIVETREES_SIM =protectedMean(livetrees > 0, na.rm=TRUE)
+                        ,FCFPOVERHANG_SIM = protectedMean(overhang > 0, na.rm=TRUE)
+                        ,FCFPSNAGS_SIM =    protectedMean(snags > 0, na.rm=TRUE)
+                        ,FCFPSTRUCTURES_SIM=protectedMean(structures > 0, na.rm=TRUE)
+                         # Fractional cover standard deviations
+                        ,FCVAQUATIC_SIM =  aquatic %>% sd(na.rm=TRUE)
+                        ,FCVBOULDERS_SIM = boulders %>% sd(na.rm=TRUE)
+                        ,FCVBRUSH_SIM =    brush %>% sd(na.rm=TRUE)
+                        ,FCVLEDGES_SIM =   ledges %>% sd(na.rm=TRUE)
+                        ,FCVLIVETREES_SIM =livetrees %>% sd(na.rm=TRUE)
+                        ,FCVOVERHANG_SIM = overhang %>% sd(na.rm=TRUE)
+                        ,FCVSNAGS_SIM =    snags %>% sd(na.rm=TRUE)
+                        ,FCVSTRUCTURES_SIM=structures %>% sd(na.rm=TRUE)
+                         # Fractional cover counts
+                        ,FCNAQUATIC_SIM =  aquatic %>% count()
+                        ,FCNBOULDERS_SIM = boulders %>% count()
+                        ,FCNBRUSH_SIM =    brush %>% count()
+                        ,FCNLEDGES_SIM =   ledges %>% count()
+                        ,FCNLIVETREES_SIM =livetrees %>% count()
+                        ,FCNOVERHANG_SIM = overhang %>% count()
+                        ,FCNSNAGS_SIM =    snags %>% count()
+                        ,FCNSTRUCTURES_SIM=structures %>% count()
+                        ) %>%
+              mutate(
+                         # Group/index metrics
+                        FCIALL_SIM   = FCFCAQUATIC_SIM + FCFCBOULDERS_SIM + FCFCBRUSH_SIM + 
+                                        FCFCLEDGES_SIM + FCFCLIVETREES_SIM + FCFCOVERHANG_SIM +
+                                        FCFCSNAGS_SIM + FCFCSTRUCTURES_SIM
+                        ,FCIBIG_SIM  =  FCFCBOULDERS_SIM + FCFCLEDGES_SIM + FCFCOVERHANG_SIM + FCFCSTRUCTURES_SIM
+                        ,FCINATURAL_SIM=FCFCAQUATIC_SIM + FCFCBOULDERS_SIM + FCFCBRUSH_SIM + 
+                                        FCFCLEDGES_SIM + FCFCLIVETREES_SIM + FCFCOVERHANG_SIM +
+                                        FCFCSNAGS_SIM 
+                        ,FCIRIPVEG_SIM=  FCFCBRUSH_SIM + FCFCLIVETREES_SIM + FCFCSNAGS_SIM
+                       ) %>%
+              pivot_longer(cols=everything()
+                          ,names_to = 'METRIC'
+                          ,values_to = 'VALUE'
+                          ) %>% 
+              mutate(SITE = 6449) %>% 
+              data.frame()
+        return(rc)
+    }
+
+    # So far, only one site has results differing from earlier values. This was
+    # due to corrections in calcSynCover in last half of 2023
+    byHand <- rbind(handCalculations6449())
+    
+    return(byHand)
+}
 
 nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
 # Expected results for test data with drawdown values which were NOT 'filled in' based
@@ -3541,6 +3725,10 @@ nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
 # macro, but I don't have time to debug it now.)  These 15 rows are removed from the
 # expected output.
 {
+    # Values that are explicitely calculated 'by hand', showing the work
+
+    # Values that came from prior calculations.
+    earlyCalculatedValues <- function() {
 	tc <- textConnection("  SITE             METRIC                       VALUE
 							6160     FCFPAQUATIC_DD  1.000000000000000000000000
 							6160    FCFPAQUATIC_LIT  1.000000000000000000000000
@@ -4529,8 +4717,17 @@ nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
 							1000057        FCFPALL_LIT  1.000000000000000000000000
 							1000057        FCFPALL_SIM                          NA")
 		 
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-					
+	    fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+	    rm(tc)
+	    return(fake)
+    }
+    
+    fake <- earlyCalculatedValues() %>%
+            subset(!(SITE == 6449 & METRIC %in% nlaFishCoverTest.expectedResults.handCalculations()$METRIC) ) %>%
+   	        rbind(nlaFishCoverTest.expectedResults.handCalculations()) %>%
+            mutate(SITE = as.integer(SITE))
+    
+    return(fake)
 }
 
 
@@ -4542,7 +4739,9 @@ nlaFishCoverTest.expectedResultsWithDrawDownAndFillin <- function()
 # instead of 9 and by including a total of 15 missing littoral values (the R 
 # function does not include those values) for6234, 7913 and 1000057.
 {
-	tc <- textConnection("  SITE             METRIC        VALUE
+    # Values that came from prior calculations.
+    earlyCalculatedValues <- function() {	
+    tc <- textConnection("  SITE             METRIC        VALUE
 							6160     FCFPAQUATIC_DD  1.000000000
 							6160    FCFPAQUATIC_LIT  1.000000000
 							6160    FCFPAQUATIC_SIM  1.000000000
@@ -5685,14 +5884,15 @@ nlaFishCoverTest.expectedResultsWithDrawDownAndFillin <- function()
 						 1000057        FCFPALL_SIM  1.000000000
 
 						 ")
-	
-	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	within(fake
-		  ,{SAMPLE_TYPE <- 'PHAB'
-			FLAG <- as.character(NA)
-			FORM_TYPE <- 'PHAB_FRONT'
-		   }
-		  )
+    	fake <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    	rm(tc)
+    	return(fake)
+    }
+    
+    fake <- earlyCalculatedValues() %>%
+            subset(!(SITE == 6449 & METRIC %in% nlaFishCoverTest.expectedResults.handCalculations()$METRIC) ) %>%
+   	        rbind(nlaFishCoverTest.expectedResults.handCalculations()) %>%
+            mutate(SITE = as.integer(SITE))
 	return(fake)
 		 
 }
