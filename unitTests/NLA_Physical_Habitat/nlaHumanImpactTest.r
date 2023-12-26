@@ -1,7 +1,8 @@
 # nlaHumanImpact.r
 # RUnit tests
-
-
+#
+# 12/26/23 cws Updated unit test to align with earlier changes (late 2023) in
+#          calculations.
 
 nlaHumanImpactTest <- function()
 # unit test for nlaHumanImpact
@@ -13,7 +14,6 @@ nlaHumanImpactTest <- function()
 	nlaHumanImpactTest.withDrawDown()
 	nlaHumanImpactTest.withDrawDownAndFillin()
 }
-
 
 
 nlaHumanImpactTest.2007 <- function()
@@ -65,7 +65,6 @@ nlaHumanImpactTest.2007 <- function()
 }
 
 
-
 nlaHumanImpactTest.withDrawDown <- function()
 # Tests calculation with drawdown data, but do NOT fill in drawdown values
 {
@@ -103,7 +102,7 @@ nlaHumanImpactTest.withDrawDown <- function()
 	                        ,data2007=FALSE
                             ,fillinDrawdown=FALSE
                             )
-	
+
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
 	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawDown")
 	
@@ -111,6 +110,8 @@ nlaHumanImpactTest.withDrawDown <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
+	# dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
+	# return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawdown")
 }
@@ -161,6 +162,8 @@ nlaHumanImpactTest.withDrawDownAndFillin <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown and DD fill-in")
 	
+# 	dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
+# return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawdown and DD fill-in")
 }
@@ -1335,6 +1338,8 @@ nlaHumanImpactTest.createTestDataWithDrawDown <- function()
 #	6362	Data only at J; HORIZ_DIST_DD only at J
 #	6399	Full complement of data in B, C, else 12-13/station; HORIZ_DIST_DD at B,C only
 #	6449	Full complement of data A-J, K, L; HORIZ_DIST_DD at all stations
+#           This site needs by-hand recalculation because earlier station means were
+#           miscalculated, see history of calcSynCover and changes late in 2023.
 #	6684	Half complement of data at A,B,C,H,I,J; no HORIZ_DIST_DD present 
 #	7504	Depauperate data, few per station; no HORIZ_DIST_DD present
 #	7740	Few data missing at each station; all HORIZ_DIST_DD present
@@ -3244,9 +3249,311 @@ nlaHumanImpactTest.createTestDataWithDrawDown <- function()
 }
 
 
+nlaHumanImpactTest.expectedResults.handCalculations <- function()
+# Returns dataframe with expected metrics values. Rather than hardcode these
+# values, it 'shows the work' of the individual calculations based on the current
+# input values.
+{
+    handCalculations6449 <- function() {
+       # calculations of SIMulated fractional cover values at site 6449
+       # Values at each station are fracFlood*coverFlood + fracDD*coverDD
+       w0 <- 0      # standard weights for HI codes.
+       wP <- 0.5
+       wC <- 1.0
+       buildings <-  c((1)*w0 +           (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*wP +           (1-(1))*wP   # C
+                      ,(1)*wP +           (1-(1))*wP   # D
+                      ,(1)*wP +           (1-(1))*wP   # E
+                      ,(1)*wP +           (1-(1))*wP   # F
+                      ,(1)*wC +           (1-(1))*wP   # G
+                      ,(1)*wP +           (1-(1))*wP   # H
+                      ,(1)*wP +           (1-(1))*wP   # I
+                      ,(1)*wP +           (1-(1))*wP   # J
+                      ,(1)*wP +           (1-(1))*wP   # K
+                      ,(1)*wC +           (1-(1))*wP   # L
+                      )
+       commercial <- c((1)*w0 +           (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*w0 +           (1-(1))*w0   # C
+                      ,(1)*w0 +           (1-(1))*w0   # D
+                      ,(1)*w0 +           (1-(1))*w0   # E
+                      ,(1)*w0 +           (1-(1))*w0   # F
+                      ,(1)*w0 +           (1-(1))*w0   # G
+                      ,(1)*w0 +           (1-(1))*w0   # H
+                      ,(1)*w0 +           (1-(1))*w0   # I
+                      ,(1)*w0 +           (1-(1))*w0   # J
+                      ,(1)*w0 +           (1-(1))*w0   # K
+                      ,(1)*w0 +           (1-(1))*w0   # L
+                      )
+       crops <-      c((1)*w0 +           (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*w0 +           (1-(1))*w0   # C
+                      ,(1)*w0 +           (1-(1))*w0   # D
+                      ,(1)*w0 +           (1-(1))*w0   # E
+                      ,(1)*w0 +           (1-(1))*w0   # F
+                      ,(1)*w0 +           (1-(1))*w0   # G
+                      ,(1)*w0 +           (1-(1))*w0   # H
+                      ,(1)*w0 +           (1-(1))*w0   # I
+                      ,(1)*w0 +           (1-(1))*w0   # J
+                      ,(1)*w0 +           (1-(1))*w0   # K
+                      ,(1)*w0 +           (1-(1))*w0   # L
+                      )
+       docks <-      c((1)*w0 +           (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*wP +           (1-(1))*wP   # C
+                      ,(1)*wP +           (1-(1))*wP   # D
+                      ,(1)*wP +           (1-(1))*wP   # E
+                      ,(1)*wC +           (1-(1))*wC   # F
+                      ,(1)*wP +           (1-(1))*wP   # G
+                      ,(1)*wP +           (1-(1))*wP   # H
+                      ,(1)*wP +           (1-(1))*wC   # I
+                      ,(1)*wP +           (1-(1))*wC   # J
+                      ,(1)*wP +           (1-(1))*wP   # K
+                      ,(1)*wP +           (1-(1))*wC   # L
+                      )
+       landfill <-   c((1)*wC +           (1-(1))*wC   # A
+                      ,(1-(1.1/10))*wC + (1.1/10)*wC   # B
+                      ,(1)*wP +           (1-(1))*wC   # C
+                      ,(1)*wC +           (1-(1))*wC   # D
+                      ,(1)*wC +           (1-(1))*wC   # E
+                      ,(1)*wC +           (1-(1))*wC   # F
+                      ,(1)*wC +           (1-(1))*wC   # G
+                      ,(1)*w0 +           (1-(1))*w0   # H
+                      ,(1)*wP +           (1-(1))*wC   # I
+                      ,(1)*w0 +           (1-(1))*wC   # J
+                      ,(1)*w0 +           (1-(1))*wC   # K
+                      ,(1)*w0 +           (1-(1))*wC   # L
+                      )
+       lawn <-       c((1)*w0 +           (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*wC +           (1-(1))*wP   # C
+                      ,(1)*wC +           (1-(1))*wP   # D
+                      ,(1)*wC +           (1-(1))*wC   # E
+                      ,(1)*wC +           (1-(1))*wP   # F
+                      ,(1)*wC +           (1-(1))*wP   # G
+                      ,(1)*wC +           (1-(1))*wP   # H
+                      ,(1)*wC +           (1-(1))*wP   # I
+                      ,(1)*wC +           (1-(1))*wP   # J
+                      ,(1)*wC +           (1-(1))*wC   # K
+                      ,(1)*wC +           (1-(1))*wP   # L
+                      )
+       orchard <-    c((1)*w0 +           (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*w0 +           (1-(1))*w0   # C
+                      ,(1)*w0 +           (1-(1))*w0   # D
+                      ,(1)*w0 +           (1-(1))*w0   # E
+                      ,(1)*w0 +           (1-(1))*w0   # F
+                      ,(1)*w0 +           (1-(1))*w0   # G
+                      ,(1)*w0 +           (1-(1))*w0   # H
+                      ,(1)*w0 +           (1-(1))*w0   # I
+                      ,(1)*w0 +           (1-(1))*w0   # J
+                      ,(1)*w0 +           (1-(1))*w0   # K
+                      ,(1)*w0 +           (1-(1))*w0   # L
+                      )
+       other <-      c((1)*w0 +           (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*wC +           (1-(1))*wP   # C
+                      ,(1)*wC +           (1-(1))*wP   # D
+                      ,(1)*w0 +           (1-(1))*w0   # E
+                      ,(1)*w0 +           (1-(1))*w0   # F
+                      ,(1)*w0 +           (1-(1))*w0   # G
+                      ,(1)*w0 +           (1-(1))*w0   # H
+                      ,(1)*wC +           (1-(1))*w0   # I
+                      ,(1)*w0 +           (1-(1))*w0   # J
+                      ,(1)*w0 +           (1-(1))*w0   # K
+                      ,(1)*w0 +           (1-(1))*w0   # L
+                      )
+       park <-      c((1)*w0 +            (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*w0 +           (1-(1))*w0   # C
+                      ,(1)*w0 +           (1-(1))*w0   # D
+                      ,(1)*wP +           (1-(1))*wP   # E
+                      ,(1)*w0 +           (1-(1))*w0   # F
+                      ,(1)*w0 +           (1-(1))*w0   # G
+                      ,(1)*w0 +           (1-(1))*w0   # H
+                      ,(1)*wC +           (1-(1))*wC   # I
+                      ,(1)*wP +           (1-(1))*wC   # J
+                      ,(1)*w0 +           (1-(1))*w0   # K
+                      ,(1)*w0 +           (1-(1))*w0   # L
+                      )
+       pasture <-     c((1)*w0 +          (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*w0 +           (1-(1))*w0   # C
+                      ,(1)*w0 +           (1-(1))*w0   # D
+                      ,(1)*w0 +           (1-(1))*w0   # E
+                      ,(1)*w0 +           (1-(1))*w0   # F
+                      ,(1)*w0 +           (1-(1))*w0   # G
+                      ,(1)*w0 +           (1-(1))*w0   # H
+                      ,(1)*w0 +           (1-(1))*w0   # I
+                      ,(1)*w0 +           (1-(1))*w0   # J
+                      ,(1)*w0 +           (1-(1))*w0   # K
+                      ,(1)*w0 +           (1-(1))*w0   # L
+                      )
+       powerlines <- c((1)*wP +           (1-(1))*wP   # A
+                      ,(1-(1.1/10))*wP + (1.1/10)*wP   # B
+                      ,(1)*w0 +           (1-(1))*w0   # C
+                      ,(1)*w0 +           (1-(1))*w0   # D
+                      ,(1)*w0 +           (1-(1))*w0   # E
+                      ,(1)*w0 +           (1-(1))*w0   # F
+                      ,(1)*w0 +           (1-(1))*w0   # G
+                      ,(1)*w0 +           (1-(1))*w0   # H
+                      ,(1)*w0 +           (1-(1))*w0   # I
+                      ,(1)*w0 +           (1-(1))*w0   # J
+                      ,(1)*w0 +           (1-(1))*w0   # K
+                      ,(1)*w0 +           (1-(1))*w0   # L
+                      )
+       roads <-      c((1)*wP +           (1-(1))*wP   # A
+                      ,(1-(1.1/10))*wP + (1.1/10)*wP   # B
+                      ,(1)*wP +           (1-(1))*wP   # C
+                      ,(1)*wP +           (1-(1))*wP   # D
+                      ,(1)*wP #+           (1-(1))*NA   # E - NA has zero weight, so is ignored
+                      ,(1)*wP +           (1-(1))*wP   # F
+                      ,(1)*wP +           (1-(1))*wP   # G
+                      ,(1)*wP +           (1-(1))*wP   # H
+                      ,(1)*wP +           (1-(1))*wP   # I
+                      ,(1)*wP +           (1-(1))*wP   # J
+                      ,(1)*wP +           (1-(1))*wP   # K
+                      ,(1)*wP +           (1-(1))*wP   # L
+                      )
+       walls <-      c((1)*w0 +           (1-(1))*w0   # A
+                      ,(1-(1.1/10))*w0 + (1.1/10)*w0   # B
+                      ,(1)*wP +           (1-(1))*wP   # C
+                      ,(1)*wP +           (1-(1))*wP   # D
+                      ,(1)*wC +           (1-(1))*wP   # E
+                      ,(1)*wC +           (1-(1))*wP   # F
+                      ,(1)*wC +           (1-(1))*wP   # G
+                      ,(1)*wC +           (1-(1))*wC   # H
+                      ,(1)*wC +           (1-(1))*wP   # I
+                      ,(1)*wC +           (1-(1))*wP   # J
+                      ,(1)*wC +           (1-(1))*wC   # K
+                      ,(1)*wC +           (1-(1))*wP   # L
+                      )
+        rc <- data.frame(# weighted presence means
+                         HIPWBUILDINGS_SYN =  buildings %>%  protectedMean(na.rm=TRUE)
+                        ,HIPWCOMMERCIAL_SYN = commercial %>% protectedMean(na.rm=TRUE)
+                        ,HIPWCROPS_SYN =      crops %>%      protectedMean(na.rm=TRUE)
+                        ,HIPWDOCKS_SYN =      docks %>%      protectedMean(na.rm=TRUE)
+                        ,HIPWLANDFILL_SYN =   landfill %>%   protectedMean(na.rm=TRUE)
+                        ,HIPWLAWN_SYN =       lawn %>%       protectedMean(na.rm=TRUE)
+                        ,HIPWORCHARD_SYN =    orchard %>%    protectedMean(na.rm=TRUE)
+                        ,HIPWOTHER_SYN =      other %>%      protectedMean(na.rm=TRUE)
+                        ,HIPWPARK_SYN =       park %>%       protectedMean(na.rm=TRUE)
+                        ,HIPWPASTURE_SYN =    pasture %>%    protectedMean(na.rm=TRUE)
+                        ,HIPWPOWERLINES_SYN = powerlines %>% protectedMean(na.rm=TRUE)
+                        ,HIPWROADS_SYN =      roads %>%      protectedMean(na.rm=TRUE)
+                        ,HIPWWALLS_SYN =      walls %>%      protectedMean(na.rm=TRUE)
+                         # indices
+                        ,HIPWALL_SYN =        c(buildings, commercial, crops, docks
+                                               ,landfill, lawn, orchard, other, park
+                                               ,pasture, powerlines, roads, walls
+                                               ) %>% 
+                                              protectedMean(na.rm=TRUE)
+                        ,HIPWNONAG_SYN =      c(buildings, commercial,        docks
+                                               ,landfill, lawn,          other, park
+                                               ,         powerlines, roads, walls
+                                               ) %>% 
+                                              protectedMean(na.rm=TRUE)
+                        ,HIIALLCIRCA_SYN =    c(ifelse(buildings >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(commercial >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(crops >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(docks >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(landfill >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(lawn >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(orchard >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(other >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(park >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(pasture >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(powerlines >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(roads >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(walls >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ) %>% 
+                                              protectedSum(na.rm=TRUE)
+                        ,HIINONAGCIRCA_SYN =  c(ifelse(buildings >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(commercial >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               #,ifelse(crops >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(docks >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(landfill >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(lawn >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               #,ifelse(orchard >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(other >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(park >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               #,ifelse(pasture >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(powerlines >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(roads >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ,ifelse(walls >= (1.0 - 1e-15), TRUE, FALSE) %>% protectedMean(na.rm=TRUE)
+                                               ) %>% 
+                                              protectedSum(na.rm=TRUE)
+                         # presence counts
+                        ,HINBUILDINGS_SYN =   buildings %>%  count()
+                        ,HINCOMMERCIAL_SYN =  commercial %>% count()
+                        ,HINCROPS_SYN =       crops %>%      count()
+                        ,HINDOCKS_SYN =       docks %>%      count()
+                        ,HINLANDFILL_SYN =    landfill %>%   count()
+                        ,HINLAWN_SYN =        lawn %>%       count()
+                        ,HINORCHARD_SYN =     orchard %>%    count()
+                        ,HINOTHER_SYN =       other %>%      count()
+                        ,HINPARK_SYN =        park %>%       count()
+                        ,HINPASTURE_SYN =     pasture %>%    count()
+                        ,HINPOWERLINES_SYN =  powerlines %>% count()
+                        ,HINROADS_SYN =       roads %>%      count()
+                        ,HINWALLS_SYN =       walls %>%      count()
+                        ) %>%
+              mutate(   # Group/index metrics
+                         HIIALL_SYN =         HIPWBUILDINGS_SYN + HIPWCOMMERCIAL_SYN +
+                                              HIPWCROPS_SYN + HIPWDOCKS_SYN +
+                                              HIPWLANDFILL_SYN + HIPWLAWN_SYN + 
+                                              HIPWORCHARD_SYN + HIPWOTHER_SYN + 
+                                              HIPWPARK_SYN + HIPWPASTURE_SYN + 
+                                              HIPWPOWERLINES_SYN + HIPWROADS_SYN +
+                                              HIPWWALLS_SYN
+                        ,HIINONAG_SYN =       HIPWBUILDINGS_SYN + HIPWCOMMERCIAL_SYN +
+                                              #HIPWCROPS_SYN + 
+                                              HIPWDOCKS_SYN +
+                                              HIPWLANDFILL_SYN + HIPWLAWN_SYN + 
+                                              #HIPWORCHARD_SYN + 
+                                              HIPWOTHER_SYN + 
+                                              HIPWPARK_SYN + #HIPWPASTURE_SYN + 
+                                              HIPWPOWERLINES_SYN + HIPWROADS_SYN +
+                                              HIPWWALLS_SYN
+                        ,HINALL_SYN =         HINBUILDINGS_SYN + HINCOMMERCIAL_SYN +
+                                              HINCROPS_SYN + HINDOCKS_SYN +
+                                              HINLANDFILL_SYN + HINLAWN_SYN + 
+                                              HINORCHARD_SYN + HINOTHER_SYN + 
+                                              HINPARK_SYN + HINPASTURE_SYN + 
+                                              HINPOWERLINES_SYN + HINROADS_SYN +
+                                              HINWALLS_SYN
+                        ,HINNONAG_SYN =       HINBUILDINGS_SYN + HINCOMMERCIAL_SYN +
+                                              #HINCROPS_SYN + 
+                                              HINDOCKS_SYN +
+                                              HINLANDFILL_SYN + HINLAWN_SYN + 
+                                              #HINORCHARD_SYN + 
+                                              HINOTHER_SYN + 
+                                              HINPARK_SYN + #HINPASTURE_SYN + 
+                                              HINPOWERLINES_SYN + HINROADS_SYN +
+                                              HINWALLS_SYN
+                    ) %>%
+              pivot_longer(cols=everything()
+                          ,names_to = 'METRIC'
+                          ,values_to = 'VALUE'
+                          ) %>% 
+              mutate(SITE = 6449) %>% 
+              data.frame()
+        return(rc)
+   }
+   
+    # So far, only one site has results differing from earlier values. This was
+    # due to corrections in calcSynCover in last half of 2023
+    byHand <- rbind(handCalculations6449())
+    
+    return(byHand)
+}
+
+
 nlaHumanImpactTest.expectedResultsWithDrawDownNoFillin <- function()
 # Returns dataframe of expected calculations based on the test data.
 {
+    earlyCalculatedValues <- function() {
 	tc <- textConnection("  SITE             METRIC                       VALUE
 							6228    HIFPANYCIRCA_DD   0.59999999999999997779554
 							6228   HIFPANYCIRCA_RIP   0.69999999999999995559108
@@ -4689,17 +4996,25 @@ nlaHumanImpactTest.expectedResultsWithDrawDownNoFillin <- function()
 							1000100      HIPWWALLS_RIP                          NA
 							1000100      HIPWWALLS_SYN                          NA"
 					)
-	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	rm(tc)
+    	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+	    rm(tc)
+		 
+	    return(rc)
+    }
+    
+    fake <- earlyCalculatedValues() %>%
+            subset(!(SITE == 6449 & METRIC %in% nlaHumanImpactTest.expectedResults.handCalculations()$METRIC) ) %>%
+   	        rbind(nlaHumanImpactTest.expectedResults.handCalculations()) %>%
+            mutate(SITE = as.integer(SITE))
 	
-	return(rc)
+	return(fake)
 }
 
 
 nlaHumanImpactTest.expectedResultsWithDrawDown <- function()
 # Returns dataframe of expected calculations based on the test data.
 {
-	
+    earlyCalculatedValues <- function() {	
 	tc <- textConnection("  SITE      	     METRIC                       VALUE
 							6228         HIFPANY_DD   0.69999999999999995559108
 							6228        HIFPANY_RIP   0.69999999999999995559108
@@ -6142,10 +6457,17 @@ nlaHumanImpactTest.expectedResultsWithDrawDown <- function()
 							1000100      HIPWWALLS_RIP                          NA
 							1000100      HIPWWALLS_SYN                          NA"
 						)					
-	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	rm(tc)
+    	early <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+	    rm(tc)
+	    return(early)
+    }
+    
+    fake <- earlyCalculatedValues() %>%
+            subset(!(SITE == 6449 & METRIC %in% nlaHumanImpactTest.expectedResults.handCalculations()$METRIC) ) %>%
+   	        rbind(nlaHumanImpactTest.expectedResults.handCalculations()) %>%
+            mutate(SITE = as.integer(SITE))
 	
-	return(rc)
+	return(fake)
 	
 }
 

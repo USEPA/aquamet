@@ -3724,9 +3724,6 @@ nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin <- function()
 # macro, but I don't have time to debug it now.)  These 15 rows are removed from the
 # expected output.
 {
-    # Values that are explicitely calculated 'by hand', showing the work
-
-    # Values that came from prior calculations.
     earlyCalculatedValues <- function() {
 	tc <- textConnection("  SITE             METRIC                       VALUE
 							6160     FCFPAQUATIC_DD  1.000000000000000000000000
