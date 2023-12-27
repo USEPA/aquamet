@@ -14,7 +14,8 @@ nrsaSlopeBearing(
   wSlope = NULL,
   gisSinuosity = NULL,
   gisSlope = NULL,
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

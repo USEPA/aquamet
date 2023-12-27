@@ -9,7 +9,8 @@ nrsaCanopyDensiometer(
   wDensiom = NULL,
   wChannelBank = c("LF", "RT"),
   wChannelMid = c("CU", "CL", "CD", "CR"),
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

@@ -8,7 +8,8 @@ nrsaBankMorphology(
   bAngle = NULL,
   wAngle = NULL,
   wUndercut = NULL,
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

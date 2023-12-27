@@ -18,7 +18,8 @@ nrsaHumanInfluence(
   wallRevetment = NULL,
   dataInformation = data.frame(value = c("0", "P", "C", "B"), weights = c(0, 0.666667, 1,
     1.5), stringsAsFactors = FALSE),
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{

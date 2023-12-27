@@ -12,7 +12,8 @@ nrsaSubstrateCharacterization(
   bSizeClass = NULL,
   wSizeClass = NULL,
   wMezzoSizeClass = NULL,
-  isUnitTest = FALSE
+  isUnitTest = FALSE,
+  argSavePath = NULL
 )
 }
 \arguments{
