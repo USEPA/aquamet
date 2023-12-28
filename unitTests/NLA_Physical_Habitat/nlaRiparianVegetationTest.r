@@ -80,7 +80,7 @@ nlaRiparianVegetationTest.withDrawDown <- function()
                                    ,horizontalDistance_dd = testData %>% subset(CLASS == 'HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
 	                               ,fillinDrawdown=FALSE
 	                               )
-	
+print(setdiff(expected$METRIC, actual$METRIC))
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
 	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown")
 	
@@ -88,6 +88,8 @@ nlaRiparianVegetationTest.withDrawDown <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
+    dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+    return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 }
@@ -130,6 +132,8 @@ nlaRiparianVegetationTest.withDrawDownAndFillin <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown and DD fill-in")
 	
+    dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+    return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown and DD fill-in")
 }
@@ -787,7 +791,7 @@ nlaRiparianVegetationTest.expectedResults2007 <- function()
 #tt<-subset(phab, VISIT_ID %in% c(7469,7472,7492,7518,7611,7723,7784,7797) & grepl('^rv', PARAMETER))
 #tt <- tt[order(tt$VISIT_ID,tt$PARAMETER), c('VISIT_ID','PARAMETER','RESULT')]	
 {
-	tc <- textConnection("  SITE            METRIC               VALUE
+ 	tc <- textConnection("  SITE            METRIC               VALUE
 							7469        RVFCCANBIG                0.13
 							7469      RVFCCANSMALL               0.205
 							7469       RVFCGNDBARE                   0
@@ -1205,10 +1209,163 @@ nlaRiparianVegetationTest.expectedResults2007 <- function()
 							7797        RVVUNDNONW   0.330585630320434
 							7797       RVVUNDWOODY   0.293055302385762"
 						)
-	
-	longMets <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    longMets <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    rm(tc)
+    return(longMets)
+}
 
-	return(longMets)
+nlaRiparianVegetationTest.expectedResults.handCalculations <- function()
+# Returns metrics values showing the work of calculations using the current
+# test input data.
+{
+    handCalculations6449 <- function() {
+    }
+    handCalculations6618 <- function() {
+        # calculations of SIMulated fractional cover values at site 6618
+        # Values at each station are fracFlood*coverFlood + fracDD*coverDD
+        f0 <- 0.00      # standard fractions for cover codes.
+        f1 <- 0.05
+        f2 <- 0.25
+        f3 <- 0.575
+        f4 <- 0.875
+        maxdd <- 15
+        c_bigtrees <-  c((1-5.0/maxdd)*f0 + (5.0/maxdd)*f0      # A
+                        ,(1-6.5/maxdd)*f0 + (6.5/maxdd)*f0      # B
+                        ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # C
+                        ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # D
+                        ,(1)          *f0 + (1-(1))    *f0      # E
+                        ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # F
+                        ,(1-0.0/maxdd)*f0 + (0.0)      *f0      # G
+                        ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # H
+                        ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # I
+                        ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # J
+                        )
+        c_smalltrees<- c((1-5.0/maxdd)*f0 + (5.0/maxdd)*f0      # A
+                        ,(1-6.5/maxdd)*f0 + (6.5/maxdd)*f0      # B
+                        ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # C
+                        ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # D
+                        ,(1)          *f0 + (1-(1))    *f0      # E
+                        ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # F
+                        ,(1-0.0/maxdd)*f0 + (0.0)      *f0      # G
+                        ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # H
+                        ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # I
+                        ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # J
+                        )
+        gc_bare <-     c((1-5.0/maxdd)*f1 + (5.0/maxdd)*f0      # A
+                        ,(1-6.5/maxdd)*f1 + (6.5/maxdd)*f2      # B
+                        ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f1      # C
+                        ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # D
+                        ,(1)          *f3 + (1-(1))    *f3      # E
+                        ,(1-1.5/maxdd)*f2 + (1.5/maxdd)*f3      # F
+                        ,(1-0.0/maxdd)*f1 + (0.0)      *f0      # G
+                        ,(1-1.5/maxdd)*f2 + (1.5/maxdd)*f2      # H
+                        ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f1      # I
+                        ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f0      # J
+                        )
+        gc_inundated<- c((1-5.0/maxdd)*f0 + (5.0/maxdd)*f0      # A
+                        ,(1-6.5/maxdd)*f0 + (6.5/maxdd)*f0      # B
+                        ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # C
+                        ,(1-1.0/maxdd)*f1 + (1.0/maxdd)*f0      # D
+                        ,(1)          *f0 + (1-(1))    *f0      # E
+                        ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # F
+                        ,(1-0.0/maxdd)*f1 + (0.0)      *f0      # G
+                        ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f1      # H
+                        ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # I
+                        ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f0      # J
+                        )
+        gc_nonwoody <- c((1-5.0/maxdd)*f2 + (5.0/maxdd)*f3      # A
+                        ,(1-6.5/maxdd)*f4 + (6.5/maxdd)*f2      # B
+                        ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f1      # C
+                        ,(1-1.0/maxdd)*f3 + (1.0/maxdd)*f0      # D
+                        ,(1)          *f0 + (1-(1))    *f0      # E
+                        ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f1      # F
+                        ,(1-0.0/maxdd)*f2 + (0.0)      *f0      # G
+                        ,(1-1.5/maxdd)*f2 + (1.5/maxdd)*f2      # H
+                        ,(1-1.0/maxdd)*f1 + (1.0/maxdd)*f1      # I
+                        ,(1-2.0/maxdd)*f3 + (2.0/maxdd)*f2      # J
+                        )
+        gc_woody <-    c((1-5.0/maxdd)*f2 + (5.0/maxdd)*f0      # A
+                        ,(1-6.5/maxdd)*f1 + (6.5/maxdd)*f0      # B
+                        ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f1      # C
+                        ,(1-1.0/maxdd)*f1 + (1.0/maxdd)*f0      # D
+                        ,(1)          *f1 + (1-(1))    *f0      # E
+                        ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f0      # F
+                        ,(1-0.0/maxdd)*f1 + (0.0)      *f0      # G
+                        ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f0      # H
+                        ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f2      # I
+                        ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # J
+                        )
+        u_nonwoody <-  c((1-5.0/maxdd)*f2 + (5.0/maxdd)*f0      # A
+                        ,(1-6.5/maxdd)*f0 + (6.5/maxdd)*f0      # B
+                        ,(1-2.0/maxdd)*f3 + (2.0/maxdd)*f3      # C
+                        ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f0      # D
+                        ,(1)          *f0 + (1-(1))    *f0      # E
+                        ,(1-1.5/maxdd)*f2 + (1.5/maxdd)*f0      # F
+                        ,(1-0.0/maxdd)*f1 + (0.0)      *f0      # G
+                        ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # H
+                        ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # I
+                        ,(1-2.0/maxdd)*f3 + (2.0/maxdd)*f3      # J
+                        )
+        u_woody <-     c((1-5.0/maxdd)*f2 + (5.0/maxdd)*f0      # A
+                        ,(1-6.5/maxdd)*f0 + (6.5/maxdd)*f0      # B
+                        ,(1-2.0/maxdd)*f2 + (2.0/maxdd)*f0      # C
+                        ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f0      # D
+                        ,(1)          *f2 + (1-(1))    *f0      # E
+                        ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f0      # F
+                        ,(1-0.0/maxdd)*f3 + (0.0)      *f0      # G
+                        ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f0      # H
+                        ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f0      # I
+                        ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f0      # J
+                        )
+        rc <- data.frame(# Fractional cover means
+                         RVFCCANBIG_SYN       = c_bigtrees %>% protectedMean(na.rm=TRUE)
+                        ,RVFCCANSMALL_SYN     = c_smalltrees %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDBARE_SYN      = gc_bare %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDINUNDATED_SYN = gc_inundated %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDNONW_SYN      = gc_nonwoody %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDWOODY_SYN     = gc_woody %>% protectedMean(na.rm=TRUE)
+                        ,RVFCUNDNONW_SYN      = u_nonwoody %>% protectedMean(na.rm=TRUE)
+                        ,RVFCUNDWOODY_SYN     = u_woody %>% protectedMean(na.rm=TRUE)
+                         # Fractional presence
+                        ,RVFPGNDBARE_SYN      = gc_bare %>% protectedMean(na.rm=TRUE)
+                        ,RVFPGNDINUNDATED_SYN = gc_nonwoody %>% protectedMean(na.rm=TRUE)
+                        ,RVFPGNDWOODY_SYN     = gc_nonwoody %>% protectedMean(na.rm=TRUE)
+                        ,RVFPUNDNONW_SYN      = gc_nonwoody %>% protectedMean(na.rm=TRUE)
+                         # Indicies/group metrics
+                        ,RVICANOPY_SYN  
+                        ,RVICANUND_SYN  
+                        ,RVIGROUND_SYN  
+                        ,RVIHERBS_SYN  
+                        ,RVITALLWOOD_SYN  
+                        ,RVITOTALVEG_SYN  
+                        ,RVIUNDERSTORY_SYN  
+                        ,RVIWOODY_SYN  
+                         # Fractional cover stdev
+                        ,RVVCANBIG_SYN  
+                        ,RVVCANSMALL_SYN  
+                        ,RVVGNDBARE_SYN  
+                        ,RVVGNDINUNDATED_SYN  
+                        ,RVVGNDNONW_SYN  
+                        ,RVVGNDWOODY_SYN  
+                        ,RVVUNDNONW_SYN  
+                        ,RVVUNDWOODY_SYN  
+                        ) %>%
+              mutate(# group/index metrics
+                    ) %>%
+              pivot_longer(cols=everything()
+                          ,names_to = 'METRIC'
+                          ,values_to = 'VALUE'
+                          ) %>% 
+              mutate(SITE = 6618) %>% 
+              data.frame()
+        return(rc)
+    }
+    
+    handCalcs <- rbind(data.frame(SITE=1L, METRIC='', VALUE='', stringsAsFactors=FALSE)[0,]
+#                      ,handCalculations6449()
+#                      ,handCalculations6618()
+                      )
+    return(handCalcs)
 }
 
 
@@ -1224,7 +1381,8 @@ nlaRiparianVegetationTest.createTestDataWithDrawDown <- function()
 #	7431	Missing DD at all stations, missing some LIT data
 #	1000222	Full LIT and nearly full DD data for stations A,B,C,I,J; otherwise missing.
 {
-	tc <- textConnection("	 SITE SAMPLE_TYPE STATION       CLASS VALUE FLAG  FORM_TYPE
+    testData <- function() {
+    tc <- textConnection("	 SITE SAMPLE_TYPE STATION       CLASS VALUE FLAG  FORM_TYPE
 							6362        PHAB       J      C_BIGTREES      0 NA    PHAB_BACK
 							6362        PHAB       J   C_BIGTREES_DD      0 NA    PHAB_BACK
 						    6362        PHAB       J    C_SMALLTREES      0 NA    PHAB_BACK
@@ -2515,17 +2673,20 @@ nlaRiparianVegetationTest.createTestDataWithDrawDown <- function()
 							1000222    PHAB       I        DRAWDOWN      Y ''       eForms
 							1000222    PHAB       J        DRAWDOWN      Y ''       eForms
 						 ")		
-	longMets <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	rm(tc)
-	
-	return(longMets)	
+    	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+	    rm(tc)
+	    return(rc)
+    }
+    
+	return(testData())
 }
 
 
 nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
 #
 {
-	tc <- textConnection("	 SITE             METRIC                      VALUE
+    earlyCalculatedValues <- function() {
+    tc <- textConnection("  SITE             METRIC                      VALUE
 							6362         RVFCCANBIG_DD  0.000000000000000000000000
 							6362        RVFCCANBIG_RIP  0.000000000000000000000000
 							6362        RVFCCANBIG_SYN  0.000000000000000000000000
@@ -3823,10 +3984,22 @@ nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
 							1000222  RVFPUNDCONIFEROUS_DD          0
 							1000222       RVFPUNDMIXED_DD          0
 						 ")		
-	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	rm(tc)
+    	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+	    rm(tc)
 	
-	return(rc)						
+    	return(rc)						
+    }
+
+    mets <- earlyCalculatedValues() %>%
+            # subset(!(SITE == 6449 & METRIC %in% nlaRiparianVegetationTest.expectedResults.handCalculations()$METRIC) ) %>%
+            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations()
+                     ,by=c('SITE','METRIC')
+                     ) %>%
+   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations()) %>%
+            mutate(SITE = as.integer(SITE))
+
+	return(mets)
+    
 }
 
 
@@ -3835,6 +4008,7 @@ nlaRiparianVegetationTest.expectedResultsWithDrawDown <- function()
 # with the exception of 91 zero values which I did not have time to correct in 
 # the SAS program -- these rows are appended at the end.
 {
+    earlyCalculatedValues <- function() {
 	tc <- textConnection("	 SITE             METRIC                      VALUE
 							6362         RVFCCANBIG_DD  0.000000000000000000000000
 							6362        RVFCCANBIG_RIP  0.000000000000000000000000
@@ -5134,11 +5308,22 @@ nlaRiparianVegetationTest.expectedResultsWithDrawDown <- function()
 							1000222       RVFPUNDMIXED_DD      0
 						 ")		
 					
-	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
-	rm(tc)
+    	rc <- read.table(tc, header=TRUE, stringsAsFactors=FALSE, row.names=NULL)
+    	rm(tc)
 	
-	return(rc)
+    	return(rc)
+    }
+    
+    mets <- earlyCalculatedValues() %>%
+#            subset(!(SITE == 6449 & METRIC %in% nlaRiparianVegetationTest.expectedResults.handCalculations()$METRIC) ) %>%
+            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations()
+                     ,by=c('SITE','METRIC')
+                     ) %>%
+   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations()) %>%
+            mutate(SITE = as.integer(SITE))
 	
+	return(mets)
+
 }
 
 # end of file
