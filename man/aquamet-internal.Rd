@@ -51,7 +51,9 @@
 \usage{
 aquametStandardizeArgument(arg, ..., ifdf=NULL, 
 struct=list(SITE='integer', VALUE='double'), 
-rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE) 
+rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE, 
+metsFuncName = as.character(sys.call(sys.parent())[1]),
+argSavePath = NULL)) 
 aquametStandardizeArgument.checkLegal(arg, expectedLegal)
 aquametStandardizeArgument.checkRange(arg, expectedRange)
 aquametStandardizeArgument.checkStructure(arg, expectedStruct)

@@ -21,9 +21,9 @@ The drawdown indicator is based on both horizontal and vertical drawdown distanc
 #### First, load necessary libraries.
 ```{r setup,results='hide', warning=FALSE, message=FALSE}
 library(aquamet)
-library(reshape2)
-library(plyr)
-library(dplyr)
+# library(reshape2)
+# library(plyr)
+# library(dplyr)
 ```
 
 #### Now, create the input datasets to run nlaBankFeatures() to obtain the BFXHORIZDIST_DD and BFXVERTHEIGHT_DD metric values. 
@@ -31,22 +31,22 @@ library(dplyr)
 We create data frames for the inputs to the nlaBankFeatures() function first. For the emph{angle} input, we must change the VALUE of 'NEAR_VERTICAL_UNDERCUT' to 'NEAR_VERTICAL' because the function does not allow the former value and assumes it has been corrected to the latter. 
 
 ```{r dd}
-angle <- subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER) %>% 
-  mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT','NEAR_VERTICAL',VALUE))
+angle <- subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER) |> 
+  plyr::mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT','NEAR_VERTICAL',VALUE))
 
 drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN', select=-PARAMETER)
 
-horizontalDistance <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST', select=-PARAMETER) %>% 
-  mutate(VALUE = as.numeric(VALUE))
+horizontalDistance <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST', select=-PARAMETER) |> 
+  plyr::mutate(VALUE = as.numeric(VALUE))
 
-horizontalDistanceDrawdown <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD', select=-PARAMETER) %>% 
-  mutate(VALUE = as.numeric(VALUE))
+horizontalDistanceDrawdown <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD', select=-PARAMETER) |> 
+  plyr::mutate(VALUE = as.numeric(VALUE))
 
-verticalHeight <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) %>% 
-  mutate(VALUE = as.numeric(VALUE))
+verticalHeight <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) |> 
+  plyr::mutate(VALUE = as.numeric(VALUE))
 
-verticalHeightDrawdown <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT_DD', select=-PARAMETER) %>% 
-  mutate(VALUE = as.numeric(VALUE))                                                            
+verticalHeightDrawdown <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT_DD', select=-PARAMETER) |> 
+  plyr::mutate(VALUE = as.numeric(VALUE))                                                            
 
 bfMets <- nlaBankFeatures(angle, drawdown, horizontalDistance, horizontalDistanceDrawdown, verticalHeight, verticalHeightDrawdown)
 
@@ -168,7 +168,7 @@ rv <- nlaRiparianVegetation(bigTrees, bigTrees_dd, smallTrees, smallTrees_dd,
     grdcvrNw, grdcvrNw_dd, grdcvrW, grdcvrW_dd, undNonW, undNonW_dd, undW, undW_dd,
     undType, undType_dd, drawdown, horizontalDistance_dd)
 
-rv.wide <- dcast(rv, SITE~METRIC, value.var='VALUE')
+rv.wide <- reshape2::dcast(rv, SITE~METRIC, value.var='VALUE')
 
 ```
 
@@ -187,15 +187,15 @@ wood <- subset(nlaPhabEx,PARAMETER=='SS_WOOD',select=-PARAMETER)
 ss <- nlaShorelineSubstrate(bedrock,boulder,
 cobble,gravel,organic,other,sand,silt,wood)
 
-ss.wide <- dcast(ss, SITE~METRIC, value.var='VALUE') %>% 
-  select(SITE, SSFCBEDROCK,SSFCBOULDERS) %>%
-  mutate(SSFCBEDROCK=as.numeric(SSFCBEDROCK), SSFCBOULDERS=as.numeric(SSFCBOULDERS))
+ss.wide <- reshape2::dcast(ss, SITE~METRIC, value.var='VALUE') |> 
+  dplyr::select(SITE, SSFCBEDROCK,SSFCBOULDERS) |>
+  plyr::mutate(SSFCBEDROCK=as.numeric(SSFCBEDROCK), SSFCBOULDERS=as.numeric(SSFCBOULDERS))
 ```
 
 ### Human influence metrics
 
 ```{r hi}
-buildings <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
+buildings <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS', select=-PARAMETER)
 buildings_dd <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
 commercial <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
 commercial_dd <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
@@ -231,7 +231,7 @@ hi <- nlaHumanImpact(buildings, buildings_dd, commercial, commercial_dd,
     orchard_dd, other, other_dd, park, park_dd, pasture, pasture_dd, powerlines,
     powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd)
 
-hi.wide <- dcast(hi, SITE~METRIC, value.var='VALUE')
+hi.wide <- reshape2::dcast(hi, SITE~METRIC, value.var='VALUE')
 
 ```
 
@@ -239,7 +239,7 @@ hi.wide <- dcast(hi, SITE~METRIC, value.var='VALUE')
 
 ```{r mergeDF}
 
-metIn <- merge(rv.wide, ss.wide, by='SITE') %>% 
+metIn <- merge(rv.wide, ss.wide, by='SITE') |> 
   merge(hi.wide, by='SITE')
 
 
@@ -299,8 +299,8 @@ snags_dd <- subset(nlaPhabEx,PARAMETER=='FC_SNAGS_DD',select=-PARAMETER)
 structures <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
 structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
 drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER) %>%
-  mutate(VALUE = as.numeric(VALUE)) # This one is manually converted to numeric because it is required by the function to be
+horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER) |>
+  plyr::mutate(VALUE = as.numeric(VALUE)) # This one is manually converted to numeric because it is required by the function to be
 
 # Use default values for fillinDrawdown (TRUE), createSyntheticCovers (TRUE), 
 # and coverClassInfo:
@@ -314,8 +314,8 @@ fc <- nlaFishCover(aquatic,aquatic_dd,boulders,boulders_dd,brush,
   brush_dd,ledges,ledges_dd,livetrees,livetrees_dd,overhang,overhang_dd,
   snags,snags_dd,structures,structures_dd,drawdown,horizontalDistance_dd)
 
-fc.wide <- dcast(fc, SITE~METRIC, value.var='VALUE') %>%
-  select(SITE, FCFCSNAGS_LIT, FCINATURAL_LIT, FCFCBOULDERS_LIT, FCFCBRUSH_LIT,
+fc.wide <- reshape2::dcast(fc, SITE~METRIC, value.var='VALUE') |>
+  dplyr::select(SITE, FCFCSNAGS_LIT, FCINATURAL_LIT, FCFCBOULDERS_LIT, FCFCBRUSH_LIT,
          FCFCLEDGES_LIT, FCFCLIVETREES_LIT, FCFCOVERHANG_LIT)
 
 fc.wide
@@ -333,9 +333,9 @@ totcvr <- subset(nlaPhabEx,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
 am <- nlaAquaticMacrophytes(emergent=emerg,
   floating=float,submergent=submerg,totalCover=totcvr)
 
-am.wide <- dcast(am, SITE~METRIC, value.var='VALUE') %>%
-  select(SITE, AMFCFLOATING, AMFCEMERGENT) %>%
-  mutate(AMFCFLOATING = as.numeric(AMFCFLOATING),
+am.wide <- reshape2::dcast(am, SITE~METRIC, value.var='VALUE') |>
+  dplyr::select(SITE, AMFCFLOATING, AMFCEMERGENT) |>
+  plyr::mutate(AMFCFLOATING = as.numeric(AMFCFLOATING),
          AMFCEMERGENT = as.numeric(AMFCEMERGENT))
 
 am.wide
@@ -347,7 +347,7 @@ am.wide
 #### Use site data from section 4 (sitedata.1) and merge with fc and am data frames containing metrics
 
 ```{r mergeDF.1}
-litvegIn <- merge(sitedata.1, fc.wide, by='SITE', all.x=T) %>%
+litvegIn <- merge(sitedata.1, fc.wide, by='SITE', all.x=T) |>
   merge(am.wide, by='SITE', all.x=T) 
 
 litvegIn
@@ -383,7 +383,7 @@ The nlaLitRipVegCompIndicator() function determines site-specific combined litto
 
 ### Assemble data frame from existing data frames
 ```{r assemble}
-lrIn <- merge(sitedata.1, litvegOut, by='SITE') %>%
+lrIn <- merge(sitedata.1, litvegOut, by='SITE') |>
   merge(ripvegOut, by='SITE')
 
 ```

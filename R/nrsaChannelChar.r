@@ -84,6 +84,9 @@
 #'  Note: This value is simply copied to the output without change.
 #' @param isUnitTest Logical argument to determine whether errors should be ignored.
 #' Should only be used for running a unit test. Default value is FALSE.
+#' @param argSavePath character string specifying the path to which data 
+#' arguments are saved as csv files, or NULL if those files are not to be 
+#' written.
 #' @return Either a data frame when metric calculation is successful or a 
 #' NULL when metric calculation is not successful.  The data frame contains 
 #' the following columns:
