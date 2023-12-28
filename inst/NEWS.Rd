@@ -1,6 +1,13 @@
 \name{NEWS}
 \title{aquamet News}
 
+\section{CHANGES in aquamet VERSION 2.5.6 (Released 2023-12-28)}
+  \subsection{BUG FIXES}
+    \itemize{
+      \item Corrected calculations in nlaBottomSubstrate.r and 
+      nlaShorelineSubstrate.r.
+    }
+
 \section{CHANGES IN aquamet VERSION 2.5.0 (Released 2018-01-25)}{
   \subsection{NEW FEATURES}{
       \itemize{
