@@ -80,7 +80,7 @@ nlaRiparianVegetationTest.withDrawDown <- function()
                                    ,horizontalDistance_dd = testData %>% subset(CLASS == 'HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
 	                               ,fillinDrawdown=FALSE
 	                               )
-print(setdiff(expected$METRIC, actual$METRIC))
+#print(setdiff(expected$METRIC, actual$METRIC))
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
 	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown")
 	
@@ -1214,28 +1214,41 @@ nlaRiparianVegetationTest.expectedResults2007 <- function()
     return(longMets)
 }
 
-nlaRiparianVegetationTest.expectedResults.handCalculations <- function()
+nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDrawdown)
 # Returns metrics values showing the work of calculations using the current
 # test input data.
+#
+# ARGUMENTS:
+# fillinDrawdown    logical value, if FALSE will not fill in absent HORIZ_DIST_DD
+#                   values with 0 (which normally occur if DRAWDOWN is FALSE); if
+#                   TRUE, absent values will be filled in with zero if DRAWDOWN
+#                   is TRUE
 {
+    f0 <- 0.00      # standard fractions for cover codes.
+    f1 <- 0.05
+    f2 <- 0.25
+    f3 <- 0.575
+    f4 <- 0.875
+    maxdd <- 15
+    protectedRatio <- function(a, b) { y <- ifelse(b==0, 0, a/b); return(y) }
+    
     handCalculations6449 <- function() {
     }
     handCalculations6618 <- function() {
-        # calculations of SIMulated fractional cover values at site 6618
+        Gdd <- ifelse(fillinDrawdown, 0, NA) # DRAWDOWN false at G, so not recorded
+        
+        # calculations of SYNthetic fractional cover values at site 6618
         # Values at each station are fracFlood*coverFlood + fracDD*coverDD
-        f0 <- 0.00      # standard fractions for cover codes.
-        f1 <- 0.05
-        f2 <- 0.25
-        f3 <- 0.575
-        f4 <- 0.875
-        maxdd <- 15
+        # Ground covers are normalized as they must sum to 100%; canopy and 
+        # understory covers in the current test data all sum to below 100, so 
+        # normalization is not explictely needed
         c_bigtrees <-  c((1-5.0/maxdd)*f0 + (5.0/maxdd)*f0      # A
                         ,(1-6.5/maxdd)*f0 + (6.5/maxdd)*f0      # B
                         ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # C
                         ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # D
                         ,(1)          *f0 + (1-(1))    *f0      # E
                         ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # F
-                        ,(1-0.0/maxdd)*f0 + (0.0)      *f0      # G
+                        ,(1-Gdd/maxdd)*f0 + (Gdd)      *f0      # G
                         ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # H
                         ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # I
                         ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # J
@@ -1246,7 +1259,7 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function()
                         ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # D
                         ,(1)          *f0 + (1-(1))    *f0      # E
                         ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # F
-                        ,(1-0.0/maxdd)*f0 + (0.0)      *f0      # G
+                        ,(1-Gdd/maxdd)*f0 + (Gdd)      *f0      # G
                         ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # H
                         ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # I
                         ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # J
@@ -1257,7 +1270,7 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function()
                         ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # D
                         ,(1)          *f3 + (1-(1))    *f3      # E
                         ,(1-1.5/maxdd)*f2 + (1.5/maxdd)*f3      # F
-                        ,(1-0.0/maxdd)*f1 + (0.0)      *f0      # G
+                        ,(1-Gdd/maxdd)*f1 + (Gdd)      *f0      # G
                         ,(1-1.5/maxdd)*f2 + (1.5/maxdd)*f2      # H
                         ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f1      # I
                         ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f0      # J
@@ -1268,10 +1281,10 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function()
                         ,(1-1.0/maxdd)*f1 + (1.0/maxdd)*f0      # D
                         ,(1)          *f0 + (1-(1))    *f0      # E
                         ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # F
-                        ,(1-0.0/maxdd)*f1 + (0.0)      *f0      # G
+                        ,(1-Gdd/maxdd)*f1 + (Gdd)      *f0      # G
                         ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f1      # H
                         ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # I
-                        ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f0      # J
+                        ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f2      # J
                         )
         gc_nonwoody <- c((1-5.0/maxdd)*f2 + (5.0/maxdd)*f3      # A
                         ,(1-6.5/maxdd)*f4 + (6.5/maxdd)*f2      # B
@@ -1279,7 +1292,7 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function()
                         ,(1-1.0/maxdd)*f3 + (1.0/maxdd)*f0      # D
                         ,(1)          *f0 + (1-(1))    *f0      # E
                         ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f1      # F
-                        ,(1-0.0/maxdd)*f2 + (0.0)      *f0      # G
+                        ,(1-Gdd/maxdd)*f2 + (Gdd)      *f0      # G
                         ,(1-1.5/maxdd)*f2 + (1.5/maxdd)*f2      # H
                         ,(1-1.0/maxdd)*f1 + (1.0/maxdd)*f1      # I
                         ,(1-2.0/maxdd)*f3 + (2.0/maxdd)*f2      # J
@@ -1290,65 +1303,93 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function()
                         ,(1-1.0/maxdd)*f1 + (1.0/maxdd)*f0      # D
                         ,(1)          *f1 + (1-(1))    *f0      # E
                         ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f0      # F
-                        ,(1-0.0/maxdd)*f1 + (0.0)      *f0      # G
+                        ,(1-Gdd/maxdd)*f1 + (Gdd)      *f0      # G
                         ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f0      # H
                         ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f2      # I
                         ,(1-2.0/maxdd)*f0 + (2.0/maxdd)*f0      # J
                         )
+        gc_bare_n <-    protectedRatio(gc_bare, (gc_bare+gc_inundated+gc_nonwoody+gc_woody))
+        gc_inundated_n<-protectedRatio(gc_inundated, (gc_bare+gc_inundated+gc_nonwoody+gc_woody))
+        gc_nonwoody_n <-protectedRatio(gc_nonwoody, (gc_bare+gc_inundated+gc_nonwoody+gc_woody))
+        gc_woody_n <-   protectedRatio(gc_woody, (gc_bare+gc_inundated+gc_nonwoody+gc_woody))
         u_nonwoody <-  c((1-5.0/maxdd)*f2 + (5.0/maxdd)*f0      # A
                         ,(1-6.5/maxdd)*f0 + (6.5/maxdd)*f0      # B
                         ,(1-2.0/maxdd)*f3 + (2.0/maxdd)*f3      # C
                         ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f0      # D
                         ,(1)          *f0 + (1-(1))    *f0      # E
                         ,(1-1.5/maxdd)*f2 + (1.5/maxdd)*f0      # F
-                        ,(1-0.0/maxdd)*f1 + (0.0)      *f0      # G
+                        ,(1-Gdd/maxdd)*f1 + (Gdd)      *f0      # G
                         ,(1-1.5/maxdd)*f0 + (1.5/maxdd)*f0      # H
                         ,(1-1.0/maxdd)*f0 + (1.0/maxdd)*f0      # I
                         ,(1-2.0/maxdd)*f3 + (2.0/maxdd)*f3      # J
                         )
         u_woody <-     c((1-5.0/maxdd)*f2 + (5.0/maxdd)*f0      # A
                         ,(1-6.5/maxdd)*f0 + (6.5/maxdd)*f0      # B
-                        ,(1-2.0/maxdd)*f2 + (2.0/maxdd)*f0      # C
+                        ,(1-2.0/maxdd)*f2 + (2.0/maxdd)*f3      # C
                         ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f0      # D
                         ,(1)          *f2 + (1-(1))    *f0      # E
                         ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f0      # F
-                        ,(1-0.0/maxdd)*f3 + (0.0)      *f0      # G
+                        ,(1-Gdd/maxdd)*f3 + (Gdd)      *f0      # G
                         ,(1-1.5/maxdd)*f1 + (1.5/maxdd)*f0      # H
-                        ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f0      # I
+                        ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f2      # I
                         ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f0      # J
                         )
+        # u_nonwoody_n <- u_nonwoody #protectedRatio(u_nonwoody, (u_nonwoody+u_woody))
+        # u_woody_n <-    u_woody #protectedRatio(u_woody, (u_nonwoody+u_woody))
         rc <- data.frame(# Fractional cover means
                          RVFCCANBIG_SYN       = c_bigtrees %>% protectedMean(na.rm=TRUE)
                         ,RVFCCANSMALL_SYN     = c_smalltrees %>% protectedMean(na.rm=TRUE)
-                        ,RVFCGNDBARE_SYN      = gc_bare %>% protectedMean(na.rm=TRUE)
-                        ,RVFCGNDINUNDATED_SYN = gc_inundated %>% protectedMean(na.rm=TRUE)
-                        ,RVFCGNDNONW_SYN      = gc_nonwoody %>% protectedMean(na.rm=TRUE)
-                        ,RVFCGNDWOODY_SYN     = gc_woody %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDBARE_SYN      = gc_bare_n %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDINUNDATED_SYN = gc_inundated_n %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDNONW_SYN      = gc_nonwoody_n %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDWOODY_SYN     = gc_woody_n %>% protectedMean(na.rm=TRUE)
                         ,RVFCUNDNONW_SYN      = u_nonwoody %>% protectedMean(na.rm=TRUE)
                         ,RVFCUNDWOODY_SYN     = u_woody %>% protectedMean(na.rm=TRUE)
                          # Fractional presence
-                        ,RVFPGNDBARE_SYN      = gc_bare %>% protectedMean(na.rm=TRUE)
-                        ,RVFPGNDINUNDATED_SYN = gc_nonwoody %>% protectedMean(na.rm=TRUE)
-                        ,RVFPGNDWOODY_SYN     = gc_nonwoody %>% protectedMean(na.rm=TRUE)
-                        ,RVFPUNDNONW_SYN      = gc_nonwoody %>% protectedMean(na.rm=TRUE)
+                        ,RVFPGNDBARE_SYN      = protectedMean(gc_bare_n > 0, na.rm=TRUE)
+                        ,RVFPGNDINUNDATED_SYN = protectedMean(gc_inundated_n > 0, na.rm=TRUE)
+                        ,RVFPGNDWOODY_SYN     = protectedMean(gc_woody_n > 0, na.rm=TRUE)
+                        ,RVFPUNDNONW_SYN      = protectedMean(u_nonwoody > 0, na.rm=TRUE)
                          # Indicies/group metrics
-                        ,RVICANOPY_SYN  
-                        ,RVICANUND_SYN  
-                        ,RVIGROUND_SYN  
-                        ,RVIHERBS_SYN  
-                        ,RVITALLWOOD_SYN  
-                        ,RVITOTALVEG_SYN  
-                        ,RVIUNDERSTORY_SYN  
-                        ,RVIWOODY_SYN  
+                        ,RVICANOPY_SYN        = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  , na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVICANUND_SYN        = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  ,u_nonwoody, u_woody
+                                                                  , na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVIGROUND_SYN        = protectedVectorSum(gc_inundated
+                                                                  ,gc_nonwoody, gc_woody
+                                                                  ,na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVIHERBS_SYN         = protectedVectorSum(gc_nonwoody, u_nonwoody
+                                                                  , na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVITALLWOOD_SYN      = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  ,u_woody
+                                                                  ,na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVITOTALVEG_SYN      = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  ,u_nonwoody, u_woody
+                                                                  ,gc_nonwoody, gc_woody
+                                                                  ,na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVIUNDERSTORY_SYN    = protectedVectorSum(u_nonwoody, u_woody
+                                                                  , na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVIWOODY_SYN         = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  ,u_woody, gc_woody
+                                                                  ,na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
                          # Fractional cover stdev
-                        ,RVVCANBIG_SYN  
-                        ,RVVCANSMALL_SYN  
-                        ,RVVGNDBARE_SYN  
-                        ,RVVGNDINUNDATED_SYN  
-                        ,RVVGNDNONW_SYN  
-                        ,RVVGNDWOODY_SYN  
-                        ,RVVUNDNONW_SYN  
-                        ,RVVUNDWOODY_SYN  
+                        ,RVVCANBIG_SYN        = c_bigtrees %>% sd(na.rm=TRUE)
+                        ,RVVCANSMALL_SYN      = c_smalltrees %>% sd(na.rm=TRUE)
+                        ,RVVGNDBARE_SYN       = gc_bare_n %>% sd(na.rm=TRUE)
+                        ,RVVGNDINUNDATED_SYN  = gc_inundated_n %>% sd(na.rm=TRUE)
+                        ,RVVGNDNONW_SYN       = gc_nonwoody_n %>% sd(na.rm=TRUE)
+                        ,RVVGNDWOODY_SYN      = gc_woody_n %>% sd(na.rm=TRUE)
+                        ,RVVUNDNONW_SYN       = u_nonwoody %>% sd(na.rm=TRUE)
+                        ,RVVUNDWOODY_SYN      = u_woody %>% sd(na.rm=TRUE)
                         ) %>%
               mutate(# group/index metrics
                     ) %>%
@@ -1362,8 +1403,8 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function()
     }
     
     handCalcs <- rbind(data.frame(SITE=1L, METRIC='', VALUE='', stringsAsFactors=FALSE)[0,]
-#                      ,handCalculations6449()
-#                      ,handCalculations6618()
+                      ,handCalculations6449()
+                      ,handCalculations6618()
                       )
     return(handCalcs)
 }
@@ -3992,10 +4033,10 @@ nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
 
     mets <- earlyCalculatedValues() %>%
             # subset(!(SITE == 6449 & METRIC %in% nlaRiparianVegetationTest.expectedResults.handCalculations()$METRIC) ) %>%
-            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations()
+            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations(FALSE)
                      ,by=c('SITE','METRIC')
                      ) %>%
-   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations()) %>%
+   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations(FALSE)) %>%
             mutate(SITE = as.integer(SITE))
 
 	return(mets)
@@ -5316,10 +5357,10 @@ nlaRiparianVegetationTest.expectedResultsWithDrawDown <- function()
     
     mets <- earlyCalculatedValues() %>%
 #            subset(!(SITE == 6449 & METRIC %in% nlaRiparianVegetationTest.expectedResults.handCalculations()$METRIC) ) %>%
-            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations()
+            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations(TRUE)
                      ,by=c('SITE','METRIC')
                      ) %>%
-   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations()) %>%
+   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations(TRUE)) %>%
             mutate(SITE = as.integer(SITE))
 	
 	return(mets)

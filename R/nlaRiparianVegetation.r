@@ -432,6 +432,9 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 #            to validate data arguments.
 #    3/27/19 cws Added 'E' as legal value for canopy and understory types
 #    3/28/19 cws Standardized metadata argument naming
+#    1/03/24 cws Modified nlaRiparianVegetation.compositeIndex to sum components
+#            with na.rm=FALSE so stations with missing values stay missing rather
+#            than become 0, reducing the resulting mean
 #   
 # Arguments:
 #   df = a data frame containing riparian zone and vegetation data.  The data
@@ -541,11 +544,14 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 		intermediateMessage('.fill')
 		tt <- subset(df, CLASS %in% c(coverParams,'HORIZ_DIST_DD','DRAWDOWN'))
         intermediateMessage('.a')
+# print('before fillin:'); print(tt %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
 		tt <- fillinDrawdownData(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
+# print('after fillin:'); print(tt %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
         intermediateMessage('.b')
 		dfStart <- rbind(tt, subset(df, CLASS %in% typeParams))
         intermediateMessage('.c')
 	} else {
+# print('no fillin:'); print(df %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
 		dfStart <- df
 	}
 	
@@ -646,6 +652,13 @@ nlaRiparianVegetation.calculateMets <- function(rvData)
   	componentPresence <- nlaRiparianVegetation.componentPresence(rvData)
   	intermediateMessage('.4')
 
+# print('rvData 6618')
+# print(rvData %>% subset(SITE==6618 & grepl('GC_', CLASS)) %>% 
+#       arrange(coverSuffix, STATION, CLASS) %>%
+#       select(SITE, STATION, CLASS, coverSuffix, characteristicCover) %>%
+#       pivot_wider(names_from=coverSuffix, values_from=characteristicCover) %>%
+#       data.frame()
+#      )
 
   	# Convert classes to values to fractional values for calculations.  
   	# Normalize fractional cover within each layer and zone(drawdown, riparian, synthetic).
@@ -921,6 +934,22 @@ nlaRiparianVegetation.componentPresence <- function(rvData)
 nlaRiparianVegetation.componentCovers <- function(allFractions)
 # Calculate cover mean, stdev and count for individual components
 {
+    
+# print('allFractions 6618');
+# has SITE CLASS STATION VALUE characteristicCover presence coverSuffix  normCover
+# print(allFractions %>% subset(SITE==6618 & grepl('GC_', CLASS) & coverSuffix=='_SYN') %>%
+#       arrange(coverSuffix, STATION) %>%
+#       select(SITE, STATION, CLASS, coverSuffix, characteristicCover) %>%
+#       pivot_wider(names_from=CLASS, values_from=characteristicCover) %>%
+#       data.frame()
+#      )
+# print(allFractions %>% subset(SITE==6618 & grepl('^U_.+$', CLASS)) %>%
+#       arrange(coverSuffix, STATION) %>%
+#       select(SITE, STATION, CLASS, coverSuffix, normCover) %>%
+#       pivot_wider(names_from=CLASS, values_from=normCover) %>%
+#       data.frame()
+#      )
+    
 	# Means
 	tt <- aggregate(list(VALUE = allFractions$normCover)		########################## CHANGE THESE BACK!!!!!!!!!!!!!!!!! #############
 				   ,list("SITE" = allFractions$SITE
@@ -1007,9 +1036,9 @@ nlaRiparianVegetation.compositeIndex <- function(groupData, indexName)
 		                ,'STATION'=groupData$STATION
 						,coverSuffix = groupData$coverSuffix
 						)
-				   ,protectedSum, na.rm=TRUE
+				   ,protectedSum #, na.rm=TRUE
 				   )
-
+	
 	qq <- aggregate(list(VALUE = tt$x)
 				   ,list('SITE'=tt$SITE, coverSuffix = tt$coverSuffix)
 				   ,protectedMean, na.rm=TRUE
