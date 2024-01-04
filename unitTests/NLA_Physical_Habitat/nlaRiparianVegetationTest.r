@@ -4,6 +4,8 @@
 #            Changed UID to SITE, RESULT to VALUE, PARAMETER to CLASS for input
 #            and METRIC for output.
 #  7/17/17 cws Updated to test with new calling interface.
+#  1/05/24 cws Added hand calculation of metrics for sites as required. Is now
+#          in alignment with changes made to calcSynCovers last fall. Finally.
 #
 
 nlaRiparianVegetationTest <- function()
@@ -132,8 +134,8 @@ nlaRiparianVegetationTest.withDrawDownAndFillin <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown and DD fill-in")
 	
-    dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-    return(dd)
+    # dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+    # return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown and DD fill-in")
 }
@@ -1213,6 +1215,7 @@ nlaRiparianVegetationTest.expectedResults2007 <- function()
     rm(tc)
     return(longMets)
 }
+
 
 nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDrawdown)
 # Returns metrics values showing the work of calculations using the current
