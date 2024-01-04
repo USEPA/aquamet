@@ -434,10 +434,17 @@ nlaBottomSubstrate <- function(bedrock=NULL
   	intermediateMessage('.10')
   
 	
-	mets <- rbind(indivPresence, variety, indivCover, populationEstimates, modeCover
-			   	 ,indivColor, modeColor, indivOdor, modeOdor
-			   	 ,bsxldia_wfc
-			   	 )
+	# mets <- rbind(indivPresence, variety, indivCover, populationEstimates, modeCover
+	# 		   	 ,indivColor, modeColor, indivOdor, modeOdor
+	# 		   	 ,bsxldia_wfc
+	# 		   	 )
+  mets <- list(indivPresence, variety, indivCover, populationEstimates, modeCover
+               ,indivColor, modeColor, indivOdor, modeOdor
+               ,bsxldia_wfc
+  ) %>% 
+    lapply(names) %>% 
+    print()
+  
 	intermediateMessage(' Done.', loc='end')
 	
 	return(mets)

@@ -49,9 +49,6 @@
 \alias{nlaStationInformation.stationDepths}
 \title{aquamet internal functions}
 \usage{
-aquametStandardizeArgument(arg, ..., ifdf=NULL, 
-struct=list(SITE='integer', VALUE='double'), 
-rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE) 
 aquametStandardizeArgument.checkLegal(arg, expectedLegal)
 aquametStandardizeArgument.checkRange(arg, expectedRange)
 aquametStandardizeArgument.checkStructure(arg, expectedStruct)
@@ -90,6 +87,11 @@ uidCreate(df, keys, sep='+')
 uidSeparate(df, uidName, keyNames, sep='+')
 nlaStationInformation.islandStations(df)
 nlaStationInformation.stationDepths(df)
+#' aquametStandardizeArgument(arg, ..., ifdf=NULL, 
+struct=list(SITE, VALUE), 
+rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE, 
+metsFuncName,
+argSavePath = NULL))
 }
 \description{
 These are internal functions to aquamet and not intended for use on their own.

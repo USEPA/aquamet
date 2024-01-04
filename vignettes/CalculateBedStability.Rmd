@@ -105,10 +105,13 @@ wTr <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0 & SA
   plyr::mutate(wTr, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) %>%
   dplyr::select(-nSta,-lastTran)
 
-
-bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
+# This function does not remove the last transect (K) from the transect spacing 
+# data, so we need to remove it manually - we just need to drop
+# transect K for the parameter ACTRANSP
+bTr <- subset(changeomEx,PARAMETER=='ACTRANSP' & TRANSECT %in% LETTERS[1:10],select=c('SITE','TRANSECT','VALUE'))
 tranSpace <- rbind(wTr,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
 
+# Run the function now
 genOut <- nrsaGeneral(sampledTransects=unique(thalwegEx[,c('SITE','TRANSECT')]),
                         sideChannels=subset(thalwegEx,PARAMETER %in% c('SIDCHN','OFF_CHAN'),select=c(SITE,VALUE)),
                         transectSpacing=tranSpace)

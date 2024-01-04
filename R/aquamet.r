@@ -6,7 +6,7 @@
 #' @importFrom Hmisc "%nin%" capitalize
 #' @importFrom gtools smartbind
 #' @importFrom plyr ddply mutate summarize summarise rename
-#' @importFrom dplyr filter select "%>%" group_by
+#' @importFrom dplyr filter select "%>%" group_by arrange across all_of
 #' @importFrom reshape2 dcast melt
 #' @importFrom stringr str_detect 
 #' @importFrom stats aggregate ave coef median na.omit quantile reshape sd weights
@@ -19,7 +19,7 @@
 
 
 
-if(getRversion() >= "3.0") utils::globalVariables(c('ECO9','gf','fp','HABITAT','NAME','NAT','VALUE','SITE',
+if(getRversion() >= "4.0") utils::globalVariables(c('ECO9','gf','fp','HABITAT','NAME','NAT','VALUE','SITE',
                   'DIRECTION','isFast','isSlow','isPool','characteristicCover','field',
                   'standardizedPresent','loc','len','first.SITE','BANK','pct','VALUE.sa',
                   'VALUE.fn','ONBANK','isfast','isslow','ispool',
@@ -41,5 +41,9 @@ if(getRversion() >= "3.0") utils::globalVariables(c('ECO9','gf','fp','HABITAT','
                   'sizen','ssiNatBedBld','startLOC','sumVal','taxCat','uid',
                   'upperPct','value','vertDD','vertDD_cond','vertDD_cond17',
                   'width','x','xcb_hnag','xdepth', 'FC', 'V','N','met','variable',
-                  'inflType', 'inflLocation', 'coverLocation'))
+                  'inflType', 'inflLocation', 'coverLocation', 'prop_dd', 'prop_rip',
+                  'basicSyntheticInfl', 'second', 'inFirst', 'inSecond', 'type',
+                  'classFirst', 'classSecond', 'column', 'type2',
+                  'compareAsNumbers', 'sameAbs', 'sameci', 'samesi', 'samecsi',
+                  'cover'))
 ## NULL

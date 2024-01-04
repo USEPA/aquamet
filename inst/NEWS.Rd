@@ -1,6 +1,23 @@
 \name{NEWS}
 \title{aquamet News}
 
+\section{CHANGES in aquamet VERSION 2.5.7 (Released 2024-01-03)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Corrected input for transect spacing to nrsaGeneral() example and 
+      did the same in the vignette to produce correct reachlen metric.
+    }
+  }
+}
+\section{CHANGES in aquamet VERSION 2.5.6 (Released 2023-12-28)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Corrected calculations in nlaBottomSubstrate.r and 
+      nlaShorelineSubstrate.r.
+    }
+  }
+}
+
 \section{CHANGES IN aquamet VERSION 2.5.0 (Released 2018-01-25)}{
   \subsection{NEW FEATURES}{
       \itemize{

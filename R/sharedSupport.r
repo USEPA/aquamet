@@ -499,6 +499,7 @@ calcSynInfluence <- function(influenceData) {
 	return(rc)
 }
 
+#' @keywords internal
 calcSynInfluenceTest2 <- function() {
     # this is used to compare previous synthetic values to current ones, dammit
 	maxDrawdown <- 15   # maximum amount of drawdown to consider in synthetic plot

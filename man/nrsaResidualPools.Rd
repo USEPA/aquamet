@@ -77,6 +77,10 @@ otherwise uses current method.  Set to TRUE only for unit testing.}
 
 \item{isUnitTest}{Logical argument to determine whether errors should be ignored.
 Should only be used for running a unit test. Default value is FALSE.}
+
+\item{argSavePath}{character string specifying the path to which data 
+arguments are saved as csv files, or NULL if those files are not to be 
+written.}
 }
 \value{
 Either a data frame when metric calculation is successful 

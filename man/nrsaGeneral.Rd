@@ -48,6 +48,10 @@ which occur parallel to main channel transects A, B, etc.}
 
 \item{isUnitTest}{Logical argument to determine whether errors should be ignored.
 Should only be used for running a unit test. Default value is FALSE.}
+
+\item{argSavePath}{character string specifying the path to which data 
+arguments are saved as csv files, or NULL if those files are not to be 
+written.}
 }
 \value{
 Either a data frame when metric calculation is successful or a 
@@ -108,8 +112,11 @@ wTr.4 <- merge(wTr.3, maxWTr)
 wTr.5 <- plyr::mutate(wTr.4, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) 
 # Keep only necessary variables
 wTr.6 <- dplyr::select(wTr.5, -nSta,-lastTran)
-# For boatable sites, just use actual transect spacing parameter
-bTr <- subset(changeomEx,PARAMETER=='ACTRANSP',select=c('SITE','TRANSECT','VALUE'))
+# For boatable sites, just use actual transect spacing parameter, but 
+# we also do not want the keep the ACTRANSP for the last transect (K) because
+# there is no actual sampling beyond that point
+bTr <- subset(changeomEx,PARAMETER=='ACTRANSP' & TRANSECT \%in\% LETTERS[1:10],
+            select=c('SITE','TRANSECT','VALUE'))
 # combine wadeable and boatable transect spacing information
 trDist <- rbind(wTr.6,bTr) 
 # Ensure values are numeric

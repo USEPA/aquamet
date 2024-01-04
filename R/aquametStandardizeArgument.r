@@ -18,7 +18,7 @@
 
 # require(RUnit)
 # require(dplyr)
-
+#' @keywords internal
 aquametStandardizeArgument <- function(arg, ..., ifdf=NULL, 
                                        struct=list(SITE='integer', VALUE='double'), 
                                        rangeLimits=NULL, legalValues=NULL, 
