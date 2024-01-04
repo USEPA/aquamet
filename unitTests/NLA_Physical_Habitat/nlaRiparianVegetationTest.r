@@ -88,8 +88,8 @@ nlaRiparianVegetationTest.withDrawDown <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
-    dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-    return(dd)
+    # dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+    # return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 }
@@ -1233,7 +1233,187 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
     protectedRatio <- function(a, b) { y <- ifelse(b==0, 0, a/b); return(y) }
     
     handCalculations6449 <- function() {
+#        Gdd <- ifelse(fillinDrawdown, 0, NA) # DRAWDOWN false at G, so not recorded
+        
+        # calculations of SYNthetic fractional cover values at site 6618
+        # Values at each station are fracFlood*coverFlood + fracDD*coverDD
+        # Ground covers are normalized as they must sum to 100%; canopy and 
+        # understory covers in the current test data all sum to below 100, so 
+        # normalization is not explictely needed
+        c_bigtrees <-  c((1)          *f0 + (1-(1))    *f0      # A
+                        ,(1-1.1/maxdd)*f0 + (1.1/maxdd)*f0      # B
+                        ,(1)          *f2 + (1-(1))    *f3      # C
+                        ,(1)          *f1 + (1-(1))    *f0      # D
+                        ,(1)          *f3 + (1-(1))    *f3      # E
+                        ,(1)          *f2 + (1-(1))    *f0      # F
+                        ,(1)          *f2 + (1-(1))    *f0      # G
+                        ,(1)          *f0 + (1-(1))    *f0      # H
+                        ,(1)          *f0 + (1-(1))    *f0      # I
+                        ,(1)          *f0 + (1-(1))    *f0      # J
+                        ,(1)          *f2 + (1-(1))    *f1      # K
+                        ,(1)          *f2 + (1-(1))    *f0      # L
+                        )
+        c_smalltrees<- c((1)          *f3 + (1-(1))    *f1      # A
+                        ,(1-1.1/maxdd)*f0 + (1.1/maxdd)*f0      # B
+                        ,(1)          *f3 + (1-(1))    *f3      # C
+                        ,(1)          *f2 + (1-(1))    *f2      # D
+                        ,(1)          *f0 + (1-(1))    *f0      # E
+                        ,(1)          *f0 + (1-(1))    *f0      # F
+                        ,(1)          *f1 + (1-(1))    *f0      # G
+                        ,(1)          *f1 + (1-(1))    *f0      # H
+                        ,(1)          *f0 + (1-(1))    *f0      # I
+                        ,(1)          *f0 + (1-(1))    *f0      # J
+                        ,(1)          *f0 + (1-(1))    *f0      # K
+                        ,(1)          *f0 + (1-(1))    *f0      # L
+                        )
+        gc_bare <-     c((1)          *f1 + (1-(1))    *f1      # A
+                        ,(1-1.1/maxdd)*f1 + (1.1/maxdd)*f1      # B
+                        ,(1)          *f1 + (1-(1))    *f1      # C
+                        ,(1)          *f0 + (1-(1))    *f2      # D
+                        ,(1)          *f1 + (1-(1))    *f3      # E
+                        ,(1)          *f1 + (1-(1))    *f1      # F
+                        ,(1)          *f2 + (1-(1))    *f2      # G
+                        ,(1)          *f1 + (1-(1))    *f2      # H
+                        ,(1)          *f1 + (1-(1))    *f1      # I
+                        ,(1)          *f1 + (1-(1))    *f3      # J
+                        ,(1)          *f1 + (1-(1))    *f1      # K
+                        ,(1)          *f1 + (1-(1))    *f2      # L
+                        )
+        gc_inundated<- c((1)          *f0 + (1-(1))    *f2      # A
+                        ,(1-1.1/maxdd)*f0 + (1.1/maxdd)*f0      # B
+                        ,(1)          *f0 + (1-(1))    *f0      # C
+                        ,(1)          *f0 + (1-(1))    *f0      # D
+                        ,(1)          *f0 + (1-(1))    *f0      # E
+                        ,(1)          *f0 + (1-(1))    *f1      # F
+                        ,(1)          *f0 + (1-(1))    *f0      # G
+                        ,(1)          *f0 + (1-(1))    *f1      # H
+                        ,(1)          *f0 + (1-(1))    *f1      # I
+                        ,(1)          *f0 + (1-(1))    *f1      # J
+                        ,(1)          *f0 + (1-(1))    *f0      # K
+                        ,(1)          *f0 + (1-(1))    *f0      # L
+                        )
+        gc_nonwoody <- c((1)          *f3 + (1-(1))    *f3      # A
+                        ,(1-1.1/maxdd)*f3 + (1.1/maxdd)*f3      # B
+                        ,(1)          *f3 + (1-(1))    *f3      # C
+                        ,(1)          *f3 + (1-(1))    *f1      # D
+                        ,(1)          *f4 + (1-(1))    *f2      # E
+                        ,(1)          *f3 + (1-(1))    *f3      # F
+                        ,(1)          *f3 + (1-(1))    *f3      # G
+                        ,(1)          *f3 + (1-(1))    *f2      # H
+                        ,(1)          *f3 + (1-(1))    *f3      # I
+                        ,(1)          *f3 + (1-(1))    *f2      # J
+                        ,(1)          *f4 + (1-(1))    *f2      # K
+                        ,(1)          *f3 + (1-(1))    *f2      # L
+                        )
+        gc_woody <-    c((1)          *f1 + (1-(1))    *f1      # A
+                        ,(1-1.1/maxdd)*f2 + (1.1/maxdd)*f1      # B
+                        ,(1)          *f1 + (1-(1))    *f1      # C
+                        ,(1)          *f1 + (1-(1))    *f1      # D
+                        ,(1)          *f1 + (1-(1))    *f0      # E
+                        ,(1)          *f1 + (1-(1))    *f1      # F
+                        ,(1)          *f3 + (1-(1))    *f0      # G
+                        ,(1)          *f1 + (1-(1))    *f0      # H
+                        ,(1)          *f1 + (1-(1))    *f0      # I
+                        ,(1)          *f2 + (1-(1))    *f0      # J
+                        ,(1)          *f2 + (1-(1))    *f0      # K
+                        ,(1)          *f0 + (1-(1))    *f1      # L
+                        )
+        gc_bare_n <-    protectedRatio(gc_bare, (gc_bare+gc_inundated+gc_nonwoody+gc_woody))
+        gc_inundated_n<-protectedRatio(gc_inundated, (gc_bare+gc_inundated+gc_nonwoody+gc_woody))
+        gc_nonwoody_n <-protectedRatio(gc_nonwoody, (gc_bare+gc_inundated+gc_nonwoody+gc_woody))
+        gc_woody_n <-   protectedRatio(gc_woody, (gc_bare+gc_inundated+gc_nonwoody+gc_woody))
+        u_nonwoody <-  c((1)          *f2 + (1-(1))    *f2      # A
+                        ,(1-1.1/maxdd)*f0 + (1.1/maxdd)*f1      # B
+                        ,(1)          *f2 + (1-(1))    *f2      # C
+                        ,(1)          *f2 + (1-(1))    *f1      # D
+                        ,(1)          *f0 + (1-(1))    *f0      # E
+                        ,(1)          *f1 + (1-(1))    *f3      # F
+                        ,(1)          *f0 + (1-(1))    *f0      # G
+                        ,(1)          *f0 + (1-(1))    *f0      # H
+                        ,(1)          *f0 + (1-(1))    *f0      # I
+                        ,(1)          *f0 + (1-(1))    *f1      # J
+                        ,(1)          *f0 + (1-(1))    *f0      # K
+                        ,(1)          *f0 + (1-(1))    *f0      # L
+                        )
+        u_woody <-     c((1)          *f2 + (1-(1))    *f1      # A
+                        ,(1-1.1/maxdd)*f1 + (1.1/maxdd)*f2      # B
+                        ,(1)          *f2 + (1-(1))    *f3      # C
+                        ,(1)          *f2 + (1-(1))    *f2      # D
+                        ,(1)          *f2 + (1-(1))    *f0      # E
+                        ,(1)          *f1 + (1-(1))    *f2      # F
+                        ,(1)          *f3 + (1-(1))    *f0      # G
+                        ,(1)          *f2 + (1-(1))    *f0      # H
+                        ,(1)          *f1 + (1-(1))    *f0      # I
+                        ,(1)          *f1 + (1-(1))    *f0      # J
+                        ,(1)          *f2 + (1-(1))    *f0      # K
+                        ,(1)          *f1 + (1-(1))    *f0      # L
+                        )
+        rc <- data.frame(# Fractional cover means
+                         RVFCCANBIG_SYN       = c_bigtrees %>% protectedMean(na.rm=TRUE)
+                        ,RVFCCANSMALL_SYN     = c_smalltrees %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDBARE_SYN      = gc_bare_n %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDINUNDATED_SYN = gc_inundated_n %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDNONW_SYN      = gc_nonwoody_n %>% protectedMean(na.rm=TRUE)
+                        ,RVFCGNDWOODY_SYN     = gc_woody_n %>% protectedMean(na.rm=TRUE)
+                        ,RVFCUNDNONW_SYN      = u_nonwoody %>% protectedMean(na.rm=TRUE)
+                        ,RVFCUNDWOODY_SYN     = u_woody %>% protectedMean(na.rm=TRUE)
+                         # Fractional presence
+                        ,RVFPGNDBARE_SYN      = protectedMean(gc_bare_n > 0, na.rm=TRUE)
+                        ,RVFPGNDINUNDATED_SYN = protectedMean(gc_inundated_n > 0, na.rm=TRUE)
+                        ,RVFPGNDWOODY_SYN     = protectedMean(gc_woody_n > 0, na.rm=TRUE)
+                        ,RVFPUNDNONW_SYN      = protectedMean(u_nonwoody > 0, na.rm=TRUE)
+                         # Indicies/group metrics
+                        ,RVICANOPY_SYN        = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  , na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVICANUND_SYN        = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  ,u_nonwoody, u_woody
+                                                                  , na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVIGROUND_SYN        = protectedVectorSum(gc_inundated
+                                                                  ,gc_nonwoody, gc_woody
+                                                                  ,na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVIHERBS_SYN         = protectedVectorSum(gc_nonwoody, u_nonwoody
+                                                                  , na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVITALLWOOD_SYN      = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  ,u_woody
+                                                                  ,na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVITOTALVEG_SYN      = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  ,u_nonwoody, u_woody
+                                                                  ,gc_nonwoody, gc_woody
+                                                                  ,na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVIUNDERSTORY_SYN    = protectedVectorSum(u_nonwoody, u_woody
+                                                                  , na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                        ,RVIWOODY_SYN         = protectedVectorSum(c_bigtrees, c_smalltrees
+                                                                  ,u_woody, gc_woody
+                                                                  ,na.rm=TRUE) %>%
+                                                protectedMean(na.rm=TRUE)
+                         # Fractional cover stdev
+                        ,RVVCANBIG_SYN        = c_bigtrees %>% sd(na.rm=TRUE)
+                        ,RVVCANSMALL_SYN      = c_smalltrees %>% sd(na.rm=TRUE)
+                        ,RVVGNDBARE_SYN       = gc_bare_n %>% sd(na.rm=TRUE)
+                        ,RVVGNDINUNDATED_SYN  = gc_inundated_n %>% sd(na.rm=TRUE)
+                        ,RVVGNDNONW_SYN       = gc_nonwoody_n %>% sd(na.rm=TRUE)
+                        ,RVVGNDWOODY_SYN      = gc_woody_n %>% sd(na.rm=TRUE)
+                        ,RVVUNDNONW_SYN       = u_nonwoody %>% sd(na.rm=TRUE)
+                        ,RVVUNDWOODY_SYN      = u_woody %>% sd(na.rm=TRUE)
+                        ) %>%
+              mutate(# group/index metrics
+                    ) %>%
+              pivot_longer(cols=everything()
+                          ,names_to = 'METRIC'
+                          ,values_to = 'VALUE'
+                          ) %>% 
+              mutate(SITE = 6449) %>% 
+              data.frame()
+        return(rc)
     }
+
     handCalculations6618 <- function() {
         Gdd <- ifelse(fillinDrawdown, 0, NA) # DRAWDOWN false at G, so not recorded
         
