@@ -438,7 +438,6 @@ nlaBottomSubstrate <- function(bedrock=NULL
 	
 	mets <- rbind(indivPresence, variety, indivCover, populationEstimates, modeCover
 			   	 ,indivColor, modeColor, indivOdor, modeOdor
-			   	 ,bsxldia_wfc
 			   	 )
   # mets <- list(indivPresence, variety, indivCover, populationEstimates, modeCover
   #              ,indivColor, modeColor, indivOdor, modeOdor
