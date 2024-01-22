@@ -282,6 +282,8 @@ nlaBottomSubstrate <- function(bedrock=NULL
 #   12/06/23 cws Removed BS prefix from nlaBottomSubstrate.populationEstimates
 #            metrics names so that function can be used with shoreline substrate
 #            data as well. Those prefixes are now added by the calling environement.
+#    1/18/24 cws Reverted from list() to rbind() when creating the final 'mets'
+#            object to return from nlaBottomSubstrate().
 #
 # Arguments:
 #   df = a data frame containing bottom substrate data.  The data frame must
@@ -434,16 +436,15 @@ nlaBottomSubstrate <- function(bedrock=NULL
   	intermediateMessage('.10')
   
 	
-	# mets <- rbind(indivPresence, variety, indivCover, populationEstimates, modeCover
-	# 		   	 ,indivColor, modeColor, indivOdor, modeOdor
-	# 		   	 ,bsxldia_wfc
-	# 		   	 )
-  mets <- list(indivPresence, variety, indivCover, populationEstimates, modeCover
-               ,indivColor, modeColor, indivOdor, modeOdor
-               ,bsxldia_wfc
-  ) %>% 
-    lapply(names) %>% 
-    print()
+	mets <- rbind(indivPresence, variety, indivCover, populationEstimates, modeCover
+			   	 ,indivColor, modeColor, indivOdor, modeOdor
+			   	 )
+  # mets <- list(indivPresence, variety, indivCover, populationEstimates, modeCover
+  #              ,indivColor, modeColor, indivOdor, modeOdor
+  #              ,bsxldia_wfc
+  # ) %>% 
+  #   lapply(names) %>% 
+  #   print()
   
 	intermediateMessage(' Done.', loc='end')
 	
