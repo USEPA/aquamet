@@ -9,7 +9,8 @@
 #' visit.
 #' \item STATION a character value identifying the station within the SITE
 #' \item VALUE character string, with legal values of 'FLAT','GRADUAL','STEEP',
-#' 'NEAR_VERTICAL','NEAR_VERTICAL_UNDERCUT'.
+#' 'NEAR_VERTICAL'. Values of 'NEAR_VERTICAL_UNDERCUT' must be updated to 
+#' 'NEAR_VERTICAL'.
 #' }
 #' @param drawdown A data frame containing drawdown value for sites sampled
 #' using the boatable protocol, with the columns:
