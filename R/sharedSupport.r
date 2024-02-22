@@ -94,6 +94,8 @@
 #          drawdown distance. Unit test updated as well.
 # 12/19/23 cws Removed hardcoding of maxDrawdown argument value in calcSynCovers.
 #          Unit test updated to test both 10 and 15 meter distances.
+#  2/22/24 cws Modified calcSynCovers to use supressWarnings() to remove warnings
+#           about creation of NA values by coercion
 #
 ################################################################################
 
@@ -272,18 +274,18 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 	                    # plots with smaller drawdown distances are considered to be entirely riparian
 	zeroish <- 1e-15    # value that is considered to be close to zero considering
 	                    # floating point issues.
-# print('coverData'); print(coverData %>% subset(SITE==2 & STATION %in% c('E')))
+#print('coverData'); print(coverData %>% subset(SITE==2 & STATION %in% c('E')))
 	
 	# Determine proportion for each station:
 	props <- within(subset(coverData, CLASS=='HORIZ_DIST_DD')
-	               ,{VALUE <- as.numeric(VALUE)
+	               ,{VALUE <- suppressWarnings( as.numeric(VALUE) )
 					 prop_dd <- ifelse(VALUE < minDrawdown, 0
 					           ,ifelse(VALUE < maxDrawdown, VALUE/maxDrawdown, 1
 					            ))	
 					 prop_lit <- 1 - prop_dd
 				    }
 			       )[c('SITE','STATION','prop_lit','prop_dd')]
-# print('props'); print(props %>% subset(SITE==2 & STATION %in% c('E')))
+#print('props'); print(props %>% subset(SITE==2 & STATION %in% c('E')))
 
 	# Calculate synthetic value based on the dd/rip proportions.
 	# There are three cases where we can determine the synthetic value without 

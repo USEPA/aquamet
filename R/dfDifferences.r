@@ -18,6 +18,8 @@
 #          sign.
 #  2/19/24 cws Using all_of() within select() in compareText() when selecting 
 #          columns using character strings instead of unquoted column names.
+#  2/22/24 cws Using suppressWarnings() to address warnings due to attempting to
+#          treat character values as if numeric.
 #
 require(plyr) # for pipe - %>%
 require(tidyr)
@@ -132,12 +134,12 @@ dfDifferences <- function(df1, df2, byVars
                     ,compareAsNumbers = (classFirst=='number'  | first %in% altNumericStrings) &
                                         (classSecond=='number' | second %in% altNumericStrings)
                     ,diff =    ifelse(compareAsNumbers
-                                     ,as.numeric(second) -  as.numeric(first)
-                                     ,as.numeric(second != first)
+                                     ,suppressWarnings( as.numeric(second) -  as.numeric(first) )
+                                     ,suppressWarnings( as.numeric(second != first) )
                                      )
-                    ,absdiff = ifelse(compareAsNumbers
-                                     ,abs(as.numeric(second)) - abs(as.numeric(first))
-                                     ,as.numeric(second != first)
+                    ,absDiff = ifelse(compareAsNumbers
+                                     ,suppressWarnings( abs(as.numeric(second)) - abs(as.numeric(first)) )
+                                     ,suppressWarnings( as.numeric(second != first) )
                                      )
                     ,sameAbs = as.logical(second == first) 
                     ,sameci =  !sameAbs & as.logical(toupper(second) == toupper(first))
@@ -168,9 +170,12 @@ dfDifferences <- function(df1, df2, byVars
                                              ,ifelse(grepl('inf', first) &
                                                      grepl('inf', second),         'sameABS'
                                              ,ifelse(!is.na(diff) & 
-                                                     abs(diff) <= zeroFudge,       'same'
+                                                     compareAsNumbers &
+                                                     suppressWarnings( abs(diff) <= zeroFudge )
+                                                    ,                              'same'
                                              ,ifelse(!is.na(absDiff) & 
-                                                     abs(absDiff) <= zeroFudge,    'sameABS'
+                                                     compareAsNumbers &
+                                                     suppressWarnings( abs(absDiff) <= zeroFudge ),    'sameABS'
                                                                                   ,'diff'
                                               ))))) )
                                              ,'diff'
