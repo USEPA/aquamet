@@ -73,6 +73,14 @@
 #' @keywords survey
 nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs, lat, lon, area, elev, slope, xwidth){
   
+  argNames <- c(sampID, ecoreg, protocol, lrbs, lat, lon, area, elev, slope, xwidth)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -169,6 +177,13 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
 #' @keywords survey
 nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
   
+  argNames <- c(sampID, w1_hall)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==w1_hall] <- 'w1_hall'
@@ -258,6 +273,15 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
 nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat, lat, lon, slope, xwidth, elev, area){
+
+  argNames <- c(sampID, ecoreg, protocol, xfc_nat, lat, lon, slope, xwidth, elev, area)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -399,6 +423,14 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
 #' @references Add Phil Kaufmann's technical report here
 #' @keywords survey
 nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, lat, lon, area, elev, slope, xwidth){
+  
+  argNames <- c(sampID, ecoreg, protocol, xcmgw, lat, lon, area, elev, slope, xwidth)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
   
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.

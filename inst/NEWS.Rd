@@ -1,6 +1,13 @@
 \name{NEWS}
 \title{aquamet News}
-
+\section{CHANGES in aquamet VERSION 2.5.8 (Released 2024-02-23)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Added check to habitat indicator functions to ensure 
+      variables provided in arguments are present in dataset. 
+    }
+  }
+}
 \section{CHANGES in aquamet VERSION 2.5.7 (Released 2024-01-03)}{
   \subsection{BUG FIXES}{
     \itemize{

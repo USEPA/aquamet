@@ -78,6 +78,15 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,rviWoody,rvfcGndInundated,rvfcUndWoody,rvfcGndWoody
                                    ,rvfpCanBig,ssfcBedrock,ssfcBoulders,hipwWalls){
   
+  argNames <- c(sampID, lat, lon, lake_origin, area, elev, ecoreg, 
+                rviWoody,rvfcGndInundated,rvfcUndWoody,rvfcGndWoody, 
+                rvfpCanBig,ssfcBedrock,ssfcBoulders,hipwWalls)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -240,6 +249,16 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,fciNatural,fcfcSnag,amfcFloating,amfcEmergent,fcfcBoulders
                                    ,fcfcBrush,fcfcLedges,fcfcLiveTrees,fcfcOverhang){
   
+  argNames <- c(sampID, lat, lon, lake_origin, area, elev, ecoreg, 
+                fciNatural, fcfcSnag, amfcFloating, amfcEmergent, fcfcBoulders,
+                fcfcBrush, fcfcLedges, fcfcLiveTrees, fcfcOverhang)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -385,6 +404,15 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                       ,rvegq,litcvrq){
   
+  argNames <- c(sampID, lat, lon, lake_origin, area, elev, ecoreg, 
+                rvegq, litcvrq)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -497,6 +525,14 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
 #' @keywords survey
 
 nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
+  argNames <- c(sampID, hiiAg, hiiNonAg, hifpAnyCirca)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==hiiAg] <- 'hiiAg'
@@ -604,6 +640,14 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
 
 
 nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origin,bfnHorizDD_nomod=NULL,bfnVertDD=NULL){
+  argNames <- c(sampID, bfxVertDD, bfxHorizDD, ecoreg, lake_origin)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==bfxVertDD] <- 'vertDD'
@@ -611,6 +655,12 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
   names(x)[names(x)==ecoreg] <- 'ecoreg'
   names(x)[names(x)==lake_origin] <- 'lake_origin'
   if(!is.null(bfnHorizDD_nomod) & !is.null(bfnVertDD)){
+    argNames.1 <- c(bfnHorizDD_nomod, bfnVertDD)
+    if(any(argNames.1 %nin% names(x))){
+      print(paste0("These variables are not in input data frame: ", 
+                   argNames.1[argNames.1 %nin% names(x)], ". Please check names provided in arguments."))
+      return(NULL)
+    }
     names(x)[names(x)==bfnHorizDD_nomod] <- 'nhorizDD_nomod'
     names(x)[names(x)==bfnVertDD] <- 'nvertDD'
   }
