@@ -104,6 +104,17 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   names(x)[names(x)==ssfcBoulders] <- 'ssfcBoulders'
   names(x)[names(x)==hipwWalls] <- 'hipwWalls'
 
+  x[, c('lat', 'lon', 'area', 'elev', 'rviWoody', 'rvfcGndInundated', 
+        'rvfcUndWoody', 'rvfcGndWoody', 'rvfpCanBig', 'ssfcBedrock',
+        'ssfcBoulders', 'hipwWalls')] <- lapply(x[, c('lat', 'lon', 'area', 
+                                                      'elev', 'rviWoody', 
+                                                      'rvfcGndInundated', 
+                                                      'rvfcUndWoody', 
+                                                      'rvfcGndWoody', 'rvfpCanBig', 
+                                                      'ssfcBedrock',
+                                                      'ssfcBoulders', 'hipwWalls')], 
+                                                as.numeric)
+  
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
     #                   ,elev=ifelse(elev<0,0,elev)
                         ,elevXlat=elev*lat
@@ -277,6 +288,14 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   names(x)[names(x)==fcfcLiveTrees] <- 'fcfcLiveTrees'
   names(x)[names(x)==fcfcOverhang] <- 'fcfcOverhang'
   
+  x[, c('lat', 'lon', 'area', 'elev', 'fciNatural', 'fcfcSnag', 'amfcFloating',
+        'amfcEmergent', 'fcfcBoulders', 'fcfcBrush', 'fcfcLedges', 'fcfcLiveTrees',
+        'fcfcOverhang')] <- lapply(x[, c('lat', 'lon', 'area', 'elev', 
+                                         'fciNatural', 'fcfcSnag', 'amfcFloating',
+                                         'amfcEmergent', 'fcfcBoulders', 
+                                         'fcfcBrush', 'fcfcLedges', 'fcfcLiveTrees',
+                                         'fcfcOverhang')], as.numeric)
+  
     dfIn <- plyr::mutate(x, reservoir = ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                  ,elev=ifelse(elev<0,0,elev)
                  ,elevXlon = elev*lon
@@ -424,6 +443,9 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   names(x)[names(x)==rvegq] <- 'rvegq'
   names(x)[names(x)==litcvrq] <- 'litcvrq'
   
+  x[, c('lat', 'lon', 'area', 'elev', 'rvegq', 'litcvrq')] <- lapply(x[, c('lat', 'lon', 'area', 'elev', 'rvegq', 'litcvrq')], as.numeric)
+  
+  
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                  ,elev=ifelse(elev<0,0,elev)
                  ,elevXlon=elev*lon
@@ -538,6 +560,8 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
   names(x)[names(x)==hiiAg] <- 'hiiAg'
   names(x)[names(x)==hiiNonAg] <- 'hiiNonAg'
   names(x)[names(x)==hifpAnyCirca] <- 'hifpAnyCirca'
+  
+  x[, c('hiiAg', 'hiiNonAg', 'hifpAnyCirca')] <- lapply(x[, c('hiiAg', 'hiiNonAg', 'hifpAnyCirca')], as.numeric)
   
   # Calculate RDis_IX based on input metrics
   dfObs <- plyr::mutate(x, RDis_IX = 0.5*(1 - (1/(1 + hiiNonAg + (5*hiiAg))) + hifpAnyCirca))
@@ -654,6 +678,9 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
   names(x)[names(x)==bfxHorizDD] <- 'horizDD'
   names(x)[names(x)==ecoreg] <- 'ecoreg'
   names(x)[names(x)==lake_origin] <- 'lake_origin'
+  
+  x[,c('vertDD', 'horizDD')] <- lapply(x[,c('vertDD', 'horizDD')], as.numeric)
+  
   if(!is.null(bfnHorizDD_nomod) & !is.null(bfnVertDD)){
     argNames.1 <- c(bfnHorizDD_nomod, bfnVertDD)
     if(any(argNames.1 %nin% names(x))){
@@ -663,8 +690,11 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
     }
     names(x)[names(x)==bfnHorizDD_nomod] <- 'nhorizDD_nomod'
     names(x)[names(x)==bfnVertDD] <- 'nvertDD'
+    x[,c('nhorizDD_nomod', 'nvertDD')] <- lapply(x[,c('nhorizDD_nomod', 'nvertDD')], as.numeric)
   }
 
+  
+  
   tholdsVert <- data.frame(ecoreg = c('NAP','NAP','SAP','SAP','UMW','UMW','CPL','CPL','NPL'
                                       ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT','XER','XER')
                            ,lake_origin=c(rep(c('NATURAL','MAN_MADE'),9))

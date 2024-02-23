@@ -5,6 +5,7 @@
     \itemize{
       \item Added check to habitat indicator functions to ensure 
       variables provided in arguments are present in dataset. 
+      \item Added code to convert indicator input variables as numeric
     }
   }
 }
