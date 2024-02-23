@@ -2,6 +2,9 @@
 #
 #  3/17/16 cws changed defineTestSuite argument dirs from '.' to aquametPathList
 #          and testFileRegexp from sharedSupport.r to sharedSupporTest.r.
+#  2/20/24 cws Added rngKind and rngNormalKind values to correct defaults as was
+#          recently done for other test suites.
+#  2/21/24 cws Changed title of test suite. Specifying full path for output file
 #
 
 
@@ -10,13 +13,20 @@ testSuiteSharedSupport <- function()
 # support functions
 # Results are saved to timestamped HTML file
 {
-  testSuite <- defineTestSuite("Shared Support Functions",
-                               dirs=aquametPathList,
-                               testFileRegexp="sharedSupportTest.r",
-                               testFuncRegexp="^.+Test$")
+  testsuiteTitle <- sprintf('Aquamet Shared Support Functions in %s and %s'
+                            ,ifelse(Sys.getenv('RSTUDIO') == '', 'RGui', 'RStudio')
+                            ,R.version.string
+  )
+  testSuite <- defineTestSuite(testsuiteTitle
+                               ,dirs=aquametPathList
+                              ,testFileRegexp="sharedSupportTest.r"
+                              ,testFuncRegexp="^.+Test$"
+                              ,rngKind = "Mersenne-Twister"
+                              ,rngNormalKind = "Inversion"
+                              )
 
   testResult <- runTestSuite(testSuite)
 
-  testResultFile <- "testResults_SharedSupport.html"
+  testResultFile <- paste0(mainPath, "/testResults_SharedSupport.html")
   printHTMLProtocol(testResult, fileName=testResultFile)
 }

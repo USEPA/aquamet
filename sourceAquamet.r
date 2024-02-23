@@ -6,6 +6,7 @@
 #  1/04/16 cws Used to be aquamet.r, but that's now used for something else.
 # 10/01/20 cws No longer using reshape2 package.
 # 12/19/23 cws Added tidyr requirement for dfDifferences which uses pivot_wider
+#  2/21/24 cws Comment added
 
 require(foreach)
 require(Hmisc)
@@ -17,6 +18,7 @@ require(tidyr)
 #require(reshape2)
 
 # Get aquamet function definitions
+# Definition of mainPath is also where unit test results go.
 if(substr(getwd(),1,1) == 'C') {
     # local development
     mainPath <- sprintf('C:/Users/%s/local/aquamet', Sys.getenv('USERNAME'))
@@ -25,7 +27,7 @@ if(substr(getwd(),1,1) == 'C') {
     mainPath <- getwd()
 }
 
-aquametPathList <- c(sprintf("%s/%s", mainPath, 'R')
+aquametPathList <- c(sprintf("%s/%s", mainPath, 'R') 
                     ,sprintf("%s/%s", mainPath, 'UnitTests/NLA_Physical_Habitat')
                     ,sprintf("%s/%s", mainPath, 'UnitTests/NRSA_Physical_Habitat')
                     ,sprintf("%s/%s", mainPath, 'UnitTests/SharedCode')
