@@ -1,8 +1,8 @@
 Package: aquamet
 Type: Package
 Title: Calculate NRSA and NLA physical habitat metrics
-Version: 2.5.7
-Date: 2024-01-03
+Version: 2.5.8
+Date: 2024-01-22
 Author: Karen Blocksom
 Depends:
     R (>= 4.0)
