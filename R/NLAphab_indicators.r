@@ -116,7 +116,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                                 as.numeric)
   
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
-    #                   ,elev=ifelse(elev<0,0,elev)
+                        ,elev=ifelse(elev<=0,1,elev)
                         ,elevXlat=elev*lat
                         ,l_area=log10(area)
                         ,ssiNatBedBld=ifelse(hipwWalls>=0.10,0,(ssfcBedrock + ssfcBoulders)))
@@ -154,7 +154,8 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                           ,0.5*(rvfcGndInundated + (rviWoody/2.5))
                           ,ifelse(ecoreg %in% c('NPL','SPL','TPL')
                                   ,0.5*(rvfcGndInundated + ((rvfcUndWoody + rvfcGndWoody)/1.75))
-                                  ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssiNatBedBld))))
+                                  ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssiNatBedBld)))) %>%
+    plyr::mutate(RVegQ = ifelse(RVegQ>1, 1, RVegQ))
 
   # Now merge the expected and observed values and calculate O/E  
   dfOE <- subset(dfObs,select=c(sampID,'ecoreg','RVegQ')) %>% 
@@ -297,9 +298,9 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                          'fcfcOverhang')], as.numeric)
   
     dfIn <- plyr::mutate(x, reservoir = ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
-                 ,elev=ifelse(elev<0,0,elev)
+                 ,elev=ifelse(elev<=0,1,elev)
                  ,elevXlon = elev*lon
-                 ,l_elev = ifelse(elev>0,log10(elev),log10(elev+1))
+                 ,l_elev = log10(elev)
                  ,l_area = log10(area)
                  ,amfcFltEmg= amfcFloating + amfcEmergent)
     
@@ -336,7 +337,8 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
     plyr::mutate(LitCvrQ = ifelse(ecoreg %in% c('CPL'), 0.5*(fciNatural + (fcfcSnag/0.2875))
                                   ,ifelse(ecoreg %in% c('SAP'), (1/3)*(fciNatural + (fcfcSnag/0.2875) + (amfcFltEmg/1.515))
                                           ,(1/3)*(((fcfcBoulders + fcfcBrush + fcfcLedges + fcfcLiveTrees + fcfcOverhang)/1.5) +
-                                                    (fcfcSnag/0.2875) + (amfcFltEmg/1.515)))))
+                                                    (fcfcSnag/0.2875) + (amfcFltEmg/1.515))))) %>%
+    plyr::mutate(LitCvrQ = ifelse(LitCvrQ>1, 1, LitCvrQ))
   
   # Now merge the expected and observed values and calculate O/E  
   dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitCvrQ')) %>% 
@@ -447,9 +449,9 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   
   
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
-                 ,elev=ifelse(elev<0,0,elev)
+                 ,elev=ifelse(elev<=0,1,elev)
                  ,elevXlon=elev*lon
-                 ,l_elev = ifelse(elev>0,log10(elev),log10(elev+1))
+                 ,l_elev = log10(elev))
                 # ,l_elev=log10(elev+1)
                  ,l_area=log10(area))
   
