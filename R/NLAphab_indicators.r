@@ -451,7 +451,7 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
                  ,elev=ifelse(elev<=0,1,elev)
                  ,elevXlon=elev*lon
-                 ,l_elev = log10(elev))
+                 ,l_elev = log10(elev)
                 # ,l_elev=log10(elev+1)
                  ,l_area=log10(area))
   
