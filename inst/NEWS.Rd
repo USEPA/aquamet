@@ -1,5 +1,15 @@
 \name{NEWS}
 \title{aquamet News}
+\section{CHANGES in aquamet VERSION 2.5.10 (Released 2024-03-6)}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Corrected treatment of elevations <=0 for NLA phab indicators 
+      \item Added code to set observed littoral and riparian complexity 
+      variables to 1 if >1 for NLA phab indicators.
+    }
+  }
+}
+
 \section{CHANGES in aquamet VERSION 2.5.8 (Released 2024-02-23)}{
   \subsection{BUG FIXES}{
     \itemize{
