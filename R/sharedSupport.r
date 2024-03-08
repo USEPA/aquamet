@@ -96,6 +96,8 @@
 #          Unit test updated to test both 10 and 15 meter distances.
 #  2/22/24 cws Modified calcSynCovers to use supressWarnings() to remove warnings
 #           about creation of NA values by coercion
+#  3/07/24 cws Renamed fillinDrawdownData to fillinAbsentMissingWithDefaultValue
+#          Added fillinDDWithRiparianValues
 #
 ################################################################################
 
@@ -1015,7 +1017,7 @@ expand.data.frame <- function(df, cols) {
 
 #' @keywords internal
 #' @export
-fillinDrawdownData <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
+fillinAbsentMissingWithDefaultValue <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
 # Expands the provided NLA data to include rows for all data expected at each  
 # site and fills in unrecorded drawdown values based on the value of DRAWDOWN.  
 #
@@ -1049,7 +1051,7 @@ fillinDrawdownData <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
 	
 	
 	# Expand cover/influence data so that all expected rows occur for each site.
-	dfExpanded <- fillinDrawdownData.expansion(df)	#subset(df, CLASS != 'DRAWDOWN'))
+	dfExpanded <- fillinAbsentMissingWithDefaultValue.expansion(df)	#subset(df, CLASS != 'DRAWDOWN'))
 	
 	# Filter out the added rows we can't assign a VALUE value to
 	drawdown <- within(subset(df, CLASS == 'DRAWDOWN')
@@ -1091,7 +1093,7 @@ fillinDrawdownData <- function(df, fillinValue='0', fillinHORIZ_DIST_DD='0') {
 
 #' @keywords internal
 #' @export
-fillinDrawdownData.expansion <- function(df) {
+fillinAbsentMissingWithDefaultValue.expansion <- function(df) {
 # Expands cover/influence data so each site has rows for each value expected at 
 # each station.
 #
@@ -1125,6 +1127,61 @@ fillinDrawdownData.expansion <- function(df) {
 	rownames(fullStations) <- NULL
 	
 	return(fullStations)
+}
+
+
+#' @keywords internal
+#' @export
+fillinDDWithRiparianValues <- function(hiData, horizDist, fillinMaxDrawdownDist)
+# Fills in absent/missing drawdown zone values with flood zone values
+{
+    # Handle cases when filling in drawdown zone impacts is not wanted
+    if(is.null(fillinMaxDrawdownDist))
+        return(hiData)
+    else if(is.na(fillinMaxDrawdownDist))
+        return(hiData)
+
+    updateValues <- hiData %>%
+                    # add horizontal drawdown distances for each station
+                    merge(horizDist %>% 
+                          select(SITE, STATION, VALUE) %>%
+                          mutate(VALUE = as.numeric(VALUE)) %>%
+                          dplyr::rename(HORIZ_DIST_DD = VALUE)
+                         ,by=c('SITE','STATION'), all.x=TRUE
+                         ) %>%
+                    # Do not overwrite existing drawdown values
+                    anti_join(hiData %>%
+                              subset(grepl('^.+_DD$', CLASS) & 
+                                     trimws(VALUE) %nin% c('', NA)
+                                    ) %>%
+                              mutate(CLASS = sub('^(.+)_DD', '\\1', CLASS)) %>%
+                              select(SITE, STATION, CLASS) %>%
+                              unique()
+                             ,by = c('SITE', 'STATION', 'CLASS')
+                             ) %>%
+                    # Limit changes to rows with appropriate horizontal distances
+                    # and where flood zone values exist.
+                    subset(!grepl('^.+_DD$', CLASS) &
+                           trimws(VALUE) %nin% c('', NA) &
+                           HORIZ_DIST_DD >= 1.0 &
+                           HORIZ_DIST_DD <= fillinMaxDrawdownDist
+                          ) %>%
+                    mutate(newValue = VALUE
+                          ,CLASS = paste0(CLASS, '_DD')
+                          ) %>%
+                    select(SITE, STATION, CLASS, newValue)
+#print('updateValues'); print(updateValues %>% data.frame())
+    filledInValues <- hiData %>%
+                      full_join(updateValues, by=c('SITE','STATION','CLASS')) %>%
+                      mutate(VALUE = ifelse(trimws(VALUE) %in% c('', NA) & 
+                                            newValue %nin% c('', NA)
+                                           ,newValue
+                                           ,VALUE
+                                           )
+                            ,newValue = NULL
+                            )
+    
+    return(filledInValues)
 }
 
 

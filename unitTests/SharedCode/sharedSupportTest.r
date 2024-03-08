@@ -16,6 +16,8 @@
 # 12/20/23 cws Updated dfCompareTest to allow comparison of multiple class values
 #          to 'try-error'; not sure if this reflects a change in RUnit::checkTrue
 #          behaviour or a change of something inside dfCompare.
+#  3/07/24 cws Renamed fillinDrawdownDataTest to fillinAbsentMissingWithDefaultValueTest
+#          Added fillinDDWithRiparianValuesTest. 
 #
 # RUnit tests
 
@@ -1131,28 +1133,28 @@ expand.data.frameTest <- function()
 }
 
 
-fillinDrawdownDataTest <- function()
-# Unit test for fillinDrawdownData
+fillinAbsentMissingWithDefaultValueTest <- function()
+# Unit test for fillinAbsentMissingWithDefaultValue
 {
-	testData <- fillinDrawdownDataTest.createTestData()
+	testData <- fillinAbsentMissingWithDefaultValueTest.createTestData()
 	
 	# Test expansion separately
 	tt <- testData	#subset(testData, CLASS %in% c('X','X_DD','Y','Y_DD','HORIZ_DIST_DD'))
-	actualExpansion <- fillinDrawdownData.expansion(tt)
-	expectedExpansion <- fillinDrawdownDataTest.createExpectedExpansion()
+	actualExpansion <- fillinAbsentMissingWithDefaultValue.expansion(tt)
+	expectedExpansion <- fillinAbsentMissingWithDefaultValueTest.createExpectedExpansion()
 	diff <- dfCompare(expectedExpansion, actualExpansion, c('SITE','STATION','CLASS'))
 	checkEquals(NULL, diff, "Incorrect expansion of test data")
 	
 	# Test entire function, using different values for the fill-in values.
-	actualFillin <- fillinDrawdownData(testData, fillinValue='F', fillinHORIZ_DIST_DD='X')
-	expectedFillin <- fillinDrawdownDataTest.createExpectedFillin()
+	actualFillin <- fillinAbsentMissingWithDefaultValue(testData, fillinValue='F', fillinHORIZ_DIST_DD='X')
+	expectedFillin <- fillinAbsentMissingWithDefaultValueTest.createExpectedFillin()
 	diff <- dfCompare(expectedFillin, actualFillin, c('SITE','STATION','CLASS'))
 	checkEquals(NULL, diff, "Incorrect filling in of test data")
 	
 }
 
 
-fillinDrawdownDataTest.createTestData <- function()
+fillinAbsentMissingWithDefaultValueTest.createTestData <- function()
 # Test data for unit test
 {
 	tc <- textConnection("SITE	STATION	CLASS	VALUE
@@ -1254,7 +1256,7 @@ fillinDrawdownDataTest.createTestData <- function()
 }
 
 
-fillinDrawdownDataTest.createExpectedExpansion <- function()
+fillinAbsentMissingWithDefaultValueTest.createExpectedExpansion <- function()
 # expected expansion of test data for unit test
 {
 	tc <- textConnection("SITE	STATION	CLASS	VALUE
@@ -1376,7 +1378,7 @@ fillinDrawdownDataTest.createExpectedExpansion <- function()
 }
 
 
-fillinDrawdownDataTest.createExpectedFillin <- function()
+fillinAbsentMissingWithDefaultValueTest.createExpectedFillin <- function()
 # expected expansion of test data for unit test
 {
 	tc <- textConnection("SITE	STATION	CLASS	VALUE
@@ -1495,6 +1497,185 @@ fillinDrawdownDataTest.createExpectedFillin <- function()
 	rm(tc)
 #	rc <- subset(rc, CLASS != 'DRAWDOWN')
 	return(rc)
+}
+
+
+fillinDDWithRiparianValuesTest <- function()
+# Unit test for fillinDDWithRiparianValues
+{
+    # artificial test data should exercise full combination of potential input
+    # combinations of class value pairs which vary with the 9 SITE values and 
+    # the horizontal drawdown distances which vary with the 7 STATION values.
+    testData <- expand.grid(SITE=1:9
+                           ,STATION=LETTERS[1:7]
+                           ,CLASS=c('HI_FOO', 'HI_FOO_DD')
+                           ,stringsAsFactors=FALSE) %>%
+                arrange(SITE, STATION, CLASS) %>%
+                merge(expand.grid(SITE = 1:9
+                                 ,CLASS = c('HI_FOO', 'HI_FOO_DD')
+                                 ) %>%
+                      mutate(VALUE = c('P', ' ', NA , 'P', '' , NA, 'P', ' ', NA
+                                      ,'P', 'P', 'P', ' ', ' ', '', NA , NA , NA
+                                      )
+                            )
+                     ,by=c('SITE','CLASS')
+                     )
+    testDataWithAbsences <- testData %>%
+                            subset(!(CLASS == 'HI_FOO_DD' & VALUE %in% c(NA)))
+    row.names(testDataWithAbsences) <- NULL
+    testDists <- data.frame(SITE = rep(1:9, each=7)
+                           ,STATION = rep(LETTERS[1:7], times=9)
+                           ,CLASS = 'HORIZ_DIST_DD'
+                           ,VALUE = rep(c(NA,'','0','0.5','1.0','1.5','5.0'), times=9)
+                           )
+    
+    
+    # Test case with fillinMaxDrawdownDist below 1 m - no fillin of drawdown zone
+    # data is expected as those values are not expected.
+    expected <- testData
+    actual <- fillinDDWithRiparianValues(testData, testDists, 0)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=0")
+    
+    expected <- testDataWithAbsences
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists, 0)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=0 and some drawdown values absent")
+    
+    expected <- testData
+    actual <- fillinDDWithRiparianValues(testData, testDists, 0.5)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=0.5")
+
+    expected <- testDataWithAbsences
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists, 0.5)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=0.5 and some drawdown values absent")
+    
+    
+    # Test case with fillinMaxDrawdownDist at 1 m - expecting values to be filled in
+    # when riparian values are present and not missing.
+    expected <- testData %>%
+                mutate(VALUE = ifelse(# limit changes to rows with drawdown 
+                                      # distance is in range
+                                      STATION %in% 'E' & 
+                                      # limit changes to rows where flood zone
+                                      # effect is present
+                                      SITE %in% c(1,4,7) &
+                                      # limit changes to rows where drawdown
+                                      # zone effect is missing or absent
+                                      grepl('^.+_DD$', CLASS) & 
+                                      trimws(VALUE) %in% c(NA,'')
+                                     ,'P'
+                                     ,VALUE
+                                     )
+                      )
+    actual <- fillinDDWithRiparianValues(testData, testDists, 1.0)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=1.0")
+    
+    expected <- expected %>% 
+                subset(!(CLASS == 'HI_FOO_DD' & VALUE %in% c(NA)))
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists, 1.0)
+    dd <- dfDifferences(expected, actual, c('SITE','STATION','CLASS'))
+    checkTrue(nrow(subset(dd, type %nin% 'same')) == 0
+             ,"Unexpected results when fillinMaxDrawdownDist=1.0 and some drawdown values absent"
+             )
+    
+    
+    # Test case with fillinMaxDrawdownDist at 1 m and horizontal distances NA. Lack
+    # of horizontal drawdown distance values will mean no changes can be made.
+    expected <- testData 
+    actual <- fillinDDWithRiparianValues(testData, testDists %>% mutate(VALUE=NA), 1.0)
+    checkEquals(expected, actual
+               ,"Unexpected results when fillinMaxDrawdownDist=1.0 and horizontal distances are all NA"
+               )
+    
+    expected <- expected %>% 
+                subset(!(CLASS == 'HI_FOO_DD' & VALUE %in% c(NA)))
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists %>% mutate(VALUE=NA), 1.0)
+    dd <- dfDifferences(expected, actual, c('SITE','STATION','CLASS'))
+    checkTrue(nrow(subset(dd, type %nin% 'same')) == 0
+             ,"Unexpected results when fillinMaxDrawdownDist=1.0 and horizontal distances are all NA and some drawdown values absent"
+             )
+
+    # Test case with fillinMaxDrawdownDist at 1.5 m - expecting values to be filled in
+    # when riparian values are present and not missing.
+    expected <- testData %>%
+                mutate(VALUE = ifelse(# limit changes to rows with drawdown 
+                                      # distance is in range
+                                      STATION %in% c('E', 'F') & 
+                                      # limit changes to rows where flood zone
+                                      # effect is present
+                                      SITE %in% c(1 ,4, 7) &
+                                      # limit changes to rows where drawdown
+                                      # zone effect is missing or absent
+                                      grepl('^.+_DD$', CLASS) & 
+                                      trimws(VALUE) %in% c(NA,'')
+                                     ,'P'
+                                     ,VALUE
+                                     )
+                      )
+    actual <- fillinDDWithRiparianValues(testData, testDists, 1.5)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=1.5")
+   
+    expected <- expected %>% 
+                subset(!(CLASS == 'HI_FOO_DD' & VALUE %in% c(NA)))
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists, 1.5)
+    dd <- dfDifferences(expected, actual, c('SITE','STATION','CLASS'))
+    checkTrue(nrow(subset(dd, type %nin% 'same')) == 0
+             ,"Unexpected results when fillinMaxDrawdownDist=1.5 and some drawdown values absent"
+             )
+   
+    # Test case with fillinMaxDrawdownDist at 10 m - expecting values to be filled in
+    # when riparian values are present and not missing.
+    expected <- testData %>%
+                mutate(VALUE = ifelse(# limit changes to rows with drawdown 
+                                      # distance is in range
+                                      STATION %in% c('E', 'F', 'G') & 
+                                      # limit changes to rows where flood zone
+                                      # effect is present
+                                      SITE %in% c(1, 4, 7) &
+                                      # limit changes to rows where drawdown
+                                      # zone effect is missing or absent
+                                      grepl('^.+_DD$', CLASS) & 
+                                      trimws(VALUE) %in% c(NA,'')
+                                     ,'P'
+                                     ,VALUE
+                                     )
+                      )
+    actual <- fillinDDWithRiparianValues(testData, testDists, 10.0)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=10.0")
+    
+    expected <- expected %>% 
+                subset(!(CLASS == 'HI_FOO_DD' & VALUE %in% c(NA)))
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists, 10.0)
+    dd <- dfDifferences(expected, actual, c('SITE','STATION','CLASS'))
+    checkTrue(nrow(subset(dd, type %nin% 'same')) == 0
+             ,"Unexpected results when fillinMaxDrawdownDist=10.0 and some drawdown values absent"
+             )
+    
+    # Test case with fillinMaxDrawdownDist NA and NULL - should result in no changes
+    expected <- testData
+    actual <- fillinDDWithRiparianValues(testData, testDists, NA)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=NA")
+    
+    expected <- testDataWithAbsences
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists, NA)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=NA and some drawdown values absent")
+    
+    expected <- testData
+    actual <- fillinDDWithRiparianValues(testData, testDists, NULL)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=NULL")
+    
+    expected <- testDataWithAbsences
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists, NULL)
+    checkEquals(expected, actual, "Unexpected results when fillinMaxDrawdownDist=NULL and some drawdown values absent")
+    
+    # Test case with zero rows of horizontal drawdown distances
+    expected <- testData
+    actual <- fillinDDWithRiparianValues(testData, testDists %>% subset(FALSE), 1.0)
+    checkEquals(expected, actual, "Unexpected results with zero rows of horizontal distances")
+    
+    expected <- testDataWithAbsences
+    actual <- fillinDDWithRiparianValues(testDataWithAbsences, testDists %>% subset(FALSE), 1.0)
+    checkEquals(expected, actual, "Unexpected results with zero rows of horizontal distances and some drawdown values absent")
+    
 }
 
 
