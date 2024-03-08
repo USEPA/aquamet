@@ -391,6 +391,7 @@ nlaHumanImpact <- function(buildings = NULL
                           ,horizontalDistance_dd = NULL                             # required for calculation of synthetic values mimicking 2007 metrics
                           ,data2007=FALSE                                           # if TRUE, synthetic values mimicking 2007 metrics will not be calculated, and _RIParian metric names will lose that suffix
                           ,fillinDrawdown=TRUE
+                          ,fillinDDImpacts_maxDrawdownDist=1.5                        # If NA, no DD impacts will be filled in with floodzone values
                           ,dataInformation = data.frame(value=    c('0', 'P', 'C') # Define weighing influence proximity values 
                           	                           ,weights=  c(0.0, 0.5, 1.0)
                           	                           ,inStream= c(0L,   0L,   1L)
@@ -468,6 +469,11 @@ nlaHumanImpact <- function(buildings = NULL
 #    3/20/19 cws Added validation check of proximityWeights argument. Using that
 #            argument to validate data arguments.
 #    3/28/19 cws Standardized metadata argument naming
+#    3/06/24 cws Added fillinDDWithRiparianValues to fill in missing/absent
+#            drawdown effect values with non-missing riparian zone values when 
+#            the horizontal drawdown distance at a station is equal to or less 
+#            than the value of fillinDDImpacts_maxDrawdownDist 
+#    3/07/24 cws Renamed fillinDrawdownData to fillinAbsentMissingWithDefaultValue
 #
 # Arguments:
 #   df = a data frame containing human influence data.  The data frame must
@@ -577,7 +583,7 @@ nlaHumanImpact <- function(buildings = NULL
 	if(fillinDrawdown) {
 		intermediateMessage('.drawdownFillin')
 		tt <- subset(df, CLASS %in% c(impactClasses,'HORIZ_DIST_DD','DRAWDOWN'))
-		dfStart <- fillinDrawdownData(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
+		dfStart <- fillinAbsentMissingWithDefaultValue(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
 	} else {
 		intermediateMessage(".NoDrawdownFillin'")
 		dfStart <- df
@@ -585,9 +591,12 @@ nlaHumanImpact <- function(buildings = NULL
 	intermediateMessage('.2')
 
   	hiData <- subset(dfStart, CLASS %in% impactClasses & !is.na(VALUE))
+  	ddDist <- subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
 	intermediateMessage('.3')
 	
-  
+	  # Fill in missing drawdown values for each class if appropriate
+	  hiData <- fillinDDWithRiparianValues(hiData, ddDist, fillinDDImpacts_maxDrawdownDist)
+	
   	# Convert proximity classes to numeric values and characterize influence
   	# types
   	hiData <- merge(hiData, proximityWeights
@@ -619,7 +628,7 @@ nlaHumanImpact <- function(buildings = NULL
 							 isAg <- NA
 							}
 						   )
-
+    
 		intermediateMessage('.a')
 		synValues <- calcSynInfluence(rbind(hiData,horizDist))
 		intermediateMessage('.b')

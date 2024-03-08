@@ -404,6 +404,7 @@ nlaFishCover <- function(aquatic = NULL
 #    3/22/19 cws Added validation of meetadata, added legal/range checks of data
 #            args. Unit test modified accordingly
 #    3/28/19 cws Standardized metadata argument naming
+#    3/07/24 cws Renamed fillinDrawdownData to fillinAbsentMissingWithDefaultValue
 #
 # Arguments:
 #   df = a data frame containing fish cover data.  The data frame must include
@@ -522,7 +523,7 @@ nlaFishCover <- function(aquatic = NULL
 		    return("Data for both horizontalDistance_dd and drawdown are required to fill-in missing cover values.  Either provide that data or set fillinDrawdown to FALSE")
 		}
 		intermediateMessage('.fill')
-		df <- fillinDrawdownData(df, fillinValue='0', fillinHORIZ_DIST_DD='0')
+		df <- fillinAbsentMissingWithDefaultValue(df, fillinValue='0', fillinHORIZ_DIST_DD='0')
 	} else {
 		df <- df
 	}

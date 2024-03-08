@@ -435,6 +435,7 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 #    1/03/24 cws Modified nlaRiparianVegetation.compositeIndex to sum components
 #            with na.rm=FALSE so stations with missing values stay missing rather
 #            than become 0, reducing the resulting mean
+#    3/07/24 cws Renamed fillinDrawdownData to fillinAbsentMissingWithDefaultValue
 #   
 # Arguments:
 #   df = a data frame containing riparian zone and vegetation data.  The data
@@ -545,7 +546,7 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 		tt <- subset(df, CLASS %in% c(coverParams,'HORIZ_DIST_DD','DRAWDOWN'))
         intermediateMessage('.a')
 # print('before fillin:'); print(tt %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
-		tt <- fillinDrawdownData(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
+		tt <- fillinAbsentMissingWithDefaultValue(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
 # print('after fillin:'); print(tt %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
         intermediateMessage('.b')
 		dfStart <- rbind(tt, subset(df, CLASS %in% typeParams))
