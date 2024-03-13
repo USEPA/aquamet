@@ -351,6 +351,7 @@ nlaRiparianVegetation <- function(bigTrees = NULL
                                  ,horizontalDistance_dd = NULL
                                  ,createSyntheticCovers=TRUE
                                  ,fillinDrawdown=TRUE
+                                 ,fillinDDImpacts_maxDrawdownDist=1.5                        # If NA, no DD impacts will be filled in with floodzone values
                                  ,dataInformation = data.frame(value =    c(NA,'0','1','2','3','4')
                                                               ,weights =  c(NA,0,0.05,0.25,0.575,0.875)
                                                               ,presence = c(NA,0L,1L,1L,1L,1L) %>% as.logical()
@@ -573,6 +574,15 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 				
   	rvData <- subset(dfStart, CLASS %in% vegParams & !is.na(VALUE))
 
+	  	horizDist <- within(subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+			  			   ,{characteristicCover <- NA
+						     presence <- NA
+			   			    }
+	                       )
+	  
+	  # Fill in missing drawdown values for each class if appropriate
+	  rvData <- fillinDDWithRiparianValues(rvData, horizDist, fillinDDImpacts_maxDrawdownDist)
+
   	rvData <- merge(rvData, coverClassInfo, by='VALUE', all.x=TRUE)
     intermediateMessage('.2')
 
@@ -582,11 +592,6 @@ nlaRiparianVegetation <- function(bigTrees = NULL
   	if(createSyntheticCovers) {
 		intermediateMessage('.synth')
 		
-	  	horizDist <- within(subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
-			  			   ,{characteristicCover <- NA
-						     presence <- NA
-			   			    }
-	                       )
 		synValues <- calcSynCovers(rbind(rvData, horizDist), 15, assumptions=FALSE)
 
 		# Make the resulting dataframe look like the data we're calculating metrics with.
@@ -894,7 +899,7 @@ nlaRiparianVegetation.understoryTypePresence <- function(rvData)
 				   ,count
 				   )
 	undCount <- within(tt, {METRIC <- 'RVNUNDERSTORY'; VALUE <- ifelse(is.na(VALUE), 0L, VALUE)})
-	
+
 	rc <- rbind(undB, undC, undD, undM, undN, undCount)
 	return(rc)
 }
