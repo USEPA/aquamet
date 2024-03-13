@@ -1170,7 +1170,7 @@ fillinDDWithRiparianValues <- function(hiData, horizDist, fillinMaxDrawdownDist)
                           ,CLASS = paste0(CLASS, '_DD')
                           ) %>%
                     select(SITE, STATION, CLASS, newValue)
-#print('updateValues'); print(updateValues %>% data.frame())
+# print('updateValues debug'); print(updateValues %>% data.frame())
     filledInValues <- hiData %>%
                       full_join(updateValues, by=c('SITE','STATION','CLASS')) %>%
                       mutate(VALUE = ifelse(trimws(VALUE) %in% c('', NA) & 

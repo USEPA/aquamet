@@ -297,6 +297,7 @@ nlaFishCover <- function(aquatic = NULL
                         ,horizontalDistance_dd = NULL
                         ,createSyntheticCovers=TRUE
                         ,fillinDrawdown=TRUE
+                        ,fillinDDImpacts_maxDrawdownDist=1.5                        # If NA, no DD impacts will be filled in with floodzone values
                         ,dataInformation = data.frame(value = c(NA,'0','1','2','3','4')
 						 	                         ,weights = c(NA,0,0.05,0.25,0.575,0.875)
 						 	                         ,presence = c(NA,0L,1L,1L,1L,1L) %>% as.logical()
@@ -405,6 +406,11 @@ nlaFishCover <- function(aquatic = NULL
 #            args. Unit test modified accordingly
 #    3/28/19 cws Standardized metadata argument naming
 #    3/07/24 cws Renamed fillinDrawdownData to fillinAbsentMissingWithDefaultValue
+#    3/08/24 cws Added fillinDDWithRiparianValues to fill in missing/absent
+#            drawdown effect values with non-missing riparian zone values when 
+#            the horizontal drawdown distance at a station is equal to or less 
+#            than the value of fillinDDImpacts_maxDrawdownDist . Added argument
+#            fillinDDImpacts_maxDrawdownDist with default value of 1.5
 #
 # Arguments:
 #   df = a data frame containing fish cover data.  The data frame must include
@@ -534,6 +540,9 @@ nlaFishCover <- function(aquatic = NULL
 	fcData <- subset(df, CLASS %nin% c('HORIZ_DIST_DD','DRAWDOWN') & !is.na(VALUE))
 	hdData <- subset(df, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
     intermediateMessage('.3')
+	
+	  # Fill in missing drawdown values for each class if appropriate
+	  fcData <- fillinDDWithRiparianValues(fcData, hdData, fillinDDImpacts_maxDrawdownDist)
 	
 	
 	# Assign numeric values for cover classes and assign cover types to

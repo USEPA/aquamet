@@ -6,6 +6,10 @@
 #  7/17/17 cws Updated to test with new calling interface.
 #  1/05/24 cws Added hand calculation of metrics for sites as required. Is now
 #          in alignment with changes made to calcSynCovers last fall. Finally.
+#  3/13/24 cws Updated to include recent changes to nlaRiparianVegetation which
+#          can automatically fill in missing/absent drawdown zone cover values 
+#          with riparian zone cover values if horizontal drawdown distance is
+#          within a range specified by fillinDDImpacts_maxDrawdownDist.
 #
 
 nlaRiparianVegetationTest <- function()
@@ -14,10 +18,18 @@ nlaRiparianVegetationTest <- function()
 # The complex testing here is due to the precision differences between
 # calculated and retrieved values, requiring separate tests for presence (names)
 # type and value of the metrics.
+# 
+# Post-2007 testing is done with two values of fillinDDImpacts_maxDrawdownDist:
+# 0 for the case when missing DD zone cover is not copied from the riparian values
+# and 1.5 for the case when missing DD zone cover is copied from the riparian
+# values if the horizontal drawdown distance is less than or equal to 1.5 m.
 {
 	nlaRiparianVegetationTest.2007()
-	nlaRiparianVegetationTest.withDrawDown()
-	nlaRiparianVegetationTest.withDrawDownAndFillin()
+	nlaRiparianVegetationTest.withDrawDown(fillinDDImpacts_maxDrawdownDist = 0)
+	nlaRiparianVegetationTest.withDrawDown(fillinDDImpacts_maxDrawdownDist = 1.5)
+	nlaRiparianVegetationTest.withDrawDownAndFillin(fillinDDImpacts_maxDrawdownDist = 0)
+	nlaRiparianVegetationTest.withDrawDownAndFillin(fillinDDImpacts_maxDrawdownDist = 1.5)
+	
 }
 
 
@@ -52,11 +64,12 @@ nlaRiparianVegetationTest.2007 <- function()
 }
 
 
-nlaRiparianVegetationTest.withDrawDown <- function()
-# Unit test with 2012 data, but do NOT fill in unrecorded drawdown values
+nlaRiparianVegetationTest.withDrawDown <- function(fillinDDImpacts_maxDrawdownDist)
+# Unit test with 2012 data, but do NOT fill in unrecorded drawdown values based on
+# DRAWDOWN value
 {
 	testData <- nlaRiparianVegetationTest.createTestDataWithDrawDown()
-	expected <- nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin()
+	expected <- nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin(fillinDDImpacts_maxDrawdownDist)
 	expected$VALUE <- as.numeric(expected$VALUE)
 	actual <- nlaRiparianVegetation(bigTrees = testData %>% subset(CLASS == 'C_BIGTREES') %>% select(SITE, STATION, VALUE)
                                    ,bigTrees_dd = testData %>% subset(CLASS == 'C_BIGTREES_DD') %>% select(SITE, STATION, VALUE)
@@ -80,6 +93,7 @@ nlaRiparianVegetationTest.withDrawDown <- function()
                                    ,understoryType_dd= testData %>% subset(CLASS == 'UNDERSTORY_DD') %>% select(SITE, STATION, VALUE)
                                    ,drawdown = testData %>% subset(CLASS == 'DRAWDOWN') %>% select(SITE, STATION, VALUE)
                                    ,horizontalDistance_dd = testData %>% subset(CLASS == 'HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
+	                               ,fillinDDImpacts_maxDrawdownDist = fillinDDImpacts_maxDrawdownDist
 	                               ,fillinDrawdown=FALSE
 	                               )
 #print(setdiff(expected$METRIC, actual$METRIC))
@@ -93,15 +107,22 @@ nlaRiparianVegetationTest.withDrawDown <- function()
     # dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
     # return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
+#dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+#return(dd)
+	checkTrue(is.null(diff)
+	         ,sprintf("Incorrect calculation of metrics with drawDown when fillinDDImpacts_maxDrawdownDist=%s"
+	                 ,fillinDDImpacts_maxDrawdownDist
+	                 )
+	         )
+	
 }
 
 
-nlaRiparianVegetationTest.withDrawDownAndFillin <- function()
+nlaRiparianVegetationTest.withDrawDownAndFillin <- function(fillinDDImpacts_maxDrawdownDist)
 # Unit test with 2012 data using the option to fill in unrecorded drawdown values.
 {
 	testData <- nlaRiparianVegetationTest.createTestDataWithDrawDown()
-	expected <- nlaRiparianVegetationTest.expectedResultsWithDrawDown()
+	expected <- nlaRiparianVegetationTest.expectedResultsWithDrawDown(fillinDDImpacts_maxDrawdownDist)
 	expected$VALUE <- as.numeric(expected$VALUE)
 	actual <- nlaRiparianVegetation(bigTrees = testData %>% subset(CLASS == 'C_BIGTREES') %>% select(SITE, STATION, VALUE)
                                    ,bigTrees_dd = testData %>% subset(CLASS == 'C_BIGTREES_DD') %>% select(SITE, STATION, VALUE)
@@ -125,7 +146,8 @@ nlaRiparianVegetationTest.withDrawDownAndFillin <- function()
                                    ,understoryType_dd= testData %>% subset(CLASS == 'UNDERSTORY_DD') %>% select(SITE, STATION, VALUE)
                                    ,drawdown = testData %>% subset(CLASS == 'DRAWDOWN') %>% select(SITE, STATION, VALUE)
                                    ,horizontalDistance_dd = testData %>% subset(CLASS == 'HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
-                                   )
+	                               ,fillinDDImpacts_maxDrawdownDist = fillinDDImpacts_maxDrawdownDist
+                                 )
 	
 	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown and DD fill-in")
 	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown and DD fill-in")
@@ -134,10 +156,15 @@ nlaRiparianVegetationTest.withDrawDownAndFillin <- function()
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown and DD fill-in")
 	
-    # dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-    # return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown and DD fill-in")
+# dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
+# return(dd)
+	checkTrue(is.null(diff)
+	         ,sprintf("Incorrect calculation of metrics with drawDown and DD fill-in when fillinDDImpacts_maxDrawdownDist = %s"
+	                 ,fillinDDImpacts_maxDrawdownDist
+	                 )
+	         )
+	
 }
 
 
@@ -1217,7 +1244,7 @@ nlaRiparianVegetationTest.expectedResults2007 <- function()
 }
 
 
-nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDrawdown)
+nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDrawdown, mDD)
 # Returns metrics values showing the work of calculations using the current
 # test input data.
 #
@@ -1226,6 +1253,10 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
 #                   values with 0 (which normally occur if DRAWDOWN is FALSE); if
 #                   TRUE, absent values will be filled in with zero if DRAWDOWN
 #                   is TRUE
+# mDD               numeric value determining the maximum horizontal distance
+#                   that will permit filling in missing/absent drawdown zone
+#                   cover values with riparian zone values.
+#             
 {
     f0 <- 0.00      # standard fractions for cover codes.
     f1 <- 0.05
@@ -1234,15 +1265,13 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
     f4 <- 0.875
     maxdd <- 15
     protectedRatio <- function(a, b) { y <- ifelse(b==0, 0, a/b); return(y) }
-    
+
     handCalculations6449 <- function() {
-#        Gdd <- ifelse(fillinDrawdown, 0, NA) # DRAWDOWN false at G, so not recorded
-        
         # calculations of SYNthetic fractional cover values at site 6618
         # Values at each station are fracFlood*coverFlood + fracDD*coverDD
         # Ground covers are normalized as they must sum to 100%; canopy and 
         # understory covers in the current test data all sum to below 100, so 
-        # normalization is not explictely needed
+        # normalization is not explictly needed
         c_bigtrees <-  c((1)          *f0 + (1-(1))    *f0      # A
                         ,(1-1.1/maxdd)*f0 + (1.1/maxdd)*f0      # B
                         ,(1)          *f2 + (1-(1))    *f3      # C
@@ -1351,6 +1380,10 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
                         ,(1)          *f2 + (1-(1))    *f0      # K
                         ,(1)          *f1 + (1-(1))    *f0      # L
                         )
+        understory_type_dd <- c('D'                        # understory_dd specified at A
+                               ,ifelse(mDD > 1.1, 'D', '') # horiz_distance_dd = 1.1 at B
+                               ,'D','D',  'D',     'D'     # understory_dd specified at C, D, F, J
+                               )
         rc <- data.frame(# Fractional cover means
                          RVFCCANBIG_SYN       = c_bigtrees %>% protectedMean(na.rm=TRUE)
                         ,RVFCCANSMALL_SYN     = c_smalltrees %>% protectedMean(na.rm=TRUE)
@@ -1396,6 +1429,8 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
                                                                   ,u_woody, gc_woody
                                                                   ,na.rm=TRUE) %>%
                                                 protectedMean(na.rm=TRUE)
+                         # counts
+                        ,RVNUNDERSTORY_DD     = sum(understory_type_dd %nin% c('', NA))
                          # Fractional cover stdev
                         ,RVVCANBIG_SYN        = c_bigtrees %>% sd(na.rm=TRUE)
                         ,RVVCANSMALL_SYN      = c_smalltrees %>% sd(na.rm=TRUE)
@@ -1415,6 +1450,29 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
               mutate(SITE = 6449) %>% 
               data.frame()
         return(rc)
+    }
+
+    handCalculations6518 <- function() {
+        canopy_type_dd <- c('D'                         # canopy_dd specified at A only
+                           ,ifelse(mDD >= 1.0, 'D', '') # horiz_distance_dd = 1 at B
+                           ,ifelse(mDD >= 2.0, 'D', '') # horiz_distance_dd = 2 at H
+                           ,ifelse(mDD >= 3.0, 'D', '') # horiz_distance_dd = 3 at J
+                           )
+        
+        rc <- data.frame(# Counts
+                         RVNCANOPY_DD         = sum(canopy_type_dd %nin% c('', NA))
+                        ,stringsAsFactors=FALSE
+                        ) %>%
+              mutate(# group/index metrics
+                    ) %>%
+              pivot_longer(cols=everything()
+                          ,names_to = 'METRIC'
+                          ,values_to = 'VALUE'
+                          ) %>% 
+              mutate(SITE = 6518) %>% 
+              data.frame()
+        
+        return(rc)      
     }
 
     handCalculations6618 <- function() {
@@ -1517,6 +1575,17 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
                         ,(1-1.0/maxdd)*f2 + (1.0/maxdd)*f2      # I
                         ,(1-2.0/maxdd)*f1 + (2.0/maxdd)*f0      # J
                         )
+        understory_type<-c(ifelse(mDD >= 5.0, 'D', NA) # A
+                          ,ifelse(mDD >= 6.5, 'D', NA) # B
+                          ,ifelse(mDD >= 2.0, 'D', NA) # C
+                          ,ifelse(mDD >= 1.0, 'D', NA) # D
+                          ,NA                          # E - never filled in, horiz dist = 0.5
+                          ,ifelse(mDD >= 1.5, 'D', NA) # F
+                          ,NA                          # G - never filled in, horiz dist = NA
+                          ,ifelse(mDD >= 1.5, 'D', NA) # H
+                          ,ifelse(mDD >= 1.0, 'D', NA) # I
+                          ,ifelse(mDD >= 2.0, 'D', NA) # J
+                          )
         # u_nonwoody_n <- u_nonwoody #protectedRatio(u_nonwoody, (u_nonwoody+u_woody))
         # u_woody_n <-    u_woody #protectedRatio(u_woody, (u_nonwoody+u_woody))
         rc <- data.frame(# Fractional cover means
@@ -1528,11 +1597,29 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
                         ,RVFCGNDWOODY_SYN     = gc_woody_n %>% protectedMean(na.rm=TRUE)
                         ,RVFCUNDNONW_SYN      = u_nonwoody %>% protectedMean(na.rm=TRUE)
                         ,RVFCUNDWOODY_SYN     = u_woody %>% protectedMean(na.rm=TRUE)
-                         # Fractional presence
+                         # Fractional presence. RVFPUND* values are wrapped with ifelse() to
+                         # mimic current metrics, where the value is NA if all the values
+                         # are absent or NA. In the future they will be zero, and the
+                         # ifelse() wrapper will be removed.
                         ,RVFPGNDBARE_SYN      = protectedMean(gc_bare_n > 0, na.rm=TRUE)
                         ,RVFPGNDINUNDATED_SYN = protectedMean(gc_inundated_n > 0, na.rm=TRUE)
                         ,RVFPGNDWOODY_SYN     = protectedMean(gc_woody_n > 0, na.rm=TRUE)
                         ,RVFPUNDNONW_SYN      = protectedMean(u_nonwoody > 0, na.rm=TRUE)
+                        ,RVFPUNDBROADLEAF_DD  = ifelse(all(understory_type %in% NA), NA
+                                                      ,protectedMean(understory_type == 'B', na.rm=TRUE)
+                                                      )
+                        ,RVFPUNDCONIFEROUS_DD = ifelse(all(understory_type %in% NA), NA
+                                                      ,protectedMean(understory_type == 'C', na.rm=TRUE)
+                                                      )
+                        ,RVFPUNDDECIDUOUS_DD  = ifelse(all(understory_type %in% NA), NA
+                                                      ,protectedMean(understory_type == 'D', na.rm=TRUE)
+                                                      )
+                        ,RVFPUNDMIXED_DD      = ifelse(all(understory_type %in% NA), NA
+                                                      ,protectedMean(understory_type == 'M', na.rm=TRUE)
+                                                      )
+                        ,RVFPUNDNONE_DD       = ifelse(all(understory_type %in% NA), NA
+                                                      ,protectedMean(understory_type == 'N', na.rm=TRUE)
+                                                      )
                          # Indicies/group metrics
                         ,RVICANOPY_SYN        = protectedVectorSum(c_bigtrees, c_smalltrees
                                                                   , na.rm=TRUE) %>%
@@ -1564,6 +1651,10 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
                                                                   ,u_woody, gc_woody
                                                                   ,na.rm=TRUE) %>%
                                                 protectedMean(na.rm=TRUE)
+                         # counts
+                        ,RVNUNDERSTORY_DD     = sum(understory_type %nin% c(NA,'')
+                                                   ,na.rm=TRUE
+                                                   )
                          # Fractional cover stdev
                         ,RVVCANBIG_SYN        = c_bigtrees %>% sd(na.rm=TRUE)
                         ,RVVCANSMALL_SYN      = c_smalltrees %>% sd(na.rm=TRUE)
@@ -1587,6 +1678,7 @@ nlaRiparianVegetationTest.expectedResults.handCalculations <- function(fillinDra
     
     handCalcs <- rbind(data.frame(SITE=1L, METRIC='', VALUE='', stringsAsFactors=FALSE)[0,]
                       ,handCalculations6449()
+                      ,handCalculations6518()
                       ,handCalculations6618()
                       )
     return(handCalcs)
@@ -2902,11 +2994,11 @@ nlaRiparianVegetationTest.createTestDataWithDrawDown <- function()
 	    return(rc)
     }
     
-	return(testData())
+	  return(testData())
 }
 
 
-nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
+nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function(fillinDDImpacts_maxDrawdownDist)
 #
 {
     earlyCalculatedValues <- function() {
@@ -4216,10 +4308,10 @@ nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
 
     mets <- earlyCalculatedValues() %>%
             # subset(!(SITE == 6449 & METRIC %in% nlaRiparianVegetationTest.expectedResults.handCalculations()$METRIC) ) %>%
-            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations(FALSE)
+            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations(FALSE, fillinDDImpacts_maxDrawdownDist)
                      ,by=c('SITE','METRIC')
                      ) %>%
-   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations(FALSE)) %>%
+   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations(FALSE, fillinDDImpacts_maxDrawdownDist)) %>%
             mutate(SITE = as.integer(SITE))
 
 	return(mets)
@@ -4227,7 +4319,7 @@ nlaRiparianVegetationTest.expectedResultsWithDrawDownAndNoFillin <- function()
 }
 
 
-nlaRiparianVegetationTest.expectedResultsWithDrawDown <- function()
+nlaRiparianVegetationTest.expectedResultsWithDrawDown <- function(fillinDDImpacts_maxDrawdownDist)
 # These values were calculated metsRiparianVegetationTest.sas on 20 Nov 2013,
 # with the exception of 91 zero values which I did not have time to correct in 
 # the SAS program -- these rows are appended at the end.
@@ -5540,10 +5632,10 @@ nlaRiparianVegetationTest.expectedResultsWithDrawDown <- function()
     
     mets <- earlyCalculatedValues() %>%
 #            subset(!(SITE == 6449 & METRIC %in% nlaRiparianVegetationTest.expectedResults.handCalculations()$METRIC) ) %>%
-            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations(TRUE)
+            anti_join(nlaRiparianVegetationTest.expectedResults.handCalculations(TRUE, fillinDDImpacts_maxDrawdownDist)
                      ,by=c('SITE','METRIC')
                      ) %>%
-   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations(TRUE)) %>%
+   	        rbind(nlaRiparianVegetationTest.expectedResults.handCalculations(TRUE, fillinDDImpacts_maxDrawdownDist)) %>%
             mutate(SITE = as.integer(SITE))
 	
 	return(mets)
