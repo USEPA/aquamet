@@ -144,6 +144,7 @@ nlaFishCoverTest.withDrawDown <- function()
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 	
+	DEACTIVATED('Need to update unit test to use multiple values of fillinDDImpacts_maxDrawdownDist')
 }
 
 
@@ -180,9 +181,10 @@ nlaFishCoverTest.withDrawDownAndFillin <- function()
 	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
 	
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-9)
-return(diff)
+# return(diff)
 	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
 	
+	DEACTIVATED('Need to update unit test to use multiple values of fillinDDImpacts_maxDrawdownDist')
 }
 
 

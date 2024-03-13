@@ -3,6 +3,9 @@
 #
 # 12/26/23 cws Updated unit test to align with earlier changes (late 2023) in
 #          calculations.
+#  3/13/24 cws Modified to include different values of fillinDDImpacts_maxDrawdownDist
+#
+
 
 nlaHumanImpactTest <- function()
 # unit test for nlaHumanImpact
@@ -67,53 +70,36 @@ nlaHumanImpactTest.2007 <- function()
 
 nlaHumanImpactTest.withDrawDown <- function()
 # Tests calculation with drawdown data, but do NOT fill in drawdown values
+# NOTE: Test data does not natively have cases when an impact in the drawdown
+# zone is absent/missing that when a 'reasonable' value of 
+# fillinDDImpacts_maxDrawdownDist will cause a difference, so those test values
+# and results are created in this test.
 {
+  # Test with existing data and results
 	testData <- nlaHumanImpactTest.createTestDataWithDrawDown()
 	expected <- nlaHumanImpactTest.expectedResultsWithDrawDownNoFillin()
 	expected$VALUE <- as.numeric(expected$VALUE)
-	actual <- nlaHumanImpact(buildings =     testData %>% subset(CLASS=='HI_BUILDINGS') %>% select(SITE, STATION, VALUE)
-                            ,buildings_dd =  testData %>% subset(CLASS=='HI_BUILDINGS_DD') %>% select(SITE, STATION, VALUE)
-                            ,commercial =    testData %>% subset(CLASS=='HI_COMMERCIAL') %>% select(SITE, STATION, VALUE)
-                            ,commercial_dd = testData %>% subset(CLASS=='HI_COMMERCIAL_DD') %>% select(SITE, STATION, VALUE)
-                            ,crops =         testData %>% subset(CLASS=='HI_CROPS') %>% select(SITE, STATION, VALUE)
-                            ,crops_dd =      testData %>% subset(CLASS=='HI_CROPS_DD') %>% select(SITE, STATION, VALUE)
-                            ,docks =         testData %>% subset(CLASS=='HI_DOCKS') %>% select(SITE, STATION, VALUE)
-                            ,docks_dd =      testData %>% subset(CLASS=='HI_DOCKS_DD') %>% select(SITE, STATION, VALUE)
-                            ,landfill =      testData %>% subset(CLASS=='HI_LANDFILL') %>% select(SITE, STATION, VALUE)
-                            ,landfill_dd =   testData %>% subset(CLASS=='HI_LANDFILL_DD') %>% select(SITE, STATION, VALUE)
-                            ,lawn =          testData %>% subset(CLASS=='HI_LAWN') %>% select(SITE, STATION, VALUE)
-                            ,lawn_dd =       testData %>% subset(CLASS=='HI_LAWN_DD') %>% select(SITE, STATION, VALUE)
-                            ,orchard =       testData %>% subset(CLASS=='HI_ORCHARD') %>% select(SITE, STATION, VALUE)
-                            ,orchard_dd =    testData %>% subset(CLASS=='HI_ORCHARD_DD') %>% select(SITE, STATION, VALUE)
-                            ,other =         testData %>% subset(CLASS=='HI_OTHER') %>% select(SITE, STATION, VALUE)
-                            ,other_dd =      testData %>% subset(CLASS=='HI_OTHER_DD') %>% select(SITE, STATION, VALUE)
-                            ,park =          testData %>% subset(CLASS=='HI_PARK') %>% select(SITE, STATION, VALUE)
-                            ,park_dd =       testData %>% subset(CLASS=='HI_PARK_DD') %>% select(SITE, STATION, VALUE)
-                            ,pasture =       testData %>% subset(CLASS=='HI_PASTURE') %>% select(SITE, STATION, VALUE)
-                            ,pasture_dd =    testData %>% subset(CLASS=='HI_PASTURE_DD') %>% select(SITE, STATION, VALUE)
-                            ,powerlines =    testData %>% subset(CLASS=='HI_POWERLINES') %>% select(SITE, STATION, VALUE)
-                            ,powerlines_dd = testData %>% subset(CLASS=='HI_POWERLINES_DD') %>% select(SITE, STATION, VALUE)
-                            ,roads =         testData %>% subset(CLASS=='HI_ROADS') %>% select(SITE, STATION, VALUE)
-                            ,roads_dd =      testData %>% subset(CLASS=='HI_ROADS_DD') %>% select(SITE, STATION, VALUE)
-                            ,walls =         testData %>% subset(CLASS=='HI_WALLS') %>% select(SITE, STATION, VALUE)
-                            ,walls_dd =      testData %>% subset(CLASS=='HI_WALLS_DD') %>% select(SITE, STATION, VALUE)
-                            ,drawdown =      testData %>% subset(CLASS=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
-                            ,horizontalDistance_dd = testData %>% subset(CLASS=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
-	                        ,data2007=FALSE
-                            ,fillinDrawdown=FALSE
-                            )
+	nlaHumanImpactTest.parameterized(testData, expected, FALSE, 0)
+	nlaHumanImpactTest.parameterized(testData, expected, FALSE, 1.5)
 
-	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
-	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawDown")
+	# test with data modified to create some absent/missing drawdown zone values
+	# All these changes will be filled in with riparian zone values that are the same
+	# and thus result in no changes to expected values.	
+	# Try this with missing values, and again with absent rows
+	testData <- nlaHumanImpactTest.createTestDataWithDrawDown() %>%
+	            mutate(VALUE = ifelse(SITE==6228 & STATION=='J' & CLASS=='HI_DOCKS_DD', NA # horiz DD = 1.5
+	                          ,ifelse(SITE==6279 & STATION=='D' & CLASS=='HI_DOCKS_DD', NA # horiz DD = 1.0
+	                          ,ifelse(SITE==6279 & STATION=='D' & CLASS=='HI_PARK_DD', NA # horiz DD = 1.0
+	                                 ,VALUE
+	                                 )))
+	                  )
+	expected <- nlaHumanImpactTest.expectedResultsWithDrawDownNoFillin()
+	expected$VALUE <- as.numeric(expected$VALUE)
+	nlaHumanImpactTest.parameterized(testData, expected, FALSE, 1.5)
 	
-	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
-	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
-	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
-	
-	# dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
-	# return(dd)
-	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawdown")
+	testData <- testData %>% subset(VALUE %nin% NA) 
+	nlaHumanImpactTest.parameterized(testData, expected, FALSE, 1.5)
+
 }
 
 
@@ -123,6 +109,32 @@ nlaHumanImpactTest.withDrawDownAndFillin <- function()
 	testData <- nlaHumanImpactTest.createTestDataWithDrawDown()
 	expected <- nlaHumanImpactTest.expectedResultsWithDrawDown()
 	expected$VALUE <- as.numeric(expected$VALUE)
+	nlaHumanImpactTest.parameterized(testData, expected, TRUE, 0)
+	nlaHumanImpactTest.parameterized(testData, expected, TRUE, 1.5)
+
+	# test with data modified to create some absent/missing drawdown zone values
+	# All these changes will be filled in with riparian zone values that are the same
+	# and thus result in no changes to expected values.	
+	# Try this with missing values, and again with absent rows
+	testData <- nlaHumanImpactTest.createTestDataWithDrawDown() %>%
+	            mutate(VALUE = ifelse(SITE==6228 & STATION=='J' & CLASS=='HI_DOCKS_DD', NA # horiz DD = 1.5
+	                          ,ifelse(SITE==6279 & STATION=='D' & CLASS=='HI_DOCKS_DD', NA # horiz DD = 1.0
+	                          ,ifelse(SITE==6279 & STATION=='D' & CLASS=='HI_PARK_DD', NA # horiz DD = 1.0
+	                                 ,VALUE
+	                                 )))
+	                  )
+	expected <- nlaHumanImpactTest.expectedResultsWithDrawDown()
+	expected$VALUE <- as.numeric(expected$VALUE)
+	nlaHumanImpactTest.parameterized(testData, expected, TRUE, 1.5)
+	
+	testData <- testData %>% subset(VALUE %nin% NA) 
+	nlaHumanImpactTest.parameterized(testData, expected, TRUE, 1.5)	
+}
+
+
+nlaHumanImpactTest.parameterized <- function(testData, expected, fillinDrawdown, fillinDDImpacts_maxDrawdownDist)
+# runs comparisons for nlaHumanImpactTest.withDrawDown with different parameters
+{
 	actual <- nlaHumanImpact(buildings =     testData %>% subset(CLASS=='HI_BUILDINGS') %>% select(SITE, STATION, VALUE)
                             ,buildings_dd =  testData %>% subset(CLASS=='HI_BUILDINGS_DD') %>% select(SITE, STATION, VALUE)
                             ,commercial =    testData %>% subset(CLASS=='HI_COMMERCIAL') %>% select(SITE, STATION, VALUE)
@@ -151,21 +163,30 @@ nlaHumanImpactTest.withDrawDownAndFillin <- function()
                             ,walls_dd =      testData %>% subset(CLASS=='HI_WALLS_DD') %>% select(SITE, STATION, VALUE)
                             ,drawdown =      testData %>% subset(CLASS=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
                             ,horizontalDistance_dd = testData %>% subset(CLASS=='HORIZ_DIST_DD') %>% select(SITE, STATION, VALUE)
-	                        ,data2007=FALSE
-                            ,fillinDrawdown=TRUE
+	                          ,data2007=FALSE
+                            ,fillinDrawdown = fillinDrawdown
+	                          ,fillinDDImpacts_maxDrawdownDist = fillinDDImpacts_maxDrawdownDist
                             )
-	
-	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown and DD fill-in")
-	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawDown and DD fill-in")
+
+	checkEquals(sort(names(expected)), sort(names(actual))
+	           ,sprintf("Incorrect naming of columns with drawDown when fillinDrawdown = %s, fillinDDImpacts_maxDrawdownDist=%s", fillinDrawdown, fillinDDImpacts_maxDrawdownDist)
+	           )
+	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC))
+	           ,sprintf("Incorrect naming of metrics with drawDown when fillinDrawdown = %s, fillinDDImpacts_maxDrawdownDist=%s", fillinDrawdown, fillinDDImpacts_maxDrawdownDist)
+	           )
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
-	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown and DD fill-in")
+	checkEquals(expectedTypes, actualTypes
+	           ,sprintf("Incorrect typing of metrics with drawDown when fillinDrawdown = %s, fillinDDImpacts_maxDrawdownDist=%s", fillinDrawdown, fillinDDImpacts_maxDrawdownDist)
+	           )
 	
-# 	dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
-# return(dd)
+	# dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
+	# return(dd)
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-10)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawdown and DD fill-in")
+	checkTrue(is.null(diff)
+	         ,sprintf("Incorrect calculation of metrics with drawdown when fillinDrawdown = %s, fillinDDImpacts_maxDrawdownDist=%s", fillinDrawdown, fillinDDImpacts_maxDrawdownDist)
+	         )
 }
 
 
