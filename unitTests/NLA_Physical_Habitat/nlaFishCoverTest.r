@@ -1,4 +1,4 @@
-# nlaFishCoverNLA.r
+# nlaFishCoverTest.r
 # RUnit tests
 #
 #  7/10/17 cws renamed functions from metsFishCoverNLA* to nlaFishCover, changed
@@ -8,7 +8,9 @@
 #          that escaped my attention earlier after debugging. Unit test works
 # 12/21/23 cws Updated unit test to align with earlier changes (late 2023) in
 #          calculations.
-#
+#  3/20/24 cws updated unit test to exercise new fillinDDImpacts_maxDrawdownDist
+#          argument.
+#          
 
 
 nlaFishCover.splitParameterNamesTest <- function()
@@ -109,51 +111,155 @@ nlaFishCoverTest.withDrawDown <- function()
 # The complex testing here is due to the precision differences between
 # calculated and retrieved values, requiring separate tests for presence (names)
 # type and value of the metrics.
+# NOTE: Test data does not natively have cases when an impact in the drawdown
+# zone is absent/missing that when a 'reasonable' value of 
+# fillinDDImpacts_maxDrawdownDist will cause a difference, so those test values
+# and results are created in this test.
 {
 	testData <- nlaFishCoverTest.createTestDataWithDrawDown()
 	expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin()
 	expected$VALUE <- as.numeric(expected$VALUE)
-	actual <- nlaFishCover(aquatic =       testData %>% subset(PARAMETER=='FC_AQUATIC') %>% select(SITE, STATION, VALUE)
-                          ,aquatic_dd =    testData %>% subset(PARAMETER=='FC_AQUATIC_DD') %>% select(SITE, STATION, VALUE)
-                          ,boulders =      testData %>% subset(PARAMETER=='FC_BOULDERS') %>% select(SITE, STATION, VALUE)
-                          ,boulders_dd =   testData %>% subset(PARAMETER=='FC_BOULDERS_DD') %>% select(SITE, STATION, VALUE)
-                          ,brush =         testData %>% subset(PARAMETER=='FC_BRUSH') %>% select(SITE, STATION, VALUE)
-                          ,brush_dd =      testData %>% subset(PARAMETER=='FC_BRUSH_DD') %>% select(SITE, STATION, VALUE)
-                          ,ledges =        testData %>% subset(PARAMETER=='FC_LEDGES') %>% select(SITE, STATION, VALUE)
-                          ,ledges_dd =     testData %>% subset(PARAMETER=='FC_LEDGES_DD') %>% select(SITE, STATION, VALUE)
-                          ,livetrees =     testData %>% subset(PARAMETER=='FC_LIVETREES') %>% select(SITE, STATION, VALUE)
-                          ,livetrees_dd =  testData %>% subset(PARAMETER=='FC_LIVETREES_DD') %>% select(SITE, STATION, VALUE)
-                          ,overhang =      testData %>% subset(PARAMETER=='FC_OVERHANG') %>% select(SITE, STATION, VALUE)
-                          ,overhang_dd =   testData %>% subset(PARAMETER=='FC_OVERHANG_DD') %>% select(SITE, STATION, VALUE)
-                          ,snags =         testData %>% subset(PARAMETER=='FC_SNAGS') %>% select(SITE, STATION, VALUE)
-                          ,snags_dd =      testData %>% subset(PARAMETER=='FC_SNAGS_DD') %>% select(SITE, STATION, VALUE)
-                          ,structures =    testData %>% subset(PARAMETER=='FC_STRUCTURES') %>% select(SITE, STATION, VALUE)
-                          ,structures_dd = testData %>% subset(PARAMETER=='FC_STRUCTURES_DD') %>% select(SITE, STATION, VALUE)
-                          ,horizontalDistance_dd = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, STATION, VALUE)
-                          ,drawdown =              testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
-                          ,fillinDrawdown=FALSE
-                          )
 	
-	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
-	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown")
+	nlaFishCoverTest.parameterized(testData, expected, FALSE, 0)
+	nlaFishCoverTest.parameterized(testData, expected, FALSE, 1.5)
 	
-	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
-	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
-	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
+	# test with data modified to create some absent/missing drawdown zone values
+	# All these changes will be filled in with riparian zone values that are the same
+	# and thus result in no changes to expected values.	
+	# Try this with missing values, and again with absent rows
+	testData <- nlaFishCoverTest.createTestDataWithDrawDown() %>%
+	            mutate(VALUE = ifelse(SITE==6227 & PARAMETER=='FC_LEDGES_DD' & STATION=='B',  NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_AQUATIC_DD' & STATION=='B', NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_BRUSH_DD' & STATION=='B',   NA
+	                                 ,VALUE
+	                           )))
+	                  )
+	expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin()
+	expected$VALUE <- as.numeric(expected$VALUE)
+	nlaFishCoverTest.parameterized(testData, expected, FALSE, 1.5)
+
+	nlaFishCoverTest.parameterized(testData %>% subset(VALUE %nin% NA), expected, FALSE, 1.5)
+
+	# test again with an absence/missing value that *does* change the resulting 
+	# metrics
+	testData <- nlaFishCoverTest.createTestDataWithDrawDown() %>%
+	            mutate(VALUE = ifelse(SITE==6227 & PARAMETER=='FC_LEDGES_DD' & STATION=='B',  NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_AQUATIC_DD' & STATION=='B', NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_BRUSH_DD' & STATION=='B',   NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_OVERHANG_DD' & STATION=='B',NA # Results in metrics change
+	                                 ,VALUE
+	                           ))) )
+	                  )
+	expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin() %>%
+	            # values calculated from raw test data, where the drawdown value at
+	            # B (2) is made missing and the aquamet function fills it in with
+	            # the riparian value (1)
+	            #                        A   B   C   D   E   F   G  H   I   J   K   L
+	            # 6449 FC_OVERHANG       1   1   2   1   0   0   0  0   0   0   0   0    
+	            # 6449 FC_OVERHANG_DD    0   2   3   2   0   1  NA  0   0   0   0   0    
+	            # 6449 HORIZ_DIST_DD   0.9 1.1 0.2 0.6 0.1 0.1 0.30.2 0.3 0.5 0.1 0.3  
+	            # litoral:               c(.05,.05,.25 ,.05,0,  0, 0,0,0,0,0,0)
+	            # drawdown original:     c(0,  .25,.575,.25,0,.05,NA,0,0,0,0,0)
+	            #                        mean = 0.1022727272727199931968
+	            # drawdown after fillin: c(0,  .05,.575,.25,0,.05,NA,0,0,0,0,0)
+	            #                        mean = 0.08409090909091
+	            # simulated after fillin:
+	            mutate(VALUE = ifelse(SITE==6449 & METRIC=='FCFCOVERHANG_DD', mean(c(0,.05,.575,.25,0,.05,NA,0,0,0,0,0), na.rm=TRUE) # 0.08409090909091
+	                          ,ifelse(SITE==6449 & METRIC=='FCFCOVERHANG_SIM', VALUE - (1.1/10)*(.25-.05)/12 # 0.03333333333333
+	                          ,ifelse(SITE==6449 & METRIC=='FCIALL_DD', VALUE - 0.1022727272727199931968 + 0.08409090909091 # 0.3528409090909091
+	                          ,ifelse(SITE==6449 & METRIC=='FCIALL_SIM', VALUE - (1.1/10)*(.25-.05)/12 # 0.158333333333333
+	                          ,ifelse(SITE==6449 & METRIC=='FCIBIG_DD', VALUE - 0.1022727272727199931968 + 0.08409090909091 # 0.2153409090909091 
+	                          ,ifelse(SITE==6449 & METRIC=='FCIBIG_SIM', VALUE - (1.1/10)*(.25-.05)/12 # 0.07500000 
+	                          ,ifelse(SITE==6449 & METRIC=='FCINATURAL_DD', VALUE - 0.1022727272727199931968 + 0.08409090909091 # 0.3195075757575758 
+	                          ,ifelse(SITE==6449 & METRIC=='FCINATURAL_SIM', VALUE - (1.1/10)*(.25-.05)/12 # 0.129166666666667 
+	                          ,ifelse(SITE==6449 & METRIC=='FCVOVERHANG_DD', sd(c(0,.05,.575,.25,0,.05,NA,0,0,0,0,0), na.rm=TRUE) # 0.17898069982288847
+	                          ,ifelse(SITE==6449 & METRIC=='FCVOVERHANG_SIM', sd(c(.05,.05,.25 ,.05,0,  0, 0,0,0,0,0,0)) # 0.07177405625652734
+	                                 ,VALUE
+	                           ))))))))))
+	                  )
+	expected$VALUE <- as.numeric(expected$VALUE)
 	
-	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-14)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
-	
-	DEACTIVATED('Need to update unit test to use multiple values of fillinDDImpacts_maxDrawdownDist')
+	nlaFishCoverTest.parameterized(testData, expected, FALSE, 1.5)
+	nlaFishCoverTest.parameterized(testData %>% subset(VALUE %nin% NA), expected, FALSE, 1.5)
+		
 }
 
 
 nlaFishCoverTest.withDrawDownAndFillin <- function()
 # Tests fish cover calculation with drawdown data, and filling in drawdown values.
 {
-	testData <- nlaFishCoverTest.createTestDataWithDrawDown()
-	expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndFillin()
-	actual <- nlaFishCover(aquatic =       testData %>% subset(PARAMETER=='FC_AQUATIC') %>% select(SITE, STATION, VALUE)
+	  testData <- nlaFishCoverTest.createTestDataWithDrawDown()
+	  expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndFillin()
+  	expected$VALUE <- as.numeric(expected$VALUE)
+	
+  	nlaFishCoverTest.parameterized(testData, expected, TRUE, 0)
+	  nlaFishCoverTest.parameterized(testData, expected, TRUE, 1.5)
+	
+	# test with data modified to create some absent/missing drawdown zone values
+	# All these changes will be filled in with riparian zone values that are the same
+	# and thus result in no changes to expected values.	
+	# Try this with missing values, and again with absent rows
+	testData <- nlaFishCoverTest.createTestDataWithDrawDown() %>%
+	            mutate(VALUE = ifelse(SITE==6227 & PARAMETER=='FC_LEDGES_DD' & STATION=='B',  NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_AQUATIC_DD' & STATION=='B', NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_BRUSH_DD' & STATION=='B',   NA
+	                                 ,VALUE
+	                           )))
+	                  )
+	expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin()
+	expected$VALUE <- as.numeric(expected$VALUE)
+	nlaFishCoverTest.parameterized(testData, expected, FALSE, 1.5)
+
+	nlaFishCoverTest.parameterized(testData %>% subset(VALUE %nin% NA), expected, FALSE, 1.5)
+
+	# test again with an absence/missing value that *does* change the resulting 
+	# metrics
+	testData <- nlaFishCoverTest.createTestDataWithDrawDown() %>%
+	            mutate(VALUE = ifelse(SITE==6227 & PARAMETER=='FC_LEDGES_DD' & STATION=='B',  NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_AQUATIC_DD' & STATION=='B', NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_BRUSH_DD' & STATION=='B',   NA
+	                          ,ifelse(SITE==6449 & PARAMETER=='FC_OVERHANG_DD' & STATION=='B',NA # Results in metrics change
+	                                 ,VALUE
+	                           ))) )
+	                  )
+	expected <- nlaFishCoverTest.expectedResultsWithDrawDownAndNoFillin() %>%
+	            # values calculated from raw test data, where the drawdown value at
+	            # B (2) is made missing and the aquamet function fills it in with
+	            # the riparian value (1)
+	            #                        A   B   C   D   E   F   G  H   I   J   K   L
+	            # 6449 FC_OVERHANG       1   1   2   1   0   0   0  0   0   0   0   0    
+	            # 6449 FC_OVERHANG_DD    0   2   3   2   0   1  NA  0   0   0   0   0    
+	            # 6449 HORIZ_DIST_DD   0.9 1.1 0.2 0.6 0.1 0.1 0.30.2 0.3 0.5 0.1 0.3  
+	            # litoral:               c(.05,.05,.25 ,.05,0,  0, 0,0,0,0,0,0)
+	            # drawdown original:     c(0,  .25,.575,.25,0,.05,NA,0,0,0,0,0)
+	            #                        mean = 0.1022727272727199931968
+	            # drawdown after fillin: c(0,  .05,.575,.25,0,.05,NA,0,0,0,0,0)
+	            #                        mean = 0.08409090909091
+	            # simulated after fillin:
+	            mutate(VALUE = ifelse(SITE==6449 & METRIC=='FCFCOVERHANG_DD', mean(c(0,.05,.575,.25,0,.05,NA,0,0,0,0,0), na.rm=TRUE) # 0.08409090909091
+	                          ,ifelse(SITE==6449 & METRIC=='FCFCOVERHANG_SIM', VALUE - (1.1/10)*(.25-.05)/12 # 0.03333333333333
+	                          ,ifelse(SITE==6449 & METRIC=='FCIALL_DD', VALUE - 0.1022727272727199931968 + 0.08409090909091 # 0.3528409090909091
+	                          ,ifelse(SITE==6449 & METRIC=='FCIALL_SIM', VALUE - (1.1/10)*(.25-.05)/12 # 0.158333333333333
+	                          ,ifelse(SITE==6449 & METRIC=='FCIBIG_DD', VALUE - 0.1022727272727199931968 + 0.08409090909091 # 0.2153409090909091 
+	                          ,ifelse(SITE==6449 & METRIC=='FCIBIG_SIM', VALUE - (1.1/10)*(.25-.05)/12 # 0.07500000 
+	                          ,ifelse(SITE==6449 & METRIC=='FCINATURAL_DD', VALUE - 0.1022727272727199931968 + 0.08409090909091 # 0.3195075757575758 
+	                          ,ifelse(SITE==6449 & METRIC=='FCINATURAL_SIM', VALUE - (1.1/10)*(.25-.05)/12 # 0.129166666666667 
+	                          ,ifelse(SITE==6449 & METRIC=='FCVOVERHANG_DD', sd(c(0,.05,.575,.25,0,.05,NA,0,0,0,0,0), na.rm=TRUE) # 0.17898069982288847
+	                          ,ifelse(SITE==6449 & METRIC=='FCVOVERHANG_SIM', sd(c(.05,.05,.25 ,.05,0,  0, 0,0,0,0,0,0)) # 0.07177405625652734
+	                                 ,VALUE
+	                           ))))))))))
+	                  )
+	expected$VALUE <- as.numeric(expected$VALUE)
+	
+	nlaFishCoverTest.parameterized(testData, expected, FALSE, 1.5)
+	nlaFishCoverTest.parameterized(testData %>% subset(VALUE %nin% NA), expected, FALSE, 1.5)
+
+}
+
+
+nlaFishCoverTest.parameterized <- function(testData, expected, fillinDrawdown, fillinDDImpacts_maxDrawdownDist)
+{
+	  actual <- nlaFishCover(aquatic =       testData %>% subset(PARAMETER=='FC_AQUATIC') %>% select(SITE, STATION, VALUE)
                           ,aquatic_dd =    testData %>% subset(PARAMETER=='FC_AQUATIC_DD') %>% select(SITE, STATION, VALUE)
                           ,boulders =      testData %>% subset(PARAMETER=='FC_BOULDERS') %>% select(SITE, STATION, VALUE)
                           ,boulders_dd =   testData %>% subset(PARAMETER=='FC_BOULDERS_DD') %>% select(SITE, STATION, VALUE)
@@ -171,20 +277,40 @@ nlaFishCoverTest.withDrawDownAndFillin <- function()
                           ,structures_dd = testData %>% subset(PARAMETER=='FC_STRUCTURES_DD') %>% select(SITE, STATION, VALUE)
                           ,horizontalDistance_dd = testData %>% subset(PARAMETER=='HORIZ_DIST_DD') %>% mutate(VALUE = as.numeric(VALUE)) %>% select(SITE, STATION, VALUE)
                           ,drawdown =              testData %>% subset(PARAMETER=='DRAWDOWN') %>% select(SITE, STATION, VALUE)
+                          ,fillinDrawdown = fillinDrawdown
+                          ,fillinDDImpacts_maxDrawdownDist = fillinDDImpacts_maxDrawdownDist
                           )
 	
-	checkEquals(sort(names(expected)), sort(names(actual)), "Incorrect naming of columns with drawDown")
-	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC)), "Incorrect naming of metrics with drawdown")
+	checkEquals(sort(names(expected)), sort(names(actual))
+	           ,sprintf("Incorrect naming of columns with drawDown when fillinDrawdown=%s, fillinDDImpacts_maxDrawdownDist=%s"
+	                   ,fillinDrawdown, fillinDDImpacts_maxDrawdownDist
+	                   )
+	           )
+	checkEquals(sort(unique(expected$METRIC)), sort(unique(actual$METRIC))
+	           ,sprintf("Incorrect naming of metrics with drawdown when fillinDrawdown=%s, fillinDDImpacts_maxDrawdownDist=%s"
+	                   ,fillinDrawdown, fillinDDImpacts_maxDrawdownDist
+	                   )
+	           
+	           )
 	
 	expectedTypes <- unlist(lapply(expected, typeof))[names(expected)]
 	actualTypes <- unlist(lapply(actual, typeof))[names(expected)]
-	checkEquals(expectedTypes, actualTypes, "Incorrect typing of metrics with drawDown")
+	checkEquals(expectedTypes, actualTypes
+	           ,sprintf("Incorrect typing of metrics with drawDown when fillinDrawdown=%s, fillinDDImpacts_maxDrawdownDist=%s"
+	                   ,fillinDrawdown, fillinDDImpacts_maxDrawdownDist
+	                   )
+	           
+	           )
 	
 	diff <- dfCompare(expected, actual, c('SITE','METRIC'), zeroFudge=1e-9)
-# return(diff)
-	checkTrue(is.null(diff), "Incorrect calculation of metrics with drawDown")
-	
-	DEACTIVATED('Need to update unit test to use multiple values of fillinDDImpacts_maxDrawdownDist')
+# dd <- dfDifferences(expected, actual, c('SITE','METRIC'), zeroFudge=1e-9)
+# return(dd)
+	checkTrue(is.null(diff)
+	         ,sprintf("Incorrect calculation of metrics with drawDown when fillinDrawdown=%s, fillinDDImpacts_maxDrawdownDist=%s"
+	                 ,fillinDrawdown, fillinDDImpacts_maxDrawdownDist
+	                 )
+	           
+	         )
 }
 
 
