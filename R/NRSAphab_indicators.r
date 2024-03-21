@@ -73,6 +73,14 @@
 #' @keywords survey
 nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs, lat, lon, area, elev, slope, xwidth){
   
+  argNames <- c(sampID, ecoreg, protocol, lrbs, lat, lon, area, elev, slope, xwidth)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -86,6 +94,7 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
   names(x)[names(x)==lrbs] <- 'lrbs'
   
   x$lrbs <- as.numeric(x$lrbs)
+  x[, c('lat', 'lon', 'area', 'elev', 'width')] <- lapply(x[, c('lat', 'lon', 'area', 'elev', 'width')], as.numeric)
   
   dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','lrbs','lat','lon','area','elev','width','slope')) %>%
     plyr::mutate(l_slope = log10(slope+0.0001)
@@ -169,12 +178,19 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
 #' @keywords survey
 nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
   
+  argNames <- c(sampID, w1_hall)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==w1_hall] <- 'w1_hall'
  
-  outMets <- mutate(x, w1_hall=as.numeric(w1_hall) 
-                   ,RIPDIST_COND = ifelse(is.na(w1_hall),'Not Assessed'
+  outMets <- mutate(x, w1_hall=as.numeric(w1_hall)) |>
+    mutate(RIPDIST_COND = ifelse(is.na(w1_hall),'Not Assessed'
                                           ,ifelse(w1_hall<0.33, 'Low'
                                                   , ifelse(w1_hall>=0.33 & w1_hall<1.5, 'Moderate','High')))) %>%
     subset(select=c(sampID, 'RIPDIST_COND'))
@@ -258,6 +274,15 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' @keywords survey
 nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat, lat, lon, slope, xwidth, elev, area){
+
+  argNames <- c(sampID, ecoreg, protocol, xfc_nat, lat, lon, slope, xwidth, elev, area)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -271,6 +296,8 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
   names(x)[names(x)==protocol] <- 'protocol'
   
   x$xfc_nat <- as.numeric(x$xfc_nat)
+  
+  x[, c('lat', 'lon', 'area', 'elev', 'slope', 'xwidth')] <- lapply(x[, c('lat', 'lon', 'area', 'elev', 'slope', 'xwidth')], as.numeric)
   
   dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','xfc_nat','lat','lon','area','elev','xwidth','slope')) %>%
     plyr::mutate(l_area=log10(area), l_width=log10(xwidth + 0.1), l_slope=log10(slope+0.0001)
@@ -399,6 +426,14 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
 #' @references Add Phil Kaufmann's technical report here
 #' @keywords survey
 nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, lat, lon, area, elev, slope, xwidth){
+  
+  argNames <- c(sampID, ecoreg, protocol, xcmgw, lat, lon, area, elev, slope, xwidth)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
   
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.

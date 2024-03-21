@@ -78,6 +78,15 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,rviWoody,rvfcGndInundated,rvfcUndWoody,rvfcGndWoody
                                    ,rvfpCanBig,ssfcBedrock,ssfcBoulders,hipwWalls){
   
+  argNames <- c(sampID, lat, lon, lake_origin, area, elev, ecoreg, 
+                rviWoody,rvfcGndInundated,rvfcUndWoody,rvfcGndWoody, 
+                rvfpCanBig,ssfcBedrock,ssfcBoulders,hipwWalls)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -95,8 +104,19 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   names(x)[names(x)==ssfcBoulders] <- 'ssfcBoulders'
   names(x)[names(x)==hipwWalls] <- 'hipwWalls'
 
+  x[, c('lat', 'lon', 'area', 'elev', 'rviWoody', 'rvfcGndInundated', 
+        'rvfcUndWoody', 'rvfcGndWoody', 'rvfpCanBig', 'ssfcBedrock',
+        'ssfcBoulders', 'hipwWalls')] <- lapply(x[, c('lat', 'lon', 'area', 
+                                                      'elev', 'rviWoody', 
+                                                      'rvfcGndInundated', 
+                                                      'rvfcUndWoody', 
+                                                      'rvfcGndWoody', 'rvfpCanBig', 
+                                                      'ssfcBedrock',
+                                                      'ssfcBoulders', 'hipwWalls')], 
+                                                as.numeric)
+  
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
-    #                   ,elev=ifelse(elev<0,0,elev)
+                        ,elev=ifelse(elev<=0,1,elev)
                         ,elevXlat=elev*lat
                         ,l_area=log10(area)
                         ,ssiNatBedBld=ifelse(hipwWalls>=0.10,0,(ssfcBedrock + ssfcBoulders)))
@@ -134,7 +154,8 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                           ,0.5*(rvfcGndInundated + (rviWoody/2.5))
                           ,ifelse(ecoreg %in% c('NPL','SPL','TPL')
                                   ,0.5*(rvfcGndInundated + ((rvfcUndWoody + rvfcGndWoody)/1.75))
-                                  ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssiNatBedBld))))
+                                  ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssiNatBedBld)))) %>%
+    plyr::mutate(RVegQ = ifelse(RVegQ>1, 1, RVegQ))
 
   # Now merge the expected and observed values and calculate O/E  
   dfOE <- subset(dfObs,select=c(sampID,'ecoreg','RVegQ')) %>% 
@@ -240,6 +261,16 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,fciNatural,fcfcSnag,amfcFloating,amfcEmergent,fcfcBoulders
                                    ,fcfcBrush,fcfcLedges,fcfcLiveTrees,fcfcOverhang){
   
+  argNames <- c(sampID, lat, lon, lake_origin, area, elev, ecoreg, 
+                fciNatural, fcfcSnag, amfcFloating, amfcEmergent, fcfcBoulders,
+                fcfcBrush, fcfcLedges, fcfcLiveTrees, fcfcOverhang)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -258,10 +289,18 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   names(x)[names(x)==fcfcLiveTrees] <- 'fcfcLiveTrees'
   names(x)[names(x)==fcfcOverhang] <- 'fcfcOverhang'
   
+  x[, c('lat', 'lon', 'area', 'elev', 'fciNatural', 'fcfcSnag', 'amfcFloating',
+        'amfcEmergent', 'fcfcBoulders', 'fcfcBrush', 'fcfcLedges', 'fcfcLiveTrees',
+        'fcfcOverhang')] <- lapply(x[, c('lat', 'lon', 'area', 'elev', 
+                                         'fciNatural', 'fcfcSnag', 'amfcFloating',
+                                         'amfcEmergent', 'fcfcBoulders', 
+                                         'fcfcBrush', 'fcfcLedges', 'fcfcLiveTrees',
+                                         'fcfcOverhang')], as.numeric)
+  
     dfIn <- plyr::mutate(x, reservoir = ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
-                 ,elev=ifelse(elev<0,0,elev)
+                 ,elev=ifelse(elev<=0,1,elev)
                  ,elevXlon = elev*lon
-                 ,l_elev = ifelse(elev>0,log10(elev),log10(elev+1))
+                 ,l_elev = log10(elev)
                  ,l_area = log10(area)
                  ,amfcFltEmg= amfcFloating + amfcEmergent)
     
@@ -298,7 +337,8 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
     plyr::mutate(LitCvrQ = ifelse(ecoreg %in% c('CPL'), 0.5*(fciNatural + (fcfcSnag/0.2875))
                                   ,ifelse(ecoreg %in% c('SAP'), (1/3)*(fciNatural + (fcfcSnag/0.2875) + (amfcFltEmg/1.515))
                                           ,(1/3)*(((fcfcBoulders + fcfcBrush + fcfcLedges + fcfcLiveTrees + fcfcOverhang)/1.5) +
-                                                    (fcfcSnag/0.2875) + (amfcFltEmg/1.515)))))
+                                                    (fcfcSnag/0.2875) + (amfcFltEmg/1.515))))) %>%
+    plyr::mutate(LitCvrQ = ifelse(LitCvrQ>1, 1, LitCvrQ))
   
   # Now merge the expected and observed values and calculate O/E  
   dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitCvrQ')) %>% 
@@ -385,6 +425,15 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                       ,rvegq,litcvrq){
   
+  argNames <- c(sampID, lat, lon, lake_origin, area, elev, ecoreg, 
+                rvegq, litcvrq)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==lat] <- 'lat'
@@ -396,10 +445,13 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   names(x)[names(x)==rvegq] <- 'rvegq'
   names(x)[names(x)==litcvrq] <- 'litcvrq'
   
+  x[, c('lat', 'lon', 'area', 'elev', 'rvegq', 'litcvrq')] <- lapply(x[, c('lat', 'lon', 'area', 'elev', 'rvegq', 'litcvrq')], as.numeric)
+  
+  
   dfIn <- plyr::mutate(x, reservoir=ifelse(toupper(lake_origin) %in% c('MAN_MADE','MAN-MADE'),1,0)
-                 ,elev=ifelse(elev<0,0,elev)
+                 ,elev=ifelse(elev<=0,1,elev)
                  ,elevXlon=elev*lon
-                 ,l_elev = ifelse(elev>0,log10(elev),log10(elev+1))
+                 ,l_elev = log10(elev)
                 # ,l_elev=log10(elev+1)
                  ,l_area=log10(area))
   
@@ -497,11 +549,21 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
 #' @keywords survey
 
 nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
+  argNames <- c(sampID, hiiAg, hiiNonAg, hifpAnyCirca)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+  
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==hiiAg] <- 'hiiAg'
   names(x)[names(x)==hiiNonAg] <- 'hiiNonAg'
   names(x)[names(x)==hifpAnyCirca] <- 'hifpAnyCirca'
+  
+  x[, c('hiiAg', 'hiiNonAg', 'hifpAnyCirca')] <- lapply(x[, c('hiiAg', 'hiiNonAg', 'hifpAnyCirca')], as.numeric)
   
   # Calculate RDis_IX based on input metrics
   dfObs <- plyr::mutate(x, RDis_IX = 0.5*(1 - (1/(1 + hiiNonAg + (5*hiiAg))) + hifpAnyCirca))
@@ -604,17 +666,37 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
 
 
 nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origin,bfnHorizDD_nomod=NULL,bfnVertDD=NULL){
+  argNames <- c(sampID, bfxVertDD, bfxHorizDD, ecoreg, lake_origin)
+  # Check names in x against names supplied in arguments
+  if(any(argNames %nin% names(x))){
+    print(paste0("These variables are not in input data frame: ", 
+                 argNames[argNames %nin% names(x)], ". Please check names provided in arguments."))
+    return(NULL)
+  }
+
   # First rename input variables to match expected names, also calculate variations of several
   # for later use.
   names(x)[names(x)==bfxVertDD] <- 'vertDD'
   names(x)[names(x)==bfxHorizDD] <- 'horizDD'
   names(x)[names(x)==ecoreg] <- 'ecoreg'
   names(x)[names(x)==lake_origin] <- 'lake_origin'
+  
+  x[,c('vertDD', 'horizDD')] <- lapply(x[,c('vertDD', 'horizDD')], as.numeric)
+  
   if(!is.null(bfnHorizDD_nomod) & !is.null(bfnVertDD)){
+    argNames.1 <- c(bfnHorizDD_nomod, bfnVertDD)
+    if(any(argNames.1 %nin% names(x))){
+      print(paste0("These variables are not in input data frame: ", 
+                   argNames.1[argNames.1 %nin% names(x)], ". Please check names provided in arguments."))
+      return(NULL)
+    }
     names(x)[names(x)==bfnHorizDD_nomod] <- 'nhorizDD_nomod'
     names(x)[names(x)==bfnVertDD] <- 'nvertDD'
+    x[,c('nhorizDD_nomod', 'nvertDD')] <- lapply(x[,c('nhorizDD_nomod', 'nvertDD')], as.numeric)
   }
 
+  
+  
   tholdsVert <- data.frame(ecoreg = c('NAP','NAP','SAP','SAP','UMW','UMW','CPL','CPL','NPL'
                                       ,'NPL','SPL','SPL','TPL','TPL','WMT','WMT','XER','XER')
                            ,lake_origin=c(rep(c('NATURAL','MAN_MADE'),9))
