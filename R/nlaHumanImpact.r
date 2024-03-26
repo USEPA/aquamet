@@ -474,6 +474,9 @@ nlaHumanImpact <- function(buildings = NULL
 #            the horizontal drawdown distance at a station is equal to or less 
 #            than the value of fillinDDImpacts_maxDrawdownDist 
 #    3/07/24 cws Renamed fillinDrawdownData to fillinAbsentMissingWithDefaultValue
+#    3/25/24 cws Modified to not do any drawdown zone fillin if data2007 is TRUE
+#            because 2007 does not have any drawdown data. No change made to unit
+#            tests.
 #
 # Arguments:
 #   df = a data frame containing human influence data.  The data frame must
@@ -580,7 +583,7 @@ nlaHumanImpact <- function(buildings = NULL
 	                     )
 
 	# Fill in unrecorded cover and HORIZ_DIST_DD based on DRAWDOWN.
-	if(fillinDrawdown) {
+	if(fillinDrawdown & !data2007) {
 		intermediateMessage('.drawdownFillin')
 		tt <- subset(df, CLASS %in% c(impactClasses,'HORIZ_DIST_DD','DRAWDOWN'))
 		dfStart <- fillinAbsentMissingWithDefaultValue(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
@@ -595,7 +598,9 @@ nlaHumanImpact <- function(buildings = NULL
 	intermediateMessage('.3')
 	
 	  # Fill in missing drawdown values for each class if appropriate
-	  hiData <- fillinDDWithRiparianValues(hiData, ddDist, fillinDDImpacts_maxDrawdownDist)
+	  if(!data2007) {
+	    hiData <- fillinDDWithRiparianValues(hiData, ddDist, fillinDDImpacts_maxDrawdownDist)
+	  }
 	
   	# Convert proximity classes to numeric values and characterize influence
   	# types

@@ -10,6 +10,8 @@
 #          calculations.
 #  3/20/24 cws updated unit test to exercise new fillinDDImpacts_maxDrawdownDist
 #          argument.
+#  3/26/24 cws Updated expected error message in 2007 tests to reflect change in
+#          how mets handles drawdown related arguments with this data.
 #          
 
 
@@ -101,7 +103,8 @@ nlaFishCoverTest.2007 <- function()
 	                      ,fillinDrawdown=FALSE
                           ,createSyntheticCovers=TRUE
 	                      )
-	expected <- "Data for both horizontalDistance_dd is required to calculate synthetic drawdown cover values.  Either provide that data or set createSyntheticCovers to FALSE"
+#	expected <- "Data for both horizontalDistance_dd is required to calculate synthetic drawdown cover values.  Either provide that data or set createSyntheticCovers to FALSE"
+	expected <- "Data for both horizontalDistance_dd and drawdown are required to fill-in missing cover values.  Either provide that data or set fillinDrawdown to FALSE"
 	checkEquals(expected, actual, "Incorrect response when attempting to fill-in drawdown values without that data")
 }
 

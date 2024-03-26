@@ -411,6 +411,11 @@ nlaFishCover <- function(aquatic = NULL
 #            the horizontal drawdown distance at a station is equal to or less 
 #            than the value of fillinDDImpacts_maxDrawdownDist . Added argument
 #            fillinDDImpacts_maxDrawdownDist with default value of 1.5
+#    3/25/24 cws Modified to not do any drawdown zone fillin if data2007 is TRUE
+#            because 2007 does not have any drawdown data. No change made to unit
+#            tests. Slight change in handling when fillinDrawdown and 
+#            createSyntheticCovers are used but no drawdown data is provided, 
+#            as with 2007 data.
 #
 # Arguments:
 #   df = a data frame containing fish cover data.  The data frame must include
@@ -523,16 +528,16 @@ nlaFishCover <- function(aquatic = NULL
 
 	
 	# Fill in unrecorded cover and HORIZ_DIST_DD based on DRAWDOWN.
+	# If 2007-like data is being processed, createSyntheticCovers will be FALSE
+	# and there will be no drawdown values to fill in.
+	if((fillinDrawdown | createSyntheticCovers) & !all(c('HORIZ_DIST_DD','DRAWDOWN') %in% df$CLASS)) {
+	    intermediateMessage('.Done early',loc = 'end')
+	    return("Data for both horizontalDistance_dd and drawdown are required to fill-in missing cover values.  Either provide that data or set fillinDrawdown to FALSE")
+	}
 	if(fillinDrawdown) {
-		if(!all(c('HORIZ_DIST_DD','DRAWDOWN') %in% df$CLASS)) {
-		    intermediateMessage('.Done early',loc = 'end')
-		    return("Data for both horizontalDistance_dd and drawdown are required to fill-in missing cover values.  Either provide that data or set fillinDrawdown to FALSE")
-		}
 		intermediateMessage('.fill')
 		df <- fillinAbsentMissingWithDefaultValue(df, fillinValue='0', fillinHORIZ_DIST_DD='0')
-	} else {
-		df <- df
-	}
+	} 
     intermediateMessage('.2')
 
 	
@@ -542,7 +547,8 @@ nlaFishCover <- function(aquatic = NULL
     intermediateMessage('.3')
 	
 	  # Fill in missing drawdown values for each class if appropriate
-	  fcData <- fillinDDWithRiparianValues(fcData, hdData, fillinDDImpacts_maxDrawdownDist)
+	  if(createSyntheticCovers) 
+	      fcData <- fillinDDWithRiparianValues(fcData, hdData, fillinDDImpacts_maxDrawdownDist)
 	
 	
 	# Assign numeric values for cover classes and assign cover types to
