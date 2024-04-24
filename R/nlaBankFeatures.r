@@ -167,6 +167,9 @@ nlaBankFeatures <- function(angle = NULL
 #    3/21/19 cws Added validation checking of arguments. Modified unit test 
 #            accordingly.
 #   12/31/19 cws Allowing SITE to be character as well as integer in all arguments.
+#    4/12/24 cws Modified nlaBankFeatures.fillinDistances to allow missing values
+#            to be changed to zero when DRAWDOWN is N, as well as NO. Unit test
+#            not modified.
 #
 # Arguments:
 #   df = a data frame containing bank features data.  The data frame must
@@ -441,7 +444,7 @@ nlaBankFeatures.fillinDistances <- function(df)
 						 
 	# Determine rows where missing distances can be assumed to be zero unless 
 	# recorded as otherwise.
-	correctableValues <- subset(distances, PARAMETER=='DRAWDOWN' & VALUE=='NO')
+	correctableValues <- subset(distances, PARAMETER=='DRAWDOWN' & VALUE %in% c('N','NO'))
 	
 	
 	# Change missing values to zero when DRAWDOWN is 'NO'. 
