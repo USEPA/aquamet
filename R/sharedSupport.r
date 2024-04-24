@@ -311,19 +311,19 @@ calcSynCovers <- function(coverData, maxDrawdown, assumptions=FALSE) {
 # print('covers'); print(covers %>% subset(SITE==2 & STATION %in% c('E')) %>% data.frame())
 	
 	coverProps <- within(covers	
-					    ,{assumptionMade <- assumptions & is.na(prop_dd) & is.na(cover_dd) & !is.na(cover_lit)
-						  basicSyntheticCover <- ifelse(assumptionMade, cover_lit					# rely on assumption
-						  						,ifelse(is.na(cover_dd) & is.na(cover_lit), NA
-						                   		,ifelse(is.na(cover_dd) | is.na(cover_lit)
-													   ,ifelse(is.na(prop_dd), NA
-									   				   ,ifelse(abs(prop_dd - 1) < zeroish, cover_dd	# case (a)
-													   ,ifelse(abs(prop_dd) < zeroish, cover_lit		# case (b)
-																	               , NA
-														)))
-												# both covers are present if we get this far 
-												,ifelse(abs(cover_dd - cover_lit) < zeroish, cover_dd	# case (c)
-													   ,prop_dd * cover_dd + prop_lit * cover_lit	# normal case
-											     ))))
+        					    ,{assumptionMade <- assumptions & is.na(prop_dd) & is.na(cover_dd) & !is.na(cover_lit)
+				          		  basicSyntheticCover <- ifelse(assumptionMade, cover_lit					# rely on assumption
+						  		                    				,ifelse(is.na(cover_dd) & is.na(cover_lit), NA
+            						                   		,ifelse(is.na(cover_dd) | is.na(cover_lit)
+                        													   ,ifelse(is.na(prop_dd), NA
+									   		                        	   ,ifelse(abs(prop_dd - 1) < zeroish, cover_dd	# case (a)
+                        													   ,ifelse(abs(prop_dd) < zeroish, cover_lit		# case (b)
+												             				                , NA
+														                          )))
+                        												# both covers are present if we get this far 
+												                       ,ifelse(abs(cover_dd - cover_lit) < zeroish, cover_dd	# case (c)
+                         													    ,prop_dd * cover_dd + prop_lit * cover_lit	# normal case
+                         									      ))))
 						  syn <- as.numeric(substr(as.character(basicSyntheticCover), 1, 18))
 					     }
 					    )

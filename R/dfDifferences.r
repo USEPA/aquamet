@@ -20,6 +20,11 @@
 #          columns using character strings instead of unquoted column names.
 #  2/22/24 cws Using suppressWarnings() to address warnings due to attempting to
 #          treat character values as if numeric.
+#  4/06/24 cws Corrected classNumber to class number as zero if it was within 
+#          zeroFudge of zero. Modified classCharacter to use classNumber to 
+#          further classify numeric value instead of just 'number'. Also continued
+#          change on 2/19/24 to use all_of() around thisVar in remaining calls 
+#          to select(). No change to unit test.
 #
 require(plyr) # for pipe - %>%
 require(tidyr)
@@ -62,10 +67,10 @@ dfDifferences <- function(df1, df2, byVars
     compareVars <- intersect(names(df1), names(df2)) %>% setdiff(byVars)
     allDiffs <- NULL
     classCharacter <- function(cc) {
-        # classify individual character strings
+        # classify individual ccharacter strings
         rc <- ifelse(cc %in% '',         'blank'
              ,ifelse(trimws(cc) %in% '', 'spaces'
-             ,ifelse(is.number(cc),      'number'
+             ,ifelse(is.number(cc),      classNumber(suppressWarnings(as.numeric(cc))) # was 'number'
              ,ifelse(is.na(cc),          'na'
                                         ,'genl'
               ))))
@@ -73,12 +78,12 @@ dfDifferences <- function(df1, df2, byVars
     }
     
     classNumber <- function(vv) {
-        # classify individual numeric values
+        # classify individual numeric vvalues. Assumes vv is numeric type
         rc <- ifelse(is.infinite(vv) & sign(vv) == 1,  '+inf'
              ,ifelse(is.infinite(vv) & sign(vv) == -1, '-inf'
              ,ifelse(is.nan(vv),                       'nan'      
              ,ifelse(is.na(vv) & !is.nan(vv),          'na'
-             ,ifelse(vv == 0,                          'zero'
+             ,ifelse(abs(vv) <= zeroFudge,             'zero'
              ,ifelse(abs(vv) < zeroish,                'zeroish'
                                                       ,'genl'       
               ))))))
@@ -219,10 +224,10 @@ dfDifferences <- function(df1, df2, byVars
                                     ) %>%
                               select(all_of(byVars), column, first, second, diff, type, type2)
         } else {
-            bothValues <- merge(df1 %>% select(all_of(byVars), thisVar) %>%
+            bothValues <- merge(df1 %>% select(all_of(byVars), all_of(thisVar)) %>%
                                 dplyr::rename(first=all_of(thisVar)) %>%
                                 mutate(inFirst=TRUE)
-                               ,df2 %>% select(all_of(byVars), thisVar) %>%
+                               ,df2 %>% select(all_of(byVars), all_of(thisVar)) %>%
                                 dplyr::rename(second=all_of(thisVar)) %>%
                                 mutate(inSecond=TRUE)
                                ,by = byVars
