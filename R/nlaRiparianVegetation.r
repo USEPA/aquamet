@@ -537,51 +537,80 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 				  ,'GC_BARE_DD', 'GC_INUNDATED_DD', 'GC_NONWOODY_DD'
 				  ,'GC_WOODY_DD'
 				  )
-	typeParams <- c('CANOPY','CANOPY_DD','UNDERSTORY','UNDERSTORY_DD')
-	coverParams <- setdiff(vegParams, typeParams)			  
-	
-	# Fill in unrecorded cover amounts and HORIZ_DIST_DD based on DRAWDOWN, but 
-	# don't fill in cover types
-	if(fillinDrawdown) {
-		intermediateMessage('.fill')
-		tt <- subset(df, CLASS %in% c(coverParams,'HORIZ_DIST_DD','DRAWDOWN'))
-        intermediateMessage('.a')
-# print('before fillin:'); print(tt %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
-		tt <- fillinAbsentMissingWithDefaultValue(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
-# print('after fillin:'); print(tt %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
-        intermediateMessage('.b')
-		dfStart <- rbind(tt, subset(df, CLASS %in% typeParams))
-        intermediateMessage('.c')
-	} else {
-# print('no fillin:'); print(df %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
-		dfStart <- df
-	}
-	
-    intermediateMessage('.1')
-    
-  	# Create table for converting field values to calculation values
-    coverClassInfo <- coverCalculationValues %>% dplyr::rename(VALUE=field, characteristicCover=calc)
-                                     # ,coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
-                                     #                                 ,calc=c(NA,0,0.05,0.25,0.575,0.875)
-                                     #                                 ,stringsAsFactors=FALSE
-                                     #                                 )
-
-#   	coverClassInfo<-data.frame(VALUE = c(NA,'0','1','2','3','4')
-# 						  	  ,characteristicCover = c(NA,0,0.05,0.25,0.575,0.875)
-# 							  ,presence = c(NA,0,1,1,1,1)
-# 							  ,stringsAsFactors=FALSE
-# 							  )
-				
-  	rvData <- subset(dfStart, CLASS %in% vegParams & !is.na(VALUE))
-
-	  	horizDist <- within(subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
-			  			   ,{characteristicCover <- NA
-						     presence <- NA
-			   			    }
-	                       )
+	  typeParams <- c('CANOPY','CANOPY_DD','UNDERSTORY','UNDERSTORY_DD')
+	  coverParams <- setdiff(vegParams, typeParams)			  
 	  
-	  # Fill in missing drawdown values for each class if appropriate
+	  # THIS IS THE NEW ORDER OF THINGS
+	  coverClassInfo <- coverCalculationValues %>% dplyr::rename(VALUE=field, characteristicCover=calc)
+	  
+	  rvData <- subset(df, CLASS %in% vegParams & !is.na(VALUE)) # %>% mutate(characteristicCover = NA, presence = NA)
+  	horizDist <- within(subset(df, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+      			  			   ,{characteristicCover <- NA
+			        			     presence <- NA
+			   			          }
+	                     )
+	  drawdown <- subset(df, CLASS %in% 'DRAWDOWN' & !is.na(VALUE)) # %>% mutate(characteristicCover = NA, presence = NA)
+	  
 	  rvData <- fillinDDWithRiparianValues(rvData, horizDist, fillinDDImpacts_maxDrawdownDist)
+	  if(fillinDrawdown) {
+	      intermediateMessage('.d1')
+	      tt <- rbind(rvData %>% subset(CLASS %in% coverParams), horizDist[c('SITE','STATION','CLASS','VALUE')], drawdown) #subset(df, CLASS %in% c(coverParams,'HORIZ_DIST_DD','DRAWDOWN'))
+	      tt <- fillinAbsentMissingWithDefaultValue(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
+  	    intermediateMessage('.d2')
+	      tt <- rbind(tt, subset(rvData, CLASS %in% typeParams))
+  	    intermediateMessage('.d3')
+    	  rvData <- subset(tt, CLASS %in% vegParams & !is.na(VALUE))
+      	horizDist <- within(subset(tt, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+          			  			   ,{characteristicCover <- NA
+			            			     presence <- NA
+			   		    	          }
+	                         )
+  	    intermediateMessage('.d4')
+	  }
+
+#         THIS IS THE OLD ORDER OF THINGS
+# 	# Fill in unrecorded cover amounts and HORIZ_DIST_DD based on DRAWDOWN, but 
+# 	# don't fill in cover types
+# 	if(fillinDrawdown) {
+# 		intermediateMessage('.fill')
+# 		tt <- subset(df, CLASS %in% c(coverParams,'HORIZ_DIST_DD','DRAWDOWN'))
+#         intermediateMessage('.a')
+# # print('before fillin:'); print(tt %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
+# 		tt <- fillinAbsentMissingWithDefaultValue(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
+# # print('after fillin:'); print(tt %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
+#         intermediateMessage('.b')
+# 		dfStart <- rbind(tt, subset(df, CLASS %in% typeParams))
+#         intermediateMessage('.c')
+# 	} else {
+# # print('no fillin:'); print(df %>% subset(SITE==6618 & CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN')))
+# 		dfStart <- df
+# 	}
+# 	
+#     intermediateMessage('.1')
+#     
+#   	# Create table for converting field values to calculation values
+#     coverClassInfo <- coverCalculationValues %>% dplyr::rename(VALUE=field, characteristicCover=calc)
+#                                      # ,coverCalculationValues = data.frame(field=c(NA,'0','1','2','3','4')
+#                                      #                                 ,calc=c(NA,0,0.05,0.25,0.575,0.875)
+#                                      #                                 ,stringsAsFactors=FALSE
+#                                      #                                 )
+# 
+# #   	coverClassInfo<-data.frame(VALUE = c(NA,'0','1','2','3','4')
+# # 						  	  ,characteristicCover = c(NA,0,0.05,0.25,0.575,0.875)
+# # 							  ,presence = c(NA,0,1,1,1,1)
+# # 							  ,stringsAsFactors=FALSE
+# # 							  )
+# 				
+#   	rvData <- subset(dfStart, CLASS %in% vegParams & !is.na(VALUE))
+# 
+# 	  	horizDist <- within(subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+# 			  			   ,{characteristicCover <- NA
+# 						     presence <- NA
+# 			   			    }
+# 	                       )
+# 	  
+# 	  # Fill in missing drawdown values for each class if appropriate
+# 	  rvData <- fillinDDWithRiparianValues(rvData, horizDist, fillinDDImpacts_maxDrawdownDist)
 
   	rvData <- merge(rvData, coverClassInfo, by='VALUE', all.x=TRUE)
     intermediateMessage('.2')
@@ -605,11 +634,11 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 	  	rvData <- rbind(rvData, newValues)
   	}
 	
-	intermediateMessage('.calcs')
 	
 	# Classify CLASSs by cover location: riparian, drawdown or synthetic
 	# This classification will be used to create suffixes for the metrics later on
 	# For 2007, all locations will be riparian
+	intermediateMessage('.split')
 	splitParams <- nlaFishCover.splitParameterNames(rvData$CLASS)
 	rvData <- within(rvData
 					,{coverSuffix <- ifelse(splitParams$suffix=='', '_RIP', splitParams$suffix)
@@ -617,7 +646,9 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 					 }
 				  	)
 
+	intermediateMessage('.calcs')
 	rvMets <- nlaRiparianVegetation.calculateMets(rvData)
+	intermediateMessage('.calcsDone', loc='end')
 	
   	# combine results into a dataframe.  When not calculating synthetic cover values,
   	# rename the _RIP metrics back to 2007 names (no suffix). 
@@ -628,6 +659,7 @@ nlaRiparianVegetation <- function(bigTrees = NULL
   			 		)
   
   	if(!createSyntheticCovers) {
+    	intermediateMessage('.noRips', loc='end')
 		rvMets <- within(rvMets
 			  			,METRIC <- ifelse(grepl('_RIP$', METRIC), substr(METRIC, 1, nchar(METRIC)-4), METRIC)
 	  					)
@@ -804,8 +836,6 @@ nlaRiparianVegetation.calculateMets <- function(rvData)
 				  )
 		        )
 	
-  	intermediateMessage(' Done.', loc='end')
-
   	return(rv)
 }
 
@@ -814,36 +844,42 @@ nlaRiparianVegetation.canopyTypePresence <- function(rvData)
 # Calculate mean presence (ranges 0-1) of each canopy type
 {
 	cantype <- subset(rvData, CLASS=='CANOPY')
+#print(str(cantype)); print(sort(unique(rvData$CLASS)))
 
 	tt <- aggregate(list(VALUE = cantype$VALUE=='B')
 				   ,list('SITE'=cantype$SITE, coverSuffix = cantype$coverSuffix)
 				   ,protectedMean, na.rm=TRUE
 				   )
 	canB <- within(tt, METRIC <- 'RVFPCANBROADLEAF')
+	intermediateMessage('.B')
 	
 	tt <- aggregate(list(VALUE = cantype$VALUE=='C')
 			       ,list('SITE'=cantype$SITE, coverSuffix = cantype$coverSuffix)
 				   ,protectedMean, na.rm=TRUE
 				   )
 	canC <- within(tt, METRIC <- 'RVFPCANCONIFEROUS')
+	intermediateMessage('.C')
 	
 	tt <- aggregate(list(VALUE = cantype$VALUE=='D')
 				   ,list('SITE'=cantype$SITE, coverSuffix = cantype$coverSuffix)
 				   ,protectedMean, na.rm=TRUE
 				   )
 	canD <- within(tt, METRIC <- 'RVFPCANDECIDUOUS')
+	intermediateMessage('.D')
 	
 	tt <- aggregate(list(VALUE = cantype$VALUE=='M')
 				   ,list('SITE'=cantype$SITE, coverSuffix = cantype$coverSuffix)
 				   ,protectedMean, na.rm=TRUE
 				   )
 	canM <- within(tt, METRIC <- 'RVFPCANMIXED')
+	intermediateMessage('.M')
 	
 	tt <- aggregate(list(VALUE = cantype$VALUE=='N')
 				   ,list('SITE'=cantype$SITE, coverSuffix = cantype$coverSuffix)
 				   ,protectedMean, na.rm=TRUE
 				   )
 	canN <- within(tt, METRIC <- 'RVFPCANNONE')
+	intermediateMessage('.N')
 	
 	tt <- aggregate(list(VALUE = I(cantype$VALUE))
 				   ,list('SITE'=cantype$SITE, coverSuffix = cantype$coverSuffix)
@@ -854,6 +890,7 @@ nlaRiparianVegetation.canopyTypePresence <- function(rvData)
 						VALUE <- ifelse(is.na(VALUE), 0L, VALUE)
 					   }
 			          )
+	intermediateMessage('.n')
 	
 	rc <- rbind(canB, canC, canD, canM, canN, canCount)
 	return(rc)

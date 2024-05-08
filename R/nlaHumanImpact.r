@@ -582,25 +582,43 @@ nlaHumanImpact <- function(buildings = NULL
 	                     ,stringsAsFactors=FALSE
 	                     )
 
-	# Fill in unrecorded cover and HORIZ_DIST_DD based on DRAWDOWN.
-	if(fillinDrawdown & !data2007) {
-		intermediateMessage('.drawdownFillin')
-		tt <- subset(df, CLASS %in% c(impactClasses,'HORIZ_DIST_DD','DRAWDOWN'))
-		dfStart <- fillinAbsentMissingWithDefaultValue(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
-	} else {
-		intermediateMessage(".NoDrawdownFillin'")
-		dfStart <- df
-	}
-	intermediateMessage('.2')
-
-  	hiData <- subset(dfStart, CLASS %in% impactClasses & !is.na(VALUE))
-  	ddDist <- subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
-	intermediateMessage('.3')
+  	hiData <- subset(df, CLASS %in% impactClasses & !is.na(VALUE))
+  	ddDist <- subset(df, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+  	drawdown <- subset(df, CLASS %in% 'DRAWDOWN' & !is.na(VALUE))
+  	
+  	# NEW ORDER OF THINGS
+  	if (!data2007) {
+  	    hiData <- fillinDDWithRiparianValues(hiData, ddDist, fillinDDImpacts_maxDrawdownDist)
+  	    intermediateMessage('.2')
+  	    if(fillinDrawdown) {
+    	      tt <- fillinAbsentMissingWithDefaultValue(rbind(hiData, ddDist, drawdown)
+    	                                               ,fillinValue='0', fillinHORIZ_DIST_DD='0'
+  	                                                 )
+          	hiData <- subset(tt, CLASS %in% impactClasses & !is.na(VALUE))
+  	        ddDist <- subset(tt, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+  	        intermediateMessage('.3')
+  	    }
+  	}
 	
-	  # Fill in missing drawdown values for each class if appropriate
-	  if(!data2007) {
-	    hiData <- fillinDDWithRiparianValues(hiData, ddDist, fillinDDImpacts_maxDrawdownDist)
-	  }
+# 	# Fill in unrecorded cover and HORIZ_DIST_DD based on DRAWDOWN.   # OLD ORDER OF THINGS
+# 	if(fillinDrawdown & !data2007) {
+# 		intermediateMessage('.drawdownFillin')
+# 		tt <- subset(df, CLASS %in% c(impactClasses,'HORIZ_DIST_DD','DRAWDOWN'))
+# 		dfStart <- fillinAbsentMissingWithDefaultValue(tt, fillinValue='0', fillinHORIZ_DIST_DD='0')
+# 	} else {
+# 		intermediateMessage(".NoDrawdownFillin'")
+# 		dfStart <- df
+# 	}
+# 	intermediateMessage('.2')
+# 
+#   	hiData <- subset(dfStart, CLASS %in% impactClasses & !is.na(VALUE))
+#   	ddDist <- subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+# 	intermediateMessage('.3')
+# 	
+# 	  # Fill in missing drawdown values for each class if appropriate
+# 	  if(!data2007) {
+# 	    hiData <- fillinDDWithRiparianValues(hiData, ddDist, fillinDDImpacts_maxDrawdownDist)
+# 	  }
 	
   	# Convert proximity classes to numeric values and characterize influence
   	# types
@@ -621,12 +639,12 @@ nlaHumanImpact <- function(buildings = NULL
 
 	# Create synthetic influence values if not 2007esque data
 	if(!data2007) {
-		if('HORIZ_DIST_DD' %nin% dfStart$CLASS) {
+		if('HORIZ_DIST_DD' %nin% ddDist$CLASS) { # OLD CODE USED dfStart
 		    intermediateMessage('.Done early',loc = 'end')
 		    return('Synthesizing 2007-esque values requires values for the drawdown horizontal distance (argument horizontalDistance_dd)')
 		}
 		intermediateMessage('.Synthesizing')
-		horizDist <- within(subset(dfStart, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
+		horizDist <- within(subset(ddDist, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))  # OLD CODE USED dfStart
 						   ,{calc <- NA
 							 circa <- NA
 							 present <- NA

@@ -534,6 +534,14 @@ nlaFishCover <- function(aquatic = NULL
 	    intermediateMessage('.Done early',loc = 'end')
 	    return("Data for both horizontalDistance_dd and drawdown are required to fill-in missing cover values.  Either provide that data or set fillinDrawdown to FALSE")
 	}
+	  # Fill in missing drawdown values for each class if appropriate NEW LOCATION, USING DF INSTEAD OF FCDATA & HDDATA
+	  if(createSyntheticCovers) 
+	      df <- fillinDDWithRiparianValues(subset(df, CLASS %nin% c('HORIZ_DIST_DD','DRAWDOWN') & !is.na(VALUE)) #fcData
+	                                          ,subset(df, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE)) #hdData
+	                                          ,fillinDDImpacts_maxDrawdownDist
+	                                          ) %>%
+              rbind(subset(df, CLASS %in% c('HORIZ_DIST_DD','DRAWDOWN') & !is.na(VALUE))) # add these values back in!!!!
+    
 	if(fillinDrawdown) {
 		intermediateMessage('.fill')
 		df <- fillinAbsentMissingWithDefaultValue(df, fillinValue='0', fillinHORIZ_DIST_DD='0')
@@ -546,9 +554,9 @@ nlaFishCover <- function(aquatic = NULL
 	hdData <- subset(df, CLASS %in% 'HORIZ_DIST_DD' & !is.na(VALUE))
     intermediateMessage('.3')
 	
-	  # Fill in missing drawdown values for each class if appropriate
-	  if(createSyntheticCovers) 
-	      fcData <- fillinDDWithRiparianValues(fcData, hdData, fillinDDImpacts_maxDrawdownDist)
+	  # # Fill in missing drawdown values for each class if appropriate OLD LOCATION
+	  # if(createSyntheticCovers) 
+	  #     fcData <- fillinDDWithRiparianValues(fcData, hdData, fillinDDImpacts_maxDrawdownDist)
 	
 	
 	# Assign numeric values for cover classes and assign cover types to
