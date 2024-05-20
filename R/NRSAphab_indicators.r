@@ -240,15 +240,15 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
 #' the default is \emph{UID}
 #' 
 #' @param ecoreg A string with the name of the aggregated bioregion variable. 
-#' Valid values that correspond to regions used in NLA are
-#' CPL, EHIGH, PLAINS, UMW, and WMTNS.
+#' Valid values that correspond to regions used in NRSA are
+#' CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMTNS, and XER.
 #' 
 #' @param protocol A string with the name of the variable indicating  
 #' physical habitat protocol used. The expected values of this variable are 
 #' 'BOATABLE' and 'WADEABLE'.
 #' 
 #' @param xfc_nat A string with the name of the variable for mean areal 
-#' proportion natural fish cover + 0.01). Typically, the version used from NRSA physical 
+#' proportion natural fish cover. Typically, the version used from NRSA physical 
 #' habitat metrics is XFC_NAT.
 #' 
 #' @param lat A string with the name of the variable for latitude, assumed to 

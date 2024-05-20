@@ -23,8 +23,6 @@
 #' dfCompare(df1, df2, byVars, zeroFudge=1e-17, verbose=FALSE)
 #' dfLengthen(df, keys, name, value, values)
 #' expand.data.frame(df, cols)
-#' fillinDrawdownData(df, fillinValue='0', fillinHORIZ_DIST_DD='0')
-#' fillinDrawdownData.expansion(df)
 #' first(df, v, first.v)
 #' gmean(x)
 #' idr(x, method=2)

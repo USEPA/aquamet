@@ -29,6 +29,7 @@ nlaRiparianVegetation(
   horizontalDistance_dd = NULL,
   createSyntheticCovers = TRUE,
   fillinDrawdown = TRUE,
+  fillinDDImpacts_maxDrawdownDist = 1.5,
   dataInformation = data.frame(value = c(NA, "0", "1", "2", "3", "4"), weights = c(NA, 0,
     0.05, 0.25, 0.575, 0.875), presence = c(NA, 0L, 1L, 1L, 1L, 1L) \%>\% as.logical(),
     stringsAsFactors = FALSE),
