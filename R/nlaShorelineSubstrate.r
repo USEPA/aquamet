@@ -146,15 +146,15 @@
 #'   
 #'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
 #'   #  and VALUE
-#'   bedrock <- subset(nlaPhabEx,PARAMETER=='SS_BEDROCK',select=-PARAMETER)
-#'   boulder <- subset(nlaPhabEx,PARAMETER=='SS_BOULDERS',select=-PARAMETER)
-#'   cobble <- subset(nlaPhabEx,PARAMETER=='SS_COBBLE',select=-PARAMETER)
-#'   gravel <- subset(nlaPhabEx,PARAMETER=='SS_GRAVEL',select=-PARAMETER)
-#'   organic <- subset(nlaPhabEx,PARAMETER=='SS_ORGANIC',select=-PARAMETER)
-#'   other <- subset(nlaPhabEx,PARAMETER=='SS_OTHER',select=-PARAMETER)
-#'   sand <- subset(nlaPhabEx,PARAMETER=='SS_SAND',select=-PARAMETER)
-#'   silt <- subset(nlaPhabEx,PARAMETER=='SS_SILT',select=-PARAMETER)
-#'   wood <- subset(nlaPhabEx,PARAMETER=='SS_WOOD',select=-PARAMETER)
+#'   bedrock <- subset(nlaPhab,PARAMETER=='SS_BEDROCK',select=-PARAMETER)
+#'   boulder <- subset(nlaPhab,PARAMETER=='SS_BOULDERS',select=-PARAMETER)
+#'   cobble <- subset(nlaPhab,PARAMETER=='SS_COBBLE',select=-PARAMETER)
+#'   gravel <- subset(nlaPhab,PARAMETER=='SS_GRAVEL',select=-PARAMETER)
+#'   organic <- subset(nlaPhab,PARAMETER=='SS_ORGANIC',select=-PARAMETER)
+#'   other <- subset(nlaPhab,PARAMETER=='SS_OTHER',select=-PARAMETER)
+#'   sand <- subset(nlaPhab,PARAMETER=='SS_SAND',select=-PARAMETER)
+#'   silt <- subset(nlaPhab,PARAMETER=='SS_SILT',select=-PARAMETER)
+#'   wood <- subset(nlaPhab,PARAMETER=='SS_WOOD',select=-PARAMETER)
 #'   
 #'   exShoreSubstrate <- nlaShorelineSubstrate(bedrock,boulder,
 #'   cobble,gravel,organic,other,sand,silt,wood)

@@ -194,19 +194,19 @@ habitat metrics for National Lakes Assessment (NLA) data.
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE
-  bedrock <- subset(nlaPhabEx,PARAMETER=='BS_BEDROCK',select=-PARAMETER)
-  boulder <- subset(nlaPhabEx,PARAMETER=='BS_BOULDER',select=-PARAMETER)
-  color <- subset(nlaPhabEx,PARAMETER=='BS_COLOR',select=-PARAMETER)
-  cobble <- subset(nlaPhabEx,PARAMETER=='BS_COBBLE',select=-PARAMETER)
-  gravel <- subset(nlaPhabEx,PARAMETER=='BS_GRAVEL',select=-PARAMETER)
-  odor <- subset(nlaPhabEx,PARAMETER=='ODOR',select=-PARAMETER)
-  organic <- subset(nlaPhabEx,PARAMETER=='BS_ORGANIC',select=-PARAMETER)
-  sand <- subset(nlaPhabEx,PARAMETER=='BS_SAND',select=-PARAMETER)
-  silt <- subset(nlaPhabEx,PARAMETER=='BS_SILT',select=-PARAMETER)
-  wood <- subset(nlaPhabEx,PARAMETER=='BS_WOOD',select=-PARAMETER)
+  bedrock <- subset(nlaPhab,PARAMETER=='BS_BEDROCK',select=-PARAMETER)
+  boulder <- subset(nlaPhab,PARAMETER=='BS_BOULDER',select=-PARAMETER)
+  color <- subset(nlaPhab,PARAMETER=='BS_COLOR',select=-PARAMETER)
+  cobble <- subset(nlaPhab,PARAMETER=='BS_COBBLE',select=-PARAMETER)
+  gravel <- subset(nlaPhab,PARAMETER=='BS_GRAVEL',select=-PARAMETER)
+  odor <- subset(nlaPhab,PARAMETER=='ODOR',select=-PARAMETER)
+  organic <- subset(nlaPhab,PARAMETER=='BS_ORGANIC',select=-PARAMETER)
+  sand <- subset(nlaPhab,PARAMETER=='BS_SAND',select=-PARAMETER)
+  silt <- subset(nlaPhab,PARAMETER=='BS_SILT',select=-PARAMETER)
+  wood <- subset(nlaPhab,PARAMETER=='BS_WOOD',select=-PARAMETER)
   
-  exBottomSubstrate <- nlaBottomSubstrate(bedrock,boulder,color,
-  cobble,gravel,odor,organic,sand,silt,wood)
+  exBottomSubstrate <- nlaBottomSubstrate(bedrock, boulder, color,
+  cobble, gravel, odor, organic, sand, silt, wood)
   
   head(exBottomSubstrate)
  

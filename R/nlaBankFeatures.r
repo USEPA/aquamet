@@ -78,37 +78,39 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples
-#'  head(nlaPhabEx)
+#'  head(nlaPhab)
 #'   
 #'  # Must subset example dataset to create inputs, keeping only SITE, STATION,
 #'  #  and VALUE
 #'  # For angle subset, we must revalue NEAR_VERTICAL_UNDERCUT to NEAR_VERTICAL 
 #'  #  to work with function.
-#'  angle <- subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER)  
-#'  angle$VALUE <- with(angle, ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT',
-#'                            'NEAR_VERTICAL',VALUE))
+#'  angle <- subset(nlaPhab,PARAMETER=='ANGLE',select=-PARAMETER)  
+#'  angle$VALUE <- with(angle, ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT', 
+#'                            'NEAR_VERTICAL', VALUE))
 #'   
-#'  drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN', select=-PARAMETER)
+#'  drawdown <- subset(nlaPhab, PARAMETER=='DRAWDOWN', select=-PARAMETER)
 #'  
 #'  # For most input subsets, we also need to make sure VALUE is numeric.
-#'  horizontalDistance <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST', select=-PARAMETER)  
+#'  horizontalDistance <- subset(nlaPhab,PARAMETER=='HORIZ_DIST', select=-PARAMETER)  
 #'  horizontalDistance$VALUE <- with(horizontalDistance, as.numeric(VALUE))
 #'     
-#'  horizontalDistanceDrawdown <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD', 
+#'  horizontalDistanceDrawdown <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD', 
 #'  select=-PARAMETER)  
 #'  horizontalDistanceDrawdown$VALUE <- with(horizontalDistanceDrawdown, 
 #'  as.numeric(VALUE))
 #'  
-#'  verticalHeight <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) 
+#'  verticalHeight <- subset(nlaPhab, PARAMETER=='VERT_HEIGHT', select=-PARAMETER) 
 #'  verticalHeight$VALUE <- with(verticalHeight, as.numeric(VALUE))
 #'    
-#'  verticalHeightDrawdown <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT_DD', 
+#'  verticalHeightDrawdown <- subset(nlaPhab, PARAMETER=='VERT_HEIGHT_DD', 
 #'            select=-PARAMETER)
 #'  verticalHeightDrawdown$VALUE <- with(verticalHeightDrawdown, as.numeric(VALUE)) 
 #'            
 #'  exBankFeatures <- nlaBankFeatures(angle, drawdown, 
-#'  horizontalDistance, horizontalDistanceDrawdown, verticalHeight, 
-#'  verticalHeightDrawdown)   
+#'   horizontalDistance, 
+#'   horizontalDistanceDrawdown, 
+#'   verticalHeight, 
+#'   verticalHeightDrawdown)   
 #'  head(exBankFeatures)
 #'  
 #' @keywords survey

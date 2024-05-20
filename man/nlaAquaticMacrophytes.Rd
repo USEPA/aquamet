@@ -94,18 +94,20 @@ This function calculates the aquatic macrophyte portion of the physical
 habitat metrics for National Lakes Assessment (NLA) data.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Subset dataset into individual parameter inputs, keeping only SITE, 
   #   STATION, and VALUE
-  emerg <- subset(nlaPhabEx,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
-  float <- subset(nlaPhabEx,PARAMETER=='AM_FLOATING',select=-PARAMETER)
-  submerg <- subset(nlaPhabEx,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
-  totcvr <- subset(nlaPhabEx,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
+  emerg <- subset(nlaPhab,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
+  float <- subset(nlaPhab,PARAMETER=='AM_FLOATING',select=-PARAMETER)
+  submerg <- subset(nlaPhab,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
+  totcvr <- subset(nlaPhab,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
   
   # Use above dataframes as inputs to function
   exAquMacro <- nlaAquaticMacrophytes(emergent=emerg,
-  floating=float,submergent=submerg,totalCover=totcvr)
+     floating=float,
+     submergent=submerg,
+     totalCover=totcvr)
   
   head(exAquMacro)
  

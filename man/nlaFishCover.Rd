@@ -314,7 +314,7 @@ habitat metrics for National Lakes Assessment (NLA) data.
   drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
   
   # Ensure VALUE is numeric for this particular subset
-  horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',
+  horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',
      select=-PARAMETER)
   horizontalDistance_dd$VALUE <- with(horizontalDistance_dd, as.numeric(VALUE))
   
