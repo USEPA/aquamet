@@ -269,6 +269,7 @@ nlaShorelineSubstrate <- function(bedrock = NULL
 #            the cover-weighted log10(diameters) rather than the 
 #            log10(cover-weighted diameters). Also removed substrates with zero 
 #            covers from calculation of station mean diameters.
+#    5/21/24 cws Modified to rename expand.data.frame to expandDataFrame
 #
 # Arguments:
 #   df = a data frame containing shoreline substrate data.  The data frame must
@@ -476,7 +477,7 @@ nlaShorelineSubstrate <- function(bedrock = NULL
                       ) 
                  ,count
                  )
-  tt <- within(expand.data.frame(tt, c('SITE','CLASS'))
+  tt <- within(expandDataFrame(tt, c('SITE','CLASS'))
 			  ,VALUE <- ifelse(is.na(VALUE), 0, VALUE)
 			  )
   countSubstrates <- within(tt

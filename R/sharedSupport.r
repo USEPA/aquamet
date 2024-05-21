@@ -98,6 +98,8 @@
 #           about creation of NA values by coercion
 #  3/07/24 cws Renamed fillinDrawdownData to fillinAbsentMissingWithDefaultValue
 #          Added fillinDDWithRiparianValues
+#  5/21/24 cws Renamed expand.data.frame to expandDataFrame to avoid interpretation
+#          as an S3 object or as part of the Hadleyverse.
 #
 ################################################################################
 
@@ -984,8 +986,8 @@ dfLengthen <- function(df, keys, name, value, values) {
 
 
 #' @keywords internal
-#' @exportS3Method tidyr::expand
-expand.data.frame <- function(df, cols) {
+#' @export
+expandDataFrame <- function(df, cols) {
 # Expands a data frame so that it contains a cartesian product of values in each  
 # of the named columns.  Columns not named in the cols argument will have NA
 # values in the new rows.  This is useful, for example, to ensure that a  

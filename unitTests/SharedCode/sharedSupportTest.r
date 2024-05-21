@@ -19,6 +19,8 @@
 #  3/07/24 cws Renamed fillinDrawdownDataTest to fillinAbsentMissingWithDefaultValueTest
 #          Added fillinDDWithRiparianValuesTest. 
 #  3/08/24 cws Expanded fillinDDWithRiparianValuesTest to handle absent DD rows. 
+#  5/21/24 cws Renamed expand.data.frame to expandDataFrame to avoid interpretation
+#          as an S3 object.
 #
 # RUnit tests
 
@@ -1077,8 +1079,8 @@ dfCompareTest <- function() {
 }
 
 
-expand.data.frameTest <- function()
-# unit test for expand.data.frame
+expandDataFrameTest <- function()
+# unit test for expandDataFrame
 {
 	# Test with data that has no repeated values in the named columns
 	dfTest <- within(data.frame(id=1:10, param=letters[1:10], stringsAsFactors=FALSE)
@@ -1095,7 +1097,7 @@ expand.data.frameTest <- function()
 									   )
 					   }
 			          )
-	actual <- expand.data.frame(dfTest, c('id','param'))
+	actual <- expandDataFrame(dfTest, c('id','param'))
 	actual <- actual[order(actual$id, actual$param),]
 	row.names(actual) <- NULL
 	
@@ -1117,7 +1119,7 @@ expand.data.frameTest <- function()
 									   )
 					   }
 					  )
-	actual <- expand.data.frame(dfTest, c('id','param'))
+	actual <- expandDataFrame(dfTest, c('id','param'))
 	actual <- actual[order(actual$id, actual$param),]
 	row.names(actual) <- NULL
 	
@@ -1126,7 +1128,7 @@ expand.data.frameTest <- function()
 	
 	# Test with dataframe that is already fully expanded
 	expected <- actual
-	actual <- expand.data.frame(actual, c('id','param'))
+	actual <- expandDataFrame(actual, c('id','param'))
 	actual <- actual[order(actual$id, actual$param),]
 	row.names(actual) <- NULL
 	
