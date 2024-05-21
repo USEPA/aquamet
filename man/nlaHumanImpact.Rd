@@ -35,6 +35,7 @@ nlaHumanImpact(
   horizontalDistance_dd = NULL,
   data2007 = FALSE,
   fillinDrawdown = TRUE,
+  fillinDDImpacts_maxDrawdownDist = 1.5,
   dataInformation = data.frame(value = c("0", "P", "C"), weights = c(0, 0.5, 1), inStream
     = c(0L, 0L, 1L), presence = c(0L, 1L, 1L) \%>\% as.logical(), stringsAsFactors =
     FALSE),
