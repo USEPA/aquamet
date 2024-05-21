@@ -416,6 +416,7 @@ nlaFishCover <- function(aquatic = NULL
 #            tests. Slight change in handling when fillinDrawdown and 
 #            createSyntheticCovers are used but no drawdown data is provided, 
 #            as with 2007 data.
+#    5/21/24 cws Modified to rename expand.data.frame to expandDataFrame
 #
 # Arguments:
 #   df = a data frame containing fish cover data.  The data frame must include
@@ -763,7 +764,7 @@ nlaFishCover.indivCovers <- function(fcDataCalcs)
 					  )
 				 ,count
 				 )
-	allCounts <- expand.data.frame(tt, c('SITE','CLASS','coverSuffix'))
+	allCounts <- expandDataFrame(tt, c('SITE','CLASS','coverSuffix'))
 	nCover <- within(allCounts
 					,{METRIC <- gsub('^FC_(.+)$', 'FCN\\1', CLASS)
 					  VALUE <- ifelse(is.na(VALUE), 0L, VALUE)
@@ -781,7 +782,7 @@ nlaFishCover.indivCovers <- function(fcDataCalcs)
 					  )
 				 ,sd, na.rm=TRUE
 				 )
-#	allV <- expand.data.frame(tt, c('SITE','CLASS','coverSuffix'))
+#	allV <- expandDataFrame(tt, c('SITE','CLASS','coverSuffix'))
 	sdCover <- within(tt,{METRIC <- gsub('^FC_(.+)$', 'FCV\\1', CLASS)}) %>%
 	           mutate(CLASS = NULL)
 	intermediateMessage('.i3')
@@ -796,7 +797,7 @@ nlaFishCover.indivCovers <- function(fcDataCalcs)
 					  	   )
 					  ,protectedMean, na.rm=TRUE
 					  )
-#	allFC <- expand.data.frame(fcMeans, c('SITE','CLASS','coverSuffix'))
+#	allFC <- expandDataFrame(fcMeans, c('SITE','CLASS','coverSuffix'))
 	meanCover <- within(fcMeans, METRIC <- gsub('^FC_(.+)$', 'FCFC\\1', CLASS)) %>%
 	             mutate(CLASS = NULL)
 	

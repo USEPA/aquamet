@@ -437,6 +437,7 @@ nlaRiparianVegetation <- function(bigTrees = NULL
 #            with na.rm=FALSE so stations with missing values stay missing rather
 #            than become 0, reducing the resulting mean
 #    3/07/24 cws Renamed fillinDrawdownData to fillinAbsentMissingWithDefaultValue
+#    5/21/24 cws Modified to rename expand.data.frame to expandDataFrame
 #   
 # Arguments:
 #   df = a data frame containing riparian zone and vegetation data.  The data
@@ -821,7 +822,7 @@ nlaRiparianVegetation.calculateMets <- function(rvData)
   	rv <- rbind(canPresence, undPresence, componentPresence, componentCovers
 			   ,iCan, iUnd, iGnd, iTallw, iWoody, iHerbs, iCanUnd, itotVeg
 			   )
-  	rv <- within(expand.data.frame(rv, c('SITE','METRIC','coverSuffix'))
+  	rv <- within(expandDataFrame(rv, c('SITE','METRIC','coverSuffix'))
                 ,VALUE <- ifelse(grepl('^RVN.+', METRIC) & is.na(VALUE), 0, VALUE)
 	            )
 	rv <- subset(rv

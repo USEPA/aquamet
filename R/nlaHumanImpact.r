@@ -477,6 +477,7 @@ nlaHumanImpact <- function(buildings = NULL
 #    3/25/24 cws Modified to not do any drawdown zone fillin if data2007 is TRUE
 #            because 2007 does not have any drawdown data. No change made to unit
 #            tests.
+#    5/21/24 cws Modified to rename expand.data.frame to expandDataFrame
 #
 # Arguments:
 #   df = a data frame containing human influence data.  The data frame must
@@ -733,7 +734,7 @@ nlaHumanImpact.calculateMets <- function(hiData)
 			   	,circaInfluence, weightedGroupInfluence
 			   	)
 	intermediateMessage('.Y')
-	rc <- expand.data.frame(all, c('SITE','METRIC','coverSuffix'))
+	rc <- expandDataFrame(all, c('SITE','METRIC','coverSuffix'))
 	intermediateMessage('.Z')
 	rc$VALUE <- with(rc, ifelse(grepl('^HIN', METRIC) & is.na(VALUE), 0, VALUE))
 	return(rc)

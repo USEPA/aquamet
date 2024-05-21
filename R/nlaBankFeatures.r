@@ -170,7 +170,8 @@ nlaBankFeatures <- function(angle = NULL
 #    4/12/24 cws Modified nlaBankFeatures.fillinDistances to allow missing values
 #            to be changed to zero when DRAWDOWN is N, as well as NO. Unit test
 #            not modified.
-#
+#    5/21/24 cws Modified to rename expand.data.frame to expandDataFrame
+#    
 # Arguments:
 #   df = a data frame containing bank features data.  The data frame must
 #     include columns that are named as follows:
@@ -396,7 +397,7 @@ nlaBankFeatures.fillinDistances <- function(df)
 #
 # ASSUMPTIONS:
 # PARAMETER values include at least one row of HORIZ_DIST_DD and VERT_HEIGHT_DD, otherwise
-#   the expand.data.frame() call will not work.
+#   the expandDataFrame() call will not work.
 # df has columns SITE, STATION, PARAMETER, VALUE and none other.
 #
 {
@@ -425,7 +426,7 @@ nlaBankFeatures.fillinDistances <- function(df)
 							   		   	   )
 									
 								# Add absent rows for this SITE and then remove the rows 'seeded' above.
-								rc <- subset(expand.data.frame(tt, c('SITE','STATION','PARAMETER'))
+								rc <- subset(expandDataFrame(tt, c('SITE','STATION','PARAMETER'))
 											,STATION != 'DELETEME'
 											)
 													
