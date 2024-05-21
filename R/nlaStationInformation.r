@@ -58,7 +58,6 @@
 #'   
 #'   head(exStationInfo)
 #'  
-#' @keywords survey
 nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL
                                  ,isUnitTest = FALSE
                                  ) {

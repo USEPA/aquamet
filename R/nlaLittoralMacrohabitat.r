@@ -122,8 +122,7 @@
 #'   noCover,substrate,vegetation,woody)
 #'   
 #'   head(exLitMacro)
-#'  
-#' @keywords survey
+
 
 nlaLittoralMacrohabitat <- function(artificial = NULL
                                    ,boulders = NULL

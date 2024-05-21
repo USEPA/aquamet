@@ -276,7 +276,6 @@
 #'   
 #'   head(exFishCover)
 #'  
-#' @keywords survey
 nlaFishCover <- function(aquatic = NULL
                         ,aquatic_dd = NULL
                         ,boulders = NULL

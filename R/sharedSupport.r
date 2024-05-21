@@ -984,7 +984,7 @@ dfLengthen <- function(df, keys, name, value, values) {
 
 
 #' @keywords internal
-#' @export
+#' @exportS3Method tidyr::expand
 expand.data.frame <- function(df, cols) {
 # Expands a data frame so that it contains a cartesian product of values in each  
 # of the named columns.  Columns not named in the cols argument will have NA

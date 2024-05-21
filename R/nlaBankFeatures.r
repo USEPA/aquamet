@@ -113,7 +113,6 @@
 #'   verticalHeightDrawdown)   
 #'  head(exBankFeatures)
 #'  
-#' @keywords survey
 #' 
 
 nlaBankFeatures <- function(angle = NULL

@@ -45,8 +45,7 @@
 #'   exLitZone <- nlaLittoralZone(surfFilm, data2007=FALSE)
 #'   
 #'   head(exLitZone)
-#'  
-#' @keywords survey
+
 
 nlaLittoralZone <- function(littoralFilm, data2007=FALSE
                            ,isUnitTest = FALSE

@@ -199,10 +199,8 @@ data collected using the NLA protocol.
   cobble,gravel,organic,other,sand,silt,wood)
   
   head(exShoreSubstrate)
- 
 }
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
 }
-\keyword{survey}

@@ -88,7 +88,6 @@
 #'   
 #'   head(exAquMacro)
 #'  
-#' @keywords survey
 #' 
 nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, totalCover=NULL
                                  ,dataInformation = data.frame(value    = c(NA,'0','1','2','3','4')

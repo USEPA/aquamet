@@ -359,7 +359,6 @@
 #'   
 #'   head(exHumInfl)
 #'  
-#' @keywords survey
 
 nlaHumanImpact <- function(buildings = NULL
                           ,buildings_dd = NULL

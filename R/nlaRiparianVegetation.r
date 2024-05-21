@@ -325,7 +325,6 @@
 #'   
 #'   head(exRipVeg)
 #'  
-#' @keywords survey
 
 nlaRiparianVegetation <- function(bigTrees = NULL
                                  ,bigTrees_dd = NULL

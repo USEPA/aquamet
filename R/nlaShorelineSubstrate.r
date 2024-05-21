@@ -160,8 +160,7 @@
 #'   cobble,gravel,organic,other,sand,silt,wood)
 #'   
 #'   head(exShoreSubstrate)
-#'  
-#' @keywords survey
+
 nlaShorelineSubstrate <- function(bedrock = NULL
 	                             ,boulder = NULL
 	                             ,cobble = NULL

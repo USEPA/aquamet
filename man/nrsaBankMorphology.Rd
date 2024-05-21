@@ -102,9 +102,9 @@ the bank geometry and stream verification form data files.
   exBankMorph <- nrsaBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
   head(exBankMorph)
  
+
 }
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
 }
-\keyword{survey}

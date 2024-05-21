@@ -419,7 +419,6 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' }
 #' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @keywords survey
 #' 
 #' 
 nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg

@@ -169,7 +169,6 @@
 #'   
 #'   head(exBottomSubstrate)
 #'  
-#' @keywords survey
 
 nlaBottomSubstrate <- function(bedrock=NULL
                               ,boulder=NULL
