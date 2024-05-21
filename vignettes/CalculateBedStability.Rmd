@@ -4,7 +4,7 @@ author: "Karen Blocksom "
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Calculating Bed Stability}
+  %\VignetteIndexEntry{Calculating Relative Bed Stability}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

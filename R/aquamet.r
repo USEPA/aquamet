@@ -6,7 +6,7 @@
 #' @importFrom Hmisc "%nin%" capitalize
 #' @importFrom gtools smartbind
 #' @importFrom plyr ddply mutate summarize summarise rename
-#' @importFrom dplyr filter select "%>%" group_by arrange across all_of
+#' @importFrom dplyr filter select "%>%" group_by arrange across all_of anti_join
 #' @importFrom reshape2 dcast melt
 #' @importFrom stringr str_detect 
 #' @importFrom stats aggregate ave coef median na.omit quantile reshape sd weights
