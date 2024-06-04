@@ -277,7 +277,7 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
     return(amMets)
 }
 
-
+#' @keywords internal
 nlaAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeights)
 # Determines fractional presence, fractional cover, cover sd and cover counts. 
 # Returns dataframe with columns SITE, METRIC, VALUE
@@ -338,6 +338,7 @@ nlaAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeig
 }
 
 
+#' @keywords internal
 nlaAquaticMacrophytes.indices <- function(df)
 # Calculates AMITOTAL defined as the mean of the sum of cover values at each transect
 # Returns dataframe with columns SITE, METRIC, VALUE

@@ -714,7 +714,7 @@ nlaHumanImpact <- function(buildings = NULL
 	return(hiMets)
 }
 
-
+#' @keywords internal
 nlaHumanImpact.calculateMets <- function(hiData)
 # Do all the calculationy stuff
 {
@@ -739,7 +739,7 @@ nlaHumanImpact.calculateMets <- function(hiData)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaHumanImpact.weightedIndividualInfluence <- function(hiData)
 # Calculate means and counts for individual influence classes
 {
@@ -781,7 +781,7 @@ nlaHumanImpact.weightedIndividualInfluence <- function(hiData)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaHumanImpact.overallInfluence <- function(hiData)	
 # Calculate overall influence indicies, defined as the sum of the individual
 # mean influences at a site.  These influences are summed as a whole, and
@@ -820,7 +820,7 @@ nlaHumanImpact.overallInfluence <- function(hiData)
 	return(hiiOverall)
 }
 
-
+#' @keywords internal
 nlaHumanImpact.circaInfluence <- function(hiData)
 # Calculate circa influence indicies, which limit calculation to include
 # only influences found within the plot area at a station.  These are
@@ -866,7 +866,7 @@ nlaHumanImpact.circaInfluence <- function(hiData)
 	return(hiiOverallCirca)
 }
 
-  
+#' @keywords internal
 nlaHumanImpact.anyPresence <- function(hiData)  
 # Calculate fractional presence of any disturbance, both anywhere
 # at the station (circa and proximal), and just within the study plot (circa).
@@ -910,7 +910,7 @@ nlaHumanImpact.anyPresence <- function(hiData)
 	return(hiAny)
 }
 
-
+#' @keywords internal
 nlaHumanImpact.weightedGroupInfluence <- function(hiData)
 # Calculate weighted influence of agricultural, nonagricultural and total impacts
 {

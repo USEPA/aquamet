@@ -45,5 +45,8 @@ if(getRversion() >= "4.0") utils::globalVariables(c('ECO9','gf','fp','HABITAT','
                   'basicSyntheticInfl', 'second', 'inFirst', 'inSecond', 'type',
                   'classFirst', 'classSecond', 'column', 'type2',
                   'compareAsNumbers', 'sameAbs', 'sameci', 'samesi', 'samecsi',
-                  'cover'))
+                  'cover',"calc", "cover_dd", "cover_lit", "coverSuffix", "infl_rip", "infl_dd",
+                  "isAg", "lsub_d25", "lsub_d75", "presence"))
+
+
 ## NULL

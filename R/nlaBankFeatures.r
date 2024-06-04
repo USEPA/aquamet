@@ -235,7 +235,7 @@ nlaBankFeatures <- function(angle = NULL
   return(bfMets)
 }
 
-
+#' @keywords internal
 nlaBankFeatures.standardizeData <- function(df)
 # returns dataframe with standardized input data.
 # NEAR VERTICAL is from 2007 and NEAR_VERTICAL_UNDERCUT is from 2012.  These
@@ -252,7 +252,7 @@ nlaBankFeatures.standardizeData <- function(df)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaBankFeatures.bankAngle <- function(df)
 # calculates bank angle metrics.  Returns dataframe
 # with columns SITE, PARAMETER, VALUE
@@ -334,7 +334,7 @@ nlaBankFeatures.bankAngle <- function(df)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaBankFeatures.distances <- function(df)
 # calculates metrics for horizontal distances and vertical heights.  
 # Returns dataframe with columns SITE, METRIC, VALUE.
@@ -388,7 +388,7 @@ nlaBankFeatures.distances <- function(df)
 	rc <- rbind(meanDists, nDists)
 }
 
-
+#' @keywords internal
 nlaBankFeatures.fillinDistances <- function(df)
 # Used to fill in missing values of HORIZ_DIST_DD and VERT_HEIGHT_DD with zeros where
 # it is safe to assume they are zero, i.e. when there is no drawdown noted.

@@ -10,7 +10,7 @@
 \alias{dfCompare}
 \alias{dfLengthen}
 \alias{dfWiden}
-\alias{expand.data.frame}
+\alias{expandDataFrame}
 \alias{fillinDrawdownData}
 \alias{fillinDrawdownData.expansion}
 \alias{first}
@@ -37,16 +37,55 @@
 \alias{trimws}
 \alias{uidCreate}
 \alias{uidSeparate}
-\alias{Dominance}
-\alias{ShanDiversity}
-\alias{tolindex}
-\alias{tolindexFish}
 \alias{aquametStandardizeArgument}
 \alias{aquametStandardizeArgument.checkLegal}
 \alias{aquametStandardizeArgument.checkRange}
 \alias{aquametStandardizeArgument.checkStructure}
 \alias{nlaStationInformation.islandStations}
 \alias{nlaStationInformation.stationDepths}
+\alias{fillinDDWithRiparianValues}
+\alias{fillinAbsentMissingWithDefaultValue.expansion}
+\alias{fillinAbsentMissingWithDefaultValue}
+\alias{nlaHumanImpact.calculateMets}
+\alias{nlaHumanImpact.weightedIndividualInfluence}
+\alias{nlaHumanImpact.overallInfluence}
+\alias{nlaHumanImpact.circaInfluence}
+\alias{nlaHumanImpact.anyPresence}
+\alias{nlaHumanImpact.weightedGroupInfluence}
+\alias{nlaAquaticMacrophytes.individualCover}
+\alias{nlaAquaticMacrophytes.indices}
+\alias{nlaBankFeatures.standardizeData}
+\alias{nlaBankFeatures.bankAngle}
+\alias{nlaBankFeatures.distances}
+\alias{nlaBankFeatures.fillinDistances}
+\alias{nlaBottomSubstrate.setupForParticleCalculations}
+\alias{nlaBottomSubstrate.indivPresence}
+\alias{nlaBottomSubstrate.variety}
+\alias{nlaBottomSubstrate.indivCover}
+\alias{nlaBottomSubstrate.populationEstimates}
+\alias{nlaBottomSubstrate.modeCover}
+\alias{nlaBottomSubstrate.indivColor}
+\alias{nlaBottomSubstrate.modeColor}
+\alias{nlaBottomSubstrate.indivOdor}
+\alias{nlaBottomSubstrate.modeOdor}
+\alias{nlaFishCover.calculateMets}
+\alias{nlaFishCover.splitParameterNames}
+\alias{nlaFishCover.indivCovers}
+\alias{nlaFishCover.groupIndices}
+\alias{nlaLittoralMacrohabitat.cover}
+\alias{nlaLittoralMacrohabitat.coverTypes}
+\alias{nlaLittoralMacrohabitat.humanDist}
+\alias{nlaLittoralMacrohabitat.substrate}
+\alias{nlaLittoralZone.prepareInput}
+\alias{nlaLittoralZone.modeFilm}
+\alias{nlaLittoralZone.fractionalPresences}
+\alias{nlaLittoralZone.filmVariety}
+\alias{nlaRiparianVegetation.calculateMets}
+\alias{nlaRiparianVegetation.canopyTypePresence}
+\alias{nlaRiparianVegetation.understoryTypePresence}
+\alias{nlaRiparianVegetation.componentPresence}
+\alias{nlaRiparianVegetation.componentCovers}
+\alias{nlaRiparianVegetation.compositeIndex}
 \title{aquamet internal functions}
 \usage{
 aquametStandardizeArgument.checkLegal(arg, expectedLegal)
@@ -59,7 +98,7 @@ convert_to_char(df)
 count(x)
 dfCompare(df1, df2, byVars, zeroFudge=1e-17, verbose=FALSE)
 dfLengthen(df, keys, name, value, values)
-expand.data.frame(df, cols)
+expandDataFrame(df, cols)
 first(df, v, first.v)
 gmean(x)
 idr(x, method=2)
@@ -85,11 +124,62 @@ uidCreate(df, keys, sep='+')
 uidSeparate(df, uidName, keyNames, sep='+')
 nlaStationInformation.islandStations(df)
 nlaStationInformation.stationDepths(df)
-#' aquametStandardizeArgument(arg, ..., ifdf=NULL, 
+aquametStandardizeArgument(arg, ..., ifdf=NULL, 
 struct=list(SITE, VALUE), 
 rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE, 
 metsFuncName,
 argSavePath = NULL))
+fillinDDWithRiparianValues(hiData, horizDist, fillinMaxDrawdownDist)
+fillinAbsentMissingWithDefaultValue(df)
+fillinAbsentMissingWithDefaultValue.expansion(df)
+nlaHumanImpact.calculateMets(hiData)
+nlaHumanImpact.weightedIndividualInfluence(hiData)
+nlaHumanImpact.overallInfluence(hiData)
+nlaHumanImpact.circaInfluence(hiData)
+nlaHumanImpact.anyPresence(hiData)  
+nlaHumanImpact.weightedGroupInfluence(hiData)
+nlaAquaticMacrophytes.individualCover(df, presenceWeights, coverWeights)
+nlaAquaticMacrophytes.indices(df)
+nlaBankFeatures.standardizeData(df)
+nlaBankFeatures.bankAngle(df)
+nlaBankFeatures.distances(df)
+nlaBankFeatures.fillinDistances(df)
+nlaBottomSubstrate.setupForParticleCalculations(bsData, substrateCovers, substrateSizes)
+nlaBottomSubstrate.indivPresence(bsPresence)
+nlaBottomSubstrate.variety(bsData)	
+nlaBottomSubstrate.indivCover(bsData)
+nlaBottomSubstrate.populationEstimates(bsData, substrateSizes)
+nlaBottomSubstrate.modeCover(presences, covers)
+nlaBottomSubstrate.indivColor(df)
+nlaBottomSubstrate.modeColor(df)
+nlaBottomSubstrate.indivOdor(df)
+nlaBottomSubstrate.modeOdor(df)
+nlaFishCover.calculateMets(fcDataCalcs)
+nlaFishCover.splitParameterNames(parameters)
+nlaFishCover.indivCovers(fcDataCalcs)
+nlaFishCover.groupIndices(fcDataCalcs)
+nlaHumanImpact.calculateMets(hiData)
+nlaHumanImpact.weightedIndividualInfluence(hiData)
+nlaHumanImpact.overallInfluence(hiData)
+nlaHumanImpact.circaInfluence(hiData)	
+nlaHumanImpact.anyPresence(hiData) 
+nlaHumanImpact.weightedGroupInfluence(hiData)
+nlaLittoralMacrohabitat.cover(df)
+nlaLittoralMacrohabitat.coverTypes(df)
+nlaLittoralMacrohabitat.humanDist(df, hdWeights)
+nlaLittoralMacrohabitat.substrate(df)
+nlaLittoralZone.prepareInput(lzData, data2007)
+nlaLittoralZone.modeFilm(df, data2007)
+nlaLittoralZone.fractionalPresences(df, data2007)
+nlaLittoralZone.filmVariety(df, data2007)
+nlaRiparianVegetation.calculateMets(rvData)
+nlaRiparianVegetation.canopyTypePresence(rvData)
+nlaRiparianVegetation.understoryTypePresence(rvData)
+nlaRiparianVegetation.componentPresence(rvData)
+nlaRiparianVegetation.componentCovers(allFractions)
+nlaRiparianVegetation.compositeIndex(groupData, indexName)
+nlaStationInformation.islandStations(df)
+nlaStationInformation.stationDepths(df)
 }
 \description{
 These are internal functions to aquamet and not intended for use on their own.

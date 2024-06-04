@@ -115,8 +115,7 @@ horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAM
 hi <- nlaHumanImpact(buildings, buildings_dd, commercial, commercial_dd,
   crops, crops_dd,docks, docks_dd, landfill, landfill_dd, lawn, lawn_dd, orchard,
   orchard_dd, other, other_dd, park, park_dd, pasture, pasture_dd, powerlines,
-  powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd,
-  data2007=FALSE, fillinDrawdown = TRUE)
+  powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd)
 
 hi.wide <- reshape2::dcast(hi, SITE~METRIC, value.var='VALUE') 
 

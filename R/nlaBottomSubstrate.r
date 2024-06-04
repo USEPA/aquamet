@@ -450,7 +450,7 @@ nlaBottomSubstrate <- function(bedrock=NULL
 	return(mets)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.setupForParticleCalculations <- function(bsData, substrateCovers, substrateSizes)
 # Prepares the input data for subsequent particle calculations, adding
 # information for each substrate class.  
@@ -474,7 +474,7 @@ nlaBottomSubstrate.setupForParticleCalculations <- function(bsData, substrateCov
 	return(preppedData)	
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.indivPresence <- function(bsPresence)
 # Calculate fractional presence of each substrate class
 {
@@ -492,7 +492,7 @@ nlaBottomSubstrate.indivPresence <- function(bsPresence)
 	return(meanPresence)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.variety <- function(bsData)	
 # Calculate variety metrics: 
 #     bsiStaVariety = mean number of substrate classes at each station.
@@ -530,7 +530,7 @@ nlaBottomSubstrate.variety <- function(bsData)
 	return(rc)
 }
   
-
+#' @keywords internal
 nlaBottomSubstrate.indivCover <- function(bsData)
 # calculate mean, stdev and counts of normalized characteristic cover values 
 # of each substrate class.
@@ -575,7 +575,7 @@ nlaBottomSubstrate.indivCover <- function(bsData)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
 # Calculations using characteristic diameters of the substrate are based
 # on mean diameter*cover values at each transect.  Cover values are 
@@ -671,7 +671,7 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.modeCover <- function(presences, covers)
 # Determine most common substrate class by presence and by cover
 # (requires same site visits in meanPresence and meanCover and in same order)
@@ -718,7 +718,7 @@ nlaBottomSubstrate.modeCover <- function(presences, covers)
   	return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.indivColor <- function(df)
 # Determine largest fractional presence of each substrate color and sample size.
 {
@@ -769,7 +769,7 @@ nlaBottomSubstrate.indivColor <- function(df)
   	return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.modeColor <- function(df)
 # Determine color mode (most common color(s)) at each site.  Returns
 # dataframe with mode of substrate color, alphabetizing ties.
@@ -795,7 +795,7 @@ nlaBottomSubstrate.modeColor <- function(df)
   	return(colorMode)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.indivOdor <- function(df)
 # Determine fractional odor presences
 {
@@ -854,7 +854,7 @@ nlaBottomSubstrate.indivOdor <- function(df)
   return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.modeOdor <- function(df)
 # Determine most common substrate odor
 {

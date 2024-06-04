@@ -640,7 +640,7 @@ nlaFishCover <- function(aquatic = NULL
 	return(fcMets)
 }
 
-
+#' @keywords internal
 nlaFishCover.calculateMets <- function(fcDataCalcs)
 #
 {
@@ -703,7 +703,7 @@ nlaFishCover.calculateMets <- function(fcDataCalcs)
     return(all)
 }
 
-
+#' @keywords internal
 nlaFishCover.splitParameterNames <- function(parameters)
 # Splits the CLASS value into the base and suffix portions,
 # e.g. 'FC_BOULDERS_DD' becomes 'FC_BOULDERS' and '_DD'.  Returns
@@ -730,7 +730,7 @@ nlaFishCover.splitParameterNames <- function(parameters)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaFishCover.indivCovers <- function(fcDataCalcs)
 # Calculate simple mets for individual cover types
 # ARGUMENTS:
@@ -807,7 +807,7 @@ nlaFishCover.indivCovers <- function(fcDataCalcs)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaFishCover.groupIndices <- function(fcDataCalcs)
 # Calculate cover indices: total, large, natural and riparian vegetation
 # grouped cover 

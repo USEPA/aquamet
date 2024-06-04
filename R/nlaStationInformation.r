@@ -175,6 +175,7 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL
 	return(rc)
 }
 
+#' @keywords internal
 nlaStationInformation.islandStations <- function(df)
 # calculate mets for stations at islands
 {
@@ -229,7 +230,7 @@ nlaStationInformation.islandStations <- function(df)
  	return(siIsland)
 }
 
-
+#' @keywords internal
 nlaStationInformation.stationDepths <- function(df)
 # calculate mets for stations at islands
 {

@@ -668,7 +668,7 @@ nlaRiparianVegetation <- function(bigTrees = NULL
   	return(rvMets)
 }
 
-
+#' @keywords internal
 nlaRiparianVegetation.calculateMets <- function(rvData)
 # Do all the calculationy work.  
 #
@@ -839,7 +839,7 @@ nlaRiparianVegetation.calculateMets <- function(rvData)
   	return(rv)
 }
 
-
+#' @keywords internal
 nlaRiparianVegetation.canopyTypePresence <- function(rvData)
 # Calculate mean presence (ranges 0-1) of each canopy type
 {
@@ -896,7 +896,7 @@ nlaRiparianVegetation.canopyTypePresence <- function(rvData)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaRiparianVegetation.understoryTypePresence <- function(rvData)
 # Calculate mean presence (ranges 0-1) of each understory type
 {
@@ -941,7 +941,7 @@ nlaRiparianVegetation.understoryTypePresence <- function(rvData)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaRiparianVegetation.componentPresence <- function(rvData)
 # Calculate mean presences for all layer components 
 {
@@ -973,7 +973,7 @@ nlaRiparianVegetation.componentPresence <- function(rvData)
 	return(paMets)
 }
 
-
+#' @keywords internal
 nlaRiparianVegetation.componentCovers <- function(allFractions)
 # Calculate cover mean, stdev and count for individual components
 {
@@ -1068,7 +1068,7 @@ nlaRiparianVegetation.componentCovers <- function(allFractions)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaRiparianVegetation.compositeIndex <- function(groupData, indexName)
 # Composite vegetation indicex.  These are based on the sum of normalized
 # cover values for selected cover types at a station/subid, and the mean
