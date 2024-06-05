@@ -47,7 +47,7 @@ portion of the physical habitat metrics for National Lakes Assessment
 (NLA) data.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE

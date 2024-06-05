@@ -279,6 +279,9 @@ protocol or do not contain drawdown cover data.  The default value is TRUE.}
 DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
 The default value is TRUE.}
 
+\item{fillinDDImpacts_maxDrawdownDist}{A numeric value, the maximum drawdown
+distance to fill in impacts for. Default value is 1.5.}
+
 \item{dataInformation}{A data frame used to convert between 
 cover class codes to characteristic cover values. Default 
 data frame uses NARS values. Expected to contain
@@ -354,7 +357,7 @@ The function requires a data frame containing validated physical
 habitat data collected using the NLA protocol.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE

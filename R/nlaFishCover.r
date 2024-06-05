@@ -178,13 +178,15 @@
 #' drawdown exists at a site.
 #' }
 #' @param createSyntheticCovers A logical value which specifies whether to create
-#     synthetic cover values as proportions of drawdown and riparian cover.
-#     This argument should be set to FALSE when the data follows the 2007 NLA
-#     protocol or do not contain drawdown cover data.  The default value is
-#     TRUE. 
+#'  synthetic cover values as proportions of drawdown and riparian cover.
+#'  This argument should be set to FALSE when the data follows the 2007 NLA
+#'  protocol or do not contain drawdown cover data.  The default value is
+#'  TRUE. 
 #' @param fillinDrawdown A logical value which specifies whether to use the
-#     DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
-#     The default value is TRUE.
+#'  DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
+#'  The default value is TRUE.
+#' @param fillinDDImpacts_maxDrawdownDist A numeric value, the maximum drawdown
+#' distance to fill in impacts for. Default value is 1.5. 
 #' @param dataInformation A data frame containing the field fish cover
 #' categorical values and corresponding numeric cover values used in calculations, 
 #' as well as indicators of cover type presence or absence for each category. The
@@ -192,7 +194,7 @@
 #' \itemize{
 #' \item value c(NA,'0','1','2','3','4')
 #' \item weights c(NA,0,0.05,0.25,0.575,0.875)
-#' \item presence c(NA,FALSE,TRUE,TRUE,TRUE,TRUE) 
+#' \item presence c(NA,0, 1, 1, 1, 1) 
 #' }  
 #' @param isUnitTest Logical argument to determine whether errors should be ignored.
 #' Should only be used for running a unit test. Default value is FALSE.
@@ -238,30 +240,29 @@
 #' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
 #' documentation.
 #' 
-#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
-#' Tom Kincaid \email{Kincaid.Tom@epa.gov}
+#' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}
 #' @examples
-#'   head(nlaPhabEx)
+#'   head(nlaPhab)
 #'   
 #'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
 #'   #  and VALUE
-#'   aquatic <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
-#'   aquatic_dd <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
-#'   boulders <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
-#'   boulders_dd <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS_DD',select=-PARAMETER)
-#'   brush <- subset(nlaPhabEx,PARAMETER=='FC_BRUSH',select=-PARAMETER)
-#'   brush_dd <- subset(nlaPhabEx,PARAMETER=='FC_BRUSH_DD',select=-PARAMETER)
-#'   ledges <- subset(nlaPhabEx,PARAMETER=='FC_LEDGES',select=-PARAMETER)
-#'   ledges_dd <- subset(nlaPhabEx,PARAMETER=='FC_LEDGES_DD',select=-PARAMETER)
-#'   livetrees <- subset(nlaPhabEx,PARAMETER=='FC_LIVETREES',select=-PARAMETER)
-#'   livetrees_dd <- subset(nlaPhabEx,PARAMETER=='FC_LIVETREES_DD',select=-PARAMETER)
-#'   overhang <- subset(nlaPhabEx,PARAMETER=='FC_OVERHANG',select=-PARAMETER)
-#'   overhang_dd <- subset(nlaPhabEx,PARAMETER=='FC_OVERHANG_DD',select=-PARAMETER)
-#'   snags <- subset(nlaPhabEx,PARAMETER=='FC_SNAGS',select=-PARAMETER)
-#'   snags_dd <- subset(nlaPhabEx,PARAMETER=='FC_SNAGS_DD',select=-PARAMETER)
-#'   structures <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
-#'   structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
-#'   drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+#'   aquatic <- subset(nlaPhab,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
+#'   aquatic_dd <- subset(nlaPhab,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
+#'   boulders <- subset(nlaPhab,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
+#'   boulders_dd <- subset(nlaPhab,PARAMETER=='FC_BOULDERS_DD',select=-PARAMETER)
+#'   brush <- subset(nlaPhab,PARAMETER=='FC_BRUSH',select=-PARAMETER)
+#'   brush_dd <- subset(nlaPhab,PARAMETER=='FC_BRUSH_DD',select=-PARAMETER)
+#'   ledges <- subset(nlaPhab,PARAMETER=='FC_LEDGES',select=-PARAMETER)
+#'   ledges_dd <- subset(nlaPhab,PARAMETER=='FC_LEDGES_DD',select=-PARAMETER)
+#'   livetrees <- subset(nlaPhab,PARAMETER=='FC_LIVETREES',select=-PARAMETER)
+#'   livetrees_dd <- subset(nlaPhab,PARAMETER=='FC_LIVETREES_DD',select=-PARAMETER)
+#'   overhang <- subset(nlaPhab,PARAMETER=='FC_OVERHANG',select=-PARAMETER)
+#'   overhang_dd <- subset(nlaPhab,PARAMETER=='FC_OVERHANG_DD',select=-PARAMETER)
+#'   snags <- subset(nlaPhab,PARAMETER=='FC_SNAGS',select=-PARAMETER)
+#'   snags_dd <- subset(nlaPhab,PARAMETER=='FC_SNAGS_DD',select=-PARAMETER)
+#'   structures <- subset(nlaPhab,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
+#'   structures_dd <- subset(nlaPhab,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
+#'   drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
 #'   
 #'   # Ensure VALUE is numeric for this particular subset
 #'   horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',

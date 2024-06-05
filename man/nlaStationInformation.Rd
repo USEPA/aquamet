@@ -55,7 +55,7 @@ records for all stations sampled at each site, or the station counts used
 to calculate island metrics will not be correct.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE

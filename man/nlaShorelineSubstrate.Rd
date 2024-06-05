@@ -181,7 +181,7 @@ The function requires a data frame containing validated physical habitat
 data collected using the NLA protocol.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE

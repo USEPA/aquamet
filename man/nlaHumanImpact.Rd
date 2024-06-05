@@ -329,6 +329,9 @@ processed.  The default value is FALSE.}
 DRAWDOWN parameter to fill in unrecorded cover and horizontalDistance_dd 
 values. The default value is TRUE.}
 
+\item{fillinDDImpacts_maxDrawdownDist}{A numeric value, the maximum drawdown
+distance to fill in impacts for. Default value is 1.5.}
+
 \item{dataInformation}{A data frame relating categorical proximity values 
 to various numeric weights for different types of metrics. The default data frame
 consists of the following values:
@@ -393,7 +396,7 @@ portion of the physical habitat metrics for National Lakes Assessment
 (NLA) data.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE

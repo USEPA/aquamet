@@ -124,13 +124,11 @@ uidCreate(df, keys, sep='+')
 uidSeparate(df, uidName, keyNames, sep='+')
 nlaStationInformation.islandStations(df)
 nlaStationInformation.stationDepths(df)
-aquametStandardizeArgument(arg, ..., ifdf=NULL, 
-struct=list(SITE, VALUE), 
-rangeLimits=NULL, legalValues=NULL, stopOnError=TRUE, 
-metsFuncName,
-argSavePath = NULL))
+aquametStandardizeArgument(arg, ..., ifdf, struct, 
+rangeLimits, legalValues, stopOnError, metsFuncName, argSavePath)
 fillinDDWithRiparianValues(hiData, horizDist, fillinMaxDrawdownDist)
-fillinAbsentMissingWithDefaultValue(df)
+fillinAbsentMissingWithDefaultValue(df, fillinValue='0', 
+fillinHORIZ_DIST_DD='0')
 fillinAbsentMissingWithDefaultValue.expansion(df)
 nlaHumanImpact.calculateMets(hiData)
 nlaHumanImpact.weightedIndividualInfluence(hiData)

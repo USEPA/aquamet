@@ -1875,7 +1875,7 @@ nWadeableStationsPerTransect <- function(thal) {
   return(tt)
 }
 
-
+#' @export
 #' @keywords internal
 protectedMean <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 # Calculates mean using mean(), but can trap additional incalculable values.
@@ -1914,7 +1914,7 @@ protectedMean <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 	
 }
 
-
+#' @export
 #' @keywords internal
 protectedSum <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 # Calculates a vector sum using sum(), but can trap additional incalculable values.
@@ -1954,7 +1954,7 @@ protectedSum <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
 }
 
 
-#' @keywords internal
+
 # rename <- function(df, old, new) {
 #   # This method assumes that names in old & new are listed in the same
 #   # order as the names in df 

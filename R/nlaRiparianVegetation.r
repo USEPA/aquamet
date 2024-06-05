@@ -222,6 +222,8 @@
 #' @param fillinDrawdown A logical value, which specifies whether to use the
 #' DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
 #' The default value is TRUE.
+#' @param fillinDDImpacts_maxDrawdownDist A numeric value, the maximum drawdown
+#' distance to fill in impacts for. Default value is 1.5. 
 #' @param dataInformation A data frame used to convert between 
 #' cover class codes to characteristic cover values. Default 
 #' data frame uses NARS values. Expected to contain
@@ -290,7 +292,7 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples
-#'   head(nlaPhabEx)
+#'   head(nlaPhab)
 #'   
 #'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
 #'   #  and VALUE
