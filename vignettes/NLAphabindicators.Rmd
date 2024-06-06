@@ -1,0 +1,402 @@
+---
+title: "Calculating NLA Physical Habitat Indicators"
+author: "Karen Blocksom"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_document
+vignette: >
+  %\VignetteIndexEntry{Calculating NLA Physical Habitat Indicators}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+# 1) Introduction
+
+There are 5 NLA physical habitat indicators that assess condition based on 1) drawdown, 2) riparian vegetation complexity, 3) littoral vegetation complexity, 4) littoral-riparian vegatation complexity, and 5) riparian disturbance. There is a separate function for each of these to calculate the indicator value and assign a condition class. Each indicator function requires specific site-related information (e.g., latitude, longitude) and specific physical habitat metrics to assign condition.
+
+********
+# 2) Calculating the Drawdown Indicator
+
+The drawdown indicator is based on both horizontal and vertical drawdown distance from the waterline to the high water mark. The data across stations at a lake are summarized in the metrics BFXHORIZDIST_DD and BFXVERTHEIGHT_DD from the function nlaBankFeatures(). Condition class thresholds are based on both aggregated Omernik ecoregions (NAP, SAP, CPL, NPL, SPL, TPL, UMW, WMT, and XER) and lake origin (MAN-MADE or NATURAL). The function assumes there is a single data frame input containing these variables, and the function arguments include a character vector containing the variable(s) necessary to specify unique sampling visits, as well as character strings with the name of each of the variables listed above. The output is a single condition class for each site visit.
+
+#### First, load necessary libraries.
+```{r setup,results='hide', warning=FALSE, message=FALSE}
+library(aquamet)
+# library(reshape2)
+library(plyr)
+library(dplyr)
+```
+
+#### Now, create the input datasets to run nlaBankFeatures() to obtain the BFXHORIZDIST_DD and BFXVERTHEIGHT_DD metric values. 
+
+We create data frames for the inputs to the nlaBankFeatures() function first. For the emph{angle} input, we must change the VALUE of 'NEAR_VERTICAL_UNDERCUT' to 'NEAR_VERTICAL' because the function does not allow the former value and assumes it has been corrected to the latter. 
+
+```{r dd}
+angle <- subset(nlaPhab,PARAMETER=='ANGLE',select=-PARAMETER) |> 
+  plyr::mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT','NEAR_VERTICAL',VALUE))
+
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN', select=-PARAMETER)
+
+horizontalDistance <- subset(nlaPhab,PARAMETER=='HORIZ_DIST', select=-PARAMETER) |> 
+  plyr::mutate(VALUE = as.numeric(VALUE))
+
+horizontalDistanceDrawdown <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD', select=-PARAMETER) |> 
+  plyr::mutate(VALUE = as.numeric(VALUE))
+
+verticalHeight <- subset(nlaPhab,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) |> 
+  plyr::mutate(VALUE = as.numeric(VALUE))
+
+verticalHeightDrawdown <- subset(nlaPhab,PARAMETER=='VERT_HEIGHT_DD', select=-PARAMETER) |> 
+  plyr::mutate(VALUE = as.numeric(VALUE))                                                            
+
+bfMets <- nlaBankFeatures(angle, drawdown, horizontalDistance, horizontalDistanceDrawdown, verticalHeight, verticalHeightDrawdown)
+
+```
+
+#### From this data frame, we only need BFXVERTHEIGHT_DD and BFXHORIZDIST_DD. We need to select these metrics, cast the data frame to wide format, and add ecoregion and lake origin to this data frame. We can create a data frame with these values and merge with the metrics. 
+
+```{r dd.1}
+
+sitedata <- data.frame(SITE=c(6400, 6469, 6768, 6865, 6869, 7623, 8184, 8251, 8657, 1000048),
+                       ECO9=c('SAP', 'SAP', 'TPL', 'NPL', 'XER', 'WMT', 'WMT', 'WMT', 'WMT','CPL'),
+                       ORIGIN=c('MAN_MADE', 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE', 'NATURAL', 
+                                'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE'), stringsAsFactors=F)
+
+bfMets.wide <- reshape2::dcast(bfMets, SITE~METRIC, value.var='VALUE') # Can use either reshape2 or data.table package, but input needs to be in data.table format if latter
+
+ddIn <- merge(sitedata, subset(bfMets.wide, select=c('SITE', 'BFXHORIZDIST_DD', 'BFXVERTHEIGHT_DD')), by='SITE')
+
+ddOut <- nlaDrawdownIndicator(ddIn, sampID='SITE', bfxVertDD='BFXVERTHEIGHT_DD', bfxHorizDD='BFXHORIZDIST_DD',
+                              ecoreg='ECO9', lake_origin='ORIGIN')
+
+ddOut
+
+```
+ 
+
+*****
+
+# 3) Calculating the Riparian Disturbance Indicator
+
+This indicator is fairly straightforward and applies nationwide with the same thresholds. Three human influence metrics are required as inputs. These can be calculated using the nlaHumanImpact() function. In this example, we create the inputs for the function as a series of data frames.
+
+```{r ripdist}
+
+buildings <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
+buildings_dd <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
+commercial <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
+commercial_dd <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
+crops <- subset(nlaPhab,PARAMETER=='HI_CROPS',select=-PARAMETER)
+crops_dd <- subset(nlaPhab,PARAMETER=='HI_CROPS_DD',select=-PARAMETER)
+docks <- subset(nlaPhab,PARAMETER=='HI_DOCKS',select=-PARAMETER)
+docks_dd <- subset(nlaPhab,PARAMETER=='HI_DOCKS_DD',select=-PARAMETER)
+landfill <- subset(nlaPhab,PARAMETER=='HI_LANDFILL',select=-PARAMETER)
+landfill_dd <- subset(nlaPhab,PARAMETER=='HI_LANDFILL_DD',select=-PARAMETER)   
+lawn <- subset(nlaPhab,PARAMETER=='HI_LAWN',select=-PARAMETER)
+lawn_dd <- subset(nlaPhab,PARAMETER=='HI_LAWN_DD',select=-PARAMETER)
+orchard <- subset(nlaPhab,PARAMETER=='HI_ORCHARD',select=-PARAMETER)
+orchard_dd <- subset(nlaPhab,PARAMETER=='HI_ORCHARD_DD',select=-PARAMETER)
+other <- subset(nlaPhab,PARAMETER=='HI_OTHER',select=-PARAMETER)
+other_dd <- subset(nlaPhab,PARAMETER=='HI_OTHER_DD',select=-PARAMETER)
+park <- subset(nlaPhab,PARAMETER=='HI_PARK',select=-PARAMETER)
+park_dd <- subset(nlaPhab,PARAMETER=='HI_PARK_DD',select=-PARAMETER)
+pasture <- subset(nlaPhab,PARAMETER=='HI_PASTURE',select=-PARAMETER)
+pasture_dd <- subset(nlaPhab,PARAMETER=='HI_PASTURE_DD',select=-PARAMETER)
+powerlines <- subset(nlaPhab,PARAMETER=='HI_POWERLINES',select=-PARAMETER)
+powerlines_dd <- subset(nlaPhab,PARAMETER=='HI_POWERLINES_DD',select=-PARAMETER)
+roads <- subset(nlaPhab,PARAMETER=='HI_ROADS',select=-PARAMETER)
+roads_dd <- subset(nlaPhab,PARAMETER=='HI_ROADS_DD',select=-PARAMETER)
+walls <- subset(nlaPhab,PARAMETER=='HI_WALLS',select=-PARAMETER)
+walls_dd <- subset(nlaPhab,PARAMETER=='HI_WALLS_DD',select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+   
+# Use defaults for data2007, fillinDrawdown, and proximityWeights
+# arguments
+hi <- nlaHumanImpact(buildings, buildings_dd, commercial, commercial_dd,
+  crops, crops_dd,docks, docks_dd, landfill, landfill_dd, lawn, lawn_dd, orchard,
+  orchard_dd, other, other_dd, park, park_dd, pasture, pasture_dd, powerlines,
+  powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd)
+
+hi.wide <- reshape2::dcast(hi, SITE~METRIC, value.var='VALUE') 
+
+```
+
+#### Now we use three metrics, HIIAG_SYN, HIINONAG_SYN, HIFPANYCIRCA_SYN to calculate the riparian disturbance condition indicator.
+
+```{r ripdist.1}
+
+ripdistOut <- nlaRipDistIndicator(hi.wide, 'SITE', 'HIIAG_SYN', 'HIINONAG_SYN', 'HIFPANYCIRCA_SYN')
+
+ripdistOut
+
+```
+
+*****
+
+# 4) Calculating the Riparian Vegetation Complexity Indicator
+
+The nlaRipVegIndicator() function calculates the site-specific observed and expected riparian vegetation complexity and assigns condition based on aggregated Omernik ecoregion. Site-related inputs for each site include ecoregion, lake origin, latitude, longitude, lake area, and lake elevation. Physical habitat metric inputs include several metrics from the nlaRiparianVegetation(), nlaShorelineSubstrate(), and nlaHumanImpact() functions, so we must first run those functions. For each of these functions, a number of input datasets are required. These can all be created from the example dataset by subsetting to specific parameters.
+
+### Riparian vegetation metrics
+```{r rv}
+bigTrees <- subset(nlaPhab,PARAMETER=='C_BIGTREES',select=-PARAMETER)
+bigTrees_dd <- subset(nlaPhab,PARAMETER=='C_BIGTREES_DD',select=-PARAMETER)
+smallTrees <- subset(nlaPhab,PARAMETER=='C_SMALLTREES',select=-PARAMETER)
+smallTrees_dd <- subset(nlaPhab,PARAMETER=='C_SMALLTREES_DD',select=-PARAMETER)
+canopyType <- subset(nlaPhab,PARAMETER=='CANOPY',select=-PARAMETER)
+canopyType_dd <- subset(nlaPhab,PARAMETER=='CANOPY_DD',select=-PARAMETER)
+grdcvrBare <- subset(nlaPhab,PARAMETER=='GC_BARE',select=-PARAMETER)
+grdcvrBare_dd <- subset(nlaPhab,PARAMETER=='GC_BARE_DD',select=-PARAMETER)
+grdcvrInund <- subset(nlaPhab,PARAMETER=='GC_INUNDATED',select=-PARAMETER)
+grdcvrInund_dd <- subset(nlaPhab,PARAMETER=='GC_INUNDATED_DD',select=-PARAMETER)
+grdcvrNw <- subset(nlaPhab,PARAMETER=='GC_NONWOODY',select=-PARAMETER)
+grdcvrNw_dd <- subset(nlaPhab,PARAMETER=='GC_NONWOODY_DD',select=-PARAMETER)
+grdcvrW <- subset(nlaPhab,PARAMETER=='GC_WOODY',select=-PARAMETER)
+grdcvrW_dd <- subset(nlaPhab,PARAMETER=='GC_WOODY_DD',select=-PARAMETER)
+undNonW <- subset(nlaPhab,PARAMETER=='U_NONWOODY',select=-PARAMETER)
+undNonW_dd <- subset(nlaPhab,PARAMETER=='U_NONWOODY_DD',select=-PARAMETER)
+undW <- subset(nlaPhab,PARAMETER=='U_WOODY',select=-PARAMETER)
+undW_dd <- subset(nlaPhab,PARAMETER=='U_WOODY_DD',select=-PARAMETER)
+undType <- subset(nlaPhab,PARAMETER=='UNDERSTORY',select=-PARAMETER)
+undType_dd <- subset(nlaPhab,PARAMETER=='UNDERSTORY_DD',select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+
+# Use defaults for fillinDrawdown and createSyntheticCovers
+rv <- nlaRiparianVegetation(bigTrees, bigTrees_dd, smallTrees, smallTrees_dd,
+    canopyType, canopyType_dd, grdcvrBare, grdcvrBare_dd, grdcvrInund, grdcvrInund_dd,
+    grdcvrNw, grdcvrNw_dd, grdcvrW, grdcvrW_dd, undNonW, undNonW_dd, undW, undW_dd,
+    undType, undType_dd, drawdown, horizontalDistance_dd)
+
+rv.wide <- reshape2::dcast(rv, SITE~METRIC, value.var='VALUE')
+
+```
+
+### Shoreline substrate metrics
+```{r ss}
+bedrock <- subset(nlaPhab,PARAMETER=='SS_BEDROCK',select=-PARAMETER)
+boulder <- subset(nlaPhab,PARAMETER=='SS_BOULDERS',select=-PARAMETER)
+cobble <- subset(nlaPhab,PARAMETER=='SS_COBBLE',select=-PARAMETER)
+gravel <- subset(nlaPhab,PARAMETER=='SS_GRAVEL',select=-PARAMETER)
+organic <- subset(nlaPhab,PARAMETER=='SS_ORGANIC',select=-PARAMETER)
+other <- subset(nlaPhab,PARAMETER=='SS_OTHER',select=-PARAMETER)
+sand <- subset(nlaPhab,PARAMETER=='SS_SAND',select=-PARAMETER)
+silt <- subset(nlaPhab,PARAMETER=='SS_SILT',select=-PARAMETER)
+wood <- subset(nlaPhab,PARAMETER=='SS_WOOD',select=-PARAMETER)
+
+ss <- nlaShorelineSubstrate(bedrock,boulder,
+cobble,gravel,organic,other,sand,silt,wood)
+
+ss.wide <- reshape2::dcast(ss, SITE~METRIC, value.var='VALUE') |> 
+  dplyr::select(SITE, SSFCBEDROCK,SSFCBOULDERS) |>
+  plyr::mutate(SSFCBEDROCK=as.numeric(SSFCBEDROCK), SSFCBOULDERS=as.numeric(SSFCBOULDERS))
+```
+
+### Human influence metrics
+
+```{r hi}
+buildings <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS', select=-PARAMETER)
+buildings_dd <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
+commercial <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
+commercial_dd <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
+crops <- subset(nlaPhab,PARAMETER=='HI_CROPS',select=-PARAMETER)
+crops_dd <- subset(nlaPhab,PARAMETER=='HI_CROPS_DD',select=-PARAMETER)
+docks <- subset(nlaPhab,PARAMETER=='HI_DOCKS',select=-PARAMETER)
+docks_dd <- subset(nlaPhab,PARAMETER=='HI_DOCKS_DD',select=-PARAMETER)
+landfill <- subset(nlaPhab,PARAMETER=='HI_LANDFILL',select=-PARAMETER)
+landfill_dd <- subset(nlaPhab,PARAMETER=='HI_LANDFILL_DD',select=-PARAMETER)
+lawn <- subset(nlaPhab,PARAMETER=='HI_LAWN',select=-PARAMETER)
+lawn_dd <- subset(nlaPhab,PARAMETER=='HI_LAWN_DD',select=-PARAMETER)
+orchard <- subset(nlaPhab,PARAMETER=='HI_ORCHARD',select=-PARAMETER)
+orchard_dd <- subset(nlaPhab,PARAMETER=='HI_ORCHARD_DD',select=-PARAMETER)
+other <- subset(nlaPhab,PARAMETER=='HI_OTHER',select=-PARAMETER)
+other_dd <- subset(nlaPhab,PARAMETER=='HI_OTHER_DD',select=-PARAMETER)
+park <- subset(nlaPhab,PARAMETER=='HI_PARK',select=-PARAMETER)
+park_dd <- subset(nlaPhab,PARAMETER=='HI_PARK_DD',select=-PARAMETER)
+pasture <- subset(nlaPhab,PARAMETER=='HI_PASTURE',select=-PARAMETER)
+pasture_dd <- subset(nlaPhab,PARAMETER=='HI_PASTURE_DD',select=-PARAMETER)
+powerlines <- subset(nlaPhab,PARAMETER=='HI_POWERLINES',select=-PARAMETER)
+powerlines_dd <- subset(nlaPhab,PARAMETER=='HI_POWERLINES_DD',select=-PARAMETER)
+roads <- subset(nlaPhab,PARAMETER=='HI_ROADS',select=-PARAMETER)
+roads_dd <- subset(nlaPhab,PARAMETER=='HI_ROADS_DD',select=-PARAMETER)
+walls <- subset(nlaPhab,PARAMETER=='HI_WALLS',select=-PARAMETER)
+walls_dd <- subset(nlaPhab,PARAMETER=='HI_WALLS_DD',select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+
+# Use defaults for data2007, fillinDrawdown, and proximityWeights
+# arguments
+hi <- nlaHumanImpact(buildings, buildings_dd, commercial, commercial_dd,
+    crops, crops_dd,docks, docks_dd, landfill, landfill_dd, lawn, lawn_dd, orchard,
+    orchard_dd, other, other_dd, park, park_dd, pasture, pasture_dd, powerlines,
+    powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd)
+
+hi.wide <- reshape2::dcast(hi, SITE~METRIC, value.var='VALUE')
+
+```
+
+#### Now merge these data frames together. Also, create a site data table with variables needed to determine condition. We will need the variables already included in the sitedata datarame above. 
+
+```{r mergeDF}
+
+metIn <- merge(rv.wide, ss.wide, by='SITE') |> 
+  merge(hi.wide, by='SITE')
+
+
+sitedata.1 <- data.frame(sitedata, LAT_DD=c(35.72678,36.12929,41.46944,48.00697,38.84754,45.86918,
+                                            40.05559,34.03126,48.568425306,33.067121087),
+                     LON_DD=c(-82.08422,-79.83690,-93.92054,-101.53242,-111.96139,-113.54893,
+                              -105.74708,-109.44311,-123.0735207,-95.73801377),
+                     ELEV=c(427.50,251.63,278.75,620.39,1589.51,2412.81,3029.04,2519.09,47.75,148.99),
+                     AREA=c(0.69732608,0.02485657,0.93282221,0.74152161,0.93174515,0.07763512,0.51027966,
+                               0.17282305,0.26395493,0.14714400))
+
+sitedata.1 
+
+ripvegIn <- merge(sitedata.1,metIn,by='SITE')
+
+```
+
+
+### Riparian vegetation complexity indicator function
+```{r ripveg}
+
+ripvegOut <- nlaRipVegCompIndicator(ripvegIn,sampID='SITE',lat='LAT_DD',lon='LON_DD'
+                               ,lake_origin='ORIGIN',area='AREA',elev='ELEV'
+                               ,ecoreg='ECO9',rviWoody='RVIWOODY_SYN'
+                               ,rvfcGndInundated='RVFCGNDINUNDATED_SYN',rvfcUndWoody='RVFCUNDWOODY_SYN'
+                               ,rvfcGndWoody='RVFCGNDWOODY_SYN',rvfpCanBig='RVFPCANBIG_SYN'
+                               ,ssfcBedrock='SSFCBEDROCK',ssfcBoulders='SSFCBOULDERS'
+                               ,hipwWalls='HIPWWALLS_SYN')
+
+ripvegOut
+```
+#### In these results, SITE 8251 is considered not assessed for this indicator because there are missing values for some metric inputs. Specifically, RVFPCANBIG_SYN is missing because canopy measurements are missing for the drawdown area at this site. Since this metric is a synthesis of the riparian and drawdown areas, it cannot be calculated. 
+
+****
+
+# 5) Calculating the Littoral Vegetation Complexity Indicator
+
+The nlaLitVegCompIndicator() function calculates the site-specific observed and expected littoral vegetation complexity and assigns condition based on aggregated Omernik ecoregion. Site-related inputs for each site include ecoregion, lake origin, latitude, longitude, lake area, and lake elevation. Physical habitat metric inputs include several metrics from the nlaFishCover() and nlaAquatic Macrophytes() functions, so we must first run those functions. 
+
+### Fish cover metrics 
+
+```{r fc}
+aquatic <- subset(nlaPhab,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
+aquatic_dd <- subset(nlaPhab,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
+boulders <- subset(nlaPhab,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
+boulders_dd <- subset(nlaPhab,PARAMETER=='FC_BOULDERS_DD',select=-PARAMETER)
+brush <- subset(nlaPhab,PARAMETER=='FC_BRUSH',select=-PARAMETER)
+brush_dd <- subset(nlaPhab,PARAMETER=='FC_BRUSH_DD',select=-PARAMETER)
+ledges <- subset(nlaPhab,PARAMETER=='FC_LEDGES',select=-PARAMETER)
+ledges_dd <- subset(nlaPhab,PARAMETER=='FC_LEDGES_DD',select=-PARAMETER)
+livetrees <- subset(nlaPhab,PARAMETER=='FC_LIVETREES',select=-PARAMETER)
+livetrees_dd <- subset(nlaPhab,PARAMETER=='FC_LIVETREES_DD',select=-PARAMETER)
+overhang <- subset(nlaPhab,PARAMETER=='FC_OVERHANG',select=-PARAMETER)
+overhang_dd <- subset(nlaPhab,PARAMETER=='FC_OVERHANG_DD',select=-PARAMETER)
+snags <- subset(nlaPhab,PARAMETER=='FC_SNAGS',select=-PARAMETER)
+snags_dd <- subset(nlaPhab,PARAMETER=='FC_SNAGS_DD',select=-PARAMETER)
+structures <- subset(nlaPhab,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
+structures_dd <- subset(nlaPhab,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER) |>
+  plyr::mutate(VALUE = as.numeric(VALUE)) # This one is manually converted to numeric because it is required by the function to be
+
+# Use default values for fillinDrawdown (TRUE), createSyntheticCovers (TRUE), 
+# and coverClassInfo:
+# coverClassInfo = data.frame(field = c(NA,'0','1','2','3','4')
+#						 	                        ,characteristicCover = c(NA,0,0.05,0.25,0.575,0.875)
+#						 	                        ,presence = c(NA,0,1,1,1,1)
+#						 	                        ,stringsAsFactors=FALSE
+#						 	                        )
+
+fc <- nlaFishCover(aquatic,aquatic_dd,boulders,boulders_dd,brush,
+  brush_dd,ledges,ledges_dd,livetrees,livetrees_dd,overhang,overhang_dd,
+  snags,snags_dd,structures,structures_dd,drawdown,horizontalDistance_dd)
+
+fc.wide <- reshape2::dcast(fc, SITE~METRIC, value.var='VALUE') |>
+  dplyr::select(SITE, FCFCSNAGS_LIT, FCINATURAL_LIT, FCFCBOULDERS_LIT, FCFCBRUSH_LIT,
+         FCFCLEDGES_LIT, FCFCLIVETREES_LIT, FCFCOVERHANG_LIT)
+
+fc.wide
+
+```
+
+### Aquatic macrophyte metrics
+
+```{r am}
+emerg <- subset(nlaPhab,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
+float <- subset(nlaPhab,PARAMETER=='AM_FLOATING',select=-PARAMETER)
+submerg <- subset(nlaPhab,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
+totcvr <- subset(nlaPhab,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
+
+am <- nlaAquaticMacrophytes(emergent=emerg,
+  floating=float,submergent=submerg,totalCover=totcvr)
+
+am.wide <- reshape2::dcast(am, SITE~METRIC, value.var='VALUE') |>
+  dplyr::select(SITE, AMFCFLOATING, AMFCEMERGENT) |>
+  plyr::mutate(AMFCFLOATING = as.numeric(AMFCFLOATING),
+         AMFCEMERGENT = as.numeric(AMFCEMERGENT))
+
+am.wide
+
+```
+
+### Merge data 
+
+#### Use site data from section 4 (sitedata.1) and merge with fc and am data frames containing metrics
+
+```{r mergeDF.1}
+litvegIn <- merge(sitedata.1, fc.wide, by='SITE', all.x=T) |>
+  merge(am.wide, by='SITE', all.x=T) 
+
+litvegIn
+
+```
+
+### Littoral vegetation complexity indicator function
+
+```{r litveg}
+litvegOut <- nlaLitVegCompIndicator(litvegIn, sampID='SITE', lat='LAT_DD', 
+                                    lon='LON_DD', lake_origin='ORIGIN', 
+                                    area='AREA', elev='ELEV', ecoreg='ECO9', 
+                                    fciNatural='FCINATURAL_LIT', 
+                                    fcfcSnag='FCFCSNAGS_LIT', 
+                                    amfcFloating='AMFCFLOATING', 
+                                    amfcEmergent='AMFCEMERGENT', 
+                                    fcfcBoulders='FCFCBOULDERS_LIT', 
+                                    fcfcBrush='FCFCBRUSH_LIT', 
+                                    fcfcLedges='FCFCLEDGES_LIT', 
+                                    fcfcLiveTrees='FCFCLIVETREES_LIT', 
+                                    fcfcOverhang='FCFCOVERHANG_LIT')
+
+litvegOut
+
+```
+#### In the output, we have missing LitCvrQ values, which represent the observed littoral complexity index value, so we then end up with a missing value for LitCvrQc3OE, which is the ratio of observed to expected littoral condition (under site-specific reference conditions). Thus, the site is considered to be not assessed. The reason for the missing observed index value is that there are no data recorded for aquatic macrophytes at site 6469. 
+
+****
+
+# 6) Calculating the Combined Littoral and Riparian Vegetation Complexity Indicator
+
+The nlaLitRipVegCompIndicator() function determines site-specific combined littoral and riparian vegetation complexity condition based on the observed littoral vegetation complexity index (from nlaLitVegCompIndicator()), the observed riparian vegetation complexity index (from nlaRipVegCompIndicator()), and several site variables, including aggregated ecoregion, latitude, longitude, lake area, lake origin, and elevation. We already have all of these pieces of information and just need to assemble them. Then we can call the function. 
+
+### Assemble data frame from existing data frames
+```{r assemble}
+lrIn <- merge(sitedata.1, litvegOut, by='SITE') |>
+  merge(ripvegOut, by='SITE')
+
+```
+
+### Now we can run the indicator function 
+
+```{r lrveg}
+
+litripOut <- nlaLitRipVegCompIndicator(lrIn,sampID='SITE',lat='LAT_DD',lon='LON_DD'
+                                    ,lake_origin='ORIGIN',area='AREA',elev='ELEV'
+                                    ,ecoreg='ECO9',rvegq='RVegQ',litcvrq='LitCvrQ')
+
+litripOut
+```
+
+#### We have some observations listed as 'Not Assessed' because of missing data. If some data are not filled in, we end up with missing values for some metrics. If any of these metrics are necessary to calculate condition, we are unable to evaluate the observed part of the observed/expected ratio, so we cannot assess condition.

@@ -1132,7 +1132,7 @@ fillinDDWithRiparianValues <- function(hiData, horizDist, fillinMaxDrawdownDist)
     else if(is.na(fillinMaxDrawdownDist))
         return(hiData)
 
-    updateValues <- hiData %>%
+    updateValues_1 <- hiData %>%
                     # add horizontal drawdown distances for each station
                     merge(horizDist %>% 
                           select(SITE, STATION, VALUE) %>%
@@ -1156,21 +1156,27 @@ fillinDDWithRiparianValues <- function(hiData, horizDist, fillinMaxDrawdownDist)
                            trimws(VALUE) %nin% c('', NA) &
                            HORIZ_DIST_DD >= 1.0 &
                            HORIZ_DIST_DD <= fillinMaxDrawdownDist
-                          ) %>%
-                    mutate(newValue = VALUE
+                          ) 
+    if(nrow(updateValues_1)>0){
+      updateValues <- mutate(updateValues_1, newValue = VALUE
                           ,CLASS = paste0(CLASS, '_DD')
                           ) %>%
                     select(SITE, STATION, CLASS, newValue)
+      
+      filledInValues <- hiData %>%
+        full_join(updateValues, by=c('SITE','STATION','CLASS')) %>%
+        mutate(VALUE = ifelse(trimws(VALUE) %in% c('', NA) & 
+                                newValue %nin% c('', NA)
+                              ,newValue
+                              ,VALUE
+        )
+        ,newValue = NULL
+        )
+    }else{
+      filledInValues <- hiData
+    }
 # print('updateValues debug'); print(updateValues %>% data.frame())
-    filledInValues <- hiData %>%
-                      full_join(updateValues, by=c('SITE','STATION','CLASS')) %>%
-                      mutate(VALUE = ifelse(trimws(VALUE) %in% c('', NA) & 
-                                            newValue %nin% c('', NA)
-                                           ,newValue
-                                           ,VALUE
-                                           )
-                            ,newValue = NULL
-                            )
+    
     
     return(filledInValues)
 }
