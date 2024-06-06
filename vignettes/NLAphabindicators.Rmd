@@ -1,5 +1,5 @@
 ---
-title: "Using NLA Physical Habitat Indicator Functions"
+title: "Calculating NLA Habitat Indicators"
 author: "Karen Blocksom"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_document
