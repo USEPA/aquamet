@@ -61,7 +61,8 @@ sitedata <- data.frame(SITE=c(6400, 6469, 6768, 6865, 6869, 7623, 8184, 8251, 86
                        ORIGIN=c('MAN_MADE', 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE', 'NATURAL', 
                                 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE'), stringsAsFactors=F)
 
-bfMets.wide <- reshape2::dcast(bfMets, SITE~METRIC, value.var='VALUE') # Can use either reshape2 or data.table package, but input needs to be in data.table format if latter
+bfMets.wide <- pivot_wider(bfMets, id_vars='SITE', names_from='METRIC', 
+                           values_from = 'VALUE') # Can use either reshape2 or data.table package, but input needs to be in data.table format if latter
 
 ddIn <- merge(sitedata, subset(bfMets.wide, select=c('SITE', 'BFXHORIZDIST_DD', 'BFXVERTHEIGHT_DD')), by='SITE')
 
@@ -117,7 +118,8 @@ hi <- nlaHumanImpact(buildings, buildings_dd, commercial, commercial_dd,
   orchard_dd, other, other_dd, park, park_dd, pasture, pasture_dd, powerlines,
   powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd)
 
-hi.wide <- reshape2::dcast(hi, SITE~METRIC, value.var='VALUE') 
+hi.wide <- pivot_wider(hi, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE') 
 
 ```
 
@@ -168,7 +170,8 @@ rv <- nlaRiparianVegetation(bigTrees, bigTrees_dd, smallTrees, smallTrees_dd,
     grdcvrNw, grdcvrNw_dd, grdcvrW, grdcvrW_dd, undNonW, undNonW_dd, undW, undW_dd,
     undType, undType_dd, drawdown, horizontalDistance_dd)
 
-rv.wide <- reshape2::dcast(rv, SITE~METRIC, value.var='VALUE')
+rv.wide <- pivot_wider(rv, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE')
 
 ```
 
@@ -187,7 +190,8 @@ wood <- subset(nlaPhab,PARAMETER=='SS_WOOD',select=-PARAMETER)
 ss <- nlaShorelineSubstrate(bedrock,boulder,
 cobble,gravel,organic,other,sand,silt,wood)
 
-ss.wide <- reshape2::dcast(ss, SITE~METRIC, value.var='VALUE') |> 
+ss.wide <- pivot_wider(ss, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE') |> 
   dplyr::select(SITE, SSFCBEDROCK,SSFCBOULDERS) |>
   plyr::mutate(SSFCBEDROCK=as.numeric(SSFCBEDROCK), SSFCBOULDERS=as.numeric(SSFCBOULDERS))
 ```
@@ -231,7 +235,8 @@ hi <- nlaHumanImpact(buildings, buildings_dd, commercial, commercial_dd,
     orchard_dd, other, other_dd, park, park_dd, pasture, pasture_dd, powerlines,
     powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd)
 
-hi.wide <- reshape2::dcast(hi, SITE~METRIC, value.var='VALUE')
+hi.wide <- pivot_wider(hi, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE')
 
 ```
 
@@ -314,7 +319,8 @@ fc <- nlaFishCover(aquatic,aquatic_dd,boulders,boulders_dd,brush,
   brush_dd,ledges,ledges_dd,livetrees,livetrees_dd,overhang,overhang_dd,
   snags,snags_dd,structures,structures_dd,drawdown,horizontalDistance_dd)
 
-fc.wide <- reshape2::dcast(fc, SITE~METRIC, value.var='VALUE') |>
+fc.wide <- pivot_wider(fc, id_cols='SITE', names_from='METRIC', 
+                       values_from='VALUE') |>
   dplyr::select(SITE, FCFCSNAGS_LIT, FCINATURAL_LIT, FCFCBOULDERS_LIT, FCFCBRUSH_LIT,
          FCFCLEDGES_LIT, FCFCLIVETREES_LIT, FCFCOVERHANG_LIT)
 
@@ -333,7 +339,8 @@ totcvr <- subset(nlaPhab,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
 am <- nlaAquaticMacrophytes(emergent=emerg,
   floating=float,submergent=submerg,totalCover=totcvr)
 
-am.wide <- reshape2::dcast(am, SITE~METRIC, value.var='VALUE') |>
+am.wide <- pivot_wider(am, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE') |>
   dplyr::select(SITE, AMFCFLOATING, AMFCEMERGENT) |>
   plyr::mutate(AMFCFLOATING = as.numeric(AMFCFLOATING),
          AMFCEMERGENT = as.numeric(AMFCEMERGENT))
