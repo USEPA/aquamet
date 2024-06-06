@@ -1804,6 +1804,7 @@ normalizedCover <- function(df, coverValue, coverNorm, allowTotalBelow100=FALSE)
 
 
 #' @keywords internal
+#' @export
 nWadeableStationsPerTransect <- function(thal) {
 
 # Estimates the intended number of wadeable thalweg stations to be visited at
