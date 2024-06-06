@@ -100,6 +100,9 @@
 #          Added fillinDDWithRiparianValues
 #  5/21/24 cws Renamed expand.data.frame to expandDataFrame to avoid interpretation
 #          as an S3 object or as part of the Hadleyverse.
+#  6/07/24 cws Explicitely using dplyr::mutate instead of mutate in 
+#          fillinDDWithRiparianValues because Karen's package build process is
+#          loading plyr/dplyr in the wrong order.
 #
 ################################################################################
 
@@ -1168,7 +1171,7 @@ fillinDDWithRiparianValues <- function(hiData, horizDist, fillinMaxDrawdownDist)
                            HORIZ_DIST_DD >= 1.0 &
                            HORIZ_DIST_DD <= fillinMaxDrawdownDist
                           ) %>%
-                    mutate(newValue = VALUE
+                    dplyr::mutate(newValue = VALUE
                           ,CLASS = paste0(CLASS, '_DD')
                           ) %>%
                     select(SITE, STATION, CLASS, newValue)
