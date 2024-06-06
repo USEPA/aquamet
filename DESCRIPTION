@@ -9,7 +9,6 @@ Depends:
 Imports:
     plyr,
     dplyr,
-    reshape2,
     Hmisc,
     gtools,
     stringr,

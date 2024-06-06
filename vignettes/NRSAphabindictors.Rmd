@@ -22,7 +22,7 @@ There is a separate vignette showing all of the steps involved in calculating lo
 #### First load necessary libraries
 ```{r Setup, results='hide', message=FALSE, warning=FALSE}
 library(aquamet)
-library(reshape2)
+library(tidyr)
 library(plyr)
 library(dplyr)
 ```
@@ -103,7 +103,7 @@ xfcIn
 ### Use the nrsaInstrmCoverIndicator() function to assign condition based on the value of xfc_nat relative to the site-specific expected value, calculated based on a model using site-related variables. 
 
 ```{r instrmcvr}
-instrmcvrOut <- nrsaInstrmCoverIndicator(xfcIn,sampID='SITE', ecoreg='AGGR_ECO9_2015', 
+instrmcvrOut <- nrsaInstrmCoverIndicator(xfcIn, sampID='SITE', ecoreg='AGGR_ECO9_2015', 
                                          protocol='REALM', xfc_nat='xfc_nat', 
                                          lat='LAT_DD83', lon='LON_DD83', 
                                          area='WSAREASQKM', elev='ELEV_PT', 

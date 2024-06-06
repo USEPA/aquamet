@@ -7,7 +7,6 @@
 #' @importFrom gtools smartbind
 #' @importFrom plyr ddply mutate summarize summarise rename
 #' @importFrom dplyr filter select "%>%" group_by arrange across all_of anti_join full_join
-#' @importFrom reshape2 dcast melt
 #' @importFrom stringr str_detect 
 #' @importFrom stats aggregate ave coef median na.omit quantile reshape sd weights
 #' @importFrom utils read.table write.csv
@@ -47,7 +46,7 @@ if(getRversion() >= "4.0") utils::globalVariables(c('ECO9','gf','fp','HABITAT','
                   'compareAsNumbers', 'sameAbs', 'sameci', 'samesi', 'samecsi',
                   'cover',"calc", "cover_dd", "cover_lit", "coverSuffix", "infl_rip", "infl_dd",
                   "isAg", "lsub_d25", "lsub_d75", "presence", 'HORIZ_DIST_DD',
-                  'newValue', 'absDiff', '.'))
+                  'newValue', 'absDiff', '.', 'l_slope', 'l_area'))
 
 
 ## NULL

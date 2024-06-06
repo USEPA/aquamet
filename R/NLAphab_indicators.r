@@ -122,10 +122,13 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                         ,ssiNatBedBld=ifelse(hipwWalls>=0.10,0,(ssfcBedrock + ssfcBoulders)))
   
   # melt dfIn now in preparation for merging with the parameter df being created next
-  dfIn.long <- reshape2::melt(dfIn,id.vars=c(sampID,'ecoreg')
-                              ,measure.vars=c('lat','lon','l_area','reservoir','elev'
-                                              ,'elevXlat'),na.rm=T)
-  
+  dfIn.long <- pivot_longer(dfIn, cols = c('lat','lon','l_area','reservoir','elev'
+                                           ,'elevXlat'),
+                            names_to='variable', values_to='value', 
+                            values_drop_na=T) %>%
+    subset(select = c(sampID, 'ecoreg', 'variable', 'value'))
+    
+
   # Create data frame of regression parameters in order to calculate expected values
   expParam <- data.frame(ecoreg=c('NAP','SAP','CPL','UMW','NPL','SPL','TPL','WMT','XER')
                          ,resp = c('log10','log10','none','log10','log10','log10','log10','log10','log10')
@@ -138,28 +141,28 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                          ,elevXlat = c(NA,NA,-0.00003019,NA,NA,NA,NA,NA,NA)
                          ,elev = c(rep(NA,7),-0.00008953,-0.00013249)
                          ,l_area = c(rep(NA,7),0.07296,NA)
-                         ,stringsAsFactors=F) %>%
-    reshape2::melt(id.vars=c('ecoreg','intercept','resp','respAdj'),value.name='coef') 
-  
+                         ,stringsAsFactors=F) |>
+    pivot_longer(cols = lat:l_area, names_to = 'variable', values_to='coef')
+    
   # Merge the two data frames and calculate the expected value for riparian veg complexity
-  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) %>%
-    dplyr::mutate(coef=ifelse(is.na(coef),0,coef)) %>%
-    plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) %>%
-    dplyr::mutate(calcVal=sumVal + intercept) %>%
+  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) |>
+    dplyr::mutate(coef=ifelse(is.na(coef),0,coef)) |>
+    plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) |>
+    dplyr::mutate(calcVal=sumVal + intercept) |>
     dplyr::mutate(RVegQc3x15=ifelse(resp=='log10',(10^calcVal)-respAdj,calcVal))
   
   # Calculate the observed indicator value, depending on ecoregion
-  dfObs <- dfIn %>%
+  dfObs <- dfIn |>
     plyr::mutate(RVegQ = ifelse(ecoreg %in% c('NAP','SAP','UMW','CPL')
                           ,0.5*(rvfcGndInundated + (rviWoody/2.5))
                           ,ifelse(ecoreg %in% c('NPL','SPL','TPL')
                                   ,0.5*(rvfcGndInundated + ((rvfcUndWoody + rvfcGndWoody)/1.75))
-                                  ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssiNatBedBld)))) %>%
+                                  ,0.25*((rviWoody/2.5) + rvfpCanBig + rvfcGndInundated + ssiNatBedBld)))) |>
     plyr::mutate(RVegQ = ifelse(RVegQ>1, 1, RVegQ))
 
   # Now merge the expected and observed values and calculate O/E  
-  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','RVegQ')) %>% 
-    merge(dfExp[,c(sampID,'RVegQc3x15')], by=sampID) %>%
+  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','RVegQ')) |> 
+    merge(dfExp[,c(sampID,'RVegQc3x15')], by=sampID) |>
     plyr::mutate(RVegQc3OE = RVegQ/RVegQc3x15)
   
   # Create data frame containing O/E thresholds by ECO9 region
@@ -169,9 +172,9 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                        ,stringsAsFactors=F)
   
   # Apply thresholds to O/E to assign condition classes
-  dfOut <- merge(dfOE,tholds,by='ecoreg') %>%
+  dfOut <- merge(dfOE,tholds,by='ecoreg') |>
   plyr::mutate(RVEG_COND=ifelse(is.na(RVegQc3OE),'Not Assessed',ifelse(RVegQc3OE>gf,'Good'
-                        ,ifelse(RVegQc3OE>fp,'Fair','Poor')))) %>%
+                        ,ifelse(RVegQc3OE>fp,'Fair','Poor')))) |>
   subset(select=c(sampID,'RVegQ','RVegQc3x15','RVegQc3OE','RVEG_COND'))  
   
 }
@@ -306,10 +309,13 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
     
     
   # melt dfIn now in preparation for merging with the parameter df being created next
-  dfIn.long <- reshape2::melt(dfIn,id.vars=c(sampID,'ecoreg')
-                              ,measure.vars=c('lat','l_area','reservoir','l_elev'
-                                              ,'elevXlon','elev'),na.rm=T)
-  
+  dfIn.long <- pivot_longer(dfIn, cols = c('lat','l_area','reservoir','l_elev'
+                                           ,'elevXlon','elev'),
+                            names_to='variable', values_to='value', 
+                            values_drop_na=T) %>%
+    subset(select = c(sampID, 'ecoreg', 'variable', 'value'))
+    
+
   # Create data frame of regression parameters in order to calculate expected values
   expParam <- data.frame(ecoreg=c('NAP','SAP','CPL','UMW','NPL','SPL','TPL','WMT','XER')
                          ,resp = c('log10','log10','none','log10','log10','log10','log10','log10','log10')
@@ -322,27 +328,27 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                          ,l_elev = c(NA,NA,-0.19300,NA,NA,NA,NA,NA,NA)
                          ,l_area = c(-0.08109,NA,NA,NA,NA,NA,NA,-0.05083,NA)
                          ,elev = c(rep(NA,7),-0.00004299,-0.00003932)
-                         ,stringsAsFactors=F) %>%
-    reshape2::melt(id.vars=c('ecoreg','intercept','resp','respAdj'),value.name='coef') 
-  
+                         ,stringsAsFactors=F) |>
+    pivot_longer(cols = lat:elev, names_to='variable', values_to='coef')
+
   # Merge the two data frames and calculate the expected value for riparian veg complexity
-  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) %>%
-    plyr::mutate(coef=ifelse(is.na(coef),0,coef)) %>%
-    plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) %>%
-    dplyr::mutate(calcVal=sumVal + intercept) %>%
+  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) |>
+    plyr::mutate(coef=ifelse(is.na(coef),0,coef)) |>
+    plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) |>
+    dplyr::mutate(calcVal=sumVal + intercept) |>
     dplyr::mutate(LitCvrQc3x15=ifelse(resp=='log10',(10^calcVal)-0.01,calcVal))
   
   # Calculate the observed indicator value, depending on ecoregion
-  dfObs <- dfIn %>%
+  dfObs <- dfIn |>
     plyr::mutate(LitCvrQ = ifelse(ecoreg %in% c('CPL'), 0.5*(fciNatural + (fcfcSnag/0.2875))
                                   ,ifelse(ecoreg %in% c('SAP'), (1/3)*(fciNatural + (fcfcSnag/0.2875) + (amfcFltEmg/1.515))
                                           ,(1/3)*(((fcfcBoulders + fcfcBrush + fcfcLedges + fcfcLiveTrees + fcfcOverhang)/1.5) +
-                                                    (fcfcSnag/0.2875) + (amfcFltEmg/1.515))))) %>%
+                                                    (fcfcSnag/0.2875) + (amfcFltEmg/1.515))))) |>
     plyr::mutate(LitCvrQ = ifelse(LitCvrQ>1, 1, LitCvrQ))
   
   # Now merge the expected and observed values and calculate O/E  
-  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitCvrQ')) %>% 
-    merge(dfExp[,c(sampID,'LitCvrQc3x15')], by=sampID) %>%
+  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitCvrQ')) |> 
+    merge(dfExp[,c(sampID,'LitCvrQc3x15')], by=sampID) |>
     plyr::mutate(LitCvrQc3OE = LitCvrQ/LitCvrQc3x15)
   
   # Create data frame containing O/E thresholds by ECO9 region
@@ -352,9 +358,9 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                        ,stringsAsFactors=F)
 
   # Apply thresholds to O/E to assign condition classes
-  dfOut <- merge(dfOE,tholds,by='ecoreg') %>%
+  dfOut <- merge(dfOE,tholds,by='ecoreg') |>
     plyr::mutate(LITCVR_COND=ifelse(is.na(LitCvrQc3OE),'Not Assessed',ifelse(LitCvrQc3OE>gf,'Good'
-                                                                      ,ifelse(LitCvrQc3OE>fp,'Fair','Poor')))) %>%
+                                                                      ,ifelse(LitCvrQc3OE>fp,'Fair','Poor')))) |>
     subset(select=c(sampID,'LitCvrQ','LitCvrQc3x15','LitCvrQc3OE','LITCVR_COND'))
   
   
@@ -455,10 +461,13 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
                  ,l_area=log10(area))
   
   # melt dfIn now in preparation for merging with the parameter df being created next
-  dfIn.long <- reshape2::melt(dfIn,id.vars=c(sampID,'ecoreg')
-                              ,measure.vars=c('lat','lon','l_area','reservoir','elev'
-                                              ,'elevXlon','l_elev'),na.rm=T)
-  
+  dfIn.long <- pivot_longer(dfIn, cols = c('lat','lon','l_area','reservoir','elev'
+                                           ,'elevXlon','l_elev'),
+                            names_to='variable', values_to='value', 
+                            values_drop_na=T) %>%
+    subset(select = c(sampID, 'ecoreg', 'variable', 'value'))
+    
+
   # Create data frame of regression parameters in order to calculate expected values
   expParam <- data.frame(ecoreg=c('NAP','SAP','CPL','UMW','NPL','SPL','TPL','WMT','XER')
                          ,resp = c('log10','log10','none','log10','log10','log10','log10','log10','log10')
@@ -471,23 +480,23 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
                          ,l_area = c(NA,NA,NA,NA,NA,NA,NA,0.04200,NA)
                          ,l_elev = c(NA,NA,-0.15322,NA,NA,NA,NA,NA,NA)
                          ,elev = c(NA,-0.00923,NA,NA,NA,NA,NA,-0.00006666,-0.00010090)
-                         ,stringsAsFactors=F) %>%
-    reshape2::melt(id.vars=c('ecoreg','intercept','resp','respAdj'),value.name='coef') 
-  
+                         ,stringsAsFactors=F) |>
+    pivot_longer(cols = lat:elev, names_to='variable', values_to='coef')
+
   # Merge the two data frames and calculate the expected value for riparian veg complexity
-  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) %>%
-    plyr::mutate(coef=ifelse(is.na(coef),0,coef)) %>%
-    plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) %>%
-    dplyr::mutate(calcVal=sumVal + intercept) %>%
+  dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) |>
+    plyr::mutate(coef=ifelse(is.na(coef),0,coef)) |>
+    plyr::ddply(c(sampID,'ecoreg','resp','respAdj','intercept'),summarise,sumVal=sum(coef*value)) |>
+    dplyr::mutate(calcVal=sumVal + intercept) |>
     dplyr::mutate(LitRipCvrQc3x15=ifelse(resp=='log10',(10^calcVal)-0.01,calcVal))
 
   # Calculate the observed indicator value, depending on ecoregion
-  dfObs <- dfIn %>%
+  dfObs <- dfIn |>
     plyr::mutate(LitRipCvrQ = (rvegq + litcvrq)/2)
   
   # Now merge the expected and observed values and calculate O/E  
-  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitRipCvrQ')) %>% 
-    merge(dfExp[,c(sampID,'LitRipCvrQc3x15')], by=sampID) %>%
+  dfOE <- subset(dfObs,select=c(sampID,'ecoreg','LitRipCvrQ')) |> 
+    merge(dfExp[,c(sampID,'LitRipCvrQc3x15')], by=sampID) |>
     plyr::mutate(LitRipCvrQc3OE = LitRipCvrQ/LitRipCvrQc3x15)
  
   # Create data frame containing O/E thresholds by ECO9 region
@@ -497,9 +506,9 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
                        ,stringsAsFactors=F)
   
   # Apply thresholds to O/E to assign condition classes
-  dfOut <- merge(dfOE,tholds,by='ecoreg') %>%
+  dfOut <- merge(dfOE,tholds,by='ecoreg') |>
     plyr::mutate(LITRIPCVR_COND=ifelse(is.na(LitRipCvrQc3OE),'Not Assessed',ifelse(LitRipCvrQc3OE>gf,'Good'
-                                                                          ,ifelse(LitRipCvrQc3OE>fp,'Fair','Poor')))) %>%
+                                                                          ,ifelse(LitRipCvrQc3OE>fp,'Fair','Poor')))) |>
     subset(select=c(sampID,'LitRipCvrQ','LitRipCvrQc3x15','LitRipCvrQc3OE','LITRIPCVR_COND'))
   
   
@@ -570,7 +579,7 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
   # Assign condition class
   dfOut <- plyr::mutate(dfObs, RDIS_COND = ifelse(is.na(RDis_IX),'Not Assessed',
                                                   ifelse(RDis_IX > 0.75,'Poor',
-                                                         ifelse(RDis_IX <= 0.2, 'Good','Fair')))) %>%
+                                                         ifelse(RDis_IX <= 0.2, 'Good','Fair')))) |>
     subset(select=c(sampID,'RDis_IX','RDIS_COND'))
     
 }  
@@ -716,33 +725,33 @@ nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origi
   
   dfIn <- plyr::mutate(x, lake_origin=ifelse(lake_origin=='MAN-MADE','MAN_MADE',lake_origin))
 
-  dfDD <- merge(dfIn, tholdsVert, by=c('ecoreg','lake_origin')) %>%
-    merge(tholdsHoriz, by=c('ecoreg','lake_origin')) %>%
+  dfDD <- merge(dfIn, tholdsVert, by=c('ecoreg','lake_origin')) |>
+    merge(tholdsHoriz, by=c('ecoreg','lake_origin')) |>
     plyr::mutate(vertDD_cond = ifelse(is.na(vertDD),'Not Assessed', ifelse(vertDD <= p75V
                                                                            , 'Small', ifelse(vertDD > p95V, 'Large', 'Medium')))
                  ,horizDD_cond = ifelse(is.na(horizDD), 'Not Assessed'
                                         , ifelse(horizDD <= p75H, 'Small'
-                                                 ,ifelse(horizDD > p95H, 'Large', 'Medium')))) %>%
+                                                 ,ifelse(horizDD > p95H, 'Large', 'Medium')))) |>
     plyr::mutate(DRAWDOWN_COND = ifelse(vertDD_cond=='Large'|horizDD_cond=='Large', 'Large'
                                         , ifelse(vertDD_cond=='Medium'|horizDD_cond=='Medium', 'Medium'
                                                  , ifelse(vertDD_cond=='Small'|horizDD_cond=='Small', 'Small'
                                                           , 'Not Assessed')))) 
   
   if(is.null(bfnHorizDD_nomod)|is.null(bfnVertDD)){
-    dfDD.1 <- dfDD %>%
+    dfDD.1 <- dfDD |>
       subset(select = c(sampID, 'horizDD_cond','vertDD_cond','DRAWDOWN_COND'))
   }else{
-    dfDD.1 <- dfDD %>%
+    dfDD.1 <- dfDD |>
       plyr::mutate(vertDD_cond17 = ifelse(is.na(nvertDD)|nvertDD==0, 'Not Assessed', vertDD_cond)
                    ,horizDD_cond17 = ifelse(is.na(nhorizDD_nomod)|nhorizDD_nomod==0, 'Not Assessed', horizDD_cond)
                    ,DDcond_screen = ifelse(vertDD_cond17=='Large'|horizDD_cond17=='Large', 'Large'
                                         ,ifelse(vertDD_cond17=='Medium'|horizDD_cond17=='Medium', 'Medium'
                                             ,ifelse(vertDD_cond17=='Small'|horizDD_cond17=='Small', 'Small'
                                                 ,ifelse(vertDD_cond17=='Not Assessed' & horizDD_cond17=='Not Assessed'
-                                                        ,'Not Assessed','Not Assigned'))))) %>%
+                                                        ,'Not Assessed','Not Assigned'))))) |>
       plyr::mutate(DRAWDOWN_COND_2017 = ifelse(ecoreg %in% c('WMT','XER','NPL','SPL','TPL') & lake_origin=='MAN_MADE'
                                                , DRAWDOWN_COND, DDcond_screen)
-                   ,DRAWDOWN_COND_2CAT_2017 = ifelse(DRAWDOWN_COND %in% c('Small','Medium'), 'Not Large', DRAWDOWN_COND)) %>% 
+                   ,DRAWDOWN_COND_2CAT_2017 = ifelse(DRAWDOWN_COND %in% c('Small','Medium'), 'Not Large', DRAWDOWN_COND)) |> 
       subset(select = c(sampID, 'horizDD_cond','vertDD_cond','horizDD_cond17','vertDD_cond17','DDcond_screen','DRAWDOWN_COND','DRAWDOWN_COND_2017','DRAWDOWN_COND_2CAT_2017'))
   }
   

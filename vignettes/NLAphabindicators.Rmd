@@ -21,7 +21,7 @@ The drawdown indicator is based on both horizontal and vertical drawdown distanc
 #### First, load necessary libraries.
 ```{r setup,results='hide', warning=FALSE, message=FALSE}
 library(aquamet)
-# library(reshape2)
+library(tidyr)
 library(plyr)
 library(dplyr)
 ```
@@ -61,7 +61,7 @@ sitedata <- data.frame(SITE=c(6400, 6469, 6768, 6865, 6869, 7623, 8184, 8251, 86
                        ORIGIN=c('MAN_MADE', 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE', 'NATURAL', 
                                 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE'), stringsAsFactors=F)
 
-bfMets.wide <- pivot_wider(bfMets, id_vars='SITE', names_from='METRIC', 
+bfMets.wide <- pivot_wider(bfMets, id_cols='SITE', names_from='METRIC', 
                            values_from = 'VALUE') # Can use either reshape2 or data.table package, but input needs to be in data.table format if latter
 
 ddIn <- merge(sitedata, subset(bfMets.wide, select=c('SITE', 'BFXHORIZDIST_DD', 'BFXVERTHEIGHT_DD')), by='SITE')
