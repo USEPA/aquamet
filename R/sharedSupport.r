@@ -1135,7 +1135,7 @@ fillinDDWithRiparianValues <- function(hiData, horizDist, fillinMaxDrawdownDist)
     else if(is.na(fillinMaxDrawdownDist))
         return(hiData)
 
-    updateValues_1 <- hiData %>%
+    updateValues <- hiData %>%
                     # add horizontal drawdown distances for each station
                     merge(horizDist %>% 
                           select(SITE, STATION, VALUE) %>%
@@ -1174,9 +1174,7 @@ fillinDDWithRiparianValues <- function(hiData, horizDist, fillinMaxDrawdownDist)
         )
         ,newValue = NULL
         )
-    }else{
-      filledInValues <- hiData
-    }
+    
 # print('updateValues debug'); print(updateValues %>% data.frame())
     
     
