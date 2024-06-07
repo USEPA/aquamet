@@ -1,10 +1,10 @@
 ---
-title: "Calculating NLA Habitat Indicators"
+title: "Calculating NLA Physical Habitat Indicators"
 author: "Karen Blocksom"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_document
 vignette: >
-  %\VignetteIndexEntry{Calculating NLA Habitat Indicators}
+  %\VignetteIndexEntry{Calculating NLA Physical Habitat Indicators}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -21,9 +21,9 @@ The drawdown indicator is based on both horizontal and vertical drawdown distanc
 #### First, load necessary libraries.
 ```{r setup,results='hide', warning=FALSE, message=FALSE}
 library(aquamet)
-# library(reshape2)
-# library(plyr)
-# library(dplyr)
+library(tidyr)
+library(plyr)
+library(dplyr)
 ```
 
 #### Now, create the input datasets to run nlaBankFeatures() to obtain the BFXHORIZDIST_DD and BFXVERTHEIGHT_DD metric values. 
@@ -31,21 +31,21 @@ library(aquamet)
 We create data frames for the inputs to the nlaBankFeatures() function first. For the emph{angle} input, we must change the VALUE of 'NEAR_VERTICAL_UNDERCUT' to 'NEAR_VERTICAL' because the function does not allow the former value and assumes it has been corrected to the latter. 
 
 ```{r dd}
-angle <- subset(nlaPhabEx,PARAMETER=='ANGLE',select=-PARAMETER) |> 
+angle <- subset(nlaPhab,PARAMETER=='ANGLE',select=-PARAMETER) |> 
   plyr::mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT','NEAR_VERTICAL',VALUE))
 
-drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN', select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN', select=-PARAMETER)
 
-horizontalDistance <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST', select=-PARAMETER) |> 
+horizontalDistance <- subset(nlaPhab,PARAMETER=='HORIZ_DIST', select=-PARAMETER) |> 
   plyr::mutate(VALUE = as.numeric(VALUE))
 
-horizontalDistanceDrawdown <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD', select=-PARAMETER) |> 
+horizontalDistanceDrawdown <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD', select=-PARAMETER) |> 
   plyr::mutate(VALUE = as.numeric(VALUE))
 
-verticalHeight <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) |> 
+verticalHeight <- subset(nlaPhab,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) |> 
   plyr::mutate(VALUE = as.numeric(VALUE))
 
-verticalHeightDrawdown <- subset(nlaPhabEx,PARAMETER=='VERT_HEIGHT_DD', select=-PARAMETER) |> 
+verticalHeightDrawdown <- subset(nlaPhab,PARAMETER=='VERT_HEIGHT_DD', select=-PARAMETER) |> 
   plyr::mutate(VALUE = as.numeric(VALUE))                                                            
 
 bfMets <- nlaBankFeatures(angle, drawdown, horizontalDistance, horizontalDistanceDrawdown, verticalHeight, verticalHeightDrawdown)
@@ -61,7 +61,8 @@ sitedata <- data.frame(SITE=c(6400, 6469, 6768, 6865, 6869, 7623, 8184, 8251, 86
                        ORIGIN=c('MAN_MADE', 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE', 'NATURAL', 
                                 'MAN_MADE', 'MAN_MADE', 'NATURAL', 'MAN_MADE'), stringsAsFactors=F)
 
-bfMets.wide <- reshape2::dcast(bfMets, SITE~METRIC, value.var='VALUE') # Can use either reshape2 or data.table package, but input needs to be in data.table format if latter
+bfMets.wide <- pivot_wider(bfMets, id_cols='SITE', names_from='METRIC', 
+                           values_from = 'VALUE') # Can use either reshape2 or data.table package, but input needs to be in data.table format if latter
 
 ddIn <- merge(sitedata, subset(bfMets.wide, select=c('SITE', 'BFXHORIZDIST_DD', 'BFXVERTHEIGHT_DD')), by='SITE')
 
@@ -81,34 +82,34 @@ This indicator is fairly straightforward and applies nationwide with the same th
 
 ```{r ripdist}
 
-buildings <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
-buildings_dd <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
-commercial <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
-commercial_dd <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
-crops <- subset(nlaPhabEx,PARAMETER=='HI_CROPS',select=-PARAMETER)
-crops_dd <- subset(nlaPhabEx,PARAMETER=='HI_CROPS_DD',select=-PARAMETER)
-docks <- subset(nlaPhabEx,PARAMETER=='HI_DOCKS',select=-PARAMETER)
-docks_dd <- subset(nlaPhabEx,PARAMETER=='HI_DOCKS_DD',select=-PARAMETER)
-landfill <- subset(nlaPhabEx,PARAMETER=='HI_LANDFILL',select=-PARAMETER)
-landfill_dd <- subset(nlaPhabEx,PARAMETER=='HI_LANDFILL_DD',select=-PARAMETER)   
-lawn <- subset(nlaPhabEx,PARAMETER=='HI_LAWN',select=-PARAMETER)
-lawn_dd <- subset(nlaPhabEx,PARAMETER=='HI_LAWN_DD',select=-PARAMETER)
-orchard <- subset(nlaPhabEx,PARAMETER=='HI_ORCHARD',select=-PARAMETER)
-orchard_dd <- subset(nlaPhabEx,PARAMETER=='HI_ORCHARD_DD',select=-PARAMETER)
-other <- subset(nlaPhabEx,PARAMETER=='HI_OTHER',select=-PARAMETER)
-other_dd <- subset(nlaPhabEx,PARAMETER=='HI_OTHER_DD',select=-PARAMETER)
-park <- subset(nlaPhabEx,PARAMETER=='HI_PARK',select=-PARAMETER)
-park_dd <- subset(nlaPhabEx,PARAMETER=='HI_PARK_DD',select=-PARAMETER)
-pasture <- subset(nlaPhabEx,PARAMETER=='HI_PASTURE',select=-PARAMETER)
-pasture_dd <- subset(nlaPhabEx,PARAMETER=='HI_PASTURE_DD',select=-PARAMETER)
-powerlines <- subset(nlaPhabEx,PARAMETER=='HI_POWERLINES',select=-PARAMETER)
-powerlines_dd <- subset(nlaPhabEx,PARAMETER=='HI_POWERLINES_DD',select=-PARAMETER)
-roads <- subset(nlaPhabEx,PARAMETER=='HI_ROADS',select=-PARAMETER)
-roads_dd <- subset(nlaPhabEx,PARAMETER=='HI_ROADS_DD',select=-PARAMETER)
-walls <- subset(nlaPhabEx,PARAMETER=='HI_WALLS',select=-PARAMETER)
-walls_dd <- subset(nlaPhabEx,PARAMETER=='HI_WALLS_DD',select=-PARAMETER)
-drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+buildings <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
+buildings_dd <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
+commercial <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
+commercial_dd <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
+crops <- subset(nlaPhab,PARAMETER=='HI_CROPS',select=-PARAMETER)
+crops_dd <- subset(nlaPhab,PARAMETER=='HI_CROPS_DD',select=-PARAMETER)
+docks <- subset(nlaPhab,PARAMETER=='HI_DOCKS',select=-PARAMETER)
+docks_dd <- subset(nlaPhab,PARAMETER=='HI_DOCKS_DD',select=-PARAMETER)
+landfill <- subset(nlaPhab,PARAMETER=='HI_LANDFILL',select=-PARAMETER)
+landfill_dd <- subset(nlaPhab,PARAMETER=='HI_LANDFILL_DD',select=-PARAMETER)   
+lawn <- subset(nlaPhab,PARAMETER=='HI_LAWN',select=-PARAMETER)
+lawn_dd <- subset(nlaPhab,PARAMETER=='HI_LAWN_DD',select=-PARAMETER)
+orchard <- subset(nlaPhab,PARAMETER=='HI_ORCHARD',select=-PARAMETER)
+orchard_dd <- subset(nlaPhab,PARAMETER=='HI_ORCHARD_DD',select=-PARAMETER)
+other <- subset(nlaPhab,PARAMETER=='HI_OTHER',select=-PARAMETER)
+other_dd <- subset(nlaPhab,PARAMETER=='HI_OTHER_DD',select=-PARAMETER)
+park <- subset(nlaPhab,PARAMETER=='HI_PARK',select=-PARAMETER)
+park_dd <- subset(nlaPhab,PARAMETER=='HI_PARK_DD',select=-PARAMETER)
+pasture <- subset(nlaPhab,PARAMETER=='HI_PASTURE',select=-PARAMETER)
+pasture_dd <- subset(nlaPhab,PARAMETER=='HI_PASTURE_DD',select=-PARAMETER)
+powerlines <- subset(nlaPhab,PARAMETER=='HI_POWERLINES',select=-PARAMETER)
+powerlines_dd <- subset(nlaPhab,PARAMETER=='HI_POWERLINES_DD',select=-PARAMETER)
+roads <- subset(nlaPhab,PARAMETER=='HI_ROADS',select=-PARAMETER)
+roads_dd <- subset(nlaPhab,PARAMETER=='HI_ROADS_DD',select=-PARAMETER)
+walls <- subset(nlaPhab,PARAMETER=='HI_WALLS',select=-PARAMETER)
+walls_dd <- subset(nlaPhab,PARAMETER=='HI_WALLS_DD',select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
    
 # Use defaults for data2007, fillinDrawdown, and proximityWeights
 # arguments
@@ -117,7 +118,8 @@ hi <- nlaHumanImpact(buildings, buildings_dd, commercial, commercial_dd,
   orchard_dd, other, other_dd, park, park_dd, pasture, pasture_dd, powerlines,
   powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd)
 
-hi.wide <- reshape2::dcast(hi, SITE~METRIC, value.var='VALUE') 
+hi.wide <- pivot_wider(hi, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE') 
 
 ```
 
@@ -139,28 +141,28 @@ The nlaRipVegIndicator() function calculates the site-specific observed and expe
 
 ### Riparian vegetation metrics
 ```{r rv}
-bigTrees <- subset(nlaPhabEx,PARAMETER=='C_BIGTREES',select=-PARAMETER)
-bigTrees_dd <- subset(nlaPhabEx,PARAMETER=='C_BIGTREES_DD',select=-PARAMETER)
-smallTrees <- subset(nlaPhabEx,PARAMETER=='C_SMALLTREES',select=-PARAMETER)
-smallTrees_dd <- subset(nlaPhabEx,PARAMETER=='C_SMALLTREES_DD',select=-PARAMETER)
-canopyType <- subset(nlaPhabEx,PARAMETER=='CANOPY',select=-PARAMETER)
-canopyType_dd <- subset(nlaPhabEx,PARAMETER=='CANOPY_DD',select=-PARAMETER)
-grdcvrBare <- subset(nlaPhabEx,PARAMETER=='GC_BARE',select=-PARAMETER)
-grdcvrBare_dd <- subset(nlaPhabEx,PARAMETER=='GC_BARE_DD',select=-PARAMETER)
-grdcvrInund <- subset(nlaPhabEx,PARAMETER=='GC_INUNDATED',select=-PARAMETER)
-grdcvrInund_dd <- subset(nlaPhabEx,PARAMETER=='GC_INUNDATED_DD',select=-PARAMETER)
-grdcvrNw <- subset(nlaPhabEx,PARAMETER=='GC_NONWOODY',select=-PARAMETER)
-grdcvrNw_dd <- subset(nlaPhabEx,PARAMETER=='GC_NONWOODY_DD',select=-PARAMETER)
-grdcvrW <- subset(nlaPhabEx,PARAMETER=='GC_WOODY',select=-PARAMETER)
-grdcvrW_dd <- subset(nlaPhabEx,PARAMETER=='GC_WOODY_DD',select=-PARAMETER)
-undNonW <- subset(nlaPhabEx,PARAMETER=='U_NONWOODY',select=-PARAMETER)
-undNonW_dd <- subset(nlaPhabEx,PARAMETER=='U_NONWOODY_DD',select=-PARAMETER)
-undW <- subset(nlaPhabEx,PARAMETER=='U_WOODY',select=-PARAMETER)
-undW_dd <- subset(nlaPhabEx,PARAMETER=='U_WOODY_DD',select=-PARAMETER)
-undType <- subset(nlaPhabEx,PARAMETER=='UNDERSTORY',select=-PARAMETER)
-undType_dd <- subset(nlaPhabEx,PARAMETER=='UNDERSTORY_DD',select=-PARAMETER)
-drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+bigTrees <- subset(nlaPhab,PARAMETER=='C_BIGTREES',select=-PARAMETER)
+bigTrees_dd <- subset(nlaPhab,PARAMETER=='C_BIGTREES_DD',select=-PARAMETER)
+smallTrees <- subset(nlaPhab,PARAMETER=='C_SMALLTREES',select=-PARAMETER)
+smallTrees_dd <- subset(nlaPhab,PARAMETER=='C_SMALLTREES_DD',select=-PARAMETER)
+canopyType <- subset(nlaPhab,PARAMETER=='CANOPY',select=-PARAMETER)
+canopyType_dd <- subset(nlaPhab,PARAMETER=='CANOPY_DD',select=-PARAMETER)
+grdcvrBare <- subset(nlaPhab,PARAMETER=='GC_BARE',select=-PARAMETER)
+grdcvrBare_dd <- subset(nlaPhab,PARAMETER=='GC_BARE_DD',select=-PARAMETER)
+grdcvrInund <- subset(nlaPhab,PARAMETER=='GC_INUNDATED',select=-PARAMETER)
+grdcvrInund_dd <- subset(nlaPhab,PARAMETER=='GC_INUNDATED_DD',select=-PARAMETER)
+grdcvrNw <- subset(nlaPhab,PARAMETER=='GC_NONWOODY',select=-PARAMETER)
+grdcvrNw_dd <- subset(nlaPhab,PARAMETER=='GC_NONWOODY_DD',select=-PARAMETER)
+grdcvrW <- subset(nlaPhab,PARAMETER=='GC_WOODY',select=-PARAMETER)
+grdcvrW_dd <- subset(nlaPhab,PARAMETER=='GC_WOODY_DD',select=-PARAMETER)
+undNonW <- subset(nlaPhab,PARAMETER=='U_NONWOODY',select=-PARAMETER)
+undNonW_dd <- subset(nlaPhab,PARAMETER=='U_NONWOODY_DD',select=-PARAMETER)
+undW <- subset(nlaPhab,PARAMETER=='U_WOODY',select=-PARAMETER)
+undW_dd <- subset(nlaPhab,PARAMETER=='U_WOODY_DD',select=-PARAMETER)
+undType <- subset(nlaPhab,PARAMETER=='UNDERSTORY',select=-PARAMETER)
+undType_dd <- subset(nlaPhab,PARAMETER=='UNDERSTORY_DD',select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
 
 # Use defaults for fillinDrawdown and createSyntheticCovers
 rv <- nlaRiparianVegetation(bigTrees, bigTrees_dd, smallTrees, smallTrees_dd,
@@ -168,26 +170,28 @@ rv <- nlaRiparianVegetation(bigTrees, bigTrees_dd, smallTrees, smallTrees_dd,
     grdcvrNw, grdcvrNw_dd, grdcvrW, grdcvrW_dd, undNonW, undNonW_dd, undW, undW_dd,
     undType, undType_dd, drawdown, horizontalDistance_dd)
 
-rv.wide <- reshape2::dcast(rv, SITE~METRIC, value.var='VALUE')
+rv.wide <- pivot_wider(rv, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE')
 
 ```
 
 ### Shoreline substrate metrics
 ```{r ss}
-bedrock <- subset(nlaPhabEx,PARAMETER=='SS_BEDROCK',select=-PARAMETER)
-boulder <- subset(nlaPhabEx,PARAMETER=='SS_BOULDERS',select=-PARAMETER)
-cobble <- subset(nlaPhabEx,PARAMETER=='SS_COBBLE',select=-PARAMETER)
-gravel <- subset(nlaPhabEx,PARAMETER=='SS_GRAVEL',select=-PARAMETER)
-organic <- subset(nlaPhabEx,PARAMETER=='SS_ORGANIC',select=-PARAMETER)
-other <- subset(nlaPhabEx,PARAMETER=='SS_OTHER',select=-PARAMETER)
-sand <- subset(nlaPhabEx,PARAMETER=='SS_SAND',select=-PARAMETER)
-silt <- subset(nlaPhabEx,PARAMETER=='SS_SILT',select=-PARAMETER)
-wood <- subset(nlaPhabEx,PARAMETER=='SS_WOOD',select=-PARAMETER)
+bedrock <- subset(nlaPhab,PARAMETER=='SS_BEDROCK',select=-PARAMETER)
+boulder <- subset(nlaPhab,PARAMETER=='SS_BOULDERS',select=-PARAMETER)
+cobble <- subset(nlaPhab,PARAMETER=='SS_COBBLE',select=-PARAMETER)
+gravel <- subset(nlaPhab,PARAMETER=='SS_GRAVEL',select=-PARAMETER)
+organic <- subset(nlaPhab,PARAMETER=='SS_ORGANIC',select=-PARAMETER)
+other <- subset(nlaPhab,PARAMETER=='SS_OTHER',select=-PARAMETER)
+sand <- subset(nlaPhab,PARAMETER=='SS_SAND',select=-PARAMETER)
+silt <- subset(nlaPhab,PARAMETER=='SS_SILT',select=-PARAMETER)
+wood <- subset(nlaPhab,PARAMETER=='SS_WOOD',select=-PARAMETER)
 
 ss <- nlaShorelineSubstrate(bedrock,boulder,
 cobble,gravel,organic,other,sand,silt,wood)
 
-ss.wide <- reshape2::dcast(ss, SITE~METRIC, value.var='VALUE') |> 
+ss.wide <- pivot_wider(ss, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE') |> 
   dplyr::select(SITE, SSFCBEDROCK,SSFCBOULDERS) |>
   plyr::mutate(SSFCBEDROCK=as.numeric(SSFCBEDROCK), SSFCBOULDERS=as.numeric(SSFCBOULDERS))
 ```
@@ -195,34 +199,34 @@ ss.wide <- reshape2::dcast(ss, SITE~METRIC, value.var='VALUE') |>
 ### Human influence metrics
 
 ```{r hi}
-buildings <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS', select=-PARAMETER)
-buildings_dd <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
-commercial <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
-commercial_dd <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
-crops <- subset(nlaPhabEx,PARAMETER=='HI_CROPS',select=-PARAMETER)
-crops_dd <- subset(nlaPhabEx,PARAMETER=='HI_CROPS_DD',select=-PARAMETER)
-docks <- subset(nlaPhabEx,PARAMETER=='HI_DOCKS',select=-PARAMETER)
-docks_dd <- subset(nlaPhabEx,PARAMETER=='HI_DOCKS_DD',select=-PARAMETER)
-landfill <- subset(nlaPhabEx,PARAMETER=='HI_LANDFILL',select=-PARAMETER)
-landfill_dd <- subset(nlaPhabEx,PARAMETER=='HI_LANDFILL_DD',select=-PARAMETER)
-lawn <- subset(nlaPhabEx,PARAMETER=='HI_LAWN',select=-PARAMETER)
-lawn_dd <- subset(nlaPhabEx,PARAMETER=='HI_LAWN_DD',select=-PARAMETER)
-orchard <- subset(nlaPhabEx,PARAMETER=='HI_ORCHARD',select=-PARAMETER)
-orchard_dd <- subset(nlaPhabEx,PARAMETER=='HI_ORCHARD_DD',select=-PARAMETER)
-other <- subset(nlaPhabEx,PARAMETER=='HI_OTHER',select=-PARAMETER)
-other_dd <- subset(nlaPhabEx,PARAMETER=='HI_OTHER_DD',select=-PARAMETER)
-park <- subset(nlaPhabEx,PARAMETER=='HI_PARK',select=-PARAMETER)
-park_dd <- subset(nlaPhabEx,PARAMETER=='HI_PARK_DD',select=-PARAMETER)
-pasture <- subset(nlaPhabEx,PARAMETER=='HI_PASTURE',select=-PARAMETER)
-pasture_dd <- subset(nlaPhabEx,PARAMETER=='HI_PASTURE_DD',select=-PARAMETER)
-powerlines <- subset(nlaPhabEx,PARAMETER=='HI_POWERLINES',select=-PARAMETER)
-powerlines_dd <- subset(nlaPhabEx,PARAMETER=='HI_POWERLINES_DD',select=-PARAMETER)
-roads <- subset(nlaPhabEx,PARAMETER=='HI_ROADS',select=-PARAMETER)
-roads_dd <- subset(nlaPhabEx,PARAMETER=='HI_ROADS_DD',select=-PARAMETER)
-walls <- subset(nlaPhabEx,PARAMETER=='HI_WALLS',select=-PARAMETER)
-walls_dd <- subset(nlaPhabEx,PARAMETER=='HI_WALLS_DD',select=-PARAMETER)
-drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+buildings <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS', select=-PARAMETER)
+buildings_dd <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
+commercial <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
+commercial_dd <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
+crops <- subset(nlaPhab,PARAMETER=='HI_CROPS',select=-PARAMETER)
+crops_dd <- subset(nlaPhab,PARAMETER=='HI_CROPS_DD',select=-PARAMETER)
+docks <- subset(nlaPhab,PARAMETER=='HI_DOCKS',select=-PARAMETER)
+docks_dd <- subset(nlaPhab,PARAMETER=='HI_DOCKS_DD',select=-PARAMETER)
+landfill <- subset(nlaPhab,PARAMETER=='HI_LANDFILL',select=-PARAMETER)
+landfill_dd <- subset(nlaPhab,PARAMETER=='HI_LANDFILL_DD',select=-PARAMETER)
+lawn <- subset(nlaPhab,PARAMETER=='HI_LAWN',select=-PARAMETER)
+lawn_dd <- subset(nlaPhab,PARAMETER=='HI_LAWN_DD',select=-PARAMETER)
+orchard <- subset(nlaPhab,PARAMETER=='HI_ORCHARD',select=-PARAMETER)
+orchard_dd <- subset(nlaPhab,PARAMETER=='HI_ORCHARD_DD',select=-PARAMETER)
+other <- subset(nlaPhab,PARAMETER=='HI_OTHER',select=-PARAMETER)
+other_dd <- subset(nlaPhab,PARAMETER=='HI_OTHER_DD',select=-PARAMETER)
+park <- subset(nlaPhab,PARAMETER=='HI_PARK',select=-PARAMETER)
+park_dd <- subset(nlaPhab,PARAMETER=='HI_PARK_DD',select=-PARAMETER)
+pasture <- subset(nlaPhab,PARAMETER=='HI_PASTURE',select=-PARAMETER)
+pasture_dd <- subset(nlaPhab,PARAMETER=='HI_PASTURE_DD',select=-PARAMETER)
+powerlines <- subset(nlaPhab,PARAMETER=='HI_POWERLINES',select=-PARAMETER)
+powerlines_dd <- subset(nlaPhab,PARAMETER=='HI_POWERLINES_DD',select=-PARAMETER)
+roads <- subset(nlaPhab,PARAMETER=='HI_ROADS',select=-PARAMETER)
+roads_dd <- subset(nlaPhab,PARAMETER=='HI_ROADS_DD',select=-PARAMETER)
+walls <- subset(nlaPhab,PARAMETER=='HI_WALLS',select=-PARAMETER)
+walls_dd <- subset(nlaPhab,PARAMETER=='HI_WALLS_DD',select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
 
 # Use defaults for data2007, fillinDrawdown, and proximityWeights
 # arguments
@@ -231,7 +235,8 @@ hi <- nlaHumanImpact(buildings, buildings_dd, commercial, commercial_dd,
     orchard_dd, other, other_dd, park, park_dd, pasture, pasture_dd, powerlines,
     powerlines_dd, roads, roads_dd, walls, walls_dd, drawdown, horizontalDistance_dd)
 
-hi.wide <- reshape2::dcast(hi, SITE~METRIC, value.var='VALUE')
+hi.wide <- pivot_wider(hi, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE')
 
 ```
 
@@ -282,24 +287,24 @@ The nlaLitVegCompIndicator() function calculates the site-specific observed and 
 ### Fish cover metrics 
 
 ```{r fc}
-aquatic <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
-aquatic_dd <- subset(nlaPhabEx,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
-boulders <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
-boulders_dd <- subset(nlaPhabEx,PARAMETER=='FC_BOULDERS_DD',select=-PARAMETER)
-brush <- subset(nlaPhabEx,PARAMETER=='FC_BRUSH',select=-PARAMETER)
-brush_dd <- subset(nlaPhabEx,PARAMETER=='FC_BRUSH_DD',select=-PARAMETER)
-ledges <- subset(nlaPhabEx,PARAMETER=='FC_LEDGES',select=-PARAMETER)
-ledges_dd <- subset(nlaPhabEx,PARAMETER=='FC_LEDGES_DD',select=-PARAMETER)
-livetrees <- subset(nlaPhabEx,PARAMETER=='FC_LIVETREES',select=-PARAMETER)
-livetrees_dd <- subset(nlaPhabEx,PARAMETER=='FC_LIVETREES_DD',select=-PARAMETER)
-overhang <- subset(nlaPhabEx,PARAMETER=='FC_OVERHANG',select=-PARAMETER)
-overhang_dd <- subset(nlaPhabEx,PARAMETER=='FC_OVERHANG_DD',select=-PARAMETER)
-snags <- subset(nlaPhabEx,PARAMETER=='FC_SNAGS',select=-PARAMETER)
-snags_dd <- subset(nlaPhabEx,PARAMETER=='FC_SNAGS_DD',select=-PARAMETER)
-structures <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
-structures_dd <- subset(nlaPhabEx,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
-drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER) |>
+aquatic <- subset(nlaPhab,PARAMETER=='FC_AQUATIC',select=-PARAMETER)
+aquatic_dd <- subset(nlaPhab,PARAMETER=='FC_AQUATIC_DD',select=-PARAMETER)
+boulders <- subset(nlaPhab,PARAMETER=='FC_BOULDERS',select=-PARAMETER)
+boulders_dd <- subset(nlaPhab,PARAMETER=='FC_BOULDERS_DD',select=-PARAMETER)
+brush <- subset(nlaPhab,PARAMETER=='FC_BRUSH',select=-PARAMETER)
+brush_dd <- subset(nlaPhab,PARAMETER=='FC_BRUSH_DD',select=-PARAMETER)
+ledges <- subset(nlaPhab,PARAMETER=='FC_LEDGES',select=-PARAMETER)
+ledges_dd <- subset(nlaPhab,PARAMETER=='FC_LEDGES_DD',select=-PARAMETER)
+livetrees <- subset(nlaPhab,PARAMETER=='FC_LIVETREES',select=-PARAMETER)
+livetrees_dd <- subset(nlaPhab,PARAMETER=='FC_LIVETREES_DD',select=-PARAMETER)
+overhang <- subset(nlaPhab,PARAMETER=='FC_OVERHANG',select=-PARAMETER)
+overhang_dd <- subset(nlaPhab,PARAMETER=='FC_OVERHANG_DD',select=-PARAMETER)
+snags <- subset(nlaPhab,PARAMETER=='FC_SNAGS',select=-PARAMETER)
+snags_dd <- subset(nlaPhab,PARAMETER=='FC_SNAGS_DD',select=-PARAMETER)
+structures <- subset(nlaPhab,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
+structures_dd <- subset(nlaPhab,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
+drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER) |>
   plyr::mutate(VALUE = as.numeric(VALUE)) # This one is manually converted to numeric because it is required by the function to be
 
 # Use default values for fillinDrawdown (TRUE), createSyntheticCovers (TRUE), 
@@ -314,7 +319,8 @@ fc <- nlaFishCover(aquatic,aquatic_dd,boulders,boulders_dd,brush,
   brush_dd,ledges,ledges_dd,livetrees,livetrees_dd,overhang,overhang_dd,
   snags,snags_dd,structures,structures_dd,drawdown,horizontalDistance_dd)
 
-fc.wide <- reshape2::dcast(fc, SITE~METRIC, value.var='VALUE') |>
+fc.wide <- pivot_wider(fc, id_cols='SITE', names_from='METRIC', 
+                       values_from='VALUE') |>
   dplyr::select(SITE, FCFCSNAGS_LIT, FCINATURAL_LIT, FCFCBOULDERS_LIT, FCFCBRUSH_LIT,
          FCFCLEDGES_LIT, FCFCLIVETREES_LIT, FCFCOVERHANG_LIT)
 
@@ -325,15 +331,16 @@ fc.wide
 ### Aquatic macrophyte metrics
 
 ```{r am}
-emerg <- subset(nlaPhabEx,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
-float <- subset(nlaPhabEx,PARAMETER=='AM_FLOATING',select=-PARAMETER)
-submerg <- subset(nlaPhabEx,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
-totcvr <- subset(nlaPhabEx,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
+emerg <- subset(nlaPhab,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
+float <- subset(nlaPhab,PARAMETER=='AM_FLOATING',select=-PARAMETER)
+submerg <- subset(nlaPhab,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
+totcvr <- subset(nlaPhab,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
 
 am <- nlaAquaticMacrophytes(emergent=emerg,
   floating=float,submergent=submerg,totalCover=totcvr)
 
-am.wide <- reshape2::dcast(am, SITE~METRIC, value.var='VALUE') |>
+am.wide <- pivot_wider(am, id_cols = 'SITE', names_from='METRIC', 
+                       values_from='VALUE') |>
   dplyr::select(SITE, AMFCFLOATING, AMFCEMERGENT) |>
   plyr::mutate(AMFCFLOATING = as.numeric(AMFCFLOATING),
          AMFCEMERGENT = as.numeric(AMFCEMERGENT))

@@ -279,6 +279,9 @@ protocol or do not contain drawdown cover data.  The default value is TRUE.}
 DRAWDOWN parameter to fill in unrecorded cover and HORIZ_DIST_DD values.
 The default value is TRUE.}
 
+\item{fillinDDImpacts_maxDrawdownDist}{A numeric value, the maximum drawdown
+distance to fill in impacts for. Default value is 1.5.}
+
 \item{dataInformation}{A data frame used to convert between 
 cover class codes to characteristic cover values. Default 
 data frame uses NARS values. Expected to contain
@@ -354,32 +357,32 @@ The function requires a data frame containing validated physical
 habitat data collected using the NLA protocol.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE
-  bigTrees <- subset(nlaPhabEx,PARAMETER=='C_BIGTREES',select=-PARAMETER)
-  bigTrees_dd <- subset(nlaPhabEx,PARAMETER=='C_BIGTREES_DD',select=-PARAMETER)
-  smallTrees <- subset(nlaPhabEx,PARAMETER=='C_SMALLTREES',select=-PARAMETER)
-  smallTrees_dd <- subset(nlaPhabEx,PARAMETER=='C_SMALLTREES_DD',select=-PARAMETER)
-  canopyType <- subset(nlaPhabEx,PARAMETER=='CANOPY',select=-PARAMETER)
-  canopyType_dd <- subset(nlaPhabEx,PARAMETER=='CANOPY_DD',select=-PARAMETER)
-  grdcvrBare <- subset(nlaPhabEx,PARAMETER=='GC_BARE',select=-PARAMETER)
-  grdcvrBare_dd <- subset(nlaPhabEx,PARAMETER=='GC_BARE_DD',select=-PARAMETER)
-  grdcvrInund <- subset(nlaPhabEx,PARAMETER=='GC_INUNDATED',select=-PARAMETER)
-  grdcvrInund_dd <- subset(nlaPhabEx,PARAMETER=='GC_INUNDATED_DD',select=-PARAMETER)
-  grdcvrNw <- subset(nlaPhabEx,PARAMETER=='GC_NONWOODY',select=-PARAMETER)
-  grdcvrNw_dd <- subset(nlaPhabEx,PARAMETER=='GC_NONWOODY_DD',select=-PARAMETER)
-  grdcvrW <- subset(nlaPhabEx,PARAMETER=='GC_WOODY',select=-PARAMETER)
-  grdcvrW_dd <- subset(nlaPhabEx,PARAMETER=='GC_WOODY_DD',select=-PARAMETER)
-  undNonW <- subset(nlaPhabEx,PARAMETER=='U_NONWOODY',select=-PARAMETER)
-  undNonW_dd <- subset(nlaPhabEx,PARAMETER=='U_NONWOODY_DD',select=-PARAMETER)
-  undW <- subset(nlaPhabEx,PARAMETER=='U_WOODY',select=-PARAMETER)
-  undW_dd <- subset(nlaPhabEx,PARAMETER=='U_WOODY_DD',select=-PARAMETER)
-  undType <- subset(nlaPhabEx,PARAMETER=='UNDERSTORY',select=-PARAMETER)
-  undType_dd <- subset(nlaPhabEx,PARAMETER=='UNDERSTORY_DD',select=-PARAMETER)
-  drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-  horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+  bigTrees <- subset(nlaPhab,PARAMETER=='C_BIGTREES',select=-PARAMETER)
+  bigTrees_dd <- subset(nlaPhab,PARAMETER=='C_BIGTREES_DD',select=-PARAMETER)
+  smallTrees <- subset(nlaPhab,PARAMETER=='C_SMALLTREES',select=-PARAMETER)
+  smallTrees_dd <- subset(nlaPhab,PARAMETER=='C_SMALLTREES_DD',select=-PARAMETER)
+  canopyType <- subset(nlaPhab,PARAMETER=='CANOPY',select=-PARAMETER)
+  canopyType_dd <- subset(nlaPhab,PARAMETER=='CANOPY_DD',select=-PARAMETER)
+  grdcvrBare <- subset(nlaPhab,PARAMETER=='GC_BARE',select=-PARAMETER)
+  grdcvrBare_dd <- subset(nlaPhab,PARAMETER=='GC_BARE_DD',select=-PARAMETER)
+  grdcvrInund <- subset(nlaPhab,PARAMETER=='GC_INUNDATED',select=-PARAMETER)
+  grdcvrInund_dd <- subset(nlaPhab,PARAMETER=='GC_INUNDATED_DD',select=-PARAMETER)
+  grdcvrNw <- subset(nlaPhab,PARAMETER=='GC_NONWOODY',select=-PARAMETER)
+  grdcvrNw_dd <- subset(nlaPhab,PARAMETER=='GC_NONWOODY_DD',select=-PARAMETER)
+  grdcvrW <- subset(nlaPhab,PARAMETER=='GC_WOODY',select=-PARAMETER)
+  grdcvrW_dd <- subset(nlaPhab,PARAMETER=='GC_WOODY_DD',select=-PARAMETER)
+  undNonW <- subset(nlaPhab,PARAMETER=='U_NONWOODY',select=-PARAMETER)
+  undNonW_dd <- subset(nlaPhab,PARAMETER=='U_NONWOODY_DD',select=-PARAMETER)
+  undW <- subset(nlaPhab,PARAMETER=='U_WOODY',select=-PARAMETER)
+  undW_dd <- subset(nlaPhab,PARAMETER=='U_WOODY_DD',select=-PARAMETER)
+  undType <- subset(nlaPhab,PARAMETER=='UNDERSTORY',select=-PARAMETER)
+  undType_dd <- subset(nlaPhab,PARAMETER=='UNDERSTORY_DD',select=-PARAMETER)
+  drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+  horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
   
   # Use defaults for fillinDrawdown and createSyntheticCovers
   exRipVeg <- nlaRiparianVegetation(bigTrees, bigTrees_dd, smallTrees, smallTrees_dd,
@@ -394,4 +397,3 @@ habitat data collected using the NLA protocol.
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
 }
-\keyword{survey}

@@ -156,7 +156,7 @@ aquametStandardizeArgument <- function(arg, ..., ifdf=NULL,
     return(rc)   
 }
 
-
+#' @keywords internal
 aquametStandardizeArgument.checkLegal <- function(arg, expectedLegal)
 # Checks the provided argument for expected structure.  Returns NULL on success,
 # or a character string describing the legal value problems if any are found.
@@ -207,7 +207,7 @@ aquametStandardizeArgument.checkLegal <- function(arg, expectedLegal)
     return(errs)
 }
 
-
+#' @keywords internal
 aquametStandardizeArgument.checkRange <- function(arg, expectedRange)
 # Checks the provided argument for expected structure.  Returns NULL on success,
 # or a named character vector with one or two elements: 'error' describes problems 
@@ -291,7 +291,7 @@ aquametStandardizeArgument.checkRange <- function(arg, expectedRange)
     return(errs)
 }
 
-
+#' @keywords internal
 aquametStandardizeArgument.checkStructure <- function(arg, expectedStruct)
 # Checks the provided argument for expected structure.  Returns NULL on success,
 # or a character string describing the error if one is found.

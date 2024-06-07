@@ -152,10 +152,8 @@ portion of the physical habitat metrics for National Lakes Assessment
   noCover,substrate,vegetation,woody)
   
   head(exLitMacro)
- 
 }
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
 }
-\keyword{survey}

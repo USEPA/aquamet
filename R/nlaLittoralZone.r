@@ -36,17 +36,16 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples
-#'   head(nlaPhabEx)
+#'   head(nlaPhab)
 #'   
 #'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
 #'   #  and VALUE
-#'   surfFilm <- subset(nlaPhabEx,PARAMETER=='SURFACE_FILM',select=-PARAMETER)
+#'   surfFilm <- subset(nlaPhab,PARAMETER=='SURFACE_FILM',select=-PARAMETER)
 #'
 #'   exLitZone <- nlaLittoralZone(surfFilm, data2007=FALSE)
 #'   
 #'   head(exLitZone)
-#'  
-#' @keywords survey
+
 
 nlaLittoralZone <- function(littoralFilm, data2007=FALSE
                            ,isUnitTest = FALSE
@@ -152,7 +151,7 @@ nlaLittoralZone <- function(littoralFilm, data2007=FALSE
     return(lz)
 }
 
-
+#' @keywords internal
 nlaLittoralZone.prepareInput <- function(lzData, data2007)
 # Prepare Littoral zone data for subsequent calculations.
 # Returns standardized dataframe with columns SITE, STATION, VALUE.
@@ -178,7 +177,7 @@ nlaLittoralZone.prepareInput <- function(lzData, data2007)
 	return(lzData)
 }
 
-
+#' @keywords internal
 nlaLittoralZone.modeFilm <- function(df, data2007)
 # Determine most common film type.  Returns dataframe with
 # columns SITE, METRIC, VALUE
@@ -204,7 +203,7 @@ nlaLittoralZone.modeFilm <- function(df, data2007)
 	return(modeFilm)
 }
 
-
+#' @keywords internal
 nlaLittoralZone.fractionalPresences <- function(df, data2007)
 # Determines fractional presences of film types, including 'any' film other 
 # than NONE. Returns dataframe with columns SITE, METRIC, VALUE.
@@ -260,7 +259,7 @@ nlaLittoralZone.fractionalPresences <- function(df, data2007)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaLittoralZone.filmVariety <- function(df, data2007)
 # Determines variety of film types, including 'any' film other 
 # than NONE. Returns dataframe with columns SITE, METRIC, VALUE.

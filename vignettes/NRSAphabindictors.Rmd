@@ -22,7 +22,7 @@ There is a separate vignette showing all of the steps involved in calculating lo
 #### First load necessary libraries
 ```{r Setup, results='hide', message=FALSE, warning=FALSE}
 library(aquamet)
-library(reshape2)
+library(tidyr)
 library(plyr)
 library(dplyr)
 ```
@@ -82,8 +82,9 @@ fishCvrOut <- nrsaFishCover(algae, boulder,
                             overhang, structures,
                             undercut, woodyDebris)
 
-fishCvrOut.wide <- filter(fishCvrOut, METRIC=='xfc_nat') %>%
-  dcast(SITE~METRIC, value.var='VALUE')
+fishCvrOut.wide <- filter(fishCvrOut, METRIC=='xfc_nat') |>
+  pivot_wider(id_cols = 'SITE', names_from='METRIC', 
+              values_from='VALUE')
 
 fishCvrOut.wide
 
@@ -93,7 +94,7 @@ fishCvrOut.wide
 ### Now exclude XFC_NAT from the data frame used in Sections 2 and 3 and merge with these values
 
 ```{r xfc}
-xfcIn <- subset(nrsaPhabIndicEx, select=-XFC_NAT) %>%
+xfcIn <- subset(nrsaPhabIndicEx, select=-XFC_NAT) |>
   merge(fishCvrOut.wide, by='SITE')
 
 xfcIn
@@ -102,7 +103,7 @@ xfcIn
 ### Use the nrsaInstrmCoverIndicator() function to assign condition based on the value of xfc_nat relative to the site-specific expected value, calculated based on a model using site-related variables. 
 
 ```{r instrmcvr}
-instrmcvrOut <- nrsaInstrmCoverIndicator(xfcIn,sampID='SITE', ecoreg='AGGR_ECO9_2015', 
+instrmcvrOut <- nrsaInstrmCoverIndicator(xfcIn, sampID='SITE', ecoreg='AGGR_ECO9_2015', 
                                          protocol='REALM', xfc_nat='xfc_nat', 
                                          lat='LAT_DD83', lon='LON_DD83', 
                                          area='WSAREASQKM', elev='ELEV_PT', 
@@ -134,8 +135,9 @@ rvOut <- nrsaRiparianVegetation(canCovLD, canCovSD,
                                 undCNW, undCW,
                                 undVT)
 
-rvOut.wide <- filter(rvOut, METRIC=='xcmgw') %>%
-  dcast(SITE~METRIC, value.var='VALUE')
+rvOut.wide <- filter(rvOut, METRIC=='xcmgw') |>
+  pivot_wider(id_cols = 'SITE', names_from='METRIC', 
+              values_from='VALUE')
 
 rvOut.wide
 ```
@@ -145,7 +147,7 @@ rvOut.wide
 ### Now exclude XCMGW from the data frame used in Sections 2 and 3 and merge with these values 
 
 ```{r ripvegIn}
-ripvegIn <- subset(nrsaPhabIndicEx, select=-XCMGW) %>%
+ripvegIn <- subset(nrsaPhabIndicEx, select=-XCMGW) |>
   merge(rvOut.wide, by='SITE')
 
 ```

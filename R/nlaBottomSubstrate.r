@@ -149,27 +149,26 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples
-#'   head(nlaPhabEx)
+#'   head(nlaPhab)
 #'   
 #'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
 #'   #  and VALUE
-#'   bedrock <- subset(nlaPhabEx,PARAMETER=='BS_BEDROCK',select=-PARAMETER)
-#'   boulder <- subset(nlaPhabEx,PARAMETER=='BS_BOULDER',select=-PARAMETER)
-#'   color <- subset(nlaPhabEx,PARAMETER=='BS_COLOR',select=-PARAMETER)
-#'   cobble <- subset(nlaPhabEx,PARAMETER=='BS_COBBLE',select=-PARAMETER)
-#'   gravel <- subset(nlaPhabEx,PARAMETER=='BS_GRAVEL',select=-PARAMETER)
-#'   odor <- subset(nlaPhabEx,PARAMETER=='ODOR',select=-PARAMETER)
-#'   organic <- subset(nlaPhabEx,PARAMETER=='BS_ORGANIC',select=-PARAMETER)
-#'   sand <- subset(nlaPhabEx,PARAMETER=='BS_SAND',select=-PARAMETER)
-#'   silt <- subset(nlaPhabEx,PARAMETER=='BS_SILT',select=-PARAMETER)
-#'   wood <- subset(nlaPhabEx,PARAMETER=='BS_WOOD',select=-PARAMETER)
+#'   bedrock <- subset(nlaPhab,PARAMETER=='BS_BEDROCK',select=-PARAMETER)
+#'   boulder <- subset(nlaPhab,PARAMETER=='BS_BOULDER',select=-PARAMETER)
+#'   color <- subset(nlaPhab,PARAMETER=='BS_COLOR',select=-PARAMETER)
+#'   cobble <- subset(nlaPhab,PARAMETER=='BS_COBBLE',select=-PARAMETER)
+#'   gravel <- subset(nlaPhab,PARAMETER=='BS_GRAVEL',select=-PARAMETER)
+#'   odor <- subset(nlaPhab,PARAMETER=='ODOR',select=-PARAMETER)
+#'   organic <- subset(nlaPhab,PARAMETER=='BS_ORGANIC',select=-PARAMETER)
+#'   sand <- subset(nlaPhab,PARAMETER=='BS_SAND',select=-PARAMETER)
+#'   silt <- subset(nlaPhab,PARAMETER=='BS_SILT',select=-PARAMETER)
+#'   wood <- subset(nlaPhab,PARAMETER=='BS_WOOD',select=-PARAMETER)
 #'   
-#'   exBottomSubstrate <- nlaBottomSubstrate(bedrock,boulder,color,
-#'   cobble,gravel,odor,organic,sand,silt,wood)
+#'   exBottomSubstrate <- nlaBottomSubstrate(bedrock, boulder, color,
+#'   cobble, gravel, odor, organic, sand, silt, wood)
 #'   
 #'   head(exBottomSubstrate)
 #'  
-#' @keywords survey
 
 nlaBottomSubstrate <- function(bedrock=NULL
                               ,boulder=NULL
@@ -451,7 +450,7 @@ nlaBottomSubstrate <- function(bedrock=NULL
 	return(mets)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.setupForParticleCalculations <- function(bsData, substrateCovers, substrateSizes)
 # Prepares the input data for subsequent particle calculations, adding
 # information for each substrate class.  
@@ -475,7 +474,7 @@ nlaBottomSubstrate.setupForParticleCalculations <- function(bsData, substrateCov
 	return(preppedData)	
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.indivPresence <- function(bsPresence)
 # Calculate fractional presence of each substrate class
 {
@@ -493,7 +492,7 @@ nlaBottomSubstrate.indivPresence <- function(bsPresence)
 	return(meanPresence)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.variety <- function(bsData)	
 # Calculate variety metrics: 
 #     bsiStaVariety = mean number of substrate classes at each station.
@@ -531,7 +530,7 @@ nlaBottomSubstrate.variety <- function(bsData)
 	return(rc)
 }
   
-
+#' @keywords internal
 nlaBottomSubstrate.indivCover <- function(bsData)
 # calculate mean, stdev and counts of normalized characteristic cover values 
 # of each substrate class.
@@ -576,7 +575,7 @@ nlaBottomSubstrate.indivCover <- function(bsData)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
 # Calculations using characteristic diameters of the substrate are based
 # on mean diameter*cover values at each transect.  Cover values are 
@@ -672,7 +671,7 @@ nlaBottomSubstrate.populationEstimates <- function(bsData, substrateSizes)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.modeCover <- function(presences, covers)
 # Determine most common substrate class by presence and by cover
 # (requires same site visits in meanPresence and meanCover and in same order)
@@ -719,7 +718,7 @@ nlaBottomSubstrate.modeCover <- function(presences, covers)
   	return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.indivColor <- function(df)
 # Determine largest fractional presence of each substrate color and sample size.
 {
@@ -770,7 +769,7 @@ nlaBottomSubstrate.indivColor <- function(df)
   	return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.modeColor <- function(df)
 # Determine color mode (most common color(s)) at each site.  Returns
 # dataframe with mode of substrate color, alphabetizing ties.
@@ -796,7 +795,7 @@ nlaBottomSubstrate.modeColor <- function(df)
   	return(colorMode)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.indivOdor <- function(df)
 # Determine fractional odor presences
 {
@@ -855,7 +854,7 @@ nlaBottomSubstrate.indivOdor <- function(df)
   return(rc)
 }
 
-
+#' @keywords internal
 nlaBottomSubstrate.modeOdor <- function(df)
 # Determine most common substrate odor
 {

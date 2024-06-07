@@ -122,8 +122,7 @@
 #'   noCover,substrate,vegetation,woody)
 #'   
 #'   head(exLitMacro)
-#'  
-#' @keywords survey
+
 
 nlaLittoralMacrohabitat <- function(artificial = NULL
                                    ,boulders = NULL
@@ -243,7 +242,7 @@ nlaLittoralMacrohabitat <- function(artificial = NULL
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaLittoralMacrohabitat.cover <- function(df)
 # Cover class calculations using COVER_CLASS
 {
@@ -319,7 +318,7 @@ nlaLittoralMacrohabitat.cover <- function(df)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaLittoralMacrohabitat.coverTypes <- function(df)
 # Cover types.  Zero or more are recorded at each station, though ideally at least one is.
 {
@@ -388,7 +387,7 @@ nlaLittoralMacrohabitat.coverTypes <- function(df)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaLittoralMacrohabitat.humanDist <- function(df, hdWeights)
 # Human disturbance level mets based on HUMAN_DISTURBANCE
 {
@@ -421,7 +420,7 @@ nlaLittoralMacrohabitat.humanDist <- function(df, hdWeights)
 	return(rc)
 }
 
-
+#' @keywords internal
 nlaLittoralMacrohabitat.substrate <- function(df)
 # Determine fractional presence of various substrates
 {
