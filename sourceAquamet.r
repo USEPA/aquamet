@@ -7,12 +7,14 @@
 # 10/01/20 cws No longer using reshape2 package.
 # 12/19/23 cws Added tidyr requirement for dfDifferences which uses pivot_wider
 #  2/21/24 cws Comment added
+#  6/12/24 cws Removed require(plyr), as it is soon to be deprecated.
+#  
 
 require(foreach)
 require(Hmisc)
 #require(aquamet)
 require(RUnit)
-require(plyr)
+#require(plyr)
 require(dplyr)
 require(tidyr)
 #require(reshape2)

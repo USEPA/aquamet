@@ -141,6 +141,8 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
 #    9/25/20 cws Removing reshape2 functions in favour of tidyr due to deprecation.
 #    7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
 #            pivot_wider
+#    6/12/24 cws Removing reliance on plyr package by rewriting call to ddply to 
+#            use group_by/summarise instead
 #
 # Arguments:
 #   df = a data frame containing aquatic macrophyte data.  The data frame must
@@ -316,13 +318,20 @@ nlaAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeig
 			,all.x=TRUE, sort=FALSE
 	)
 	
-	tt<-ddply(subset(amCover, grepl('^AM.+',PARAMETER))
-			 ,c('SITE','PARAMETER')
-			 ,summarise
-			 ,FC = mean(calc, na.rm=TRUE)
-			 ,V  = sd(calc, na.rm=TRUE)
-			 ,N  = length(na.omit(calc))
-			 )
+	# tt<-ddply(subset(amCover, grepl('^AM.+',PARAMETER))  # OLD CODE
+	# 		 ,c('SITE','PARAMETER')
+	# 		 ,summarise
+	# 		 ,FC = mean(calc, na.rm=TRUE)
+	# 		 ,V  = sd(calc, na.rm=TRUE)
+	# 		 ,N  = length(na.omit(calc))
+	# 		 )
+	tt <- amCover %>%                                      # NEW CODE
+	      subset(grepl('^AM.+',PARAMETER)) %>%
+	      group_by(SITE, PARAMETER) %>%
+	      summarise(FC = mean(calc, na.rm=TRUE)
+			           ,V  = sd(calc, na.rm=TRUE)
+			           ,N  = length(na.omit(calc))
+			           )
     coverMets <- tt %>% 
                  #tidyr::gather(key='met', value='VALUE', c('FC','V','N')) %>%
                  tidyr::pivot_longer(c(FC,V,N), names_to='met', values_to='VALUE') %>%
