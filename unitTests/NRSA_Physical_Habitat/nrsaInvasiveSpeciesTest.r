@@ -15,6 +15,9 @@
 # 11/04/20 cws Added test case to make sure zero-row inputs are handled well.
 #  7/01/21 cws Converted tidyr functions gather to pivot_longer and spread to
 #          pivot_wider
+#  6/12/24 cws Removed calls to ddply, using group_by/summarise instead. Modified
+#          test to expect zero row data frame instead of NULL when no data is 
+#          provided.
 #
 #
 
@@ -44,6 +47,7 @@ nrsaInvasiveSpeciesTest <- function()
                                  ,none = selectSpeciesData('NO_INVASIVES') %>% select(SITE, VALUE)
                                  )
     errs <- dfCompare(expected, actual, c('SITE', 'METRIC'), zeroFudge=1e-9)
+
     checkEquals(NULL, errs
                ,"Error: nrsaInvasiveSpecies is broken when including 'no invasives' data."
                )
@@ -75,14 +79,15 @@ nrsaInvasiveSpeciesTest <- function()
                )
     
     # Test calculations with zero row inputs
+    expected <- data.frame(SITE=1L, METRIC='', VALUE='', stringsAsFactors=FALSE)[0,] # NULL
     actual <- nrsaInvasiveSpecies(AA=data.frame(SITE=as.integer(NULL), VALUE=as.character(NULL), stringsAsFactors=FALSE))
-    checkEquals(NULL, actual
+    checkEquals(expected, actual
                ,"Error: nrsaInvasiveSpecies is broken when input has zero rows."
                )
 
     # Test calculations with no data at all
     actual <- nrsaInvasiveSpecies()
-    checkEquals(NULL, actual
+    checkEquals(expected, actual
                ,"Error: nrsaInvasiveSpecies is broken when provided no arguments."
                )
 

@@ -169,6 +169,7 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
 #            for consistency. Unit test modified accordingly.
 #    8/07/23 cws Added argSavePath argument, as newly needed for 
 #            aquametStandardizeArgument
+#    6/12/24 cws Removed calls to ddply, using group_by/summarise instead.
 #
 # ARGUMENTS:
 # sampledTransects  dataframe containing only the list of transects sampled for
@@ -264,11 +265,13 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
       
         sidecnt <- sampledTransects %>%
                    mutate(inSideChan=TRANSECT %in% sideChannelTransects) %>%
-                   ddply('SITE', summarise
-                        ,VALUE= protectedSum(inSideChan
-                                            ,na.rm=TRUE
-                                            )
-                        ) %>%
+                   # ddply('SITE', summarise                 # OLD CODE
+                   #      ,VALUE= protectedSum(inSideChan
+                   #                          ,na.rm=TRUE
+                   #                          )
+                   #      ) %>%
+                   group_by(SITE) %>%                        # NEW CODE
+                   summarise(VALUE = protectedSum(inSideChan, na.rm=TRUE)) %>%
                    mutate(METRIC = 'sidecnt')
     }
 
@@ -283,9 +286,11 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
         pct_side <- sideChannels %>%
                     subset(VALUE %in% c('Y','N','',NA)) %>%
                     mutate(standardizedPresent = VALUE=='Y') %>%
-                    ddply('SITE', summarise
-                         ,VALUE = 100 * protectedMean(standardizedPresent, na.rm=TRUE)
-                         ) %>%
+                    # ddply('SITE', summarise                     # OLD CODE
+                    #      ,VALUE = 100 * protectedMean(standardizedPresent, na.rm=TRUE)
+                    #      ) %>%
+                    group_by(SITE) %>%                        # NEW CODE
+                    summarise(VALUE = 100 * protectedMean(standardizedPresent, na.rm=TRUE)) %>%
                     mutate(METRIC = 'pct_side')
     }
 
@@ -298,14 +303,18 @@ nrsaGeneral <- function(sampledTransects = NULL, sideChannels = NULL, transectSp
         xtranspc <- NULL
     } else {
         reachlen <- transectSpacing %>%
-                    ddply('SITE', summarise
-                         ,VALUE = protectedSum(as.numeric(VALUE), na.rm=TRUE)
-                         ) %>%
+                    # ddply('SITE', summarise                         # OLD CODE
+                    #      ,VALUE = protectedSum(as.numeric(VALUE), na.rm=TRUE)
+                    #      ) %>%
+                    group_by(SITE) %>%                                # NEW CODE
+                    summarise(VALUE = protectedSum(as.numeric(VALUE), na.rm=TRUE)) %>%
                     mutate(METRIC = 'reachlen')
         xtranspc <- transectSpacing %>%
-                    ddply('SITE', summarise
-                         ,VALUE = protectedMean(as.numeric(VALUE), na.rm=TRUE)
-                         ) %>%
+                    # ddply('SITE', summarise                         # OLD CODE
+                    #      ,VALUE = protectedMean(as.numeric(VALUE), na.rm=TRUE)
+                    #      ) %>%
+                    group_by(SITE) %>%                                # NEW CODE
+                    summarise(VALUE = protectedMean(as.numeric(VALUE), na.rm=TRUE)) %>%
                     mutate(METRIC = 'xtranspc')
     }
 

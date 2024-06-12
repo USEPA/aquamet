@@ -5,6 +5,7 @@
 #          to reflect change in calculations which now treat '' the same as NA
 #          in pct_side calculation.
 #  3/26/19 cws Modified to use dplyr::rename()
+#  6/12/24 cws Removed calls to ddply, using group_by/summarise instead.
 #
 
 nrsaGeneralTest <- function()
@@ -45,16 +46,19 @@ nrsaGeneralTest.process <- function(testData, metsExpected)
         # at which the provided has a row.
         # ASSUMPTIONS
         #   TRANSECT column exists and never has NA value
-        rc <- ddply(df, 'SITE', summarise, lastTransect=max(TRANSECT))
+        # rc <- ddply(df, 'SITE', summarise, lastTransect=max(TRANSECT))  #OLD CODE
+        rc <- df %>% group_by(SITE) %>% summarise(lastTransect=max(TRANSECT)) # NEW CODE
         return(rc)
     }
   testDataResult<- nrsaGeneral(sampledTransects = subset(testData, PARAMETER == 'INCREMNT') %>% select(SITE, TRANSECT) # this subset done for historical reasons, results in sidecnt=NA instead of 0 for boatable reaches.
                               ,sideChannels = subset(testData, PARAMETER %in% c('SIDCHN','OFF_CHAN') & TRANSECT %in% LETTERS) %>% mutate(VALUE = trimws(VALUE)) %>% select(SITE, VALUE)
                               ,transectSpacing = rbind(merge(testData %>%                               # values for wadeable sites
                                                              subset(PARAMETER == 'DISTANCE') %>%        # sum DISTANCE between waypoints, if calculated
-                                                             ddply(.(SITE,TRANSECT), summarise
-                                                                  ,DISTANCE=protectedSum(as.numeric(VALUE), na.rm=TRUE) 
-                                                                  )
+                                                             # ddply(.(SITE,TRANSECT), summarise   # OLD CODE
+                                                             #      ,DISTANCE=protectedSum(as.numeric(VALUE), na.rm=TRUE) 
+                                                             #      )
+                                                             group_by(SITE, TRANSECT) %>%
+                                                             summarise(DISTANCE=protectedSum(as.numeric(VALUE), na.rm=TRUE) )
                                                             ,testData %>%                               # ACTRANSP value is recorded distance between transects
                                                              subset(PARAMETER == 'ACTRANSP') %>%
                                                              dplyr::rename(ACTRANSP = VALUE) %>%

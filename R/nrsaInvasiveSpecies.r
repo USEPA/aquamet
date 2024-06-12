@@ -103,6 +103,9 @@ nrsaInvasiveSpecies <- function(..., isUnitTest=FALSE) {
 #            nrsaInvasiveSpecies.singleSpeciesTest to nrsaInvasiveSpeciesTest.r
 #            Removed old code.
 #    3/18/19 cws Using aquametStandardizeArgument; modified unit test accordingly.
+#    6/12/24 cws Removed calls to ddply, using group_by/summarise. Modified to
+#            return dataframe with zero rows instead of NULL when no data is
+#            provided.
 #
 # ARGUMENTS
 # ...       named arguments consisting of dataframes containing presence/absence
@@ -135,7 +138,7 @@ nrsaInvasiveSpecies <- function(..., isUnitTest=FALSE) {
     # Make sure all arguments are NULL or have columns SITE, TRANSECT, VALUE
     intermediateMessage('Invasive plant mets', loc='start')
     speciesList <- list(...)
-    allMets <- NULL
+    allMets <- data.frame(SITE=1L, METRIC='', VALUE='', stringsAsFactors=FALSE)[0,] # NULL
     if(length(speciesList) > 0) {
         for(spName in names(speciesList)) {
             intermediateMessage(sprintf('. %s', spName))
@@ -152,7 +155,7 @@ nrsaInvasiveSpecies <- function(..., isUnitTest=FALSE) {
         
         intermediateMessage('. ip_score')
         ipScore <- nrsaInvasiveSpecies.ip_score(allMets)
-        allMets <- rbind(allMets, ipScore)
+        allMets <- rbind(allMets, ipScore) %>% data.frame()
     }
 
     intermediateMessage(' Done.', loc='end')
@@ -171,9 +174,12 @@ nrsaInvasiveSpecies.singleSpecies <- function(spData)
                                     ifelse(VALUE %in% c('N',''),  0, VALUE
                                     ))
                                    )) %>%
-          ddply('SITE', summarise
-               ,VALUE = protectedMean(VALUE, na.rm=TRUE)
-               )
+          # ddply('SITE', summarise                             # OLD CODE
+          #      ,VALUE = protectedMean(VALUE, na.rm=TRUE)
+          #      )
+          group_by(SITE) %>%                                    # NEW CODE
+          summarise(VALUE = protectedMean(VALUE, na.rm=TRUE)) %>%
+          data.frame()
     
     return(rc)
 }
@@ -187,12 +193,17 @@ nrsaInvasiveSpecies.ip_score <- function(individualMets)
     if(is.null(individualMets)) 
         return(NULL)
     
-    sitesWithSpecies <- ddply(subset(individualMets, METRIC!='f_none')
-                        ,c('SITE')
-                        ,summarise
-                        ,VALUE = protectedSum(VALUE, na.rm=TRUE)
-                        ,METRIC = 'ip_score'
-                        )
+    # sitesWithSpecies <- ddply(subset(individualMets, METRIC!='f_none')  # OLD CODE
+    #                     ,c('SITE')
+    #                     ,summarise
+    #                     ,VALUE = protectedSum(VALUE, na.rm=TRUE)
+    #                     ,METRIC = 'ip_score'
+    #                     )
+    sitesWithSpecies <- individualMets %>%                                # NEW CODE
+                        subset(METRIC != 'f_none') %>% 
+                        group_by(SITE) %>%
+                        summarise(VALUE = protectedSum(VALUE, na.rm=TRUE)) %>%
+                        mutate(METRIC = 'ip_score')
     sitesWithoutSpecies <- subset(individualMets
                                  ,METRIC == 'f_none' & 
                                   #VALUE == 1 & 
@@ -207,7 +218,7 @@ nrsaInvasiveSpecies.ip_score <- function(individualMets)
                                      )
     }
 
-    rc <- rbind(sitesWithSpecies, sitesWithoutSpecies)
+    rc <- rbind(sitesWithSpecies, sitesWithoutSpecies) %>% data.frame()
     return(rc)
 }
 

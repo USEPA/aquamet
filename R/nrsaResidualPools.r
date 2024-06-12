@@ -180,6 +180,7 @@ nrsaResidualPools <- function(bDepth=NULL
 #          absentAsNull().
 #  8/07/23 cws Added argSavePath argument, as newly needed for 
 #          aquametStandardizeArgument
+#  6/12/24 cws Removed calls to ddply, using group_by/summarise instead
 #
 # ARGUMENTS:
 # bDepth          dataframe containing thalweg depths for boatable reaches, with
@@ -782,7 +783,10 @@ r <- foreach(uid = names(rpSeriesSplit), .combine=rbind) %do% {
                  ,function(x) { sum(is.na(x)) }
                  )
   intermediateMessage('.3')
-  pp <- ddply(thalSeries,c('SITE'),summarise,nPresent=length(LOC))
+#  pp <- ddply(thalSeries,c('SITE'),summarise,nPresent=length(LOC)) # OLD CODE
+  pp <- thalSeries %>%                                              # NEW CODE
+        group_by(SITE) %>%
+        summarise(nPresent=length(LOC))
 #   pp <- aggregate(list('nPresent'=thalSeries$LOC), list('SITE'=thalSeries$SITE)
 #                  ,count
 #                  )

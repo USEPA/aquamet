@@ -230,6 +230,7 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #            pivot_wider
 #    8/07/23 cws Added argSavePath argument, as newly needed for 
 #            aquametStandardizeArgument
+#    6/12/24 cws Removed calls to ddply, using group_by/summarise instead
 #
 # Arguments:
 # bBottomDom    dataframe containing size class data for the dominant 
@@ -713,15 +714,37 @@ intermediateMessage('a')
       norsize <- subset (realallsize, VALUE %in% wadeableMeasurableTwoBoulderClasses)
 intermediateMessage('b')
 
-      allSZ <- ddply(allsize,c('SITE'),summarise,METRIC='n',VALUE=length(na.omit(VALUE)))
-      allSZ2 <- ddply(realallsize,c('SITE'),summarise,METRIC='n2',VALUE=length(na.omit(VALUE)))
-      allNOR <- ddply(norsize,c('SITE'),summarise,METRIC='n_nor',VALUE=length(na.omit(VALUE)))
+      # allSZ <- ddply(allsize,c('SITE'),summarise,METRIC='n',VALUE=length(na.omit(VALUE)))      # OLD CODE
+      allSZ <- allsize %>%                                                                       # NEW CODE
+               group_by(SITE) %>% 
+               summarise(VALUE=length(na.omit(VALUE))) %>% 
+               mutate(METRIC = 'n') 
+      # allSZ2 <- ddply(realallsize,c('SITE'),summarise,METRIC='n2',VALUE=length(na.omit(VALUE)))# OLD CODE
+      allSZ2 <- realallsize %>%                                                                  # NEW CODE
+                group_by(SITE) %>% 
+                summarise(VALUE=length(na.omit(VALUE))) %>% 
+                mutate(METRIC = 'n2') 
+      # allNOR <- ddply(norsize,c('SITE'),summarise,METRIC='n_nor',VALUE=length(na.omit(VALUE))) # OLD CODE
+      allNOR <- norsize %>%                                                                  # NEW CODE
+                group_by(SITE) %>% 
+                summarise(VALUE=length(na.omit(VALUE))) %>% 
+                mutate(METRIC = 'n_nor') 
 intermediateMessage('c')
 
       # get counts for each size class
-      realallsize <- mutate(realallsize,METRIC=paste('n',VALUE,sep=''))
-      allSZ.size <- ddply(subset(realallsize,VALUE!='BL'),c('SITE','METRIC'),summarise,VALUE=length(na.omit(VALUE))) 
-      allSZBL <- ddply(subset(realallsize,VALUE %in% c('XB','SB')),c('SITE'),summarise,METRIC='nBL',VALUE=length(na.omit(VALUE)))
+      realallsize <- mutate(realallsize, METRIC = paste('n',VALUE,sep=''))
+      # allSZ.size <- ddply(subset(realallsize,VALUE!='BL'),c('SITE','METRIC'),summarise,VALUE=length(na.omit(VALUE))) # OLD CODE
+      allSZ.size <- realallsize %>%                                                        # NEW CODE
+                    subset(VALUE != 'BL') %>%
+                    group_by(SITE, METRIC) %>% 
+                    # use of .groups argument is only there to eliminate confusing msg
+                    summarise(VALUE = length(na.omit(VALUE)), .groups = "drop")
+      # allSZBL <- ddply(subset(realallsize,VALUE %in% c('XB','SB')),c('SITE'),summarise,METRIC='nBL',VALUE=length(na.omit(VALUE))) # old code
+      allSZBL <- realallsize %>%                                                        # NEW CODE
+                 subset(VALUE %in% c('XB','SB')) %>%
+                 group_by(SITE) %>% 
+                 summarise(VALUE = length(na.omit(VALUE))) %>%
+                 mutate(METRIC = 'nBL')
       allSZ.comb <- rbind(allSZ.size,allSZBL)
 intermediateMessage('d')
 
@@ -754,17 +777,21 @@ intermediateMessage('d')
       pct2 <- mutate(pct1,METRIC=paste('pct_',tolower(substring(METRIC,2,3)),sep=''),VALUE=(VALUE/n2)*100)
 
       #some groupings
-      pct_bigr <- ddply(subset(pct2,METRIC %in% c('pct_rr','pct_rs','pct_rc','pct_bl','pct_cb','pct_gc'))
-                        ,c('SITE'),summarise,METRIC='pct_bigr',VALUE=sum(VALUE))
-      pct_bdrk <- ddply(subset(pct2,METRIC %in% c('pct_rr','pct_rs')),c('SITE'),summarise
-                        ,METRIC='pct_bdrk',VALUE=sum(VALUE))
-      pct_safn <- ddply(subset(pct2,METRIC %in% c('pct_sa','pct_fn')),c('SITE'),summarise
-                        ,METRIC='pct_safn',VALUE=sum(VALUE))
-      pct_sfgf <- ddply(subset(pct2,METRIC %in% c('pct_sa','pct_fn','pct_gf')),c('SITE'),summarise
-                        ,METRIC='pct_sfgf',VALUE=sum(VALUE))
-      pct_org <- ddply(subset(pct2,METRIC %in% c('pct_om','pct_wd')),c('SITE'),summarise
-                       ,METRIC='pct_org',VALUE=sum(VALUE))
-
+      # pct_bigr <- ddply(subset(pct2,METRIC %in% c('pct_rr','pct_rs','pct_rc','pct_bl','pct_cb','pct_gc')) # OLD CODE
+      #                   ,c('SITE'),summarise,METRIC='pct_bigr',VALUE=sum(VALUE))
+      # pct_bdrk <- ddply(subset(pct2,METRIC %in% c('pct_rr','pct_rs')),c('SITE'),summarise
+      #                   ,METRIC='pct_bdrk',VALUE=sum(VALUE))
+      # pct_safn <- ddply(subset(pct2,METRIC %in% c('pct_sa','pct_fn')),c('SITE'),summarise
+      #                   ,METRIC='pct_safn',VALUE=sum(VALUE))
+      # pct_sfgf <- ddply(subset(pct2,METRIC %in% c('pct_sa','pct_fn','pct_gf')),c('SITE'),summarise
+      #                   ,METRIC='pct_sfgf',VALUE=sum(VALUE))
+      # pct_org <- ddply(subset(pct2,METRIC %in% c('pct_om','pct_wd')),c('SITE'),summarise
+      #                  ,METRIC='pct_org',VALUE=sum(VALUE))
+      pct_bigr <- pct2 %>% subset(METRIC %in% c('pct_rr','pct_rs','pct_rc','pct_bl','pct_cb','pct_gc')) %>% group_by(SITE) %>% summarise(VALUE=sum(VALUE)) %>% mutate(METRIC='pct_bigr')
+      pct_bdrk <- pct2 %>% subset(METRIC %in% c('pct_rr','pct_rs')) %>% group_by(SITE) %>% summarise(VALUE=sum(VALUE)) %>% mutate(METRIC='pct_bdrk')
+      pct_safn <- pct2 %>% subset(METRIC %in% c('pct_sa','pct_fn')) %>% group_by(SITE) %>% summarise(VALUE=sum(VALUE)) %>% mutate(METRIC='pct_safn')
+      pct_sfgf <- pct2 %>% subset(METRIC %in% c('pct_sa','pct_fn','pct_gf')) %>% group_by(SITE) %>% summarise(VALUE=sum(VALUE)) %>% mutate(METRIC='pct_sfgf')
+      pct_org  <- pct2 %>% subset(METRIC %in% c('pct_om','pct_wd')) %>% group_by(SITE) %>% summarise(VALUE=sum(VALUE)) %>% mutate(METRIC='pct_org')
       alln <- pct0 %>%
               select(-n2) %>%
               # tidyr::gather(key='METRIC', value='VALUE', -SITE)
@@ -797,15 +824,25 @@ intermediateMessage('d')
                       ,by.x='VALUE', by.y='class'
                       ,all.x=TRUE)
 
-      ldRivCt <- ddply(bSizeClass, c('SITE'), summarise, METRIC='n', VALUE=length(na.omit(VALUE)))
-
-      ldRiv1mm <- ddply(ldRivmm,c('SITE'),summarise,lsub_d16=quantile(lDiam,probs=0.16,names=FALSE,type=2,na.rm=TRUE)
-                        ,lsub_d25=quantile(lDiam,probs=0.25,names=FALSE,type=2,na.rm=TRUE)
-                        ,lsub_d50=quantile(lDiam,probs=0.50,names=FALSE,type=2,na.rm=TRUE)
-                        ,lsub_d75=quantile(lDiam,probs=0.75,names=FALSE,type=2,na.rm=TRUE)
-                        ,lsub_d84=quantile(lDiam,probs=0.84,names=FALSE,type=2,na.rm=TRUE)
-                        ,lsub_dmm=mean(lDiam,na.rm=TRUE),lsubd_sd=sd(lDiam,na.rm=TRUE)
-                        ,lsub_iqr=lsub_d75-lsub_d25)
+      # ldRivCt <- ddply(bSizeClass, c('SITE'), summarise, METRIC='n', VALUE=length(na.omit(VALUE))) # OLD CODE
+      ldRivCt <- bSizeClass %>% group_by(SITE) %>% summarise(VALUE=length(na.omit(VALUE))) %>% mutate(METRIC='n') # NEW CODE
+      # ldRiv1mm <- ddply(ldRivmm,c('SITE'),summarise,lsub_d16=quantile(lDiam,probs=0.16,names=FALSE,type=2,na.rm=TRUE) # OLD CODE
+                        # ,lsub_d25=quantile(lDiam,probs=0.25,names=FALSE,type=2,na.rm=TRUE)
+                        # ,lsub_d50=quantile(lDiam,probs=0.50,names=FALSE,type=2,na.rm=TRUE)
+                        # ,lsub_d75=quantile(lDiam,probs=0.75,names=FALSE,type=2,na.rm=TRUE)
+                        # ,lsub_d84=quantile(lDiam,probs=0.84,names=FALSE,type=2,na.rm=TRUE)
+                        # ,lsub_dmm=mean(lDiam,na.rm=TRUE),lsubd_sd=sd(lDiam,na.rm=TRUE)
+                        # ,lsub_iqr=lsub_d75-lsub_d25)
+      ldRiv1mm <- ldRivmm %>%                                                                   # NEW CODE
+                  group_by(SITE) %>%
+                  summarise(lsub_d16 = quantile(lDiam,probs=0.16,names=FALSE,type=2,na.rm=TRUE) 
+                           ,lsub_d25 = quantile(lDiam,probs=0.25,names=FALSE,type=2,na.rm=TRUE)
+                           ,lsub_d50 = quantile(lDiam,probs=0.50,names=FALSE,type=2,na.rm=TRUE)
+                           ,lsub_d75 = quantile(lDiam,probs=0.75,names=FALSE,type=2,na.rm=TRUE)
+                           ,lsub_d84 = quantile(lDiam,probs=0.84,names=FALSE,type=2,na.rm=TRUE)
+                           ,lsub_dmm = mean(lDiam,na.rm=TRUE),lsubd_sd=sd(lDiam,na.rm=TRUE)
+                           ,lsub_iqr = lsub_d75-lsub_d25
+                           )
       ldRiv1mm.1 <- ldRiv1mm %>% # tidyr::gather(key='METRIC', value='VALUE', -SITE)
                     tidyr::pivot_longer(-SITE, names_to='METRIC', values_to='VALUE')
       
@@ -818,8 +855,14 @@ intermediateMessage('d')
 
       # Initial summaries for rivers.  Get counts for each size class from the
       # back of the thalweg form
-      indivcl <- ddply(bSizeClass, c('SITE','VALUE'), summarise, n=length(na.omit(VALUE)))
-      allct <- ddply(bSizeClass, c('SITE'), summarise, nAll=length(na.omit(VALUE)))
+      # indivcl <- ddply(bSizeClass, c('SITE','VALUE'), summarise, n=length(na.omit(VALUE))) # OLD CODE
+      indivcl <- bSizeClass %>%                                                             # NEW CODE
+                 group_by(SITE, VALUE) %>%
+                 summarise(n = length(na.omit(VALUE)))
+      # allct <- ddply(bSizeClass, c('SITE'), summarise, nAll=length(na.omit(VALUE)))        # OLD CODE
+      allct <-   bSizeClass %>%                                                             # NEW CODE
+                 group_by(SITE) %>%
+                 summarise(nAll = length(na.omit(VALUE)))
       scCTS <- merge(indivcl, allct, by=c('SITE'))
 
       sc <- expand.grid (SITE=unique(scCTS$SITE)
@@ -888,9 +931,14 @@ intermediateMessage('d')
   } else {
       intermediateMessage('.  Boatable littoral substrate begun')      
       
-      indiv <- ddply(littoralSubstrate, c('SITE','PARAMETER','VALUE'), summarise, n=length(na.omit(VALUE)))
-
-      big4 <- ddply(littoralSubstrate,c('SITE','PARAMETER'),summarise,n4=length(na.omit(VALUE)))
+      # indiv <- ddply(littoralSubstrate, c('SITE','PARAMETER','VALUE'), summarise, n=length(na.omit(VALUE))) # OLD CODE
+      indiv <- littoralSubstrate %>%                                                                # NEW CODE
+               group_by(SITE, PARAMETER, VALUE) %>%
+               summarise(n = length(na.omit(VALUE)))
+      # big4 <- ddply(littoralSubstrate,c('SITE','PARAMETER'),summarise,n4=length(na.omit(VALUE)))  # OLD CODE
+      big4 <- littoralSubstrate %>%                                                                # NEW CODE
+              group_by(SITE, PARAMETER) %>%
+              summarise(n4 = length(na.omit(VALUE)))
 
       ss4m <- merge(indiv, big4, by=c('SITE', 'PARAMETER'))
 
