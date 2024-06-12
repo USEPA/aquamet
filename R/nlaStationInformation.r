@@ -44,21 +44,20 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples
-#'   head(nlaPhabEx)
+#'   head(nlaPhab)
 #'   
 #'   # Must subset example dataset to create inputs, keeping only SITE, STATION,
 #'   #  and VALUE
-#'   isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND' & VALUE %in% c('YES','Y'),
+#'   isIsland <- subset(nlaPhab,PARAMETER=='ISLAND' & VALUE %in% c('YES','Y'),
 #'   select=-PARAMETER)
 #'   
-#'   depth <- subset(nlaPhabEx,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
+#'   depth <- subset(nlaPhab,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
 #'   depth$VALUE <- as.numeric(depth$VALUE)
 #'   
 #'   exStationInfo <- nlaStationInformation(isIsland = isIsland, stationDepth = depth)
 #'   
 #'   head(exStationInfo)
 #'  
-#' @keywords survey
 nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL
                                  ,isUnitTest = FALSE
                                  ) {
@@ -176,6 +175,7 @@ nlaStationInformation <- function(isIsland = NULL, stationDepth = NULL
 	return(rc)
 }
 
+#' @keywords internal
 nlaStationInformation.islandStations <- function(df)
 # calculate mets for stations at islands
 {
@@ -230,7 +230,7 @@ nlaStationInformation.islandStations <- function(df)
  	return(siIsland)
 }
 
-
+#' @keywords internal
 nlaStationInformation.stationDepths <- function(df)
 # calculate mets for stations at islands
 {

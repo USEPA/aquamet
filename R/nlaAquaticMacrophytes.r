@@ -71,22 +71,23 @@
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples
-#'   head(nlaPhabEx)
+#'   head(nlaPhab)
 #'   
 #'   # Subset dataset into individual parameter inputs, keeping only SITE, 
 #'   #   STATION, and VALUE
-#'   emerg <- subset(nlaPhabEx,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
-#'   float <- subset(nlaPhabEx,PARAMETER=='AM_FLOATING',select=-PARAMETER)
-#'   submerg <- subset(nlaPhabEx,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
-#'   totcvr <- subset(nlaPhabEx,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
+#'   emerg <- subset(nlaPhab,PARAMETER=='AM_EMERGENT',select=-PARAMETER)
+#'   float <- subset(nlaPhab,PARAMETER=='AM_FLOATING',select=-PARAMETER)
+#'   submerg <- subset(nlaPhab,PARAMETER=='AM_SUBMERGENT',select=-PARAMETER)
+#'   totcvr <- subset(nlaPhab,PARAMETER=='AM_TOTALCOVER',select=-PARAMETER)
 #'   
 #'   # Use above dataframes as inputs to function
 #'   exAquMacro <- nlaAquaticMacrophytes(emergent=emerg,
-#'   floating=float,submergent=submerg,totalCover=totcvr)
+#'      floating=float,
+#'      submergent=submerg,
+#'      totalCover=totcvr)
 #'   
 #'   head(exAquMacro)
 #'  
-#' @keywords survey
 #' 
 nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL, totalCover=NULL
                                  ,dataInformation = data.frame(value    = c(NA,'0','1','2','3','4')
@@ -278,7 +279,7 @@ nlaAquaticMacrophytes <- function(emergent=NULL, floating=NULL, submergent=NULL,
     return(amMets)
 }
 
-
+#' @keywords internal
 nlaAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeights)
 # Determines fractional presence, fractional cover, cover sd and cover counts. 
 # Returns dataframe with columns SITE, METRIC, VALUE
@@ -346,6 +347,7 @@ nlaAquaticMacrophytes.individualCover <- function(df, presenceWeights, coverWeig
 }
 
 
+#' @keywords internal
 nlaAquaticMacrophytes.indices <- function(df)
 # Calculates AMITOTAL defined as the mean of the sum of cover values at each transect
 # Returns dataframe with columns SITE, METRIC, VALUE

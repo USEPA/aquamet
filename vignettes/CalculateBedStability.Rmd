@@ -37,15 +37,15 @@ bankgeomEx$VALUE <- as.numeric(bankgeomEx$VALUE)
 # Subset datasets to include only specific parameters, separately for boatable and wadeable sites
 bBH <- subset(bankgeomEx,PARAMETER=='BANKHT' & SAMPLE_TYPE=='PHAB_CHANBFRONT',select=c(SITE,TRANSECT,VALUE,UNITS)) 
 bBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT',select=c(SITE,TRANSECT,VALUE,UNITS))
-bD <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_TYPE=='PHAB_THAL',select=c(SITE,STATION,TRANSECT,VALUE,UNITS)) %>%
+bD <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_TYPE=='PHAB_THAL',select=c(SITE,STATION,TRANSECT,VALUE,UNITS)) |>
   mutate(VALUE=as.numeric(VALUE))
 bWW <- subset(bankgeomEx,PARAMETER=='WETWID' & SAMPLE_TYPE=='PHAB_CHANBFRONT',select=c(SITE,TRANSECT,VALUE,UNITS))
 bInc <- subset(bankgeomEx,PARAMETER=='INCISED' & SAMPLE_TYPE=='PHAB_CHANBFRONT',select=c(SITE,TRANSECT,VALUE,UNITS))
 wBH <- subset(bankgeomEx,PARAMETER=='BANKHGT' & SAMPLE_TYPE=='PHAB_CHANW',select=c(SITE,TRANSECT,VALUE,UNITS))
 wBW <- subset(bankgeomEx,PARAMETER=='BANKWID' & SAMPLE_TYPE=='PHAB_CHANW',select=c(SITE,TRANSECT,VALUE,UNITS))
-wD <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW',select=c(SITE,STATION,TRANSECT,VALUE,UNITS)) %>%
+wD <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW',select=c(SITE,STATION,TRANSECT,VALUE,UNITS)) |>
   mutate(VALUE=as.numeric(VALUE))
-wWW <- subset(thalwegEx,PARAMETER=='WETWIDTH',select=c(SITE,STATION,TRANSECT,VALUE,UNITS)) %>%
+wWW <- subset(thalwegEx,PARAMETER=='WETWIDTH',select=c(SITE,STATION,TRANSECT,VALUE,UNITS)) |>
   mutate(VALUE=as.numeric(VALUE))
 wInc <- subset(bankgeomEx,PARAMETER=='INCISHGT' & SAMPLE_TYPE=='PHAB_CHANW',select=c(SITE,TRANSECT,VALUE,UNITS))
 
@@ -97,19 +97,19 @@ In this vignette, the output data frame contains all of the metrics calculated b
 
 # Run nrsaGeneral() to obtain reach length metric
 wTr <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0 & SAMPLE_TYPE=='PHAB_THALW'
-                 ,select=c('SITE','VALUE')) %>%
-  plyr::mutate(VALUE=as.numeric(VALUE)) %>%
+                 ,select=c('SITE','VALUE')) |>
+  plyr::mutate(VALUE=as.numeric(VALUE)) |>
   merge(plyr::ddply(unique(subset(thalwegEx, SAMPLE_TYPE=='PHAB_THALW', select=c('SITE','TRANSECT','STATION'))),
-                    c('SITE','TRANSECT'), summarise, nSta = length(STATION)), by = 'SITE') %>%
-  plyr::ddply(c('SITE'), mutate, lastTran=max(TRANSECT)) %>%
-  plyr::mutate(wTr, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) %>%
+                    c('SITE','TRANSECT'), summarise, nSta = length(STATION)), by = 'SITE') |>
+  plyr::ddply(c('SITE'), mutate, lastTran=max(TRANSECT)) |>
+  plyr::mutate(wTr, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) |>
   dplyr::select(-nSta,-lastTran)
 
 # This function does not remove the last transect (K) from the transect spacing 
 # data, so we need to remove it manually - we just need to drop
 # transect K for the parameter ACTRANSP
 bTr <- subset(changeomEx,PARAMETER=='ACTRANSP' & TRANSECT %in% LETTERS[1:10],select=c('SITE','TRANSECT','VALUE'))
-tranSpace <- rbind(wTr,bTr) %>% plyr::mutate(VALUE=as.numeric(VALUE))
+tranSpace <- rbind(wTr,bTr) |> plyr::mutate(VALUE=as.numeric(VALUE))
 
 # Run the function now
 genOut <- nrsaGeneral(sampledTransects=unique(thalwegEx[,c('SITE','TRANSECT')]),
@@ -125,12 +125,12 @@ Now we have the four inputs of boatable woody debris counts, wadeable woody debr
 
 ```{r lwd.2}
 
-boatCnt <- subset(woodEx,SITE %in% subset(visitsEx,VALXSITE=='BOATABLE',select='SITE')$SITE, select=c(SITE,TRANSECT,PARAMETER,VALUE)) %>%
-  plyr::rename(c('PARAMETER'='CLASS')) %>% 
+boatCnt <- subset(woodEx,SITE %in% subset(visitsEx,VALXSITE=='BOATABLE',select='SITE')$SITE, select=c(SITE,TRANSECT,PARAMETER,VALUE)) |>
+  plyr::rename(c('PARAMETER'='CLASS')) |> 
   plyr::mutate(VALUE=as.integer(VALUE))
 
-wadeCnt <- subset(woodEx,SITE %in% subset(visitsEx,VALXSITE=='WADEABLE',select='SITE')$SITE, select=c(SITE,TRANSECT,PARAMETER,VALUE))  %>%
-  plyr::rename(c('PARAMETER'='CLASS')) %>%
+wadeCnt <- subset(woodEx,SITE %in% subset(visitsEx,VALXSITE=='WADEABLE',select='SITE')$SITE, select=c(SITE,TRANSECT,PARAMETER,VALUE))  |>
+  plyr::rename(c('PARAMETER'='CLASS')) |>
   plyr::mutate(VALUE=as.integer(VALUE))
 
 meanBankfull <- subset(chanmorphOut,METRIC=='xbkf_w')
@@ -178,39 +178,39 @@ changeom.b <- subset(changeomEx, SAMPLE_TYPE=='PHAB_CHANBFRONT')
 
 head(thalwegEx)
 # Need to convert VALUE to numeric, select only variables needed in function. Others will cause error.
-bBear <- subset(changeom.b, PARAMETER=='BEAR', select=c(SITE,TRANSECT,LINE,VALUE)) %>%
+bBear <- subset(changeom.b, PARAMETER=='BEAR', select=c(SITE,TRANSECT,LINE,VALUE)) |>
    plyr::mutate(LINE=as.integer(ifelse(LINE==999, 0, LINE)), VALUE=as.numeric(VALUE)) 
-bDist <- subset(changeom.b, PARAMETER=='DISTANCE', select=c(SITE,TRANSECT,LINE,VALUE)) %>%
+bDist <- subset(changeom.b, PARAMETER=='DISTANCE', select=c(SITE,TRANSECT,LINE,VALUE)) |>
    plyr::mutate(LINE=as.integer(ifelse(LINE==999, 0, LINE)), VALUE=as.numeric(VALUE))
 
 gis.bSlp <- data.frame(SITE=as.character(c(13799,13904)),VALUE=c(0.002178,0.051732))
 
-wBear <- subset(changeomEx, grepl('BEARING', PARAMETER) & SAMPLE_TYPE=='PHAB_SLOPE', select=c(SITE,PARAMETER,TRANSECT,LINE,VALUE)) %>%
+wBear <- subset(changeomEx, grepl('BEARING', PARAMETER) & SAMPLE_TYPE=='PHAB_SLOPE', select=c(SITE,PARAMETER,TRANSECT,LINE,VALUE)) |>
    plyr::mutate(LINE = as.integer(ifelse(PARAMETER == 'BEARING', 0
                 ,ifelse(PARAMETER == 'BEARING2', 1
                 ,ifelse(PARAMETER == 'BEARING3', 2, NA
                  )))) ,PARAMETER = NULL, VALUE=as.numeric(VALUE)) 
 
 wTr.alt <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0 & SAMPLE_TYPE=='PHAB_THALW'
-                 ,select=c('SITE','VALUE')) %>%
-  plyr::mutate(VALUE=as.numeric(VALUE)) %>%
+                 ,select=c('SITE','VALUE')) |>
+  plyr::mutate(VALUE=as.numeric(VALUE)) |>
   merge(plyr::ddply(unique(subset(thalwegEx,SAMPLE_TYPE=='PHAB_THALW',select=c('SITE','TRANSECT','STATION'))),
-                    c('SITE','TRANSECT'),summarise,nSta = length(STATION)), by = 'SITE') %>%
-  plyr::mutate(VALUE = nSta*VALUE) %>%
+                    c('SITE','TRANSECT'),summarise,nSta = length(STATION)), by = 'SITE') |>
+  plyr::mutate(VALUE = nSta*VALUE) |>
   dplyr::select(-nSta)
 
-wProp <- subset(changeomEx, grepl('PROP', PARAMETER) & SAMPLE_TYPE=='PHAB_SLOPE', select=c(SITE,PARAMETER,TRANSECT,LINE,VALUE)) %>%
+wProp <- subset(changeomEx, grepl('PROP', PARAMETER) & SAMPLE_TYPE=='PHAB_SLOPE', select=c(SITE,PARAMETER,TRANSECT,LINE,VALUE)) |>
   plyr::mutate(LINE = as.integer(ifelse(PARAMETER == 'PROP', 0
                        ,ifelse(PARAMETER == 'PROP2', 1
                                ,ifelse(PARAMETER == 'PROP3', 2, NA)))),
                PARAMETER = NULL,
                VALUE=as.numeric(VALUE))
 
-wSlp <- subset(changeomEx, grepl('SLOPE', PARAMETER) & SAMPLE_TYPE=='PHAB_SLOPE') %>%
+wSlp <- subset(changeomEx, grepl('SLOPE', PARAMETER) & SAMPLE_TYPE=='PHAB_SLOPE') |>
    plyr::mutate(LINE = as.integer(ifelse(PARAMETER == 'SLOPE', 0
                 ,ifelse(PARAMETER == 'SLOPE2', 1
                 ,ifelse(PARAMETER == 'SLOPE3', 2, NA))))
-          ,PARAMETER = NULL, VALUE=as.numeric(VALUE)) %>%
+          ,PARAMETER = NULL, VALUE=as.numeric(VALUE)) |>
   subset(select=c(SITE,TRANSECT,LINE,VALUE,METHOD,UNITS))
 
 slopeOut <- nrsaSlopeBearing(bBearing = bBear
@@ -231,14 +231,14 @@ unique(slopeOut$METRIC)
 The mean slope from section 2.5 above is required to calculate `rp100`, the mean residual depth at thalweg in cm, using the function `nrsaResidualPools()`. The inputs for this function include thalweg depth measurements from the NRSA channel/riparian transect form at boatable sites and from the NRSA thalweg profile and woody debris form at wadeable sites. The transect spacing input for this function is the same format as that used in `nrsaGeneral()`, so we will just use the data frame created as an input for that function. 
 
 ```{r respools}
-meanslope <- subset(slopeOut, METRIC=='xslope', select=c(SITE,VALUE)) %>%
+meanslope <- subset(slopeOut, METRIC=='xslope', select=c(SITE,VALUE)) |>
   plyr::mutate(VALUE=as.numeric(VALUE))
 
 bDep <- subset(thalwegEx,(PARAMETER=='DEP_SONR'|PARAMETER=='DEP_POLE') & SAMPLE_TYPE=='PHAB_THAL',
-               select=c(SITE,TRANSECT,STATION,VALUE,UNITS)) %>%
+               select=c(SITE,TRANSECT,STATION,VALUE,UNITS)) |>
   plyr::mutate(VALUE=as.numeric(VALUE),STATION=as.integer(STATION))
 wDep <- subset(thalwegEx,PARAMETER=='DEPTH' & SAMPLE_TYPE=='PHAB_THALW',
-               select=c(SITE,TRANSECT,STATION,VALUE)) %>%
+               select=c(SITE,TRANSECT,STATION,VALUE)) |>
   plyr::mutate(VALUE=as.numeric(VALUE),STATION=as.integer(STATION))
 
 respoolOut <- nrsaResidualPools(bDepth = bDep     
@@ -273,7 +273,7 @@ bedstabOut <- nrsaBedStability(bXdepth =  subset(chanmorphOut, METRIC == 'xdepth
                         ,xbkf_h =   subset(chanmorphOut, METRIC == 'xbkf_h',select=-METRIC)
                         ,xbkf_w =   subset(chanmorphOut, METRIC == 'xbkf_w',select=-METRIC)
                         ,xfc_lwd =  subset(fishCvrOut, METRIC == 'xfc_lwd',select=-METRIC)
-                        ,xslope =   subset(slopeOut, METRIC == 'xslope',select=-METRIC) %>%
+                        ,xslope =   subset(slopeOut, METRIC == 'xslope',select=-METRIC) |>
                           plyr::mutate(VALUE=as.numeric(VALUE))
                         ,xwidth =   subset(chanmorphOut, METRIC == 'xwidth',select=-METRIC)
                         )

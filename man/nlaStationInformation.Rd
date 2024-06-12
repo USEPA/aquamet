@@ -55,14 +55,14 @@ records for all stations sampled at each site, or the station counts used
 to calculate island metrics will not be correct.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE
-  isIsland <- subset(nlaPhabEx,PARAMETER=='ISLAND' & VALUE \%in\% c('YES','Y'),
+  isIsland <- subset(nlaPhab,PARAMETER=='ISLAND' & VALUE \%in\% c('YES','Y'),
   select=-PARAMETER)
   
-  depth <- subset(nlaPhabEx,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
+  depth <- subset(nlaPhab,PARAMETER=='DEPTH_AT_STATION',select=-PARAMETER)
   depth$VALUE <- as.numeric(depth$VALUE)
   
   exStationInfo <- nlaStationInformation(isIsland = isIsland, stationDepth = depth)
@@ -74,4 +74,3 @@ to calculate island metrics will not be correct.
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
 }
-\keyword{survey}

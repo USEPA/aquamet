@@ -47,19 +47,17 @@ portion of the physical habitat metrics for National Lakes Assessment
 (NLA) data.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE
-  surfFilm <- subset(nlaPhabEx,PARAMETER=='SURFACE_FILM',select=-PARAMETER)
+  surfFilm <- subset(nlaPhab,PARAMETER=='SURFACE_FILM',select=-PARAMETER)
 
   exLitZone <- nlaLittoralZone(surfFilm, data2007=FALSE)
   
   head(exLitZone)
- 
 }
 \author{
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
 }
-\keyword{survey}

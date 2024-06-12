@@ -329,6 +329,9 @@ processed.  The default value is FALSE.}
 DRAWDOWN parameter to fill in unrecorded cover and horizontalDistance_dd 
 values. The default value is TRUE.}
 
+\item{fillinDDImpacts_maxDrawdownDist}{A numeric value, the maximum drawdown
+distance to fill in impacts for. Default value is 1.5.}
+
 \item{dataInformation}{A data frame relating categorical proximity values 
 to various numeric weights for different types of metrics. The default data frame
 consists of the following values:
@@ -393,38 +396,38 @@ portion of the physical habitat metrics for National Lakes Assessment
 (NLA) data.
 }
 \examples{
-  head(nlaPhabEx)
+  head(nlaPhab)
   
   # Must subset example dataset to create inputs, keeping only SITE, STATION,
   #  and VALUE
-  buildings <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
-  buildings_dd <- subset(nlaPhabEx,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
-  commercial <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
-  commercial_dd <- subset(nlaPhabEx,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
-  crops <- subset(nlaPhabEx,PARAMETER=='HI_CROPS',select=-PARAMETER)
-  crops_dd <- subset(nlaPhabEx,PARAMETER=='HI_CROPS_DD',select=-PARAMETER)
-  docks <- subset(nlaPhabEx,PARAMETER=='HI_DOCKS',select=-PARAMETER)
-  docks_dd <- subset(nlaPhabEx,PARAMETER=='HI_DOCKS_DD',select=-PARAMETER)
-  landfill <- subset(nlaPhabEx,PARAMETER=='HI_LANDFILL',select=-PARAMETER)
-  landfill_dd <- subset(nlaPhabEx,PARAMETER=='HI_LANDFILL_DD',select=-PARAMETER)
-  lawn <- subset(nlaPhabEx,PARAMETER=='HI_LAWN',select=-PARAMETER)
-  lawn_dd <- subset(nlaPhabEx,PARAMETER=='HI_LAWN_DD',select=-PARAMETER)
-  orchard <- subset(nlaPhabEx,PARAMETER=='HI_ORCHARD',select=-PARAMETER)
-  orchard_dd <- subset(nlaPhabEx,PARAMETER=='HI_ORCHARD_DD',select=-PARAMETER)
-  other <- subset(nlaPhabEx,PARAMETER=='HI_OTHER',select=-PARAMETER)
-  other_dd <- subset(nlaPhabEx,PARAMETER=='HI_OTHER_DD',select=-PARAMETER)
-  park <- subset(nlaPhabEx,PARAMETER=='HI_PARK',select=-PARAMETER)
-  park_dd <- subset(nlaPhabEx,PARAMETER=='HI_PARK_DD',select=-PARAMETER)
-  pasture <- subset(nlaPhabEx,PARAMETER=='HI_PASTURE',select=-PARAMETER)
-  pasture_dd <- subset(nlaPhabEx,PARAMETER=='HI_PASTURE_DD',select=-PARAMETER)
-  powerlines <- subset(nlaPhabEx,PARAMETER=='HI_POWERLINES',select=-PARAMETER)
-  powerlines_dd <- subset(nlaPhabEx,PARAMETER=='HI_POWERLINES_DD',select=-PARAMETER)
-  roads <- subset(nlaPhabEx,PARAMETER=='HI_ROADS',select=-PARAMETER)
-  roads_dd <- subset(nlaPhabEx,PARAMETER=='HI_ROADS_DD',select=-PARAMETER)
-  walls <- subset(nlaPhabEx,PARAMETER=='HI_WALLS',select=-PARAMETER)
-  walls_dd <- subset(nlaPhabEx,PARAMETER=='HI_WALLS_DD',select=-PARAMETER)
-  drawdown <- subset(nlaPhabEx,PARAMETER=='DRAWDOWN',select=-PARAMETER)
-  horizontalDistance_dd <- subset(nlaPhabEx,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
+  buildings <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS',select=-PARAMETER)
+  buildings_dd <- subset(nlaPhab,PARAMETER=='HI_BUILDINGS_DD',select=-PARAMETER)
+  commercial <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL',select=-PARAMETER)
+  commercial_dd <- subset(nlaPhab,PARAMETER=='HI_COMMERCIAL_DD',select=-PARAMETER)
+  crops <- subset(nlaPhab,PARAMETER=='HI_CROPS',select=-PARAMETER)
+  crops_dd <- subset(nlaPhab,PARAMETER=='HI_CROPS_DD',select=-PARAMETER)
+  docks <- subset(nlaPhab,PARAMETER=='HI_DOCKS',select=-PARAMETER)
+  docks_dd <- subset(nlaPhab,PARAMETER=='HI_DOCKS_DD',select=-PARAMETER)
+  landfill <- subset(nlaPhab,PARAMETER=='HI_LANDFILL',select=-PARAMETER)
+  landfill_dd <- subset(nlaPhab,PARAMETER=='HI_LANDFILL_DD',select=-PARAMETER)
+  lawn <- subset(nlaPhab,PARAMETER=='HI_LAWN',select=-PARAMETER)
+  lawn_dd <- subset(nlaPhab,PARAMETER=='HI_LAWN_DD',select=-PARAMETER)
+  orchard <- subset(nlaPhab,PARAMETER=='HI_ORCHARD',select=-PARAMETER)
+  orchard_dd <- subset(nlaPhab,PARAMETER=='HI_ORCHARD_DD',select=-PARAMETER)
+  other <- subset(nlaPhab,PARAMETER=='HI_OTHER',select=-PARAMETER)
+  other_dd <- subset(nlaPhab,PARAMETER=='HI_OTHER_DD',select=-PARAMETER)
+  park <- subset(nlaPhab,PARAMETER=='HI_PARK',select=-PARAMETER)
+  park_dd <- subset(nlaPhab,PARAMETER=='HI_PARK_DD',select=-PARAMETER)
+  pasture <- subset(nlaPhab,PARAMETER=='HI_PASTURE',select=-PARAMETER)
+  pasture_dd <- subset(nlaPhab,PARAMETER=='HI_PASTURE_DD',select=-PARAMETER)
+  powerlines <- subset(nlaPhab,PARAMETER=='HI_POWERLINES',select=-PARAMETER)
+  powerlines_dd <- subset(nlaPhab,PARAMETER=='HI_POWERLINES_DD',select=-PARAMETER)
+  roads <- subset(nlaPhab,PARAMETER=='HI_ROADS',select=-PARAMETER)
+  roads_dd <- subset(nlaPhab,PARAMETER=='HI_ROADS_DD',select=-PARAMETER)
+  walls <- subset(nlaPhab,PARAMETER=='HI_WALLS',select=-PARAMETER)
+  walls_dd <- subset(nlaPhab,PARAMETER=='HI_WALLS_DD',select=-PARAMETER)
+  drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
+  horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER)
   
   # Use defaults for data2007, fillinDrawdown, and proximityWeights
   # arguments
@@ -440,4 +443,3 @@ portion of the physical habitat metrics for National Lakes Assessment
 Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 Tom Kincaid \email{Kincaid.Tom@epa.gov}
 }
-\keyword{survey}

@@ -1,7 +1,7 @@
 # protectedVectorSum.r
 #
 # 12/27/23 cws Created for aquamet use initially.
-
+#' @keywords internal
 protectedVectorSum <- function(...,  na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE)
 # Returns vector with sums of individual elements from input vectors, or 
 # character string describing the error if one is detected. Is like protectedSum

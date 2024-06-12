@@ -83,7 +83,6 @@
 #'   exBankMorph <- nrsaBankMorphology(bAngle=bangle,wAngle=wangle,wUndercut=wund)
 #'   head(exBankMorph)
 #'  
-#' @keywords survey
 #' 
 
 nrsaBankMorphology <- function(bAngle=NULL, wAngle=NULL, wUndercut=NULL, isUnitTest=FALSE, argSavePath = NULL) {
