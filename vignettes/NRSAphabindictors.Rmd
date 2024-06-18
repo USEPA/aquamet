@@ -23,7 +23,6 @@ There is a separate vignette showing all of the steps involved in calculating lo
 ```{r Setup, results='hide', message=FALSE, warning=FALSE}
 library(aquamet)
 library(tidyr)
-library(plyr)
 library(dplyr)
 ```
 #### Examine input dataset created from example files, with associated site variables included.

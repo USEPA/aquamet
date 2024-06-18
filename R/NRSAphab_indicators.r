@@ -97,14 +97,14 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
   x[, c('lat', 'lon', 'area', 'elev', 'width')] <- lapply(x[, c('lat', 'lon', 'area', 'elev', 'width')], as.numeric)
   
   dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','lrbs','lat','lon','area','elev','width','slope')) |>
-    plyr::mutate(l_slope = log10(slope+0.0001)
+    dplyr::mutate(l_slope = log10(slope+0.0001)
                  ,l_area = log10(area)
                  ,l_width = log10(width + 0.1)
                 ) |>
     pivot_longer(cols = c('lat', 'lon', 'area', 'elev', 'width', 'slope', 
                           'l_slope', 'l_area', 'l_width'), 
                  names_to='variable', values_to='value') |>
-    plyr::mutate(value=as.numeric(value))
+    dplyr::mutate(value=as.numeric(value))
   
   expParam <- data.frame(ecoreg=rep(c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER'),2)
                          ,protocol=c(rep('BOATABLE',9),rep('WADEABLE',9))
@@ -135,14 +135,16 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
     pivot_longer(cols = lat:l_slope, names_to='variable', values_to='coef',
                  values_drop_na=T) |>
     merge(dfIn,by=c('ecoreg','protocol','variable'),all.x=T) |>
-    ddply(c(sampID,'ecoreg','protocol'),summarise,sumVal=sum(coef*value)) |>
-    mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
+    group_by_at(c(sampID,'ecoreg','protocol')) |>
+    summarise(sumVal = sum(coef*value)) |>
+    ungroup() |>
+    dplyr::mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
   
   dfIn.1 <- merge(expParam.base,expParam.mod,by=c(sampID,'ecoreg','protocol'),all.x=T) |>
-    mutate(sumVal=ifelse(is.na(sumVal),0,sumVal), inputMsg=ifelse(is.na(inputMsg),'N',inputMsg))
+    dplyr::mutate(sumVal=ifelse(is.na(sumVal),0,sumVal), inputMsg=ifelse(is.na(inputMsg),'N',inputMsg))
     
   # For ecoregions that use dirty models
-  dfOut <- plyr::mutate(dfIn.1, RfE_LRBS=ifelse(inputMsg=='Y',NA,sumVal + intercept)
+  dfOut <- dplyr::mutate(dfIn.1, RfE_LRBS=ifelse(inputMsg=='Y',NA,sumVal + intercept)
                         , compVal = ifelse(is.na(oe),lrbs,lrbs-RfE_LRBS)
                         , gf = ifelse(is.na(oe), RfE_LRBS-(0.67*error), oe-(0.67*error))
                         , fp = ifelse(is.na(oe), RfE_LRBS-(1.65*error), oe-(1.65*error))
@@ -193,7 +195,7 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
   names(x)[names(x)==w1_hall] <- 'w1_hall'
  
   outMets <- mutate(x, w1_hall=as.numeric(w1_hall)) |>
-    mutate(RIPDIST_COND = ifelse(is.na(w1_hall),'Not Assessed'
+    dplyr::mutate(RIPDIST_COND = ifelse(is.na(w1_hall),'Not Assessed'
                                           ,ifelse(w1_hall<0.33, 'Low'
                                                   , ifelse(w1_hall>=0.33 & w1_hall<1.5, 'Moderate','High')))) |>
     subset(select=c(sampID, 'RIPDIST_COND'))
@@ -303,11 +305,11 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
   x[, c('lat', 'lon', 'area', 'elev', 'slope', 'xwidth')] <- lapply(x[, c('lat', 'lon', 'area', 'elev', 'slope', 'xwidth')], as.numeric)
   
   dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','xfc_nat','lat','lon','area','elev','xwidth','slope')) |>
-    plyr::mutate(l_area=log10(area), l_width=log10(xwidth + 0.1), l_slope=log10(slope+0.0001)
+    dplyr::mutate(l_area=log10(area), l_width=log10(xwidth + 0.1), l_slope=log10(slope+0.0001)
                        ,l_xfc_nat=log10(xfc_nat + 0.01), l_area=log10(area)) |>
     pivot_longer(cols = c(xfc_nat:slope, 'l_width', 'l_slope', 'l_area'),
                  names_to='variable', values_to='value') |>
-    plyr::mutate(value=as.numeric(value))
+    dplyr::mutate(value=as.numeric(value))
   
   expParam <- data.frame(ecoreg=rep(c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER'),2)
                          ,protocol=c(rep('BOATABLE',9),rep('WADEABLE',9))
@@ -337,14 +339,16 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
     pivot_longer(cols = lat:l_slope, names_to='variable', values_to='coef',
                  values_drop_na=T) |>
     merge(dfIn,by=c('ecoreg','protocol','variable'),all.x=T) |>
-    ddply(c(sampID,'ecoreg','protocol'),summarise,sumVal=sum(coef*value)) |>
-    mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
+    group_by_at(c(sampID,'ecoreg','protocol')) |>
+    summarise(sumVal = sum(coef*value)) |>
+    ungroup() |>
+    dplyr::mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
   
   # Set missing sumVal to 0 to account for cases where the null model is used and sumVal is not calculated
   dfIn.1 <- merge(expParam.base,expParam.mod,by=c(sampID,'ecoreg','protocol'),all.x=T) |>
-      mutate(sumVal=ifelse(is.na(sumVal),0,sumVal), inputMsg=ifelse(is.na(inputMsg),'N',inputMsg))
+      dplyr::mutate(sumVal=ifelse(is.na(sumVal),0,sumVal), inputMsg=ifelse(is.na(inputMsg),'N',inputMsg))
   
-  dfOut <- plyr::mutate(dfIn.1, RfE_xfc=ifelse(inputMsg=='Y',NA,sumVal + intercept)
+  dfOut <- dplyr::mutate(dfIn.1, RfE_xfc=ifelse(inputMsg=='Y',NA,sumVal + intercept)
                         , compVal = l_xfc_nat
                         , gf = RfE_xfc-(0.67*error)
                         , fp = RfE_xfc-(1.65*error)
@@ -455,7 +459,7 @@ nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, l
   x[,c('lat','lon','area','elev','slope','xwidth','xcmgw')] <- lapply(x[,c('lat','lon','area','elev','slope','xwidth','xcmgw')],as.numeric)
   
   dfIn <- subset(x,select=c(sampID,'ecoreg','protocol','xcmgw','lat','lon','area','elev','xwidth','slope')) |>
-    plyr::mutate(l_slope = log10(slope+0.0001)
+    dplyr::mutate(l_slope = log10(slope+0.0001)
                  ,l_area = log10(area)
                  ,l_width = log10(xwidth + 0.1)
                  ,l_xcmgw = log10(xcmgw + 0.01)
@@ -463,7 +467,7 @@ nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, l
     pivot_longer(cols = c('xcmgw', 'lat', 'lon', 'area', 'elev', 'xwidth', 'slope', 
                           'l_slope', 'l_area', 'l_width'), 
                  names_to='variable', values_to='value') |>
-    plyr::mutate(value=as.numeric(value))
+    dplyr::mutate(value=as.numeric(value))
   # FIX VALUES IN THIS TABLE FOR XCMGW
   expParam <- data.frame(ecoreg=rep(c('CPL','NAP','NPL','SAP','SPL','TPL','UMW','WMT','XER'),2)
                          ,protocol=c(rep('BOATABLE',9),rep('WADEABLE',9))
@@ -496,14 +500,16 @@ nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, l
     pivot_longer(cols = lat:l_slope, names_to='variable', values_to='coef',
                  values_drop_na=T) |>
     merge(dfIn,by=c('ecoreg','protocol','variable')) |>
-    plyr::ddply(c(sampID,'ecoreg','protocol'),summarise,sumVal=sum(coef*value)) |>
-    plyr::mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
+    group_by_at(c(sampID,'ecoreg','protocol'))|>
+    summarise(sumVal=sum(coef*value)) |>
+    ungroup() |>
+    dplyr::mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
   
   dfIn.1 <- merge(expParam.base,expParam.mod,by=c(sampID,'ecoreg','protocol'),all.x=T) |>
-    plyr::mutate(sumVal=ifelse(is.na(sumVal),0,sumVal), inputMsg=ifelse(is.na(inputMsg),'N',inputMsg))
+    dplyr::mutate(sumVal=ifelse(is.na(sumVal),0,sumVal), inputMsg=ifelse(is.na(inputMsg),'N',inputMsg))
 
   # For ecoregions that use dirty models
-  dfOut <- plyr::mutate(dfIn.1, RfE_ripveg=ifelse(inputMsg=='Y',NA,sumVal + intercept)
+  dfOut <- dplyr::mutate(dfIn.1, RfE_ripveg=ifelse(inputMsg=='Y',NA,sumVal + intercept)
                         , compVal = ifelse(is.na(oe),l_xcmgw,l_xcmgw-RfE_ripveg)
                         , gf = ifelse(is.na(oe), RfE_ripveg-(0.67*error), oe-(0.67*error))
                         , fp = ifelse(is.na(oe), RfE_ripveg-(1.65*error), oe-(1.65*error))

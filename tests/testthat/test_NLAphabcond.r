@@ -19,7 +19,7 @@ test_that("NLA riparian disturbance values correct",
             expect_equal(compCond$value.x,compCond$value.y)
             
             compNum <- subset(compOut,name=='RDis_IX') %>% 
-              plyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
+              dplyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
             expect_equal(compNum$value.x,compNum$value.y,tolerance=0.0001)
           })
 
@@ -64,7 +64,7 @@ test_that("NLA riparian vegetation complexity values correct",
             expect_equal(compCond$value.x,compCond$value.y)
             
             compNum <- subset(compOut, name=='RVegQc3OE') %>% 
-              plyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
+              dplyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
             expect_equal(compNum$value.x,compNum$value.y,tolerance=0.0001)
           })
 
@@ -89,7 +89,7 @@ test_that("NLA littoral vegetation complexity values correct",
             expect_equal(compCond$value.x,compCond$value.y)
             
             compNum <- subset(compOut, name=='LitCvrQc3OE') %>% 
-              plyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
+              dplyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
             expect_equal(compNum$value.x,compNum$value.y,tolerance=0.00001)
           })
 
@@ -130,7 +130,7 @@ test_that("NLA littoral and riparian vegetation complexity values correct",
             expect_equal(compCond$value.x,compCond$value.y)
             
             compNum <- subset(compOut, name=='LitRipCvrQc3OE') %>% 
-              plyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
+              dplyr::mutate(value.x=as.numeric(value.x),value.y=as.numeric(value.y))
             expect_equal(compNum$value.x,compNum$value.y,tolerance=0.0001)
           })
 

@@ -7,7 +7,6 @@ Author: Karen Blocksom
 Depends:
     R (>= 4.0)
 Imports:
-    plyr,
     dplyr,
     Hmisc,
     gtools,
