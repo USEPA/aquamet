@@ -52,27 +52,20 @@
 #' by function \code{metsHumanImpact()}.
 #' 
 #' @return A data frame containing:
-#' \itemize{
-#' \item{sampID} 
-#' {The variables in the argument \emph{sampID}}
+#' \describe{
+#' \item{sampID}{The variables in the argument \emph{sampID}}
 #' 
-#' \item{RVegQ} 
-#' {Observed riparian vegetation complexity index}
+#' \item{RVegQ}{Observed riparian vegetation complexity index}
 #' 
-#' \item{RVegQc3x15} 
-#' {Expected riparian vegetation complexity index}
+#' \item{RVegQc3x15}{Expected riparian vegetation complexity index}
 #' 
-#' \item{RVegQc3OE} 
-#' {Riparian vegetation complexity indicator 
+#' \item{RVegQc3OE}{Riparian vegetation complexity indicator 
 #' value, O/E score}
 #' 
-#' \item{RVEG_COND} 
-#' {Riparian vegetation complexity indicator 
+#' \item{RVEG_COND}{Riparian vegetation complexity indicator 
 #' condition class (Good/Fair/Poor/Not Assessed)} 
 #' }
-#' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @keywords survey
 
 nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,rviWoody,rvfcGndInundated,rvfcUndWoody,rvfcGndWoody
@@ -239,28 +232,20 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' Calculated by the function \code{metsFishCoverNLA()}.
 #' 
 #' @return A data frame containing:
-#' \itemize{
-#' \item{sampID} 
-#' {The variables in the argument \emph{sampID}}
+#' \describe{
+#' \item{sampID}{The variables in the argument \emph{sampID}}
 #' 
-#' \item{LitCvrQ} 
-#' {Observed littoral vegetation complexity index}
+#' \item{LitCvrQ}{Observed littoral vegetation complexity index}
 #' 
-#' \item{LitCvrQc3x15} 
-#' {Expected littoral vegetation complexity index}
+#' \item{LitCvrQc3x15}{Expected littoral vegetation complexity index}
 #' 
-#' \item{LitCvrQc3OE} 
-#' {Littoral vegetation complexity indicator 
+#' \item{LitCvrQc3OE}{Littoral vegetation complexity indicator 
 #' value, O/E score}
 #' 
-#' \item{LITCVR_COND} 
-#' {Littoral vegetation complexity indicator 
+#' \item{LITCVR_COND}{Littoral vegetation complexity indicator 
 #' condition class (Good/Fair/Poor/Not Assessed)} 
 #' }
-#' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @keywords survey
-#' 
 #' 
 nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
                                    ,fciNatural,fcfcSnag,amfcFloating,amfcEmergent,fcfcBoulders
@@ -407,27 +392,21 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' calculated by function \code{nlaLitVegCompIndicator()}.
 #' 
 #' @return A data frame containing:
-#' \itemize{
-#' \item{sampID} 
-#' {The variables in the argument \emph{sampID}}
+#' \describe{
+#' \item{sampID}{The variables in the argument \emph{sampID}}
 #' 
-#' \item{LitRipCvrQ} 
-#' {Observed combined riparian and littoral vegetation
+#' \item{LitRipCvrQ}{Observed combined riparian and littoral vegetation
 #' complexity index}
 #' 
-#' \item{LitRipCvrQc3x15} 
-#' {Expected combined riparian and littoral
+#' \item{LitRipCvrQc3x15}{Expected combined riparian and littoral
 #' vegetation complexity index}
 #' 
-#' \item{LitRipCvrQc3OE} 
-#' {Littoral and riparian vegetation complexity 
+#' \item{LitRipCvrQc3OE}{Littoral and riparian vegetation complexity 
 #' Observed/Expected (O/E) value}
 #' 
-#' \item{LITRIPCVR_COND} 
-#' {Littoral and riparian vegetation complexity 
+#' \item{LITRIPCVR_COND}{Littoral and riparian vegetation complexity 
 #' indicator condition class (Good/Fair/Poor/Not Assessed)} 
 #' }
-#' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
 #' 
 #' 
@@ -547,20 +526,15 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
 #' plot area at any station. Calculated by the function \code{metsHumanImpact()}
 #' 
 #' @return A data frame containing:
-#' \itemize{
-#' \item{sampID}
-#' {The variables in the argument \emph{sampID}}
+#' \describe{
+#' \item{sampID}{The variables in the argument \emph{sampID}}
 #' 
-#' \item{RDis_IX}
-#' {Riparian anthropogenic disturbance index}
+#' \item{RDis_IX}{Riparian anthropogenic disturbance index}
 #' 
-#' \item{RDIS_COND}
-#' {Riparian anthropogenic disturbance condition class
+#' \item{RDIS_COND}{Riparian anthropogenic disturbance condition class
 #'  (Low/Medium/High/Not Assessed)} 
 #' }
-#' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @keywords survey
 
 nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
   argNames <- c(sampID, hiiAg, hiiNonAg, hifpAnyCirca)
@@ -625,58 +599,47 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
 #' to highwater mark. Must be used with \emph{bfnHorizDD_nomod}
 #' 
 #' @return A data frame containing:
-#' \itemize{
-#' \item{sampID}
-#' {The variables in the argument \emph{sampID}}
+#' \describe{
+#' \item{sampID}{The variables in the argument \emph{sampID}}
 #' 
-#' \item{horizDD_cond}
-#' {Drawdown condition based only on horizontal
+#' \item{horizDD_cond}{Drawdown condition based only on horizontal
 #' distance}
 #' 
-#' \item{vertDD_cond}
-#' {Drawdown conditoin based only on vertical
+#' \item{vertDD_cond}{Drawdown condition based only on vertical
 #' height}
 #' 
-#' \item{DRAWDOWN_COND}
-#' {Drawdown condition class based on 
+#' \item{DRAWDOWN_COND}{Drawdown condition class based on 
 #' \emph{horizDD_cond} and \emph{vertDD_cond} values
 #'  (Small/Medium/Large/Not Assessed)} 
 #'  
-#' \item{horizDD_cond17}
-#' {Drawdown condition based only on horizontal
+#' \item{horizDD_cond17}{Drawdown condition based only on horizontal
 #' distance using additional information on number of observations. 
 #' Intended for 2017 data only. Run only if \emph{bfnHorizDD_nomod}
 #' and \emph{bfnVertDD} arguments used.}
 #' 
-#' \item{vertDD_cond17}
-#' {Drawdown condition based only on vertical
+#' \item{vertDD_cond17}{Drawdown condition based only on vertical
 #' height using additional information on number of observations. 
 #' Intended for 2017 data only. Run only if \emph{bfnHorizDD_nomod}
 #' and \emph{bfnVertDD} arguments used.}
 #' 
-#' \item{DDcond_screen}
-#' {Intermediate drawdown condition value based on
+#' \item{DDcond_screen}{Intermediate drawdown condition value based on
 #' values of horizDD_cond17 and vertDD_cond17. Intended for 2017 data
 #' only. Run only if \emph{bfnHorizDD_nomod}
 #' and \emph{bfnVertDD} arguments used.}
 #' 
-#' \item{DRAWDOWN_COND_2017}
-#' {Drawdown condition value based on
+#' \item{DRAWDOWN_COND_2017}{Drawdown condition value based on
 #' values of horizDD_cond17, vertDD_cond17, and DDcond_screen. 
 #' Intended for 2017 data
 #' only. Run only if \emph{bfnHorizDD_nomod}
 #' and \emph{bfnVertDD} arguments used. (Small/Medium/Large/Not Assessed)}
 #' 
-#' \item{DRAWDOWN_COND_2CAT_2017}
-#' {Drawdown condition value based on
+#' \item{DRAWDOWN_COND_2CAT_2017}{Drawdown condition value based on
 #' combining Small and Medium values of DRAWDOWN_COND into "Not Large". 
 #' Intended for 2017 data
 #' only. Run only if \emph{bfnHorizDD_nomod}
 #' and \emph{bfnVertDD} arguments used. (Not Large/Large/Not Assessed)}
 #' }
-#' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @keywords survey
 
 
 nlaDrawdownIndicator <- function(x,sampID,bfxVertDD,bfxHorizDD,ecoreg,lake_origin,bfnHorizDD_nomod=NULL,bfnVertDD=NULL){

@@ -25,24 +25,24 @@ any variables necessary to calculate indicator condition classes
 for ecoregions in x. The necessary variables by realm and ecoreg 
 are (none indicates no additional variables are necessary):
 \itemize{
-\item CPL, BOATABLE: none
-\item CPL, WADEABLE: xwidth, slope
-\item NAP, BOATABLE: none
-\item NAP, WADEABLE: area
-\item NPL, BOATABLE: area, slope
-\item NPL, WADEABLE: elev, xwidth, slope
-\item SAP, BOATABLE: none
-\item SAP, WADEABLE: area
-\item SPL, BOATABLE: area
-\item SPL, WADEABLE: lat, area, slope
-\item TPL, BOATABLE: area
-\item TPL, WADEABLE: lat, lon, slope
-\item UMW, BOATABLE: lat
-\item UMW, WADEABLE: slope
-\item WMT, BOATABLE: none
-\item WMT, WADEABLE: xwidth, slope
-\item XER, BOATABLE: none
-\item XER, WADEABLE: xwidth
+\item CPL, BOATABLE none
+\item CPL, WADEABLE xwidth, slope
+\item NAP, BOATABLE none
+\item NAP, WADEABLE area
+\item NPL, BOATABLE area, slope
+\item NPL, WADEABLE elev, xwidth, slope
+\item SAP, BOATABLE none
+\item SAP, WADEABLE area
+\item SPL, BOATABLE area
+\item SPL, WADEABLE lat, area, slope
+\item TPL, BOATABLE area
+\item TPL, WADEABLE lat, lon, slope
+\item UMW, BOATABLE lat
+\item UMW, WADEABLE slope
+\item WMT, BOATABLE none
+\item WMT, WADEABLE xwidth, slope
+\item XER, BOATABLE none
+\item XER, WADEABLE xwidth
 }}
 
 \item{sampID}{A character vector containing the names of all 
@@ -72,7 +72,7 @@ be in decimal degrees using NAD83.}
 \item{elev}{A string with the name of the variable for elevation in meters. In NRSA, 
 the variable used is ELEV_PT.}
 
-\item{slope}{A string with the name of the variable for % stream slope. For 
+\item{slope}{A string with the name of the variable for percent stream slope. For 
 NRSA, the variable used is XSLOPE.}
 
 \item{xwidth}{A string with the name of the variable for mean wetted width
@@ -88,10 +88,6 @@ this function determines the condition class by aggregated ecoregion and
 sampling protocol used. The model used to determine the expected Log10(RBS)
 (LRBS) depends on the ecoregion and protocol.
 }
-\references{
-Add Phil Kaufmann's technical report here
-}
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }
-\keyword{survey}

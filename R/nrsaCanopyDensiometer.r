@@ -52,7 +52,7 @@
 #' # Must subset example dataset to create inputs, keeping only SITE
 #'   #  and VALUE
 #'   # VALUE must be numeric for this function
-#' channelcoverEx <- plyr::mutate(channelcoverEx, VALUE=as.numeric(VALUE))
+#' channelcoverEx <- dplyr::mutate(channelcoverEx, VALUE=as.numeric(VALUE))
 #' 
 #' # Boatable canopy density readings
 #' bDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANB' & PARAMETER=='DENSIOM',
@@ -62,7 +62,7 @@
 #' wDen <- subset(channelcoverEx,SAMPLE_TYPE=='PHAB_CHANW' & PARAMETER=='DENSIOM',
 #' select = c('SITE','BANK','VALUE'))
 #' # BANK is renamed DIRECTION for this input
-#' wDen <- plyr::rename(wDen,c('BANK'='DIRECTION'))
+#' wDen <- dplyr::rename(wDen,c(DIRECTION='BANK'))
 #' 
 #' canDenOut <- nrsaCanopyDensiometer(bDensiom=bDen, wDensiom=wDen)
 #' head(canDenOut)

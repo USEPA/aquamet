@@ -13,24 +13,24 @@
 #' for ecoregions in x. The necessary variables by realm and ecoreg 
 #' are (none indicates no additional variables are necessary):
 #' \itemize{
-#' \item CPL, BOATABLE: none
-#' \item CPL, WADEABLE: xwidth, slope
-#' \item NAP, BOATABLE: none
-#' \item NAP, WADEABLE: area
-#' \item NPL, BOATABLE: area, slope
-#' \item NPL, WADEABLE: elev, xwidth, slope
-#' \item SAP, BOATABLE: none
-#' \item SAP, WADEABLE: area
-#' \item SPL, BOATABLE: area
-#' \item SPL, WADEABLE: lat, area, slope
-#' \item TPL, BOATABLE: area
-#' \item TPL, WADEABLE: lat, lon, slope
-#' \item UMW, BOATABLE: lat
-#' \item UMW, WADEABLE: slope
-#' \item WMT, BOATABLE: none
-#' \item WMT, WADEABLE: xwidth, slope
-#' \item XER, BOATABLE: none
-#' \item XER, WADEABLE: xwidth
+#' \item CPL, BOATABLE none
+#' \item CPL, WADEABLE xwidth, slope
+#' \item NAP, BOATABLE none
+#' \item NAP, WADEABLE area
+#' \item NPL, BOATABLE area, slope
+#' \item NPL, WADEABLE elev, xwidth, slope
+#' \item SAP, BOATABLE none
+#' \item SAP, WADEABLE area
+#' \item SPL, BOATABLE area
+#' \item SPL, WADEABLE lat, area, slope
+#' \item TPL, BOATABLE area
+#' \item TPL, WADEABLE lat, lon, slope
+#' \item UMW, BOATABLE lat
+#' \item UMW, WADEABLE slope
+#' \item WMT, BOATABLE none
+#' \item WMT, WADEABLE xwidth, slope
+#' \item XER, BOATABLE none
+#' \item XER, WADEABLE xwidth
 #' }
 #' @param sampID A character vector containing the names of all 
 #' variables in \emph{x} that specify a unique sample. If not specified, 
@@ -59,7 +59,7 @@
 #' @param elev A string with the name of the variable for elevation in meters. In NRSA, 
 #' the variable used is ELEV_PT.
 #' 
-#' @param slope A string with the name of the variable for % stream slope. For 
+#' @param slope A string with the name of the variable for percent stream slope. For 
 #' NRSA, the variable used is XSLOPE. 
 #' 
 #' @param xwidth A string with the name of the variable for mean wetted width  
@@ -69,8 +69,6 @@
 #' the condition class for relative bed stability.  
 #' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @references Add Phil Kaufmann's technical report here
-#' @keywords survey
 nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs, lat, lon, area, elev, slope, xwidth){
   
   argNames <- c(sampID, ecoreg, protocol, lrbs, lat, lon, area, elev, slope, xwidth)
@@ -178,9 +176,8 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
 #' @return A data frame containing the variables in \emph{sampID} and RIPDIST_COND, 
 #' the condition class for riparian disturbance.
 #' 
-#' @references Add in from Phil Kaufmann later
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @keywords survey
+
 nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
   
   argNames <- c(sampID, w1_hall)
@@ -220,24 +217,24 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
 #' for ecoregions in x. The necessary variables by realm and ecoreg 
 #' are (none indicates no additional variables are necessary):
 #' \itemize{
-#' \item CPL, BOATABLE: none
-#' \item CPL, WADEABLE: none
-#' \item NAP, BOATABLE: lon, area, xwidth
-#' \item NAP, WADEABLE: xwidth
-#' \item NPL, BOATABLE: lat, lon, area
-#' \item NPL, WADEABLE: lon, elev, area
-#' \item SAP, BOATABLE: lat
-#' \item SAP, WADEABLE: lat, elev
-#' \item SPL, BOATABLE: lat, lon, area
-#' \item SPL, WADEABLE: lon, elev, area
-#' \item TPL, BOATABLE: lat, lon, area
-#' \item TPL, WADEABLE: lon, elev, area
-#' \item UMW, BOATABLE: lon
-#' \item UMW, WADEABLE: area, xwidth
-#' \item WMT, BOATABLE: xwidth
-#' \item WMT, WADEABLE: lat, lon, area
-#' \item XER, BOATABLE: elev, xwidth
-#' \item XER, WADEABLE: lon, slope
+#' \item CPL, BOATABLE none
+#' \item CPL, WADEABLE none
+#' \item NAP, BOATABLE lon, area, xwidth
+#' \item NAP, WADEABLE xwidth
+#' \item NPL, BOATABLE lat, lon, area
+#' \item NPL, WADEABLE lon, elev, area
+#' \item SAP, BOATABLE lat
+#' \item SAP, WADEABLE lat, elev
+#' \item SPL, BOATABLE lat, lon, area
+#' \item SPL, WADEABLE lon, elev, area
+#' \item TPL, BOATABLE lat, lon, area
+#' \item TPL, WADEABLE lon, elev, area
+#' \item UMW, BOATABLE lon
+#' \item UMW, WADEABLE area, xwidth
+#' \item WMT, BOATABLE xwidth
+#' \item WMT, WADEABLE lat, lon, area
+#' \item XER, BOATABLE elev, xwidth
+#' \item XER, WADEABLE lon, slope
 #' } 
 #' 
 #' @param sampID A character vector containing the names of all 
@@ -262,7 +259,7 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
 #' @param lon A string with the name of the variable for longitude, assumed to
 #' be in decimal degrees using NAD83.
 #' 
-#' @param slope A string with the name of the variable for % stream slope. For 
+#' @param slope A string with the name of the variable for percent stream slope. For 
 #' NRSA, the variable used is XSLOPE. 
 #' 
 #' @param xwidth A string with the name of the variable for mean wetted width
@@ -277,7 +274,6 @@ nrsaRipDistIndicator <- function(x, sampID='UID', w1_hall){
 #' INSTRMCVR_COND, the condition class for instream cover.
 #' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @keywords survey
 nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat, lat, lon, slope, xwidth, elev, area){
 
   argNames <- c(sampID, ecoreg, protocol, xfc_nat, lat, lon, slope, xwidth, elev, area)
@@ -376,24 +372,24 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
 #' for ecoregions in x. The necessary variables by realm and ecoreg 
 #' are (none indicates no additional variables are necessary):
 #' \itemize{
-#' \item CPL, BOATABLE: lon, area
-#' \item CPL, WADEABLE: lon
-#' \item NAP, BOATABLE: lat
-#' \item NAP, WADEABLE: area, xwidth
-#' \item NPL, BOATABLE: lat, lon
-#' \item NPL, WADEABLE: lat, lon, slope
-#' \item SAP, BOATABLE: none
-#' \item SAP, WADEABLE: area, elev
-#' \item SPL, BOATABLE: lat, lon
-#' \item SPL, WADEABLE: lon, elev
-#' \item TPL, BOATABLE: none
-#' \item TPL, WADEABLE: lon, elev
-#' \item UMW, BOATABLE: lat, area, slope, xwidth
-#' \item UMW, WADEABLE: slope, xwidth
-#' \item WMT, BOATABLE: none
-#' \item WMT, WADEABLE: area, elev, slope
-#' \item XER, BOATABLE: none
-#' \item XER, WADEABLE: area, slope, width
+#' \item CPL, BOATABLE lon, area
+#' \item CPL, WADEABLE lon
+#' \item NAP, BOATABLE lat
+#' \item NAP, WADEABLE area, xwidth
+#' \item NPL, BOATABLE lat, lon
+#' \item NPL, WADEABLE lat, lon, slope
+#' \item SAP, BOATABLE none
+#' \item SAP, WADEABLE area, elev
+#' \item SPL, BOATABLE lat, lon
+#' \item SPL, WADEABLE lon, elev
+#' \item TPL, BOATABLE none
+#' \item TPL, WADEABLE lon, elev
+#' \item UMW, BOATABLE lat, area, slope, xwidth
+#' \item UMW, WADEABLE slope, xwidth
+#' \item WMT, BOATABLE none
+#' \item WMT, WADEABLE area, elev, slope
+#' \item XER, BOATABLE none
+#' \item XER, WADEABLE area, slope, width
 #' }
 #' @param sampID A character vector containing the names of all 
 #' variables in \emph{x} that specify a unique sample. If not specified, 
@@ -422,7 +418,7 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
 #' @param elev A string with the name of the variable for elevation in meters. 
 #' In NRSA, the variable used is ELEV_PT.
 #' 
-#' @param slope A string with the name of the variable for % stream slope. For 
+#' @param slope A string with the name of the variable for percent stream slope. For 
 #' NRSA, the variable used is XSLOPE. 
 #' 
 #' @param xwidth A string with the name of the variable for mean wetted width
@@ -432,8 +428,7 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
 #' the condition class for the Riparian Vegetation Cover indicator.  
 #' 
 #' @author Karen Blocksom \email{Blocksom.Karen@epa.gov}
-#' @references Add Phil Kaufmann's technical report here
-#' @keywords survey
+
 nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, lat, lon, area, elev, slope, xwidth){
   
   argNames <- c(sampID, ecoreg, protocol, xcmgw, lat, lon, area, elev, slope, xwidth)

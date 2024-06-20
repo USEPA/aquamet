@@ -28,7 +28,6 @@ First, we need to load the `aquamet` library. You will also want to ensure you h
 
 ```{r load-library, echo=TRUE, message=FALSE}
 library(tidyr)
-library(plyr)
 library(dplyr)
 library(aquamet)
 library(Hmisc)

@@ -12,7 +12,6 @@
 #' @importFrom tidyr pivot_longer pivot_wider
 #' @import foreach
 #' @import RUnit
-#' @keywords package
 #' @title aquamet
 
 

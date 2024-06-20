@@ -2,10 +2,8 @@
 % Please edit documentation in R/aquamet.r
 \docType{package}
 \name{aquamet}
-\alias{-package}
 \alias{aquamet}
 \title{aquamet}
 \description{
 aquamet: Calculate metrics used in NRSA and NLA
 }
-\keyword{package}

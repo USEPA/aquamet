@@ -25,24 +25,24 @@ any variables necessary to calculate indicator condition classes
 for ecoregions in x. The necessary variables by realm and ecoreg 
 are (none indicates no additional variables are necessary):
 \itemize{
-\item CPL, BOATABLE: lon, area
-\item CPL, WADEABLE: lon
-\item NAP, BOATABLE: lat
-\item NAP, WADEABLE: area, xwidth
-\item NPL, BOATABLE: lat, lon
-\item NPL, WADEABLE: lat, lon, slope
-\item SAP, BOATABLE: none
-\item SAP, WADEABLE: area, elev
-\item SPL, BOATABLE: lat, lon
-\item SPL, WADEABLE: lon, elev
-\item TPL, BOATABLE: none
-\item TPL, WADEABLE: lon, elev
-\item UMW, BOATABLE: lat, area, slope, xwidth
-\item UMW, WADEABLE: slope, xwidth
-\item WMT, BOATABLE: none
-\item WMT, WADEABLE: area, elev, slope
-\item XER, BOATABLE: none
-\item XER, WADEABLE: area, slope, width
+\item CPL, BOATABLE lon, area
+\item CPL, WADEABLE lon
+\item NAP, BOATABLE lat
+\item NAP, WADEABLE area, xwidth
+\item NPL, BOATABLE lat, lon
+\item NPL, WADEABLE lat, lon, slope
+\item SAP, BOATABLE none
+\item SAP, WADEABLE area, elev
+\item SPL, BOATABLE lat, lon
+\item SPL, WADEABLE lon, elev
+\item TPL, BOATABLE none
+\item TPL, WADEABLE lon, elev
+\item UMW, BOATABLE lat, area, slope, xwidth
+\item UMW, WADEABLE slope, xwidth
+\item WMT, BOATABLE none
+\item WMT, WADEABLE area, elev, slope
+\item XER, BOATABLE none
+\item XER, WADEABLE area, slope, width
 }}
 
 \item{sampID}{A character vector containing the names of all 
@@ -72,7 +72,7 @@ be in decimal degrees using NAD83.}
 \item{elev}{A string with the name of the variable for elevation in meters. 
 In NRSA, the variable used is ELEV_PT.}
 
-\item{slope}{A string with the name of the variable for % stream slope. For 
+\item{slope}{A string with the name of the variable for percent stream slope. For 
 NRSA, the variable used is XSLOPE.}
 
 \item{xwidth}{A string with the name of the variable for mean wetted width
@@ -89,10 +89,6 @@ sampling protocol used. The model used to determine the expected
 Log10(XCMGW + 0.01) (Mean canopy + mid + ground riparian cover) depends on 
 the ecoregion and protocol.
 }
-\references{
-Add Phil Kaufmann's technical report here
-}
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }
-\keyword{survey}
