@@ -134,7 +134,7 @@ nrsaRelBedStabilityIndicator <- function(x, sampID='UID', ecoreg, protocol, lrbs
                  values_drop_na=T) |>
     merge(dfIn,by=c('ecoreg','protocol','variable'),all.x=T) |>
     group_by_at(c(sampID,'ecoreg','protocol')) |>
-    summarise(sumVal = sum(coef*value)) |>
+    summarise(sumVal = sum(coef*value), .groups='keep') |>
     ungroup() |>
     dplyr::mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
   
@@ -336,7 +336,7 @@ nrsaInstrmCoverIndicator <- function(x, sampID='UID', ecoreg, protocol, xfc_nat,
                  values_drop_na=T) |>
     merge(dfIn,by=c('ecoreg','protocol','variable'),all.x=T) |>
     group_by_at(c(sampID,'ecoreg','protocol')) |>
-    summarise(sumVal = sum(coef*value)) |>
+    summarise(sumVal = sum(coef*value), .groups='keep') |>
     ungroup() |>
     dplyr::mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
   
@@ -496,7 +496,7 @@ nrsaRiparianVegIndicator <- function(x, sampID='UID', ecoreg, protocol, xcmgw, l
                  values_drop_na=T) |>
     merge(dfIn,by=c('ecoreg','protocol','variable')) |>
     group_by_at(c(sampID,'ecoreg','protocol'))|>
-    summarise(sumVal=sum(coef*value)) |>
+    summarise(sumVal=sum(coef*value), .groups='keep') |>
     ungroup() |>
     dplyr::mutate(inputMsg=ifelse(is.na(sumVal),'Y','N'))
   

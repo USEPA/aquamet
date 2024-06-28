@@ -141,7 +141,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) |>
     dplyr::mutate(coef=ifelse(is.na(coef),0,coef)) |>
     group_by_at(c(sampID, 'ecoreg', 'resp', 'respAdj', 'intercept')) |>
-    summarise(sumVal = sum(coef*value)) |>
+    summarise(sumVal = sum(coef*value), .groups='keep') |>
     ungroup() |>
     dplyr::mutate(calcVal=sumVal + intercept) |>
     dplyr::mutate(RVegQc3x15=ifelse(resp=='log10',(10^calcVal)-respAdj,calcVal))
@@ -322,7 +322,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
   dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) |>
     dplyr::mutate(coef=ifelse(is.na(coef),0,coef)) |>
     group_by_at(c(sampID,'ecoreg','resp','respAdj','intercept')) |>
-    summarise(sumVal = sum(coef*value)) |>
+    summarise(sumVal = sum(coef*value), .groups='keep') |>
     ungroup() |>
     dplyr::mutate(calcVal=sumVal + intercept) |>
     dplyr::mutate(LitCvrQc3x15=ifelse(resp=='log10',(10^calcVal)-0.01,calcVal))
@@ -470,7 +470,7 @@ nlaLitRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,eco
   dfExp <- merge(dfIn.long,expParam,by=c('ecoreg','variable')) |>
     dplyr::mutate(coef=ifelse(is.na(coef),0,coef)) |>
     group_by_at(c(sampID,'ecoreg','resp','respAdj','intercept')) |>
-    summarise(sumVal=sum(coef*value)) |>
+    summarise(sumVal=sum(coef*value), .groups='keep') |>
     ungroup() |>
     dplyr::mutate(calcVal=sumVal + intercept) |>
     dplyr::mutate(LitRipCvrQc3x15=ifelse(resp=='log10',(10^calcVal)-0.01,calcVal))

@@ -97,7 +97,7 @@ In this vignette, the output data frame contains all of the metrics calculated b
 # Run nrsaGeneral() to obtain reach length metric
 numStation <- unique(subset(thalwegEx, SAMPLE_TYPE=='PHAB_THALW', select=c('SITE','TRANSECT','STATION'))) |>
   dplyr::group_by(SITE, TRANSECT) |>
-  dplyr::summarise(nSta = length(STATION)) |>
+  dplyr::summarise(nSta = length(STATION), .groups='keep') |>
   dplyr::ungroup()
 
 wTr <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0 & SAMPLE_TYPE=='PHAB_THALW'
@@ -199,7 +199,7 @@ wBear <- subset(changeomEx, grepl('BEARING', PARAMETER) & SAMPLE_TYPE=='PHAB_SLO
 
 wNsta <- unique(subset(thalwegEx,SAMPLE_TYPE=='PHAB_THALW',select=c('SITE','TRANSECT','STATION'))) |>
   dplyr::group_by(SITE,TRANSECT) |>
-  dplyr::summarise(nSta = length(STATION)) |>
+  dplyr::summarise(nSta = length(STATION), .groups='keep') |>
   dplyr::ungroup() 
   
 wTr.alt <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & STATION==0 & SAMPLE_TYPE=='PHAB_THALW'
