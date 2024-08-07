@@ -26,10 +26,6 @@ the condition class for riparian disturbance.
 Determine condition class based thresholds using 
 the W1_HALL metric.
 }
-\references{
-Add in from Phil Kaufmann later
-}
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }
-\keyword{survey}

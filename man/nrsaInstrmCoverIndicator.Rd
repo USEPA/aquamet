@@ -25,24 +25,24 @@ any variables necessary to calculate indicator condition classes
 for ecoregions in x. The necessary variables by realm and ecoreg 
 are (none indicates no additional variables are necessary):
 \itemize{
-\item CPL, BOATABLE: none
-\item CPL, WADEABLE: none
-\item NAP, BOATABLE: lon, area, xwidth
-\item NAP, WADEABLE: xwidth
-\item NPL, BOATABLE: lat, lon, area
-\item NPL, WADEABLE: lon, elev, area
-\item SAP, BOATABLE: lat
-\item SAP, WADEABLE: lat, elev
-\item SPL, BOATABLE: lat, lon, area
-\item SPL, WADEABLE: lon, elev, area
-\item TPL, BOATABLE: lat, lon, area
-\item TPL, WADEABLE: lon, elev, area
-\item UMW, BOATABLE: lon
-\item UMW, WADEABLE: area, xwidth
-\item WMT, BOATABLE: xwidth
-\item WMT, WADEABLE: lat, lon, area
-\item XER, BOATABLE: elev, xwidth
-\item XER, WADEABLE: lon, slope
+\item CPL, BOATABLE none
+\item CPL, WADEABLE none
+\item NAP, BOATABLE lon, area, xwidth
+\item NAP, WADEABLE xwidth
+\item NPL, BOATABLE lat, lon, area
+\item NPL, WADEABLE lon, elev, area
+\item SAP, BOATABLE lat
+\item SAP, WADEABLE lat, elev
+\item SPL, BOATABLE lat, lon, area
+\item SPL, WADEABLE lon, elev, area
+\item TPL, BOATABLE lat, lon, area
+\item TPL, WADEABLE lon, elev, area
+\item UMW, BOATABLE lon
+\item UMW, WADEABLE area, xwidth
+\item WMT, BOATABLE xwidth
+\item WMT, WADEABLE lat, lon, area
+\item XER, BOATABLE elev, xwidth
+\item XER, WADEABLE lon, slope
 }}
 
 \item{sampID}{A character vector containing the names of all 
@@ -67,7 +67,7 @@ be in decimal degrees using NAD83.}
 \item{lon}{A string with the name of the variable for longitude, assumed to
 be in decimal degrees using NAD83.}
 
-\item{slope}{A string with the name of the variable for % stream slope. For 
+\item{slope}{A string with the name of the variable for percent stream slope. For 
 NRSA, the variable used is XSLOPE.}
 
 \item{xwidth}{A string with the name of the variable for mean wetted width
@@ -92,4 +92,3 @@ ecoregion and protocol.
 \author{
 Karen Blocksom \email{Blocksom.Karen@epa.gov}
 }
-\keyword{survey}

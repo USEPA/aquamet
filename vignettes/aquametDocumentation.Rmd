@@ -28,7 +28,6 @@ First, we need to load the `aquamet` library. You will also want to ensure you h
 
 ```{r load-library, echo=TRUE, message=FALSE}
 library(tidyr)
-library(plyr)
 library(dplyr)
 library(aquamet)
 library(Hmisc)
@@ -122,26 +121,26 @@ The bank features metric calculations include drawdown information and the metri
 
 angle <- filter(nlaPhab, PARAMETER=='ANGLE') |>
   select(SITE, STATION, VALUE) |>
-  plyr::mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT', 'NEAR_VERTICAL', VALUE))
+  dplyr::mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT', 'NEAR_VERTICAL', VALUE))
 
 drawdown <- filter(nlaPhab, PARAMETER=='DRAWDOWN') |>
   select(SITE, STATION, VALUE)
 
 horizontalDistance <- filter(nlaPhab, PARAMETER=='HORIZ_DIST') |>
   select(SITE, STATION, VALUE) |>
-  plyr::mutate(VALUE = as.numeric(VALUE))
+  dplyr::mutate(VALUE = as.numeric(VALUE))
 
 horizontalDistanceDD <- filter(nlaPhab, PARAMETER=='HORIZ_DIST_DD') |>
   select(SITE, STATION, VALUE) |>
-  plyr::mutate(VALUE = as.numeric(VALUE))
+  dplyr::mutate(VALUE = as.numeric(VALUE))
 
 verticalHeight = filter(nlaPhab, PARAMETER=='VERT_HEIGHT') |>
   select(SITE, STATION, VALUE) |>
-  plyr::mutate(VALUE = as.numeric(VALUE))
+  dplyr::mutate(VALUE = as.numeric(VALUE))
 
 verticalHeightDD = filter(nlaPhab, PARAMETER=='VERT_HEIGHT_DD') |>
   select(SITE, STATION, VALUE) |>
-  plyr::mutate(VALUE = as.numeric(VALUE))
+  dplyr::mutate(VALUE = as.numeric(VALUE))
 # nlaBankFeatures
 bankMetrics <- nlaBankFeatures(angle,
                                drawdown,
@@ -1125,8 +1124,8 @@ bLatLon <- nrsaChanrip |>
   select(-BANK_LAT, -BANK_LON, -MID_LAT, -MID_LON) |>
   pivot_wider(id_cols = 'SITE', names_from='TRANSECT', values_from=c('LAT', 'LON')) |>
   within(A<-B<-C<-D<-E<-F<-G<-H<-I<-J<-as.numeric(NA)) |> # Creates empty columns with each transect name, in order
-  ddply(c('SITE'), summarise, 
-        A = protectedGreatCircleDistance(LAT_A, LON_A, LAT_B, LON_B),
+  dplyr::group_by(SITE) |>
+  dplyr::summarise(A = protectedGreatCircleDistance(LAT_A, LON_A, LAT_B, LON_B),
         B = protectedGreatCircleDistance(LAT_B, LON_B, LAT_C, LON_C),
         C = protectedGreatCircleDistance(LAT_C, LON_C, LAT_D, LON_D),
         D = protectedGreatCircleDistance(LAT_D, LON_D, LAT_E, LON_E),
@@ -1135,12 +1134,15 @@ bLatLon <- nrsaChanrip |>
         G = protectedGreatCircleDistance(LAT_G, LON_G, LAT_H, LON_H),
         H = protectedGreatCircleDistance(LAT_H, LON_H, LAT_I, LON_I),
         I = protectedGreatCircleDistance(LAT_I, LON_I, LAT_J, LON_J),
-        J = protectedGreatCircleDistance(LAT_J, LON_J, LAT_K, LON_K))
+        J = protectedGreatCircleDistance(LAT_J, LON_J, LAT_K, LON_K)) |>
+  ungroup() 
 
 bTransectSpacing <- bLatLon |>
   pivot_longer(cols = A:J, names_to = 'TRANSECT', values_to='DISTANCE') |>
-  ddply('SITE', mutate, medianDistance = median(DISTANCE, na.rm=T)) |>
-  mutate(correctedDistance = ifelse(abs((DISTANCE-medianDistance)/medianDistance) >0.5, 
+  dplyr::group_by(SITE) |>
+  dplyr::mutate(medianDistance = median(DISTANCE, na.rm=T)) |>
+  dplyr::ungroup() |>
+  dplyr::mutate(correctedDistance = ifelse(abs((DISTANCE-medianDistance)/medianDistance) >0.5, 
                                     medianDistance, DISTANCE)) |>
   dplyr::rename(c(VALUE = correctedDistance)) |>
   select(SITE, TRANSECT, VALUE)
@@ -1158,24 +1160,26 @@ We do have to figure out how many stations were sampled, specifically at the las
 # Pull increment, which is only measured at wadeable sites
 wThalwegIncrements <- nrsaThalweg |>
   filter(PARAMETER=='INCREMENT') |>
-  mutate(VALUE = as.numeric(VALUE)) |>
+  dplyr::mutate(VALUE = as.numeric(VALUE)) |>
   select(SITE, VALUE)
 
 # We still need to create a data frame of the stations sampled and transect distance
 # We can get the transects sampled using the thalweg data
 wNumStations <- nrsaThalweg |>
   filter(STATION!='ALL') |>
-  mutate(STATION = as.integer(STATION)) |>
+  dplyr::mutate(STATION = as.integer(STATION)) |>
   aquamet::nWadeableStationsPerTransect()
 
 wNumStationsPerTransect <- filter(nrsaThalweg, VALUE!='' & !is.na(VALUE) & TRANSECT %in% LETTERS[1:11]) |>
-  ddply('SITE', summarise, lastTransect = max(TRANSECT)) |>
+  dplyr::group_by(SITE) |>
+  dplyr::summarise(lastTransect = max(TRANSECT)) |>
+  dplyr::ungroup() |>
   merge(wNumStations, by = 'SITE', all.y=T) |>
-  mutate(nSta = ifelse(TRANSECT==lastTransect, nSta-1, nSta)) |>
+  dplyr::mutate(nSta = ifelse(TRANSECT==lastTransect, nSta-1, nSta)) |>
   select(-lastTransect)
 
 wTransectSpacing <- merge(wThalwegIncrements, wNumStationsPerTransect, by = 'SITE') |>
-  mutate(VALUE = VALUE * nSta) |>
+  dplyr::mutate(VALUE = VALUE * nSta) |>
   select(SITE, TRANSECT, VALUE) |>
   arrange(SITE, TRANSECT)
 

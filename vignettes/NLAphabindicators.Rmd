@@ -22,7 +22,6 @@ The drawdown indicator is based on both horizontal and vertical drawdown distanc
 ```{r setup,results='hide', warning=FALSE, message=FALSE}
 library(aquamet)
 library(tidyr)
-library(plyr)
 library(dplyr)
 ```
 
@@ -32,21 +31,21 @@ We create data frames for the inputs to the nlaBankFeatures() function first. Fo
 
 ```{r dd}
 angle <- subset(nlaPhab,PARAMETER=='ANGLE',select=-PARAMETER) |> 
-  plyr::mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT','NEAR_VERTICAL',VALUE))
+  dplyr::mutate(VALUE = ifelse(VALUE=='NEAR_VERTICAL_UNDERCUT','NEAR_VERTICAL',VALUE))
 
 drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN', select=-PARAMETER)
 
 horizontalDistance <- subset(nlaPhab,PARAMETER=='HORIZ_DIST', select=-PARAMETER) |> 
-  plyr::mutate(VALUE = as.numeric(VALUE))
+  dplyr::mutate(VALUE = as.numeric(VALUE))
 
 horizontalDistanceDrawdown <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD', select=-PARAMETER) |> 
-  plyr::mutate(VALUE = as.numeric(VALUE))
+  dplyr::mutate(VALUE = as.numeric(VALUE))
 
 verticalHeight <- subset(nlaPhab,PARAMETER=='VERT_HEIGHT', select=-PARAMETER) |> 
-  plyr::mutate(VALUE = as.numeric(VALUE))
+  dplyr::mutate(VALUE = as.numeric(VALUE))
 
 verticalHeightDrawdown <- subset(nlaPhab,PARAMETER=='VERT_HEIGHT_DD', select=-PARAMETER) |> 
-  plyr::mutate(VALUE = as.numeric(VALUE))                                                            
+  dplyr::mutate(VALUE = as.numeric(VALUE))                                                            
 
 bfMets <- nlaBankFeatures(angle, drawdown, horizontalDistance, horizontalDistanceDrawdown, verticalHeight, verticalHeightDrawdown)
 
@@ -193,7 +192,7 @@ cobble,gravel,organic,other,sand,silt,wood)
 ss.wide <- pivot_wider(ss, id_cols = 'SITE', names_from='METRIC', 
                        values_from='VALUE') |> 
   dplyr::select(SITE, SSFCBEDROCK,SSFCBOULDERS) |>
-  plyr::mutate(SSFCBEDROCK=as.numeric(SSFCBEDROCK), SSFCBOULDERS=as.numeric(SSFCBOULDERS))
+  dplyr::mutate(SSFCBEDROCK=as.numeric(SSFCBEDROCK), SSFCBOULDERS=as.numeric(SSFCBOULDERS))
 ```
 
 ### Human influence metrics
@@ -305,7 +304,7 @@ structures <- subset(nlaPhab,PARAMETER=='FC_STRUCTURES',select=-PARAMETER)
 structures_dd <- subset(nlaPhab,PARAMETER=='FC_STRUCTURES_DD',select=-PARAMETER)
 drawdown <- subset(nlaPhab,PARAMETER=='DRAWDOWN',select=-PARAMETER)
 horizontalDistance_dd <- subset(nlaPhab,PARAMETER=='HORIZ_DIST_DD',select=-PARAMETER) |>
-  plyr::mutate(VALUE = as.numeric(VALUE)) # This one is manually converted to numeric because it is required by the function to be
+  dplyr::mutate(VALUE = as.numeric(VALUE)) # This one is manually converted to numeric because it is required by the function to be
 
 # Use default values for fillinDrawdown (TRUE), createSyntheticCovers (TRUE), 
 # and coverClassInfo:
@@ -342,7 +341,7 @@ am <- nlaAquaticMacrophytes(emergent=emerg,
 am.wide <- pivot_wider(am, id_cols = 'SITE', names_from='METRIC', 
                        values_from='VALUE') |>
   dplyr::select(SITE, AMFCFLOATING, AMFCEMERGENT) |>
-  plyr::mutate(AMFCFLOATING = as.numeric(AMFCFLOATING),
+  dplyr::mutate(AMFCFLOATING = as.numeric(AMFCFLOATING),
          AMFCEMERGENT = as.numeric(AMFCEMERGENT))
 
 am.wide

@@ -72,7 +72,7 @@
 #' wTr.1 <- subset(thalwegEx, PARAMETER=='INCREMNT' & TRANSECT=='A' & 
 #'        STATION==0 & SAMPLE_TYPE=='PHAB_THALW',select=c('SITE','VALUE')) 
 #' 
-#' wTr.2 <- plyr::mutate(wTr.1, VALUE=as.numeric(VALUE)) 
+#' wTr.2 <- dplyr::mutate(wTr.1, VALUE=as.numeric(VALUE)) 
 #' # Identify unique sampled SITE, TRANSECT, STATION combinations, then
 #' #   determine the number of stations for each SITE and TRANSECT
 #' uniqLoc <- unique(subset(thalwegEx, SAMPLE_TYPE=='PHAB_THALW', 
@@ -86,7 +86,7 @@
 #'        FUN = function(x){max(as.character(x))})
 #' wTr.4 <- merge(wTr.3, maxWTr)
 #' # Calculate space between transects for each transect at wadeable sites
-#' wTr.5 <- plyr::mutate(wTr.4, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) 
+#' wTr.5 <- dplyr::mutate(wTr.4, VALUE = ifelse(TRANSECT!=lastTran, nSta*VALUE, (nSta-1)*VALUE)) 
 #' # Keep only necessary variables
 #' wTr.6 <- dplyr::select(wTr.5, -nSta,-lastTran)
 #' # For boatable sites, just use actual transect spacing parameter, but 
