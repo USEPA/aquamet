@@ -24,7 +24,7 @@ You will notice that code blocks are shown throughout the document. Clicking on 
 
 # Getting started
 
-First, we need to load the `aquamet` library. You will also want to ensure you have the `tidyr` package installed and loaded because we will use it to made data wider or longer, depending on our needs. There are also a few other packages that we may use for manipulating the data while preparing it for use with the `aquamet` package.
+First, we need to load the `aquamet` library. You will also want to ensure you have the `tidyr` package installed and loaded because we will use it to make data wider or longer, depending on our needs. There are also a few other packages that we may use for manipulating the data while preparing it for use with the `aquamet` package.
 
 ```{r load-library, echo=TRUE, message=FALSE}
 library(tidyr)
@@ -69,7 +69,7 @@ Setting up the data for calculating metrics is much simpler and more straightfor
 
 Let's start by calculating aquatic macrophyte metrics using `nlaAquaticMacrophytes()`. There are several arguments to this function, with each representing the data for a particular parameter. The expected format of those input data are SITE, STATION, VALUE (the parameter value is assumed). We can use the names of the arguments as the guide to which parameter is expected.
 
-````         
+\`\`\`\`\
 For this function, we need to create datasets for emergent vegetation cover (parameter AM_EMERGENT), floating vegetation cover (parameter AM_FLOATING), submergent vegetation cover (parameter AM_SUBMERGENT), and total vegetation cover (parameter AM_TOTALCOVER). Since the expected input datasets only have the variables SITE, STATION, and VALUE, we also need to drop the PARAMETER variable.
 
 ```{r nlaAquaticMacrophytes-1}
@@ -554,17 +554,18 @@ ripdistCond
 This indicator measures the riparian vegetation cover on the lakeshore. The function requires a large number of site-related variables, including: latitude, longitude, lake origin, lake area, elevation, and ecoregion. It also requires a number of physical habitat metrics to calculate the value used to assign condition. These include riparian vegetation, shoreline substrate, and human impact metrics, listed below with descriptions. The metrics come from the `nlaRiparianVegetation()`, `nlaShorelineSubstrate()`, and `nlaHumanImpact()` functions.
 
 <table>
-Argument            Metric                    Description                                 
------------------   -------------------       -------------------------------
-rviWoody            RVI_WOODY_SYN             Index of total woody vegetations cover, synthesizing the 2007 protocol          
-rvfcGndInundated    RVFCGNDINUNDATED_SYN      Fraction of ground cover by inundation synthesizing the 2007 protocol
-rvfcUndWoody        RVFCUNDWOODY_SYN          Fraction of understory cover by woody vegetation synthesizing the 2007 protocol 
-rvfcGndWoody        RVFCGNDWOODY_SYN          Fraction of ground cover by woody vegetation synthesizing the 2007 protocol
-rvfpCanBig          RVFPCANBIG_SYN            Fraction of canopy with large trees present synthesizing the 2007 protocol
-ssfcBedrock         SSFCBEDROCK               Fractional cover of bedrock using SS_BEDROCK
-ssfcBoulders        SSFCBOULDERS              Fractional cover of bedrock using SS_BOULDER
-hipwWalls           HIPWWALLS_SYN             Weighted presence of Walls synthesizing the 2007 protocol
-  
+
+| Argument         | Metric               | Description                                                                     |
+|:-----------------|:---------------------|:--------------------------------------------------------------------------------|
+| rviWoody         | RVI_WOODY_SYN        | Index of total woody vegetations cover, synthesizing the 2007 protocol          |
+| rvfcGndInundated | RVFCGNDINUNDATED_SYN | Fraction of ground cover by inundation synthesizing the 2007 protocol           |
+| rvfcUndWoody     | RVFCUNDWOODY_SYN     | Fraction of understory cover by woody vegetation synthesizing the 2007 protocol |
+| rvfcGndWoody     | RVFCGNDWOODY_SYN     | Fraction of ground cover by woody vegetation synthesizing the 2007 protocol     |
+| rvfpCanBig       | RVFPCANBIG_SYN       | Fraction of canopy with large trees present synthesizing the 2007 protocol      |
+| ssfcBedrock      | SSFCBEDROCK          | Fractional cover of bedrock using SS_BEDROCK                                    |
+| ssfcBoulders     | SSFCBOULDERS         | Fractional cover of bedrock using SS_BOULDER                                    |
+| hipwWalls        | HIPWWALLS_SYN        | Weighted presence of Walls synthesizing the 2007 protocol                       |
+
 ```{r ripveg-comp}
 ripvegOut <- nlaRipVegCompIndicator(indicIn, 
                               sampID='SITE', 
@@ -586,7 +587,7 @@ ripvegOut <- nlaRipVegCompIndicator(indicIn,
 ripvegOut
 ```
 
-The output of this function provides three variables along with the condition variable. RVegQ represents the observed riparian vegetation complexity and RVegQc3x15 is the site-specific expectation for riparian complexity, based site-related input variables. RVegQc3OE is the observed/expected ratio used to assign the condition class.
+The output of this function provides three variables along with the condition variable. RVegQ represents the observed riparian vegetation complexity and RVegQc3x15 is the site-specific expectation for riparian complexity, based on site-related input variables. RVegQc3OE is the observed/expected ratio used to assign the condition class.
 
 These results show that when any critical metrics are missing, Not Assessed is assigned as the condition. In this example, SITE 8251 is missing a few important variables for riparian vegetation.
 
@@ -594,17 +595,21 @@ These results show that when any critical metrics are missing, Not Assessed is a
 
 This indicator measures the shallow water habitat of the lake. This function also requires latitude, longitude, lake origin, lake area, lake elevation, and ecoregion. The 9 metrics listed below, related to fish cover and aquatic macrophytes, are required as inputs for calculation of this indicator. These metrics come from the `nlaAquaticMacrophytes()` and `nlaFishCover()` functions.
 
-Argument                Metric                Description                          -----------------       ------------------    -------------------------------
-fciNatural              FCINATURAL_LIT        Index of fish cover due to natural structures in the littoral zone 
-fcfcSnag                FCFCSNAGS_LIT         Fractional cover of snags in the littoral zone
-amfcFloating            AMFCFLOATING          Fractional cover of floating macrophytes
-amfcEmergent            AMFCEMERGENT          Fractional cover of emergent macrophytes
-fcfcBoulders            FCFCBOULDERS_LIT      Fractional cover of boulders in the littoral zone
-fcfcBrush               FCFCBRUSH_LIT         Fractional cover of brush in the littoral zone
-fcfcLedges              FCFCLEDGES_LIT        Fractional cover of ledges in the littoral zone
-fcfcLiveTrees           FCFCLIVETREES_LIT     Fractional cover of live trees in the littoral zone
-fcfcOverhang            FCFCOVERHANG_LIT      Fractional cover of overhangs in the littoral zone                 |
-  
+| Argument      | Metric            | Description                                                        |     |     |     |
+|--------------------|------------------------|------------------------|------------------------|------------------------|--|
+| fciNatural    | FCINATURAL_LIT    | Index of fish cover due to natural structures in the littoral zone |     |     |     |
+| fcfcSnag      | FCFCSNAGS_LIT     | Fractional cover of snags in the littoral zone                     |     |     |     |
+| amfcFloating  | AMFCFLOATING      | Fractional cover of floating macrophytes                           |     |     |     |
+| amfcEmergent  | AMFCEMERGENT      | Fractional cover of emergent macrophytes                           |     |     |     |
+| fcfcBoulders  | FCFCBOULDERS_LIT  | Fractional cover of boulders in the littoral zone                  |     |     |     |
+| fcfcBrush     | FCFCBRUSH_LIT     | Fractional cover of brush in the littoral zone                     |     |     |     |
+| fcfcLedges    | FCFCLEDGES_LIT    | Fractional cover of ledges in the littoral zone                    |     |     |     |
+| fcfcLiveTrees | FCFCLIVETREES_LIT | Fractional cover of live trees in the littoral zone                |     |     |     |
+| fcfcOverhang  |  FCFCOVERHANG_LIT | Fractional cover of overhangs in the littoral zone                 |     |     |     |
+|               |                   |                                                                    |     |     |     |
+|               |                   |                                                                    |     |     |     |
+|               |                   |                                                                    |     |     |     |
+
 ```{r litveg-comp}
     litvegOut <- nlaLitVegCompIndicator(indicIn, sampID='SITE',
                                   lat='LAT_DD', 
@@ -626,7 +631,7 @@ fcfcOverhang            FCFCOVERHANG_LIT      Fractional cover of overhangs in t
 litvegOut
 ```
 
-Similarly to the riparian vegetation complexity indicator output, the observed littoral vegetation complexity (LitCvrQ), the site-specific expected value (LitCvrQc3x15), and the observed/expected ratio (LitCvrQc3OE) are all provided by the \`nlaLitVegCompIndicator\` function. The LITCVR_COND represents the condition class assigned based on the latter value.
+Similar to the riparian vegetation complexity indicator output, the observed littoral vegetation complexity (LitCvrQ), the site-specific expected value (LitCvrQc3x15), and the observed/expected ratio (LitCvrQc3OE) are all provided by the \`nlaLitVegCompIndicator\` function. The LITCVR_COND represents the condition class assigned based on the latter value.
 
 Also, there is one site with the assignment of 'Not Assessed'. This is because there were no aquatic macrophyte data collected for that site.
 
@@ -664,12 +669,7 @@ As we go through this example, we will explain for each metric calculation funct
 
 ## Example datasets
 
-Dataset                Description                                                -------------          -------------------------------------------
-nrsaChanconst          Channel constraint characteristics for entire site.        nrsaChannel            Channel characteristics for both boatable and wadeable streams by TRANSECT, including data on bank characteristics, fish cover, large woody debris, littoral substrates, and boatable constraint variables. 
-nrsaChanrip            Channel riparian data by TRANSECT and BANK. Includes canopy cover densiometer readings, human influence, visual riparian measurements, and wadeable bank undercut and angle measurements.
-nrsaChanxsec           Channel cross-section measurements by TRANSECT and BANK for wadeable sites.                                                                    nrsaInvleg             Riparian legacy and invasive tree measurements (no longer used).
-nrsaLittoral           Nonwadeable littoral depth measurements by TRANSECT and LINE.
-nrsaSlope              Slope and bearing measurements.                             nrsaThalweg            Thalweg depth measurements by TRANSECT and STATION.         nrsaVisits             Site and type of site (VALXSITE), as BOATABLE or WADEABLE.   
+Dataset Description ------------- ------------------------------------------- nrsaChanconst Channel constraint characteristics for entire site. nrsaChannel Channel characteristics for both boatable and wadeable streams by TRANSECT, including data on bank characteristics, fish cover, large woody debris, littoral substrates, and boatable constraint variables. nrsaChanrip Channel riparian data by TRANSECT and BANK. Includes canopy cover densiometer readings, human influence, visual riparian measurements, and wadeable bank undercut and angle measurements. nrsaChanxsec Channel cross-section measurements by TRANSECT and BANK for wadeable sites. nrsaInvleg Riparian legacy and invasive tree measurements (no longer used). nrsaLittoral Nonwadeable littoral depth measurements by TRANSECT and LINE. nrsaSlope Slope and bearing measurements. nrsaThalweg Thalweg depth measurements by TRANSECT and STATION. nrsaVisits Site and type of site (VALXSITE), as BOATABLE or WADEABLE.\
 We can take a quick look at each dataset to see what the data look like.
 
 ### nrsaChanconst
@@ -771,7 +771,7 @@ nrsaVisits
 
 ### NRSA bank morphology metrics
 
-These are calculated using the `nrsaBankMorphology()` function, and data are provided separately for boatable and wadeable sites. To avoid creating lots of smaller datasets just to create inputs for the metric functions, we can do subsetting and select variables within the function call, using the pipeline function (`|>`) to carry out multiple steps. This approach is shown in the function call below and throughout. 
+These are calculated using the `nrsaBankMorphology()` function, and data are provided separately for boatable and wadeable sites. To avoid creating lots of smaller datasets just to create inputs for the metric functions, we can do subsetting and select variables within the function call, using the pipeline function (`|>`) to carry out multiple steps. This approach is shown in the function call below and throughout.
 
 ```{r nrsaBankMorph}
 chanrip <- filter(nrsaChanrip, PARAMETER %in% c('ANGLE','UNDERCUT')) 
@@ -1212,7 +1212,7 @@ unique(generalMetrics$METRIC)
 
 There are a number of metrics based on human influence data collected on the **PHAB CHANNEL/RIPARIAN TRANSECT** form for boatable sites and the **PHAB CHANNEL/RIPARIAN CROSS-SECTION** form for wadeable sites. These data are included in the `nrsaChanrip` dataset. The parameters have the SAMPLE_TYPE value of HUMINFLUW or HUMINFLUB, for wadeable and boatable sites, respectively.
 
-For this function, we simply provide inputs for each type of human influence as a data frame with SITE and VALUE. We can wrap all of this subsetting into the function call, so the inputs are not created a separate datasets. We also need to be sure we only have the following variables in the data frame: SITE, TRANSECT, VALUE
+For this function, we simply provide inputs for each type of human influence as a data frame with SITE and VALUE. We can wrap all of this subsetting into the function call, so the inputs are not created as separate datasets. We also need to be sure we only have the following variables in the data frame: SITE, TRANSECT, VALUE
 
 ```{r nrsaHumanInfluence}
 nrsaHumInflMetrics <- nrsaHumanInfluence(
@@ -1289,7 +1289,7 @@ unique(littoralDepthMetrics$METRIC)
 
 ### NRSA riparian vegetation metrics
 
-Riparian vegetation data are collected at each transect, and the data for this example are contained in the `nrsaChanrip` dataset. The function `nrsaRiparianVegetation()` is used to calculate these metrics, and the inputs are fairly straightforward, just the data for individual parameters.  
+Riparian vegetation data are collected at each transect, and the data for this example are contained in the `nrsaChanrip` dataset. The function `nrsaRiparianVegetation()` is used to calculate these metrics, and the inputs are fairly straightforward, just the data for individual parameters.
 
 ```{r nrsaRiparianVegetation}
 nrsaRiparianVegMetrics <- nrsaRiparianVegetation(
@@ -1319,11 +1319,11 @@ unique(nrsaRiparianVegMetrics$METRIC)
 
 ### NRSA slope and bearing metrics
 
-Slope and bearing measurements are recorded in the field only for wadeable sites, and slopes for boatable sites are usually generated using GIS. In this example dataset from data collected in the 2008-9 NRSA survey, we have slope and bearing measurements for all sites. The inputs for the function `nrsaSlopeBearing()` are separated into boatable and wadeable, and if sinuosity and slope were determined through GIS for any sites, those are added through a separate set of arguments. 
+Slope and bearing measurements are recorded in the field only for wadeable sites, and slopes for boatable sites are usually generated using GIS. In this example dataset from data collected in the 2008-9 NRSA survey, we have slope and bearing measurements for all sites. The inputs for the function `nrsaSlopeBearing()` are separated into boatable and wadeable, and if sinuosity and slope were determined through GIS for any sites, those are added through a separate set of arguments.
 
-For demonstration purposes, we will go through an example for boatable sites using GIS-based slopes because slope is no longer collected in the field on boatable sites due to the difficulty of obtaining precise enough measurements. For this reason, the only arguments for boatable sites in the `nrsaSlopeBearing()` function we need to use are `gisSlope` and `gisSinuosity`. Since these are not in the example datasets, we will simply insert them as data into the function. In practice, you would have a data frame with SITE and VALUE for any sites where you have obtained slope and sinuosity from GIS measurements. 
+For demonstration purposes, we will go through an example for boatable sites using GIS-based slopes because slope is no longer collected in the field on boatable sites due to the difficulty of obtaining precise enough measurements. For this reason, the only arguments for boatable sites in the `nrsaSlopeBearing()` function we need to use are `gisSlope` and `gisSinuosity`. Since these are not in the example datasets, we will simply insert them as data into the function. In practice, you would have a data frame with SITE and VALUE for any sites where you have obtained slope and sinuosity from GIS measurements.
 
-For wadeable sites, however, we can provide field data to obtain slope and sinuosity metrics. We will use the wadeable transect spacing calculated earlier in the `nrsaGeneral()` function as `wTransectSpacing`. Data for other arguments come from manipulations of the `nrsaSlope` dataset. Some can be simply created by subsetting the dataset for a particular parameter, but for slope measurements, we need to extract first the slope and then the units and method used, as these are separate parameters in the `nrsaSlope` dataset. 
+For wadeable sites, however, we can provide field data to obtain slope and sinuosity metrics. We will use the wadeable transect spacing calculated earlier in the `nrsaGeneral()` function as `wTransectSpacing`. Data for other arguments come from manipulations of the `nrsaSlope` dataset. Some can be simply created by subsetting the dataset for a particular parameter, but for slope measurements, we need to extract first the slope and then the units and method used, as these are separate parameters in the `nrsaSlope` dataset.
 
 ```{r nrsaSlopeBearing}
 # Create slope input for wadeable sites
@@ -1371,7 +1371,7 @@ unique(slopeBearingMetrics$METRIC)
 
 ### NRSA substrate characterization metrics
 
-Substrate characterization metrics for boatable and wadeable sites are based on data from different forms. For boatable sites, there are shoreline and channel substrate characterization data, as well as thalweg data, and for wadeable sites, all data are from the channel cross-section data. The `nrsaThalweg`, `nrsaChannel`, and `nrsaChanxsec` are the example datasets needed for this step. We can make things easier by first subsetting the data for the sample types, then further selecting specific parameters in the call to the `nrsaSubstrateCharacterization()` function. 
+Substrate characterization metrics for boatable and wadeable sites are based on data from different forms. For boatable sites, there are shoreline and channel substrate characterization data, as well as thalweg data, and for wadeable sites, all data are from the channel cross-section data. The `nrsaThalweg`, `nrsaChannel`, and `nrsaChanxsec` are the example datasets needed for this step. We can make things easier by first subsetting the data for the sample types, then further selecting specific parameters in the call to the `nrsaSubstrateCharacterization()` function.
 
 ```{r nrsaSubstrateCharacterization}
 ccs <- filter(nrsaChanxsec, PARAMETER %in% c('SIZE_CLS','XSIZE_CLS')) # This pull substrate info for wadeable sites
@@ -1444,9 +1444,9 @@ unique(nrsaSubstrEmbedMetrics$METRIC)
 
 ### NRSA residual pools
 
-We will use the function `nrsaResidualPools()` function to calculate metrics related to residual pools for NRSA. The required data for this function are in the `nrsaThalweg` datasets, as well as some metrics from the metrics file `slopeBearingMetrics` dataset created above. Because the bDepth argument for depth measurements in boatable sites is somewhat complicated, we will create that input separately, but other data inputs can be specified directly in the function. The `siteSlopes` argument comes from the `slopeBearingMetrics` dataset calculated above. The `transectSpacing` argument uses the transect spacing calculated for the `nrsaGeneral()` function example, but the boatable and wadeable transect spacing data frames are combined for a single input into this function. 
+We will use the function `nrsaResidualPools()` function to calculate metrics related to residual pools for NRSA. The required data for this function are in the `nrsaThalweg` datasets, as well as some metrics from the metrics file `slopeBearingMetrics` dataset created above. Because the bDepth argument for depth measurements in boatable sites is somewhat complicated, we will create that input separately, but other data inputs can be specified directly in the function. The `siteSlopes` argument comes from the `slopeBearingMetrics` dataset calculated above. The `transectSpacing` argument uses the transect spacing calculated for the `nrsaGeneral()` function example, but the boatable and wadeable transect spacing data frames are combined for a single input into this function.
 
-```{r nrsaResidualPools} 
+```{r nrsaResidualPools}
 # First create bDepth in two parts
 # The depth measurements and units are separate parameters, so we have to pull 
 # those individually from the nrsaThalweg dataset.
@@ -1484,10 +1484,9 @@ print("The residual pools metrics from this function:")
 unique(residualPoolMetrics$METRIC)
 ```
 
-
 ### NRSA relative bed stability
 
-Finally, we are ready to calculate bed stability, which relies on metrics already calculated from other metric functions. These include the metrics for channel morphology (xdepth, sddepth, xbkf_h, xbkf_w, xwidth), substrate characterization (lsub_dmm, lsub2dmm), large woody debris (v1w_msq), residual pools (rp100), fish cover (xfc_lwd), and slope and bearing (xslope). We first need to provide the protocol for each site. There are many ways we can determine this from the data, including based on sample types observed in the datasets. Most easily, we can do this based on the thalweg data (`nrsaThalweg`). The valid values for the variable `PROTOCOL` are 'WADEABLE' and 'BOATABLE'. 
+Finally, we are ready to calculate bed stability, which relies on metrics already calculated from other metric functions. These include the metrics for channel morphology (xdepth, sddepth, xbkf_h, xbkf_w, xwidth), substrate characterization (lsub_dmm, lsub2dmm), large woody debris (v1w_msq), residual pools (rp100), fish cover (xfc_lwd), and slope and bearing (xslope). We first need to provide the protocol for each site. There are many ways we can determine this from the data, including based on sample types observed in the datasets. Most easily, we can do this based on the thalweg data (`nrsaThalweg`). The valid values for the variable `PROTOCOL` are 'WADEABLE' and 'BOATABLE'.
 
 ```{r nrsaBedStability}
 protocols <- nrsaThalweg |>
@@ -1545,15 +1544,13 @@ nrsaMetrics <- rbind(bankMorphMetrics, canDensMetrics,
 
 ```
 
-
 ## Calculating NRSA physical habitat indicators
 
-Now that we have all of the NRSA physical habitat metrics calculated, we are ready to calculate indicators. Sometimes, in practice, certain metrics required for physical habitat indicators are missing because of incomplete data collection in the field. These can sometimes be filled in with other metrics that have been determined to be adequate substitutes, but we will not include this in our examples. If the primary metrics required for a particular indicator are missing, that indicator will be assigned Not Assessed. 
+Now that we have all of the NRSA physical habitat metrics calculated, we are ready to calculate indicators. Sometimes, in practice, certain metrics required for physical habitat indicators are missing because of incomplete data collection in the field. These can sometimes be filled in with other metrics that have been determined to be adequate substitutes, but we will not include this in our examples. If the primary metrics required for a particular indicator are missing, that indicator will be assigned Not Assessed.
 
-There are 4 physical habitat indicators for NRSA: the NRSA Instream Cover Indicator (`nrsaInstrmCoverIndicator()`), the NRSA Relative Bed Stability Indicator (`nrsaRelBedStabilityIndicator()`), the NRSA Riparian Vegetation Indicator (`nrsaRiparianVegIndicator()`), and the NRSA Riparian Disturbance Indicator (`nrsaRipDistIndicator()`). As with the NLA indicators, additional site-related variables are required for calculating each of the NRSA indicators except the NRSA Riparian Disturbance Indicator, and these variables vary by indicator. These variables include aggregated ecoregion (the same AG_ECO9 from NLA), protocol (WADEABLE or BOATABLE, based on field methodology used), latitude and longitude in NAD83 and decimal degrees, elevation in meters, and watershed area in square kilometers. As with the example for NLA indicators, we will create a set of example data for demonstration purposes. Unlike the NLA indicators, there is only one primary metric used for each indicator. 
+There are 4 physical habitat indicators for NRSA: the NRSA Instream Cover Indicator (`nrsaInstrmCoverIndicator()`), the NRSA Relative Bed Stability Indicator (`nrsaRelBedStabilityIndicator()`), the NRSA Riparian Vegetation Indicator (`nrsaRiparianVegIndicator()`), and the NRSA Riparian Disturbance Indicator (`nrsaRipDistIndicator()`). As with the NLA indicators, additional site-related variables are required for calculating each of the NRSA indicators except the NRSA Riparian Disturbance Indicator, and these variables vary by indicator. These variables include aggregated ecoregion (the same AG_ECO9 from NLA), protocol (WADEABLE or BOATABLE, based on field methodology used), latitude and longitude in NAD83 and decimal degrees, elevation in meters, and watershed area in square kilometers. As with the example for NLA indicators, we will create a set of example data for demonstration purposes. Unlike the NLA indicators, there is only one primary metric used for each indicator.
 
 We will also create a simplified input data frame that can work for all of the indicator functions. We need the following metrics as inputs to these functions: mean wetted width (xwidth), mean slope (xslope), log of relative bed stability (lrbs_g08), riparian human disturbance (w1_hall), mean areal proportion of natural fish cover (xfc_nat), and mean canopy, mid and ground cover (xcmgw).
-
 
 ```{r nrsa-create-site-variables}
 nrsaSitedata <- data.frame(SITE=c(10000, 10002, 13799, 13904),
@@ -1581,7 +1578,7 @@ indicIn <- merge(nrsaSitedata, nrsaMets_forIndic, by = 'SITE')
 
 ### NRSA Instream Cover Indicator
 
-This indicator assesses the areal natural fish cover in the stream and is based on a model which predicts the expected instream cover for a site based on the additional variables provided. The required inputs are ecoregion, protocol, latitude, longitude, mean slope, mean wetted width, elevation, and watershed area. The actual variables used in each model vary by ecoregion and protocol. The mean wetted width (xwidth) and mean slope (xslope) are physical habitat metrics calculated using the `nrsaChannelMorphology()` and `nrsaSlopeBearing()` functions, respectively. These two metrics are also necessary for the riparian vegetation and bed stability indicators. 
+This indicator assesses the areal natural fish cover in the stream and is based on a model which predicts the expected instream cover for a site based on the additional variables provided. The required inputs are ecoregion, protocol, latitude, longitude, mean slope, mean wetted width, elevation, and watershed area. The actual variables used in each model vary by ecoregion and protocol. The mean wetted width (xwidth) and mean slope (xslope) are physical habitat metrics calculated using the `nrsaChannelMorphology()` and `nrsaSlopeBearing()` functions, respectively. These two metrics are also necessary for the riparian vegetation and bed stability indicators.
 
 ```{r instrm-cover}
 
@@ -1641,9 +1638,9 @@ print(nrsaRipDistCond)
 
 ### NRSA Relative Bed Stability Indicator
 
-This final NRSA physical habitat indicator assesses the condition of the stream based on relative bed stability and is dependent on the ecoregion and protocol. Like the riparian vegetation and instream cover indicators, this indicator requires site-related variables and the mean wetted width and mean slope metrics. 
+This final NRSA physical habitat indicator assesses the condition of the stream based on relative bed stability and is dependent on the ecoregion and protocol. Like the riparian vegetation and instream cover indicators, this indicator requires site-related variables and the mean wetted width and mean slope metrics.
 
-Recall that the relative bed stability metric function used a number of metrics as inputs, so if any critical metrics are missing for the purposes of calculating the lrbs_g08 metric, it will be missing. As mentioned earlier, there are protocols for replacing missing lrbs_g08 values, but since we have that value for all sites in our example,  we will not cover this process here. 
+Recall that the relative bed stability metric function used a number of metrics as inputs, so if any critical metrics are missing for the purposes of calculating the lrbs_g08 metric, it will be missing. As mentioned earlier, there are protocols for replacing missing lrbs_g08 values, but since we have that value for all sites in our example, we will not cover this process here.
 
 ```{r rel-bed-stability-cond}
 nrsaRBSCond <- nrsaRelBedStabilityIndicator(
@@ -1665,5 +1662,4 @@ print(nrsaRBSCond)
 
 # Conclusion
 
-We have now examined in detail the various NLA and NRSA physical habitat datasets that are necessary to calculate physical habitat metrics for these two surveys. We have walked through the calculation of metrics using each of the functions in the `aquamet` package, and we have calculated the habitat indicators for NLA and NRSA, based on the calculated metrics. This document is intended to serve as a guide to get from raw data to final indicators, but it does not cover all possible situations where some data might be missing for specific field measurements. When using a new dataset, if errors or other issues are encountered, examining the input datasets will often reveal the source of problems.  
-
+We have now examined in detail the various NLA and NRSA physical habitat datasets that are necessary to calculate physical habitat metrics for these two surveys. We have walked through the calculation of metrics using each of the functions in the `aquamet` package, and we have calculated the habitat indicators for NLA and NRSA, based on the calculated metrics. This document is intended to serve as a guide to get from raw data to final indicators, but it does not cover all possible situations where some data might be missing for specific field measurements. When using a new dataset, if errors or other issues are encountered, examining the input datasets will often reveal the source of problems.

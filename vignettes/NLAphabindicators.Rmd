@@ -239,7 +239,7 @@ hi.wide <- pivot_wider(hi, id_cols = 'SITE', names_from='METRIC',
 
 ```
 
-#### Now merge these data frames together. Also, create a site data table with variables needed to determine condition. We will need the variables already included in the sitedata datarame above. 
+#### Now merge these data frames together. Also, create a site data table with variables needed to determine condition. We will need the variables already included in the sitedata data frame above. 
 
 ```{r mergeDF}
 

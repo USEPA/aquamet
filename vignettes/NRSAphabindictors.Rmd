@@ -17,7 +17,7 @@ There are 4 NRSA physical habitat indicators that assess condition based on 1) r
 
 # 2) Calculating the Relative Bed Stability Indicator
 
-There is a separate vignette showing all of the steps involved in calculating log10 of relative bed stability (LRBS) using the bed stability function, nrsaBedStability(). The condition class assignment is based on comparison of observed values to the modeled expected value of this metric. Other variables necessary to assign condition are site variables, including aggregated ecoregion (CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, or XER), protocol used (BOATABLE/WADEABLE), X-site latitude and longitude (in decimal degrees), watershed area in km^2^, elevation, reach slope, and mean wetted width (in meters).
+There is a separate vignette showing all of the steps involved in calculating log10 of relative bed stability (LRBS) using the bed stability function, `nrsaBedStability()`. The condition class assignment is based on comparison of observed values to the modeled expected value of this metric. Other variables necessary to assign condition are site variables, including aggregated ecoregion (CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, or XER), protocol used (BOATABLE/WADEABLE), X-site latitude and longitude (in decimal degrees), watershed area in km^2^, elevation (in meters), reach slope (%), and mean wetted width (in meters).
 
 #### First load necessary libraries
 ```{r Setup, results='hide', message=FALSE, warning=FALSE}
