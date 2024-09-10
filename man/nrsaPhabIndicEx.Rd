@@ -12,12 +12,12 @@
   \describe{
     \item{SITE}{unique site visit ID.}
     \item{LRBS_G08}{Relative bed stability metric used in 
-    emph{nrsaRelBedStabilityIndicator()} function.}
+    \emph{nrsaRelBedStabilityIndicator()} function.}
     \item{W1_HALL}{Metric for human disturbance used in 
-    emph{nrsaRipDistIndicator()} function.}
+    \emph{nrsaRipDistIndicator()} function.}
     \item{XCMGW}{Metric for woody ground, mid-layer, and canopy cover used in 
-    emph{nrsaRiparianVegIndicator()} function.}
-    \item{XFC_NAT}{Metric for natural fish cover used in emph{nrsaInstrmCoverIndicator()} function.}
+    \emph{nrsaRiparianVegIndicator()} function.}
+    \item{XFC_NAT}{Metric for natural fish cover used in \emph{nrsaInstrmCoverIndicator()} function.}
     \item{XSLOPE}{Mean slope of sampling reach.}
     \item{XWIDTH}{Mean wetted width of sampling reach.}
     \item{SITE_ID}{Site ID}

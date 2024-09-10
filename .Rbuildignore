@@ -5,3 +5,6 @@ sourceAquamet.r
 ^Meta$
 runTest.r
 unitTests
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
