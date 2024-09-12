@@ -1,6 +1,5 @@
 ---
 title: "Calculating NRSA Habitat Indicators"
-author: "Karen Blocksom"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_document
 vignette: >
