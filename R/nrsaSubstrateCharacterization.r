@@ -231,6 +231,9 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
 #    8/07/23 cws Added argSavePath argument, as newly needed for 
 #            aquametStandardizeArgument
 #    6/12/24 cws Removed calls to ddply, using group_by/summarise instead
+#   11/26/24 cws Allowing RC size class in arguments where RS and RR were allowed
+#            in boatable data. Review of code suggests it will be handled correctly.
+#            This is done in response to 2324 data.
 #
 # Arguments:
 # bBottomDom    dataframe containing size class data for the dominant 
@@ -331,25 +334,25 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
     }
     bBottomDom <- aquametStandardizeArgument(bBottomDom, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               ,argSavePath = argSavePath
                                               )
     bBottomSec <- aquametStandardizeArgument(bBottomSec, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               ,argSavePath = argSavePath
                                               )
     bShoreDom <-  aquametStandardizeArgument(bShoreDom, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               ,argSavePath = argSavePath
                                               )
     bShoreSec <-  aquametStandardizeArgument(bShoreSec, ifdf=ifdfLittoral
                                               ,struct = list(SITE=c('integer','character'), TRANSECT='character', VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RR','RS','SA','SB','WD','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                              ,argSavePath = argSavePath
                                              )
@@ -361,7 +364,7 @@ nrsaSubstrateCharacterization <- function(bBottomDom=NULL
                                               )
     wSizeClass <- aquametStandardizeArgument(wSizeClass, ifdf=ifdf
                                               ,struct = list(SITE=c('integer','character'), VALUE=c('character'))
-                                              ,legalValues = list(VALUE = c(NA,'','BL','CB','FN','GC','GF','HP','OT','RC','RR','RS','SA','SB','WD','XB'))
+                                              ,legalValues = list(VALUE = c(NA,'','BL','CB','FN','GC','GF','HP','OT','RC','RC','RR','RS','SA','SB','WD','XB'))
                                               ,stopOnError = !isUnitTest
                                               ,argSavePath = argSavePath
                                               )
