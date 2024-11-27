@@ -24,7 +24,7 @@
 #' 
 #' @param elev Lake surface elevation (meters above sea level)
 #' 
-#' @param ecoreg Lake ecoregion, based on aggregated Omernick ecoregions,
+#' @param ecoreg Lake ecoregion, based on aggregated Omernik ecoregions,
 #' with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.
 #' 
 #' @param rviWoody Index of total woody vegetation cover, calculated
@@ -201,7 +201,7 @@ nlaRipVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' 
 #' @param elev Lake surface elevation (meters above sea level)
 #' 
-#' @param ecoreg Lake ecoregion, based on aggregated Omernick ecoregions,
+#' @param ecoreg Lake ecoregion, based on aggregated Omernik ecoregions,
 #' with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.
 #' 
 #' @param fciNatural Index of fish cover due to natural structures.
@@ -382,7 +382,7 @@ nlaLitVegCompIndicator <- function(x,sampID,lat,lon,lake_origin,area,elev,ecoreg
 #' 
 #' @param elev Lake surface elevation (meters above sea level)
 #' 
-#' @param ecoreg Lake ecoregion, based on aggregated Omernick ecoregions,
+#' @param ecoreg Lake ecoregion, based on aggregated Omernik ecoregions,
 #' with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.
 #' 
 #' @param rvegq Observed riparian vegetation complexity index value, 
@@ -585,7 +585,7 @@ nlaRipDistIndicator <- function(x,sampID,hiiAg,hiiNonAg,hifpAnyCirca){
 #' 
 #' @param bfxHorizDD Horizontal distance to highwater mark in meters
 #' 
-#' @param ecoreg Lake ecoregion, based on aggregated Omernick ecoregions,
+#' @param ecoreg Lake ecoregion, based on aggregated Omernik ecoregions,
 #' with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.
 
 #' @param lake_origin Lake origin, with valid values of 'NATURAL' 
