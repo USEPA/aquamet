@@ -299,6 +299,12 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 #    3/22/19 cws Modified to use dplyr::rename()
 #    8/07/23 cws Added argSavePath argument, as newly needed for 
 #            aquametStandardizeArgument
+#    3/19/25 cws protecting calculation of ratios from division by zero which
+#            results in inf as a result. No change was made to the unit test.
+#    3/20/25 filtering output of mean throughout this function to change NaN to 
+#            NA. Also using protectedSum to combine main and sidechannel values
+#            so sum of NA becomes NA rather than 0. Max wetted width at station
+#            on wadeable reaches now use protectedMax and na.rm=TRUE
 #            
 # ARGUMENTS:
 # bBankHeight       dataframe containing bank height at each transect for
@@ -527,6 +533,44 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                                                  ,argSavePath = argSavePath
                                                  )
 
+    local_protectedMax <- function(x, na.rm=FALSE, inf.rm=FALSE, nan.rm=FALSE, ...) {
+      # Calculates max using max(), but can trap additional incalculable values.
+      # Taken from sharedCode outside of aquamet for now
+      #
+      # Note: The default values for dealing with incalculable values mirrors mean() 
+      # while also providing protection against NaN results from a max of zero
+      # nonmissing values.  
+      #
+      # ARGUMENTS:
+      # x			vector argument to mean
+      # na.rm		logical, calculation ignores NA values if TRUE
+      # inf.rm	logical, calculation ignores Inf, -Inf values if TRUE
+      # nan.rm	logical, calculation ignores NaN values if TRUE
+      # ...		additional arguments passed to or from other methods, e.g. trim
+      
+      if(inf.rm & length(x) > 0) {
+        x <- x[!is.infinite(x)]
+      }
+      
+      if(nan.rm & length(x) > 0) {
+        x <- x[!is.nan(x)]
+      }
+      
+      if (length(x) == 0) {
+        rc <- as.numeric(NA)
+      }
+      else if(all(is.na(x)))	{
+        rc <- as.numeric(NA)
+      }
+      else {
+        #print(sprintf("max(%s)", paste(x, collapse=',')))
+        rc <- max(x, na.rm=na.rm, ...)	# max of all NA is -Inf, should be NA
+      }
+      
+      return(rc)
+      
+    }
+    
     intermediateMessage ('.1')
 
     # Temporarily reconstuct old data frames and use old code.  THIS WILL STILL
@@ -557,7 +601,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       wwidnox <- subset (wadenox, wadenox$PARAMETER=='WETWID')
       wwidnox1 <- aggregate(list(VALUE=wwidnox$VALUE)
                        ,list('SITE'=wwidnox$SITE, 'TRANSECT'=wwidnox$TRANSECT, 'STATION'=wwidnox$STATION)
-                       ,max
+                       ,local_protectedMax, na.rm=TRUE
                        )
 #      wwidnox1 <- rename(wwidnox1, 'x', 'VALUE')
 
@@ -570,7 +614,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                             ,'TRANSECT'=wwidnox$TRANSECT
                             ,'STATION'=wwidnox$STATION
                             )
-                       ,sum, na.rm=TRUE
+                       ,protectedSum, na.rm=TRUE
                        )
 #      wwidnox1s <- rename(wwidnox1s, 'x', 'VALUE')
 
@@ -578,7 +622,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       bwidnox <- subset (wadenox, wadenox$PARAMETER=='BANKWID')
       bwidnox1 <- aggregate(list(VALUE=bwidnox$VALUE)
                            ,list('SITE'=bwidnox$SITE, 'TRANSECT'=bwidnox$TRANSECT)
-                           ,sum , na.rm=TRUE
+                           ,protectedSum , na.rm=TRUE
                            )
 #      bwidnox1 <- rename(bwidnox1, 'x', 'VALUE')
  
@@ -587,7 +631,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       inchnox <- subset (wadenox, wadenox$PARAMETER=='INCISHGT')
       inchnox1 <- aggregate(list(VALUE=inchnox$VALUE)
                            ,list('SITE'=inchnox$SITE, 'TRANSECT'=inchnox$TRANSECT)
-                           ,max
+                           ,local_protectedMax, na.rm=TRUE
                            )
 #      inchnox1 <- rename(inchnox1, 'x', 'VALUE')
 
@@ -597,7 +641,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       bhgtnox1 <- aggregate(list(VALUE=bhgtnox$VALUE)
                        ,list('SITE'=bhgtnox$SITE, 'TRANSECT'=bhgtnox$TRANSECT 
                        )
-                       ,max 
+                       ,local_protectedMax, na.rm=TRUE 
                        )
 #      bhgtnox1 <- rename(bhgtnox1, 'x', 'VALUE')
      
@@ -606,7 +650,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       #                                      (mean of the sidechannel pair)
       bhgtnox1x <- aggregate(list(VALUE=bhgtnox$VALUE)
                             ,list('SITE'=bhgtnox$SITE, 'TRANSECT'=bhgtnox$TRANSECT)
-                            ,mean, na.rm=TRUE
+                            ,protectedMean, na.rm=TRUE
                             )
 #      bhgtnox1x <- rename(bhgtnox1x, 'x', 'VALUE')
      
@@ -623,7 +667,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                             ,list('SITE'=wwidnoxb$SITE
                                  ,'TRANSECT'=wwidnoxb$TRANSECT
                                  )
-                            ,max
+                            ,local_protectedMax, na.rm=TRUE
                             )
 #      wwidnoxb1 <- rename(wwidnoxb1, 'x', 'VALUE')
 
@@ -634,7 +678,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                              ,list('SITE'=wwidnoxb$SITE
                                   ,'TRANSECT'=wwidnoxb$TRANSECT
                                   )
-                             ,sum, na.rm=TRUE
+                             ,protectedSum, na.rm=TRUE
                              )
 #      wwidnoxb1s <- rename(wwidnoxb1s, 'x', 'VALUE')
 
@@ -645,7 +689,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                             ,list('SITE'=bwidnoxb$SITE
                                  ,'TRANSECT'=bwidnoxb$TRANSECT
                                  )
-                            ,sum , na.rm=TRUE
+                            ,protectedSum , na.rm=TRUE
                             )
 #      bwidnoxb1 <- rename(bwidnoxb1, 'x', 'VALUE')
     
@@ -656,7 +700,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                             ,list('SITE'=inchnoxb$SITE
                                  ,'TRANSECT'=inchnoxb$TRANSECT
                                  )
-                            ,max
+                            ,local_protectedMax, na.rm=TRUE
                             )
 #      inchnoxb1 <- rename(inchnoxb1, 'x', 'VALUE')
       # this data (bhgtnoxb1 is used to calculate:xbkf_h, sdbkf_h, (max of the
@@ -666,7 +710,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                             ,list('SITE'=bhgtnoxb$SITE
                                  ,'TRANSECT'=bhgtnoxb$TRANSECT
                                  )
-                            ,max
+                            ,local_protectedMax, na.rm=TRUE
                             )
 #      bhgtnoxb1 <- rename(bhgtnoxb1, 'x', 'VALUE')
      
@@ -677,7 +721,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
                              ,list('SITE'=bhgtnoxb$SITE
                                   ,'TRANSECT'=bhgtnoxb$TRANSECT
                                   )
-                             ,mean, na.rm=TRUE
+                             ,protectedMean, na.rm=TRUE
                              )
 #      bhgtnoxb1x <- rename(bhgtnoxb1x, 'x', 'VALUE')
   }
@@ -730,19 +774,20 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
   intest <- NULL
   if(!is.null(wade)>0) {
       #wade
-      wwidx <- summaryby(wwidnox1,'mean',"xwidth")
+      wwidx <- summaryby(wwidnox1,'mean',"xwidth") %>% mutate(VALUE = ifelse(is.nan(VALUE), as.numeric(NA), VALUE))
       wwidsd <- summaryby(wwidnox1,'sd',"sdwidth")
       wwidc <- summaryby(wwidnox1,'count',"n_w")
-     
-      bwidx <- summaryby(bwidnox1,'mean',"xbkf_w")
+
+      bwidx <- summaryby(bwidnox1,'mean',"xbkf_w") %>% mutate(VALUE = ifelse(is.nan(VALUE), as.numeric(NA), VALUE))
       bwidsd <- summaryby(bwidnox1,'sd',"sdbkf_w")
       bwidc <- summaryby(bwidnox1,'count',"n_bw")
+#print('debugstuff bwidnox1 2024182'); print(subset(bwidnox1, SITE==2024182)) ; print(subset(bwidc, SITE==2024182))    
            
-      bhidx <- summaryby(bhgtnox1,'mean',"xbkf_h")
+      bhidx <- summaryby(bhgtnox1,'mean',"xbkf_h") %>% mutate(VALUE = ifelse(is.nan(VALUE), as.numeric(NA), VALUE))
       bhidsd <- summaryby(bhgtnox1,'sd',"sdbkf_h")
       bhidc <- summaryby(bhgtnox1,'count',"n_bh")
             
-      ihidx <- summaryby(inchnox1,'mean',"xinc_h")
+      ihidx <- summaryby(inchnox1,'mean',"xinc_h") %>% mutate(VALUE = ifelse(is.nan(VALUE), as.numeric(NA), VALUE))
       ihidsd <- summaryby(inchnox1,'sd',"sdinc_h")
       ihidc <- summaryby(inchnox1,'count',"n_incis")
 
@@ -754,19 +799,19 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
   }
   if(!is.null(boat)) {
       #boat
-      wwidxb <- summaryby(wwidnoxb1,'mean',"xwidth")
+      wwidxb <- summaryby(wwidnoxb1,'mean',"xwidth") %>% mutate(VALUE = ifelse(is.nan(VALUE), as.numeric(NA), VALUE))
       wwidsdb <- summaryby(wwidnoxb1,'sd',"sdwidth")
       wwidcb <- summaryby(wwidnoxb1,'count',"n_w")
 
-      bwidxb <- summaryby(bwidnoxb1,'mean',"xbkf_w")
+      bwidxb <- summaryby(bwidnoxb1,'mean',"xbkf_w") %>% mutate(VALUE = ifelse(is.nan(VALUE), as.numeric(NA), VALUE))
       bwidsdb <- summaryby(bwidnoxb1,'sd',"sdbkf_w")
       bwidcb <- summaryby(bwidnoxb1,'count',"n_bw")
 
-      bhidxb <- summaryby(bhgtnoxb1,'mean',"xbkf_h")
+      bhidxb <- summaryby(bhgtnoxb1,'mean',"xbkf_h") %>% mutate(VALUE = ifelse(is.nan(VALUE), as.numeric(NA), VALUE))
       bhidsdb <- summaryby(bhgtnoxb1,'sd',"sdbkf_h")
       bhidcb <- summaryby(bhgtnoxb1,'count',"n_bh")
 
-      ihidxb <- summaryby(inchnoxb1,'mean',"xinc_h")
+      ihidxb <- summaryby(inchnoxb1,'mean',"xinc_h") %>% mutate(VALUE = ifelse(is.nan(VALUE), as.numeric(NA), VALUE))
       ihidsdb <- summaryby(inchnoxb1,'sd',"sdinc_h")
       ihidcb <- summaryby(inchnoxb1,'count',"n_incis")
 
@@ -838,18 +883,24 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       names(wadebw) <- gsub('VALUE\\.', '', names(wadebw))
  
       #generate seed values to later calculate ratios... see use of sidechannel data as described above.
-      rs1w0$bfwd_ratseed <- (rs1w0$VALUE.BANKWID/(rs1w0$VALUE.BANKHGT+rs1w0$VALUE.DEPTH))
+      rs1w0$bfwd_ratseed <- ifelse(rs1w0$VALUE.BANKHGT %in% 0 & rs1w0$VALUE.DEPTH %in% 0
+                                  ,NA
+                                  ,(rs1w0$VALUE.BANKWID/(rs1w0$VALUE.BANKHGT+rs1w0$VALUE.DEPTH))
+                                  )
   
 
       rs1w$wdprod <- (rs1w$VALUE.WETWID * rs1w$VALUE.DEPTH)
-      rs1w$wdratio <- (rs1w$VALUE.WETWID / rs1w$VALUE.DEPTH)
+      rs1w$wdratio <- ifelse(rs1w$VALUE.DEPTH %in% 0
+                            ,NA
+                            ,(rs1w$VALUE.WETWID / rs1w$VALUE.DEPTH)
+                            )
 
       intermediateMessage ('.6')
 
       # next summarize (means)the ratios/products
       mn <- aggregate(list(VALUE=rs1w0$bfwd_ratseed)
                      ,list('SITE'=rs1w0$SITE)
-                     ,mean , na.rm=TRUE
+                     ,protectedMean , na.rm=TRUE
                      )
     
       mn$METRIC <- 'bfwd_rat'
@@ -857,7 +908,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
 #      mn <- rename (mn, 'x', 'VALUE')
       mn1 <- aggregate(list(VALUE=rs1w$wdprod)
                       ,list('SITE'=rs1w$SITE)
-                      ,mean , na.rm=TRUE
+                      ,protectedMean, na.rm=TRUE
                       )
     
       mn1$METRIC <- 'xwxd'
@@ -865,9 +916,9 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
     
       mn2 <- aggregate(list(VALUE=rs1w$wdratio)
                       ,list('SITE'=rs1w$SITE)
-                      ,mean , na.rm=TRUE
+                      ,protectedMean, na.rm=TRUE
                       )
-    
+
       mn2$METRIC <- 'xwd_rat'
 #      mn2 <- rename(mn2, 'x', 'VALUE')
     
@@ -972,14 +1023,14 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       # next summarize (means)the ratios/products
       mnb <- aggregate(list(VALUE=rs1b$bfwd_ratseed)
                       ,list('SITE'=rs1b$SITE)  #####CHANGED: Use rs1w0, not rs1w #####
-                      ,mean , na.rm=TRUE
+                      ,protectedMean , na.rm=TRUE
                       )
     
       mnb$METRIC <- 'bfwd_rat'
 #      mnb <- rename(mnb, 'x', 'VALUE')
       mn1b <- aggregate(list(VALUE=rs1b$wdprod)
                        ,list('SITE'=rs1b$SITE)
-                       ,mean , na.rm=TRUE
+                       ,protectedMean , na.rm=TRUE
                        )
     
       mn1b$METRIC <- 'xwxd'
@@ -987,7 +1038,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
     
       mn2b <- aggregate(list(VALUE=rs1b$wdratio)
                        ,list('SITE'=rs1b$SITE)
-                       ,mean , na.rm=TRUE
+                       ,protectedMean , na.rm=TRUE
                        )
     
       mn2b$METRIC <- 'xwd_rat'
@@ -1069,7 +1120,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       depthsd <- NULL
       depthc <- NULL
   } else {
-    depthx <- summaryby(thal,'mean',"xdepth")
+    depthx <- summaryby(thal,'protectedMean',"xdepth")
     depthsd <- summaryby(thal,'sd',"sddepth")
     depthc <- aggregate( list('VALUE'=thal$VALUE),list(SITE=thal$SITE),count)
     depthc$METRIC <- 'n_d'
@@ -1080,7 +1131,7 @@ nrsaChannelMorphology <- function(bBankHeight = NULL
       depthx_cm <- NULL
       depthsd_cm <- NULL
   } else {
-    depthx_cm <- summaryby(thal_cm,'mean',"xdepth_cm")
+    depthx_cm <- summaryby(thal_cm,'protectedMean',"xdepth_cm")
     depthsd_cm <- summaryby(thal_cm,'sd',"sddepth_cm")
     intermediateMessage('.cm')
   }  
