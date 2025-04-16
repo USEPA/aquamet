@@ -99,9 +99,8 @@ Site summary metrics: rpxlen, rpvlen, rpmxlen, totplen, rpxdep, rpvdep,
 rpmxdep, rpgt50, rpgt75, rpgt100, rpgt05, rpgt05x, rpgt10, rpgt10x, rpgt20,  
 rpgt20x, rpxarea, rpvarea, rpmxar, areasum, rp100
 
-Descriptions for all metrics are included in 
-\emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NRSA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the residual pools portion 

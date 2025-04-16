@@ -143,9 +143,8 @@ s_lrbs_bw6, Dcbf_g08, ldcbf_g08, lrbs_g08, s_rp100, s_Dcbf_g08,
 s_ldcbf_g08, s_lrbs_g08, rb3, ct_rpwd, cp3_mill, cp3ctrpwd_rat, 
 rrpw3, reyp3, shld_px3 
  
-Descriptions for all metrics are included in 
-\emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NRSA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the bed stability portion 

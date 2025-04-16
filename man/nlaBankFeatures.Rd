@@ -92,9 +92,8 @@ BFOANGLE, BFFFLAT, BFFGRADUAL, BFFSTEEP, BFFVERTICAL, BFNANGLE, BFXHORIZDIST,
 BFXHORIZDIST_DD, BFXVERTHEIGHT_DD, BFNHORIZDIST, BFNHORIZDIST_DD, 
 BFNVERTHEIGHT_DD
 
-Descriptions for all metrics are included in 
-\emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NLA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NLA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the bank features portion of the physical

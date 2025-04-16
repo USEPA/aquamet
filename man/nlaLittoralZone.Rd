@@ -37,9 +37,8 @@ is not successful. The data frame contains the following columns:
 The output metrics include:
 LZOFILM, LZFPFILM, LZFPALGAE, LZFPNONE, LZFPOILY, LZFPOTHER, LZFPSCUM 
  
-Descriptions for all metrics are included in 
-\emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NLA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NLA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the littoral zone 

@@ -85,9 +85,8 @@ AMFCFLOATING, AMFCSUBMERGENT, AMFCALL, AMVEMERGENT, AMVFLOATING,
 AMVSUBMERGENT, AMVALL, AMNEMERGENT, AMNFLOATING, AMNSUBMERGENT, AMNALL,
 AMIQALL, AMIDALL, AMITOTAL 
 
-Descriptions for all metrics are included in 
-\emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NLA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NLA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the aquatic macrophyte portion of the physical

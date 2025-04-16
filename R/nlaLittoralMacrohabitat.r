@@ -98,10 +98,8 @@
 #' LMNHUMAN, LMNCOVERTYPES, LMFPARTIFICIAL, LMFPWOODY, LMFPVEG, LMFPBOULDERS, 
 #' LMFPNONE
 #'  
-#' Descriptions for all metrics are included in 
-#' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-#' documentation.
-#' 
+#' Descriptions for all NLA metrics can be found at:
+#' \href{https://github.com/USEPA/aquamet/blob/master/inst/NLA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 #' @examples

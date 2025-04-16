@@ -35,7 +35,7 @@ or 'MAN_MADE'}
 
 \item{elev}{Lake surface elevation (meters above sea level)}
 
-\item{ecoreg}{Lake ecoregion, based on aggregated Omernick ecoregions,
+\item{ecoreg}{Lake ecoregion, based on aggregated Omernik ecoregions,
 with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.}
 
 \item{rvegq}{Observed riparian vegetation complexity index value, 

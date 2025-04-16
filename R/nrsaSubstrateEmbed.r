@@ -35,9 +35,8 @@
 #' Metrics calculated include: 
 #' n33, n55, vcembed, vembed, xcembed, xembed
 #'     
-#' Descriptions for all metrics are included in 
-#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-#' documentation.
+#' Descriptions for all NRSA metrics can be found at:
+#' \href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 

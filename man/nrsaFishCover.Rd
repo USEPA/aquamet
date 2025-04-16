@@ -159,9 +159,8 @@ xfc_aqm, xfc_ohv, xfc_hum, xfc_ucb, xfc_lwd, pfc_all, pfc_big, pfc_nat,
 xfc_all, xfc_big, xfc_nat, sdfc_ucb, sdfc_ohv, idrucb, idrohv, iqrucb, 
 iqrohv
 
-Descriptions for all metrics are included in 
-\emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NRSA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the fish cover 
