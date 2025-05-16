@@ -69,7 +69,7 @@ nrsaBedStabilityTest <- function()
                                     )
   nrsaBedStabilityTestTest.process (testData, metsExpected_minSlopeIs0, protocols, 0)
 
-  intermediateMessage('.2.3 Test with both protocols and minimum xslope value of 0', loc='end')
+  intermediateMessage('.2.3 Test with both protocols with site 5 slope is negative', loc='end')
   testData_minSlopeIsNegative <- nrsaBedStabilityTest.testData () %>%
                                  mutate(VALUE = ifelse(SITE %in% c(5) & METRIC == 'xslope', -1, VALUE))
   metsExpected_minSlopeIsNegative <- metsExpected_minSlopeIs0 %>%
