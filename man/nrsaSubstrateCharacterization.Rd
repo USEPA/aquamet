@@ -127,9 +127,8 @@ d16, d50, d84, dgm, LDCBF_G08, lsub2d16inor, lsub2d50inor, lsub2d84inor,
   pct_ssgf, pct_sshp, pct_ssom, pct_ssot, pct_ssrc, pct_ssrr, pct_ssrs,
   pct_sssa, pct_sssb, pct_sswd, pct_ssxb,
 
-Descriptions for all metrics are included in 
-\emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NRSA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the substrate characterization

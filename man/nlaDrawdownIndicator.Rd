@@ -26,7 +26,7 @@ in \emph{x}.}
 
 \item{bfxHorizDD}{Horizontal distance to highwater mark in meters}
 
-\item{ecoreg}{Lake ecoregion, based on aggregated Omernick ecoregions,
+\item{ecoreg}{Lake ecoregion, based on aggregated Omernik ecoregions,
 with valid values of CPL, NAP, NPL, SAP, SPL, TPL, UMW, WMT, XER.}
 
 \item{lake_origin}{Lake origin, with valid values of 'NATURAL' 

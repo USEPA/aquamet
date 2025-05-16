@@ -108,10 +108,9 @@
 #' s_ldcbf_g08, s_lrbs_g08, rb3, ct_rpwd, cp3_mill, cp3ctrpwd_rat, 
 #' rrpw3, reyp3, shld_px3 
 #'  
-#' Descriptions for all metrics are included in 
-#' \emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-#' documentation.
-#' 
+#' Descriptions for all NRSA metrics can be found at:
+#' \href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
+#'  
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}\cr
 #' Tom Kincaid \email{Kincaid.Tom@epa.gov}
 

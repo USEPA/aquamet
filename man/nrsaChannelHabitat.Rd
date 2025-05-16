@@ -115,9 +115,8 @@ columns:
  pct_fast, pct_slow, pct_pool, pct_pp, pct_pd, pct_pb, pct_pt, pct_pl,
  pct_p, pct_dr  
  
-Descriptions for all metrics are included in 
-\emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NRSA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the channel habitat 

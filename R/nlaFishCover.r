@@ -236,9 +236,8 @@
 #' FCINATURAL_SIM, FCIRIPVEG_DD, FCIRIPVEG_LIT, FCIRIPVEG_SIM, 
 #' FCFPALL_DD, FCFPALL_LIT, FCFPALL_SIM, FCNALL_DD, 
 #' FCNALL_LIT, FCNALL_SIM.
-#' Descriptions for all metrics are included in 
-#' \emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-#' documentation.
+#' Descriptions for all NLA metrics can be found at:
+#' \href{https://github.com/USEPA/aquamet/blob/master/inst/NLA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 #' 
 #' @author Curt Seeliger \email{Seeliger.Curt@epa.gov}
 #' @examples

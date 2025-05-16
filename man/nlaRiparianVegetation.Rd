@@ -347,8 +347,8 @@ RVVGNDNONW_DD, RVVGNDNONW_RIP, RVVGNDNONW_SYN, RVVGNDWOODY_DD,
 RVVGNDWOODY_RIP, RVVGNDWOODY_SYN, RVVUNDNONW_DD, RVVUNDNONW_RIP, 
 RVVUNDNONW_SYN, RVVUNDWOODY_DD, RVVUNDWOODY_RIP, RVVUNDWOODY_SYN.
  
-\emph{NLA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NLA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NLA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the riparian zone and 

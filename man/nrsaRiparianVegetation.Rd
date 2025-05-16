@@ -181,9 +181,8 @@ pcan_e, pcan_m, pcan_n ,pmid_c, pmid_d, pmid_e, pmid_m, pmid_n, xcl,
 xcs, xmw, xmh, xgw, xgh, xgb, xc, xm, xcmw, xcm, xg, xcmgw, xcmg, 
 xpcan, xpmid, xpgveg, xpmgw, xpcm, xpmg, xpcmg
 
-Descriptions for all metrics are included in 
-\emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NRSA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the riparian vegetation 

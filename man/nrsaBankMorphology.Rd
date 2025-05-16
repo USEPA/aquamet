@@ -66,9 +66,8 @@ The output metrics for wadeable sites include:
 n_ba, xbka, sdbk_a, bka_q3, medbk_a, bka_q1, intqbka, n_un, xun, sdun,
 bkun_q3, medbkun, bkun_q1, intqbkun
 
-Descriptions for all metrics are included in 
-\emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NRSA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the bank morphology portion 

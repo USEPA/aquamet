@@ -173,9 +173,8 @@ Boatable river metrics calculated include:  bfwd_rat, n_bfrat, n_bh,
 n_bw, n_d, n_incis,  n_wd,n_wdr,sdbkf_h, sdbkf_w, sddepth, sdinc_h, 
 sdwd_rat, sdwidth, sdwxd,xbkf_h, xbkf_w, xdepth, xinc_h, 
 xwd_rat, xwidth, xwxd
-Descriptions for all metrics are included in 
-\emph{NRSA_Physical_Habitat_Metric_Descriptions.pdf} in the package
-documentation.
+Descriptions for all NRSA metrics can be found at:
+\href{https://github.com/USEPA/aquamet/blob/master/inst/NRSA_physical_habitat_metrics_descriptions.pdf}{NLA_Physical_Habitat_Metric_Descriptions.pdf}.
 }
 \description{
 This function calculates the channel morphology 
