@@ -555,16 +555,16 @@ This indicator measures the riparian vegetation cover on the lakeshore. The func
 
 <table>
 
-| Argument         | Metric               | Description                                                                     |
-|:-----------------|:---------------------|:--------------------------------------------------------------------------------|
-| rviWoody         | RVI_WOODY_SYN        | Index of total woody vegetations cover, synthesizing the 2007 protocol          |
-| rvfcGndInundated | RVFCGNDINUNDATED_SYN | Fraction of ground cover by inundation synthesizing the 2007 protocol           |
-| rvfcUndWoody     | RVFCUNDWOODY_SYN     | Fraction of understory cover by woody vegetation synthesizing the 2007 protocol |
-| rvfcGndWoody     | RVFCGNDWOODY_SYN     | Fraction of ground cover by woody vegetation synthesizing the 2007 protocol     |
-| rvfpCanBig       | RVFPCANBIG_SYN       | Fraction of canopy with large trees present synthesizing the 2007 protocol      |
-| ssfcBedrock      | SSFCBEDROCK          | Fractional cover of bedrock using SS_BEDROCK                                    |
-| ssfcBoulders     | SSFCBOULDERS         | Fractional cover of bedrock using SS_BOULDER                                    |
-| hipwWalls        | HIPWWALLS_SYN        | Weighted presence of Walls synthesizing the 2007 protocol                       |
+| Argument | Metric | Description |
+|:--------------|:--------------|:------------------------------------------|
+| rviWoody | RVIWOODY_SYN | Index of total woody vegetations cover, synthesizing the 2007 protocol |
+| rvfcGndInundated | RVFCGNDINUNDATED_SYN | Fraction of ground cover by inundation synthesizing the 2007 protocol |
+| rvfcUndWoody | RVFCUNDWOODY_SYN | Fraction of understory cover by woody vegetation synthesizing the 2007 protocol |
+| rvfcGndWoody | RVFCGNDWOODY_SYN | Fraction of ground cover by woody vegetation synthesizing the 2007 protocol |
+| rvfpCanBig | RVFPCANBIG_SYN | Fraction of canopy with large trees present synthesizing the 2007 protocol |
+| ssfcBedrock | SSFCBEDROCK | Fractional cover of bedrock using SS_BEDROCK |
+| ssfcBoulders | SSFCBOULDERS | Fractional cover of bedrock using SS_BOULDER |
+| hipwWalls | HIPWWALLS_SYN | Weighted presence of Walls synthesizing the 2007 protocol |
 
 ```{r ripveg-comp}
 ripvegOut <- nlaRipVegCompIndicator(indicIn, 
@@ -595,17 +595,17 @@ These results show that when any critical metrics are missing, Not Assessed is a
 
 This indicator measures the shallow water habitat of the lake. This function also requires latitude, longitude, lake origin, lake area, lake elevation, and ecoregion. The 9 metrics listed below, related to fish cover and aquatic macrophytes, are required as inputs for calculation of this indicator. These metrics come from the `nlaAquaticMacrophytes()` and `nlaFishCover()` functions.
 
-| Argument      | Metric            | Description                                                        |
-|:--------------|:------------------|:-------------------------------------------------------------------|
-| fciNatural    | FCINATURAL_LIT    | Index of fish cover due to natural structures in the littoral zone |
-| fcfcSnag      | FCFCSNAGS_LIT     | Fractional cover of snags in the littoral zone                     |
-| amfcFloating  | AMFCFLOATING      | Fractional cover of floating macrophytes                           |
-| amfcEmergent  | AMFCEMERGENT      | Fractional cover of emergent macrophytes                           |
-| fcfcBoulders  | FCFCBOULDERS_LIT  | Fractional cover of boulders in the littoral zone                  |
-| fcfcBrush     | FCFCBRUSH_LIT     | Fractional cover of brush in the littoral zone                     |
-| fcfcLedges    | FCFCLEDGES_LIT    | Fractional cover of ledges in the littoral zone                    |
-| fcfcLiveTrees | FCFCLIVETREES_LIT | Fractional cover of live trees in the littoral zone                |
-| fcfcOverhang  | FCFCOVERHANG_LIT  | Fractional cover of overhangs in the littoral zone                 |
+| Argument | Metric | Description |
+|:--------------|:--------------|:------------------------------------------|
+| fciNatural | FCINATURAL_LIT | Index of fish cover due to natural structures in the littoral zone |
+| fcfcSnag | FCFCSNAGS_LIT | Fractional cover of snags in the littoral zone |
+| amfcFloating | AMFCFLOATING | Fractional cover of floating macrophytes |
+| amfcEmergent | AMFCEMERGENT | Fractional cover of emergent macrophytes |
+| fcfcBoulders | FCFCBOULDERS_LIT | Fractional cover of boulders in the littoral zone |
+| fcfcBrush | FCFCBRUSH_LIT | Fractional cover of brush in the littoral zone |
+| fcfcLedges | FCFCLEDGES_LIT | Fractional cover of ledges in the littoral zone |
+| fcfcLiveTrees | FCFCLIVETREES_LIT | Fractional cover of live trees in the littoral zone |
+| fcfcOverhang | FCFCOVERHANG_LIT | Fractional cover of overhangs in the littoral zone |
 
 ```{r litveg-comp}
     litvegOut <- nlaLitVegCompIndicator(indicIn, sampID='SITE',
@@ -666,17 +666,17 @@ As we go through this example, we will explain for each metric calculation funct
 
 ## Example datasets
 
-| Dataset       | Description                                                                                                                                                                                                |
-|:--------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| nrsaChanconst | Channel constraint characteristics for entire site                                                                                                                                                         |
-| nrsaChannel   | Channel characteristics for both boatable and wadeable streams by TRANSECT, including data on bank characteristics, fish cover, large woody debris, littoral substrates, and boatable constraint variables |
-| nrsaChanrip   | Channel riparian data by TRANSECT and BANK. Includes canopy cover densiometer readings, human influence, visual riparian measurements, and wadeable bank undercut and angle measurements                   |
-| nrsaChanxsec  | Channel cross-section measurements by TRANSECT and BANK for wadeable sites                                                                                                                                 |
-| nrsaInvleg    | Riparian legacy and invasive tree measurements (no longer used)                                                                                                                                            |
-| nrsaLittoral  | Nonwadeable littoral depth measurements by TRANSECT and LINE                                                                                                                                               |
-| nrsaSlope     | Slope and bearing measurements                                                                                                                                                                             |
-| nrsaThalweg   | Thalweg depth measurements by TRANSECT and STATION                                                                                                                                                         |
-| nrsaVisits    | Site and type of site (VALXSITE), as BOATABLE or WADEABLE                                                                                                                                                  |
+| Dataset | Description |
+|:-----------|:----------------------------------------------------------|
+| nrsaChanconst | Channel constraint characteristics for entire site |
+| nrsaChannel | Channel characteristics for both boatable and wadeable streams by TRANSECT, including data on bank characteristics, fish cover, large woody debris, littoral substrates, and boatable constraint variables |
+| nrsaChanrip | Channel riparian data by TRANSECT and BANK. Includes canopy cover densiometer readings, human influence, visual riparian measurements, and wadeable bank undercut and angle measurements |
+| nrsaChanxsec | Channel cross-section measurements by TRANSECT and BANK for wadeable sites |
+| nrsaInvleg | Riparian legacy and invasive tree measurements (no longer used) |
+| nrsaLittoral | Nonwadeable littoral depth measurements by TRANSECT and LINE |
+| nrsaSlope | Slope and bearing measurements |
+| nrsaThalweg | Thalweg depth measurements by TRANSECT and STATION |
+| nrsaVisits | Site and type of site (VALXSITE), as BOATABLE or WADEABLE |
 
 We can take a quick look at each dataset to see what the data look like.
 
