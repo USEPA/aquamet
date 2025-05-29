@@ -2,6 +2,14 @@
 # RUnit tests
 #
 #  2/27/18 cws Modified unit test in response to use of aquametStandardizeArgument().
+#  5/15/25 cws Modified unit test to call nrsaBedStability with a minimum xslope
+#          value of 0.0001. This was done to account for the removal of the code
+#          within nrsaBedStability that did this. Extended unit test to include
+#          case with minimum xslope value of 0.
+#  5/16/25 cws Modified checking of intermediate calculations to include NA, 
+#          infinite and NaN values. Modified unit test to check results when
+#          xslope is negative.
+#          
 
 
 nrsaBedStabilityTest <- function()
@@ -17,12 +25,12 @@ nrsaBedStabilityTest <- function()
 
   intermediateMessage('.2.0 Test with both protocols', loc='end')
   testData <- nrsaBedStabilityTest.testData ()
-  nrsaBedStabilityTestTest.process (testData, metsExpected, protocols)
+  nrsaBedStabilityTestTest.process (testData, metsExpected, protocols, 0.0001)
   
   intermediateMessage ('.2.1 Test with wadeable protocol', loc='end')
   test.w <- subset(testData, SITE %in% subset (protocols, PROTOCOL=='WADEABLE')$SITE)
   expected.w <- subset (metsExpected, SITE %in% subset (protocols, PROTOCOL=='WADEABLE')$SITE)
-  nrsaBedStabilityTestTest.process (test.w, expected.w, protocols)
+  nrsaBedStabilityTestTest.process (test.w, expected.w, protocols, 0.0001)
   
   intermediateMessage ('.2.2 Test with boatable protocol', loc='end')
   test.b <- subset(testData
@@ -33,12 +41,66 @@ nrsaBedStabilityTest <- function()
                       ,SITE %in% subset (protocols, PROTOCOL=='BOATABLE')$SITE &
                        METRIC %nin% c('lrbs_bw6','s_lrbs_bw6')
                       )
-  nrsaBedStabilityTestTest.process (test.b, expected.b, protocols)
+  nrsaBedStabilityTestTest.process (test.b, expected.b, protocols, 0.0001)
+  
+  intermediateMessage('.2.3 Test with both protocols and minimum xslope value of 0', loc='end')
+  testData <- nrsaBedStabilityTest.testData ()
+  metsExpected_minSlopeIs0 <- metsExpected %>%
+                              mutate(VALUE = ifelse(SITE %in% subset(testData, METRIC=='xslope' & VALUE == 0)$SITE
+                                                   ,# Adjust metrics values for change in 
+                                                    # slope value used for calculation
+                                                    # Currently this is only SITE=8.
+                                                    ifelse(METRIC %in% c('Dcbf_g08','ldcbf_g08','ldmb_bw4'
+                                                                        ,'ldmb_bw5','lrbs_bw4','lrbs_bw5'
+                                                                        ,'lrbs_bw6','lrbs_g08','lrbs_tst'
+                                                                        ,'ltest','s_Dcbf_g08','s_ldcbf_g08'
+                                                                        ,'s_lrbs_g08','shld_px3'
+                                                                        )
+                                                          ,NA
+                                                   ,ifelse(METRIC %in% c('reyp3')
+                                                          ,0
+                                                   ,ifelse(METRIC %in% c('s_rp100')
+                                                          ,Inf
+                                                          ,VALUE
+                                                    )))
+                                                   ,# These sites do not need adjustment
+                                                    VALUE
+                                                   )
+                                    )
+  nrsaBedStabilityTestTest.process (testData, metsExpected_minSlopeIs0, protocols, 0)
+
+  intermediateMessage('.2.3 Test with both protocols with site 5 slope is negative', loc='end')
+  testData_minSlopeIsNegative <- nrsaBedStabilityTest.testData () %>%
+                                 mutate(VALUE = ifelse(SITE %in% c(5) & METRIC == 'xslope', -1, VALUE))
+  metsExpected_minSlopeIsNegative <- metsExpected_minSlopeIs0 %>%
+                                     mutate(VALUE = ifelse(SITE %in% c(5)
+                                                          ,# Adjust metrics values for change in
+                                                           # slope value used for calculation
+                                                           # Currently this is only SITE=8.
+                                                           ifelse(METRIC %in% c('Dcbf_g08','ldcbf_g08'
+                                                                               ,'ldmb_bw4','ldmb_bw5'
+                                                                               ,'lrbs_bw4','lrbs_bw5','lrbs_bw6','lrbs_g08'
+                                                                               ,'lrbs_tst','ltest'
+                                                                               ,'s_Dcbf_g08','s_ldcbf_g08'
+                                                                               ,'s_ldmb_bw5','s_lrbs_bw5','s_lrbs_bw6'
+                                                                               ,'s_lrbs_g08','shld_px3'
+                                                                               )
+                                                                  ,NA
+                                                          ,ifelse(METRIC %in% c('reyp3','s_rp100')
+                                                                 ,NaN
+                                                                 ,VALUE
+                                                           ))
+                                                         ,# These sites do not need adjustment
+                                                          VALUE
+                                                         )
+                                           )
+  nrsaBedStabilityTestTest.process (testData_minSlopeIsNegative, metsExpected_minSlopeIsNegative, protocols, -10)
+
 } 
 
 
 
-nrsaBedStabilityTestTest.process <- function (testData, metsExpected, protocols)   
+nrsaBedStabilityTestTest.process <- function (testData, metsExpected, protocols, minSlope)   
 #
 {
   rr <- nrsaBedStability(bXdepth =  subset(testData, METRIC == 'xdepth' & SITE %in% subset(protocols, PROTOCOL=='BOATABLE')$SITE) %>% select(SITE, VALUE)
@@ -52,10 +114,12 @@ nrsaBedStabilityTestTest.process <- function (testData, metsExpected, protocols)
                         ,xbkf_h =   subset(testData, METRIC == 'xbkf_h') %>% select(SITE, VALUE)
                         ,xbkf_w =   subset(testData, METRIC == 'xbkf_w') %>% select(SITE, VALUE)
                         ,xfc_lwd =  subset(testData, METRIC == 'xfc_lwd') %>% select(SITE, VALUE)
-                        ,xslope =   subset(testData, METRIC == 'xslope') %>% select(SITE, VALUE)
+                        ,xslope =   subset(testData, METRIC == 'xslope') %>% mutate(VALUE = ifelse(VALUE < minSlope, minSlope, VALUE)) %>% select(SITE, VALUE)
                         ,xwidth =   subset(testData, METRIC == 'xwidth') %>% select(SITE, VALUE)
                         )
-
+# dd <- dfDifferences(metsExpected, rr, c('SITE','METRIC'), zeroFudge=1e-9)
+# if(minSlope < 0) return(dd)
+  
   # Calculated values should be within 10E-7 of expected values, should
   # only be missing where they are supposed to be missing and nonmissing where
   # they are supposed to be nonmissing.  The calculation of s_rp100 is only
@@ -72,10 +136,17 @@ nrsaBedStabilityTestTest.process <- function (testData, metsExpected, protocols)
                       )
                 ,{relerr <- (VALUE.y-VALUE.x)/VALUE.x}
                 )
-  checkEquals(0, nrow(subset(errs, abs(relerr) > 2e-7))
-             ,"Error: Bed stability metrics are broken"
+  checkEquals(0
+             ,subset(errs
+                    ,abs(relerr) > 2e-7 | 
+                     is.na(VALUE.y) != is.na(VALUE.x) | 
+                     is.infinite(VALUE.y) != is.infinite(VALUE.x) | 
+                     is.nan(VALUE.y) != is.nan(VALUE.x) 
+                    ) %>%
+              nrow()
+             ,"Error: Bed stability intermediate calculations are broken"
              )
-
+  
   errs <- dfCompare(subset(metsExpected
                           ,METRIC %in% c('ltest', 'lrbs_tst', 'ldmb_bw5', 'ldmb_bw4', 'lrbs_bw4', 'lrbs_bw5', 'lrbs_bw6', 'Dcbf_g08', 'ldcbf_g08', 'lrbs_g08')
                           )
@@ -96,7 +167,7 @@ nrsaBedStabilityTestTest.process <- function (testData, metsExpected, protocols)
                           )
                    ,c('SITE','METRIC'), zeroFudge=10^-4
                    )
-print(errs)
+
   checkEquals(NULL, errs
              ,"Error: Bed stability s_* metric is broken"
              )

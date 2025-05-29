@@ -201,6 +201,10 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
 #    2/23/16 cws Updated argument descriptions
 #    8/07/23 cws Added argSavePath argument, as newly needed for 
 #            aquametStandardizeArgument
+#    5/15/25 cws Removed code setting minimum slope value to allow calculation
+#            of log10() value. Users should set this minimum value in the 
+#            xslope argument based on the accuracy limits associated with the
+#            measurement methods used.
 #
 # ARGUMENTS:
 # bXdepth       dataframe containing depth means (units are m) for boatable 
@@ -364,8 +368,8 @@ nrsaBedStability <- function(bXdepth = NULL, bSddepth = NULL
   mm$xdepth <- ifelse(mm$PROTOCOL=='BOATABLE', mm$xdepth * 100, mm$xdepth)
   mm$sddepth <- ifelse(mm$PROTOCOL=='BOATABLE', mm$sddepth * 100, mm$sddepth)
 
-  # Make zero slopes slighly positive so we can log them
-  mm$xslope <- ifelse(mm$xslope<=0.0001, 0.0001, mm$xslope)
+  # # Make zero slopes slighly positive so we can log them
+  # mm$xslope <- ifelse(mm$xslope<=0.0001, 0.0001, mm$xslope)
 
 #  # Adjust v1w density for boatables: was over 20*10 plot, now over 20*xbkf_w area
 #  # Zero out v1w density for boatables, unless it's missing.
